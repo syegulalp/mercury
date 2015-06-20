@@ -338,9 +338,24 @@ function remove_tag(e,t){
 }
 
 
-function add_tag(e){    
-    
+function add_tag(e){
+
     tag = e.value;
+    
+    var no_match = true;
+    
+    $('.tag_link').each(function(){
+        console.log($(this).text());
+        if (e.value == $(this).text())
+        {
+            $(this).parent().parent().fadeIn(200).fadeOut(200).fadeIn(200).fadeOut(200).fadeIn(200);
+            no_match = false;
+            return false;
+        }
+    }); 
+    
+    if (no_match==false) { return false;}       
+    
     $('.typeahead').typeahead('val', '');
     $('.typeahead').typeahead('close');
     

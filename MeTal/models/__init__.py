@@ -964,11 +964,15 @@ class KeyValue(BaseModel):
 
 
 tag_template = '''
-<span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details" type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button
-id="tag_del_{id}" data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
+<span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
+type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button id="tag_del_{id}"
+data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
 '''
 tag_link_template = '''
-<a href="{}">{}</a>'''    
+<a class="tag_link" href="{url}">{tag}</a>'''
+
+new_tag_template = '''
+<span class="tag_link">{tag}</span>'''    
 
 class Tags(BaseModel):
     tag = TextField()
@@ -990,8 +994,9 @@ class Tags(BaseModel):
     def for_listing(self):
         
         template = tag_link_template.format(
-            BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
-            html_escape(self.tag))
+            id=self.id,
+            url=BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
+            tag=html_escape(self.tag))
         
         return template
     
@@ -1005,8 +1010,9 @@ class Tags(BaseModel):
             btn_type=btn_type,
             new='',
             tag=tag_link_template.format(
-                BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
-                html_escape(self.tag))
+                id=self.id,
+                url=BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
+                tag=html_escape(self.tag))
             )
         
         return template
@@ -1018,7 +1024,8 @@ class Tags(BaseModel):
         
         template = tag_template.format(
             id=0,
-            tag=html_escape(self.tag),
+            tag=new_tag_template.format(
+                tag=html_escape(self.tag)),                
             btn_type=btn_type,
             new='data-new-tag="{}" '.format(html_escape(self.tag))
             )
