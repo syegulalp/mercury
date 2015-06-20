@@ -259,8 +259,8 @@ def save_page(page, user, blog=None):
     save_action = int(request.forms.get('save'))
     
     blog_new_page = False
-    original_page_status = 1
-
+    original_page_status = page_status.unpublished
+    
     if page is None:
 
         blog_new_page = True
@@ -322,7 +322,7 @@ def save_page(page, user, blog=None):
     # UNPUBLISH
     if (
         (save_action & save_actions.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
-        (original_page_status == 2 and page.status == page_status.unpublished) or  # set a published page to draft 
+        (original_page_status == page_status.published and page.status == page_status.unpublished) or  # set a published page to draft 
         (save_action & save_actions.DELETE_PAGE)  # delete a page, regardless of status
         ): 
         
@@ -335,7 +335,7 @@ def save_page(page, user, blog=None):
         pass
         
     # UNPUBLISHED TO PUBLISHED
-    if original_page_status == 1 and (save_action & 2):
+    if original_page_status == page_status.unpublished and (save_action & save_actions.UPDATE_LIVE_PAGE):
         
         page.status = page_status.published
     

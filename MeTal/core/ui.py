@@ -1065,6 +1065,8 @@ def page_edit(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
     
+    from core.cms import save_actions
+    
     status = None
     referer = request.headers.get('Referer')
     
@@ -1098,6 +1100,7 @@ def page_edit(page_id):
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
+            save_actions=save_actions,
             save_action=save_action,
             **tags.__dict__
             ),
@@ -1122,12 +1125,15 @@ def page_edit_save(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
     tags = cms.save_page(page, user, page.blog)
-    
+
+    from core.cms import save_actions
+        
     tpl = template('edit_page_ajax_response',
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
+            save_actions=save_actions,
             **tags.__dict__
             ),
         **tags.__dict__)

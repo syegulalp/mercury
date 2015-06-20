@@ -70,16 +70,16 @@
         </button>
         <ul class="dropdown-menu" role="menu">
             % if page.status_id == 2:
-            <li><a onclick="page_save(1)" href="#">Save draft only</a></li>
+            <li><a onclick="page_save({{save_actions.SAVE_TO_DRAFT}})" href="#">Save draft only</a></li>
             % else:
-            <li><a onclick="page_save(3)" href="#">Save and publish</a></li>
+            <li><a onclick="page_save({{save_actions.SAVE_TO_DRAFT + save_actions.UPDATE_LIVE_PAGE}})" href="#">Save and publish</a></li>
             % end
-            <li><a onclick="page_save(5)" href="#">Save and exit</a></li>
-            <li><a onclick="page_save(4)" href="#">Exit without saving</a></li>
+            <li><a onclick="page_save({{save_actions.SAVE_TO_DRAFT + save_actions.EXIT_EDITOR}})" href="#">Save and exit</a></li>
+            <li><a onclick="page_save({{save_actions.EXIT_EDITOR}})" href="#">Exit without saving</a></li>
             % if page.status_id == 2:
-            <li><a onclick="page_save(8)" href="#">Unpublish</a></li>
+            <li><a onclick="page_save({{save_actions.UNPUBLISH_PAGE}})" href="#">Unpublish</a></li>
             % end
-            <li><a onclick="page_save(16)" href="#">Delete</a></li>
+            <li><a onclick="page_save({{save_actions.DELETE_PAGE}})" href="#">Delete</a></li>
         </ul>
     </div>
     % if page.id is not None:
