@@ -50,7 +50,7 @@ parent_obj = {
     'Site':'System',
     'Log':'System',
     'PageRevision':'Page',
-    'PageCategories':'Page',
+    'PageCategory':'Page',
     }
 
 # lookup not required for this, so a struct
@@ -335,10 +335,10 @@ class Site(SiteBase, ConnectionBase):
         blogs = Blog.select(Blog.id).where(
             Blog.site == self).tuples()
         
-        pages = Page.select(Page, PageCategories).where(
+        pages = Page.select(Page, PageCategory).where(
             Page.blog << blogs).join(
-            PageCategories).where(
-            PageCategories.primary == True).order_by(
+            PageCategory).where(
+            PageCategory.primary == True).order_by(
             Page.publication_date.desc(), Page.id.desc())
         
         if page_list is not None:
@@ -455,10 +455,10 @@ class Blog(SiteBase):
         
     def pages(self, page_list=None):
         
-        pages = Page.select(Page, PageCategories).where(
+        pages = Page.select(Page, PageCategory).where(
             Page.blog == self.id).join(
-            PageCategories).where(
-            PageCategories.primary == True).order_by(
+            PageCategory).where(
+            PageCategory.primary == True).order_by(
             Page.publication_date.desc(), Page.id.desc())
         
         if page_list is not None:
@@ -558,7 +558,7 @@ class Blog(SiteBase):
         
         return fileinfos_for_blog
         
-class Categories(BaseModel):
+class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
     title = TextField()
     parent_category = IntegerField(default=None, null=True, index=True)
@@ -610,9 +610,9 @@ class Page(BaseModel):
 
     @property
     def tags(self):
-        tag_list = Tags.select().where(
-            Tags.id << TagAssociations.select(TagAssociations.tag).where(
-                TagAssociations.page == self))
+        tag_list = Tag.select().where(
+            Tag.id << TagAssociation.select(TagAssociation.tag).where(
+                TagAssociation.page == self))
         
         return tag_list
     
@@ -740,14 +740,14 @@ class Page(BaseModel):
     @property
     def categories(self):
     
-        categories = PageCategories.select().where(PageCategories.page == self)
+        categories = PageCategory.select().where(PageCategory.page == self)
     
         return categories
     
     @property
     def primary_category(self):
         
-        primary = self.categories.select().where(PageCategories.primary == True).get()
+        primary = self.categories.select().where(PageCategory.primary == True).get()
         
         return primary.category
     
@@ -931,10 +931,10 @@ class PageRevision(Page, RevisionMixin):
         return results
     
 
-class PageCategories(BaseModel):
+class PageCategory(BaseModel):
     
     page = ForeignKeyField(Page, null=False, index=True)
-    category = ForeignKeyField(Categories, null=False, index=True)
+    category = ForeignKeyField(Category, null=False, index=True)
     primary = BooleanField(default=True)
     
     @property
@@ -974,7 +974,7 @@ tag_link_template = '''
 new_tag_template = '''
 <span class="tag_link">{tag}</span>'''    
 
-class Tags(BaseModel):
+class Tag(BaseModel):
     tag = TextField()
     blog = ForeignKeyField(Blog, null=False, index=True)
     is_hidden = BooleanField(default=False, index=True)
@@ -982,8 +982,8 @@ class Tags(BaseModel):
     @property
     def in_pages(self):
         
-        tagged_pages = TagAssociations.select(TagAssociations.page).where(
-            TagAssociations.tag == self).tuples()
+        tagged_pages = TagAssociation.select(TagAssociation.page).where(
+            TagAssociation.tag == self).tuples()
         
         in_pages = Page.select().where(
             Page.id << tagged_pages)
@@ -1164,8 +1164,8 @@ class MediaAssociation(BaseModel):
     blog = ForeignKeyField(Blog, null=True)
     site = ForeignKeyField(Site, null=True)
 
-class TagAssociations(BaseModel):
-    tag = ForeignKeyField(Tags, null=False, index=True)
+class TagAssociation(BaseModel):
+    tag = ForeignKeyField(Tag, null=False, index=True)
     page = ForeignKeyField(Page, null=True, index=True)
     media = ForeignKeyField(Media, null=True, index=True) 
 

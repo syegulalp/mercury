@@ -9,8 +9,8 @@ from libs.bottle import request
 from libs.peewee import DeleteQuery
 import json
 
-from models import (db, Page, Template, TemplateMapping, TagAssociations, Tags, template_type,
-    Categories, PageCategories, FileInfo, Queue, template_tags, get_blog, User,
+from models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
+    Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User,
     FileInfoContext, Media, MediaAssociation, Struct, page_status)
 
 from settings import MAX_BATCH_OPS
@@ -350,11 +350,11 @@ def save_page(page, user, blog=None):
         
         if blog_new_page:
     
-            default_blog_category = Categories.get(
-                Categories.blog == blog.id,
-                Categories.default == True)
+            default_blog_category = Category.get(
+                Category.blog == blog.id,
+                Category.default == True)
     
-            saved_page_category = PageCategories.create(
+            saved_page_category = PageCategory.create(
                 page=page,
                 category=default_blog_category,
                 primary=True)
@@ -406,28 +406,28 @@ def delete_orphaned_tags():
     '''
     Cleans up tags that no longer have any page associations.
     '''
-    orphaned_tags = Tags.delete().where(
-        ~Tags.id << (TagAssociations.select(TagAssociations.tag)))
+    orphaned_tags = Tag.delete().where(
+        ~Tag.id << (TagAssociation.select(TagAssociation.tag)))
     
     orphaned_tags.execute()
     
     return orphaned_tags
 
 def add_tags_to_page (tag_text, page):
-    tag_list = Tags.select().where(Tags.id << tag_text)
+    tag_list = Tag.select().where(Tag.id << tag_text)
     
-    tags_to_delete = TagAssociations.delete().where(
-        TagAssociations.page == page,
-        ~ TagAssociations.tag << (tag_list))
+    tags_to_delete = TagAssociation.delete().where(
+        TagAssociation.page == page,
+        ~ TagAssociation.tag << (tag_list))
     
     tags_to_delete.execute()
     
-    tags_in_page = page.tags.select(Tags.id).tuples()
+    tags_in_page = page.tags.select(Tag.id).tuples()
     
-    tags_to_add = tag_list.select().where(~Tags.id << (tags_in_page))
+    tags_to_add = tag_list.select().where(~Tag.id << (tags_in_page))
     
     for n in tags_to_add:
-        add_tag = TagAssociations(
+        add_tag = TagAssociation(
            tag=n,
            page=page)
         
@@ -436,12 +436,12 @@ def add_tags_to_page (tag_text, page):
     new_tags = json.loads(request.forms.getunicode('new_tags'))
     
     for n in new_tags:
-        new_tag = Tags(
+        new_tag = Tag(
             tag=n,
             blog=page.blog)
         new_tag.save()
         
-        add_tag = TagAssociations(
+        add_tag = TagAssociation(
             tag=new_tag,
             page=page)
         
@@ -630,13 +630,13 @@ def generate_archive_context(context_list, original_pageset, **ka):
 def category_context(fileinfo, original_page, tag_context, date_counter):
     
     if fileinfo is None:
-        category_context = PageCategories.select(PageCategories.category).where(
-            PageCategories.page == original_page)
+        category_context = PageCategory.select(PageCategory.category).where(
+            PageCategory.page == original_page)
     else:
-        category_context = PageCategories.select(PageCategories.category).where(
-            PageCategories.category == Categories.select().where(Categories.id == fileinfo.category).get())
+        category_context = PageCategory.select(PageCategory.category).where(
+            PageCategory.category == Category.select().where(Category.id == fileinfo.category).get())
         
-    page_constraint = PageCategories.select(PageCategories.page).where(PageCategories.category << category_context)
+    page_constraint = PageCategory.select(PageCategory.page).where(PageCategory.category << category_context)
     tag_context_next = tag_context.select().where(Page.id << page_constraint)
     return tag_context_next, date_counter
 

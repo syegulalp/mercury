@@ -8,7 +8,7 @@ from core.search import blog_search_results, site_search_results
 from models import (Struct, get_site, get_blog, get_media, get_template,
     template_tags, get_page, Page, PageRevision, Blog, Queue, Template, Log,
     TemplateMapping, get_user, Plugin, Media, User, db,
-    MediaAssociation, Tags, template_type)
+    MediaAssociation, Tag, template_type)
 
 from models.transaction import transaction
 
@@ -977,8 +977,8 @@ def blog_tags(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_author(user, blog)
     
-    blog_tag_list = Tags.select().where(
-        Tags.blog == blog).order_by(Tags.tag.asc())
+    blog_tag_list = Tag.select().where(
+        Tag.blog == blog).order_by(Tag.tag.asc())
     
     tags = template_tags(blog_id=blog.id,
         user=user)
@@ -1630,9 +1630,9 @@ def edit_tag(blog_id, tag_id):
     permission = auth.is_blog_editor(user, blog)
     
     try:
-        tag = Tags.get(Tags.id == tag_id)
-    except Tags.DoesNotExist:
-        raise Tags.DoesNotExist("No such tag #{} in blog {}.".format(
+        tag = Tag.get(Tag.id == tag_id)
+    except Tag.DoesNotExist:
+        raise Tag.DoesNotExist("No such tag #{} in blog {}.".format(
             tag_id,
             blog.for_log))
     
@@ -1657,8 +1657,8 @@ def edit_tag(blog_id, tag_id):
 @transaction
 def get_tag(tag_name):
     
-    tag_list = Tags.select().where(
-        Tags.tag.contains(tag_name))
+    tag_list = Tag.select().where(
+        Tag.tag.contains(tag_name))
     
     try:
         blog = request.query['blog']
@@ -1666,7 +1666,7 @@ def get_tag(tag_name):
         blog = None 
     
     if blog:
-        tag_list = tag_list.select().where(Tags.blog == blog)
+        tag_list = tag_list.select().where(Tag.blog == blog)
     
     tag_list_json = json.dumps([{'tag':t.tag,
                                 'id':t.id} for t in tag_list])
@@ -1690,10 +1690,10 @@ def make_tag_for_page(blog_id=None, page_id=None):
     tag_name = request.forms.getunicode('tag')
     
     try:
-        tag = Tags.get(Tags.tag == tag_name,
-            Tags.blog == blog)
-    except Tags.DoesNotExist:
-        new_tag = Tags(tag=tag_name,
+        tag = Tag.get(Tag.tag == tag_name,
+            Tag.blog == blog)
+    except Tag.DoesNotExist:
+        new_tag = Tag(tag=tag_name,
             blog=blog)
         tpl = template(new_tag.new_tag_for_display)
     

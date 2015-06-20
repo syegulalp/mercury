@@ -2,7 +2,7 @@ from core.utils import Status, encrypt_password
 from core.log import logger
 
 from models import (TemplateMapping, KeyValue,
-    template_tags, Permission, Site, Blog, User, Categories)
+    template_tags, Permission, Site, Blog, User, Category)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
@@ -53,7 +53,7 @@ def blog_create(**new_blog_data):
     
     new_blog.save()
     
-    new_blog_default_category = Categories(
+    new_blog_default_category = Category(
         blog=new_blog,
         title="Uncategorized",
         default=True)
