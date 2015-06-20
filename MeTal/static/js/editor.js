@@ -401,7 +401,7 @@ $(window).load(function() {
 	        $('.mce-toolbar, .mce-statusbar, .mce-menubar').each(function(){
 	                mce_bars_height += $(this).height();
 	        });
-	        var myHeight = targetHeight - mce_bars_height - 16;        
+	        var myHeight = targetHeight - mce_bars_height - $('#page_text_label').height();        
 	 
 	        e.theme.resizeTo(null,myHeight);
             
