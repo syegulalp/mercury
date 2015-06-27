@@ -672,6 +672,8 @@ def blog_new_page(blog_id):
     blog_new_page.publication_date = datetime.datetime.now()
     blog_new_page.basename = ''
     
+    from core.cms import save_actions
+    
     tpl = template('edit_page_ui',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
@@ -680,6 +682,7 @@ def blog_new_page(blog_id):
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
+            save_actions=save_actions,
             **tags.__dict__
             ),
         **tags.__dict__
