@@ -1,2 +1,276 @@
-
-{"title": "Amano 2015", "description": "A beautiful and simple blog theme.", "data": {"1": {"template": {"title": "Page Template", "external_path": null, "id": 1, "modified_date": "2015-02-06 22:54:34", "template_type": "Page", "publishing_mode": "Immediate", "theme": 1, "body": "% page_title = page.title\r\n{{incl('Header')}}\r\n\t\t<h3>{{!page.title}}</h3><hr/>\r\n      \t% header_image = page.kv('HeaderImage').value\r\n      \t{{!page.paginated_text[0]}}\r\n        % if len(page.paginated_text)>1:\r\n        <hr/>\r\n      \t{{!page.paginated_text[1]}}\r\n      \t% end\r\n{{incl('Footer')}}", "blog": 1, "is_include": false}, "mapping": {"1": {"template": 1, "path_string": "%Y/%m/{{page.basename}}", "archive_xref": null, "id": 1, "modified_date": "2015-02-06 22:54:34", "archive_type": 2, "is_default": true}}}, "2": {"template": {"title": "Monthly Archive Template", "external_path": null, "id": 2, "modified_date": "2015-02-06 22:54:34", "template_type": "Archive", "publishing_mode": "Immediate", "theme": 1, "body": "<p>Date-based archive to come\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>\r\n", "blog": 1, "is_include": false}, "mapping": {"2": {"template": 2, "path_string": "%Y/%m/{{blog.index_file}}", "archive_xref": "YM", "id": 2, "modified_date": "2015-02-06 22:54:34", "archive_type": 3, "is_default": true}}}, "3": {"template": {"title": "Index Template", "external_path": null, "id": 3, "modified_date": "2015-02-06 22:54:34", "template_type": "Index", "publishing_mode": "Immediate", "theme": 1, "body": "% page_title = blog.name\r\n{{incl('Header')}}\r\n\t\t<h3>{{blog.name}}</h3>\r\n\t\t{{blog.description}}\r\n\t\t<hr/>\r\n\t\t<p>Entries\r\n\t\t% for p in blog.last_n_pages(0):\r\n        <hr/>\r\n\t\t<p><a href=\"{{p.permalink}}\">{{p.title}}</a> / {{p.publication_date}}\r\n\t\t% end\r\n{{incl('Footer')}}\r\n", "blog": 1, "is_include": false}, "mapping": {"3": {"template": 3, "path_string": "{{blog.index_file}}", "archive_xref": null, "id": 3, "modified_date": "2015-02-06 22:54:34", "archive_type": 1, "is_default": true}}}, "7": {"template": {"title": "Yearly Archive Template", "external_path": null, "id": 7, "modified_date": "2015-02-06 22:54:34", "template_type": "Archive", "publishing_mode": "Immediate", "theme": 1, "body": "<p>Date-based archive to come\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>\r\n", "blog": 1, "is_include": false}, "mapping": {"7": {"template": 7, "path_string": "%Y/{{blog.index_file}}", "archive_xref": "Y", "id": 7, "modified_date": "2015-02-06 22:54:34", "archive_type": 3, "is_default": true}}}, "8": {"template": {"title": "Stylesheet", "external_path": null, "id": 8, "modified_date": "2015-02-06 22:54:34", "template_type": "Index", "publishing_mode": "Manual", "theme": 1, "body": "// test", "blog": 1, "is_include": false}, "mapping": {"8": {"template": 8, "path_string": "main.css", "archive_xref": null, "id": 8, "modified_date": "2015-02-06 22:54:34", "archive_type": 1, "is_default": true}}}, "9": {"template": {"title": "Author Archive", "external_path": null, "id": 9, "modified_date": "2015-02-06 22:54:34", "template_type": "Archive", "publishing_mode": "Immediate", "theme": 1, "body": "% page_title = \"Author Archive: {}\".format(blog.name)\r\n{{incl('Header')}}\r\n<h3>Author archive</h3>2\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n{{incl('Footer')}}", "blog": 1, "is_include": false}, "mapping": {"9": {"template": 9, "path_string": "%Y/%m/{{page.user.name}}/{{blog.index_file}}", "archive_xref": "YMA", "id": 9, "modified_date": "2015-02-06 22:54:34", "archive_type": 3, "is_default": true}}}, "10": {"template": {"title": "Subject archive", "external_path": null, "id": 10, "modified_date": "2015-02-06 22:54:34", "template_type": "Archive", "publishing_mode": "Immediate", "theme": 1, "body": "<p>Date-based archive\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>", "blog": 1, "is_include": false}, "mapping": {"10": {"template": 10, "path_string": "{{page.primary_category.title}}/%Y/%m/{{blog.index_file}}", "archive_xref": "CYM", "id": 10, "modified_date": "2015-02-06 22:54:34", "archive_type": 3, "is_default": true}}}, "11": {"template": {"title": "Two-image layout (left image)", "external_path": null, "id": 11, "modified_date": "2015-02-06 22:54:34", "template_type": "Media", "publishing_mode": "Immediate", "theme": 1, "body": "<div class=\"screenshot\"><img src=\"{{media.url}}\" /> <img src=\"http://placehold.it/854x480\" /><br />Caption</div>", "blog": 1, "is_include": false}, "mapping": {}}, "12": {"template": {"title": "Two-image layout (right image)", "external_path": null, "id": 12, "modified_date": "2015-02-06 22:54:34", "template_type": "Media", "publishing_mode": "Immediate", "theme": 1, "body": "<img src=\"{{media.url}}\" />", "blog": 1, "is_include": false}, "mapping": {}}, "13": {"template": {"title": "Full-width image", "external_path": null, "id": 13, "modified_date": "2015-02-06 22:54:34", "template_type": "Media", "publishing_mode": "Immediate", "theme": 1, "body": "<img class=\"img-responsive\" src=\"{{media.url}}\" />", "blog": 1, "is_include": false}, "mapping": {}}, "14": {"template": {"title": "Header", "external_path": null, "id": 14, "modified_date": "2015-02-06 22:54:34", "template_type": "Include", "publishing_mode": "Include", "theme": 1, "body": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\t<head>\r\n\t\t<meta charset=\"utf-8\">\r\n\t\t<title>{{page_title}}</title>\r\n\t</head>\r\n\t<body>\r\n", "blog": 1, "is_include": true}, "mapping": {"11": {"template": 14, "path_string": "header.html", "archive_xref": "", "id": 11, "modified_date": "", "archive_type": 0, "is_default": true}}}, "15": {"template": {"title": "Footer", "external_path": null, "id": 15, "modified_date": "2015-02-06 22:54:34", "template_type": "Include", "publishing_mode": "Include", "theme": 1, "body": "        <hr>\r\n          &copy; 2014. All wrongs reversed. | <a href=\"{{blog.url}}\">Home</a>\r\n\t</body>\r\n</html>", "blog": 1, "is_include": true}, "mapping": {"12": {"template": 15, "path_string": "footer.html", "archive_xref": "", "id": 12, "modified_date": "", "archive_type": 0, "is_default": true}}}}}
+{
+ "data": {
+  "1": {
+   "mapping": {
+    "1": {
+     "archive_type": 2,
+     "archive_xref": null,
+     "id": 1,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "%Y/%m/{{page.basename}}",
+     "template": 1
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "% page_title = page.title\r\n{{incl('Header')}}\r\n\t\t<h3>{{!page.title}}</h3><hr/>\r\n      \t% header_image = page.kv('HeaderImage').value\r\n      \t{{!page.paginated_text[0]}}\r\n        % if len(page.paginated_text)>1:\r\n        <hr/>\r\n      \t{{!page.paginated_text[1]}}\r\n      \t% end\r\n{{incl('Footer')}}",
+    "external_path": null,
+    "id": 1,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Page",
+    "theme": 1,
+    "title": "Page Template"
+   }
+  },
+  "2": {
+   "mapping": {
+    "2": {
+     "archive_type": 3,
+     "archive_xref": "YM",
+     "id": 2,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "%Y/%m/{{blog.index_file}}",
+     "template": 2
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "<p>Date-based archive to come\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>\r\n",
+    "external_path": null,
+    "id": 2,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Archive",
+    "theme": 1,
+    "title": "Monthly Archive Template"
+   }
+  },
+  "3": {
+   "mapping": {
+    "3": {
+     "archive_type": 1,
+     "archive_xref": null,
+     "id": 3,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "{{blog.index_file}}",
+     "template": 3
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "% page_title = blog.name\r\n{{incl('Header')}}\r\n\t\t<h3>{{blog.name}}</h3>\r\n\t\t{{blog.description}}\r\n\t\t<hr/>\r\n\t\t<p>Entries\r\n\t\t% for p in blog.last_n_pages(0):\r\n        <hr/>\r\n\t\t<p><a href=\"{{p.permalink}}\">{{p.title}}</a> / {{p.publication_date}}\r\n\t\t% end\r\n{{incl('Footer')}}\r\n",
+    "external_path": null,
+    "id": 3,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Index",
+    "theme": 1,
+    "title": "Index Template"
+   }
+  },
+  "7": {
+   "mapping": {
+    "7": {
+     "archive_type": 3,
+     "archive_xref": "Y",
+     "id": 7,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "%Y/{{blog.index_file}}",
+     "template": 7
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "<p>Date-based archive to come\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>\r\n",
+    "external_path": null,
+    "id": 7,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Archive",
+    "theme": 1,
+    "title": "Yearly Archive Template"
+   }
+  },
+  "8": {
+   "mapping": {
+    "8": {
+     "archive_type": 1,
+     "archive_xref": null,
+     "id": 8,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "main.css",
+     "template": 8
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "// test",
+    "external_path": null,
+    "id": 8,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Manual",
+    "template_type": "Index",
+    "theme": 1,
+    "title": "Stylesheet"
+   }
+  },
+  "9": {
+   "mapping": {
+    "9": {
+     "archive_type": 3,
+     "archive_xref": "YMA",
+     "id": 9,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "%Y/%m/{{page.user.name}}/{{blog.index_file}}",
+     "template": 9
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "% page_title = \"Author Archive: {}\".format(blog.name)\r\n{{incl('Header')}}\r\n<h3>Author archive</h3>2\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n{{incl('Footer')}}",
+    "external_path": null,
+    "id": 9,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Archive",
+    "theme": 1,
+    "title": "Author Archive"
+   }
+  },
+  "10": {
+   "mapping": {
+    "10": {
+     "archive_type": 3,
+     "archive_xref": "CYM",
+     "id": 10,
+     "is_default": true,
+     "modified_date": "2015-02-06 22:54:34",
+     "path_string": "{{page.primary_category.title}}/%Y/%m/{{blog.index_file}}",
+     "template": 10
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "<p>Date-based archive\r\n%for p in archive.pages:\r\n<p>{{p.title}}\r\n%end\r\n<a href='{{blog.url}}'>Home</a>",
+    "external_path": null,
+    "id": 10,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Archive",
+    "theme": 1,
+    "title": "Subject archive"
+   }
+  },
+  "11": {
+   "mapping": {},
+   "template": {
+    "blog": 1,
+    "body": "<div class=\"screenshot\"><img src=\"{{media.url}}\" /> <img src=\"http://placehold.it/854x480\" /><br />Caption</div>",
+    "external_path": null,
+    "id": 11,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Media",
+    "theme": 1,
+    "title": "Two-image layout (left image)"
+   }
+  },
+  "12": {
+   "mapping": {},
+   "template": {
+    "blog": 1,
+    "body": "<img src=\"{{media.url}}\" />",
+    "external_path": null,
+    "id": 12,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Media",
+    "theme": 1,
+    "title": "Two-image layout (right image)"
+   }
+  },
+  "13": {
+   "mapping": {},
+   "template": {
+    "blog": 1,
+    "body": "<img class=\"img-responsive\" src=\"{{media.url}}\" />",
+    "external_path": null,
+    "id": 13,
+    "is_include": false,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Immediate",
+    "template_type": "Media",
+    "theme": 1,
+    "title": "Full-width image"
+   }
+  },
+  "14": {
+   "mapping": {
+    "11": {
+     "archive_type": 0,
+     "archive_xref": "",
+     "id": 11,
+     "is_default": true,
+     "modified_date": "",
+     "path_string": "header.html",
+     "template": 14
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\t<head>\r\n\t\t<meta charset=\"utf-8\">\r\n\t\t<title>{{page_title}}</title>\r\n\t</head>\r\n\t<body>\r\n",
+    "external_path": null,
+    "id": 14,
+    "is_include": true,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Include",
+    "template_type": "Include",
+    "theme": 1,
+    "title": "Header"
+   }
+  },
+  "15": {
+   "mapping": {
+    "12": {
+     "archive_type": 0,
+     "archive_xref": "",
+     "id": 12,
+     "is_default": true,
+     "modified_date": "",
+     "path_string": "footer.html",
+     "template": 15
+    }
+   },
+   "template": {
+    "blog": 1,
+    "body": "        <hr>\r\n          &copy; 2014. All wrongs reversed. | <a href=\"{{blog.url}}\">Home</a>\r\n\t</body>\r\n</html>",
+    "external_path": null,
+    "id": 15,
+    "is_include": true,
+    "modified_date": "2015-02-06 22:54:34",
+    "publishing_mode": "Include",
+    "template_type": "Include",
+    "theme": 1,
+    "title": "Footer"
+   }
+  }
+ },
+ "description": "A beautiful and simple blog theme.",
+ "title": "Amano 2015"
+}

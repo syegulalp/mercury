@@ -36,14 +36,25 @@ def create_theme(**new_theme_data):
     
     return new_theme
     
-def install_theme(theme,blog):
+def install_theme_to_site(theme_data):
     
     import json
-    json_obj = json.loads(theme.json.decode('utf-8'))
+    json_obj = json.loads(theme_data.decode('utf-8'))
     
-    for q in json_obj["data"]:
+    new_theme = create_theme(
+        title = json_obj["title"],
+        description = json_obj["description"],
+        json = json_obj["data"])
+    
+    return new_theme
+
+def install_theme_to_blog(installed_theme, blog):
+    
+    json_obj = installed_theme.json
+
+    for q in json_obj:
         
-        template = json_obj["data"][q]["template"]
+        template = json_obj[q]["template"]
         
         table_obj = globals()['Template']()
         
@@ -51,13 +62,11 @@ def install_theme(theme,blog):
             if name not in ("id"):
                 setattr(table_obj,name,template[name])
         
-        table_obj.theme = theme
+        table_obj.theme = installed_theme
         table_obj.blog = blog
-            
         table_obj.save()
         
-        template_mappings = json_obj["data"][q]["mapping"]
-        print (template_mappings)
+        template_mappings = json_obj[q]["mapping"]
         
         for m in template_mappings:
             mapping_obj = globals()['TemplateMapping']()

@@ -38,5 +38,13 @@ def export_theme_for_blog(blog_id):
                 separators = (', ', ': '),
                 indent=1))
 
+    import settings
+    with open(settings.APPLICATION_PATH+settings._sep+"install"+settings._sep+
+        "templates.json", "w", encoding='utf-8') as output_file:
+        output_file.write(json.dumps(theme,
+            indent=1,
+            sort_keys=True,
+            allow_nan=True))
         
     return theme
+
