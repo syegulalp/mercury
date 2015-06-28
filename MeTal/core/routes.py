@@ -19,6 +19,10 @@ _hook = app.hook
 # any theme-based routes will be set up here
 # /blog/x/<path:path> -- for non-greedy matching
 
+@_route(BASE_PATH + "/system/theme/<blog_id:int>")
+def export_theme(blog_id):
+    from core import theme
+    return theme.export_theme_for_blog(blog_id)
 
 def setup(step_id=None):
     if step_id is None:

@@ -185,7 +185,7 @@ def step_4_pre():
     
     report = []
     
-    from models import db
+    from models import db, Template
     try:
         db.connect()
     except:
@@ -249,15 +249,24 @@ def step_4_pre():
             )
         
         new_user_permissions.save()
-        # TODO: set permissions
         
-    report.append("Initial blog created successfully.")
-
-    # TODO: install the base template (that should be part of the blog setup routine)
-
-    db.close()
+        report.append("Initial blog created successfully.")
     
-    report.append("Initial blog created successfully.")
+        with open(_settings.APPLICATION_PATH+_settings._sep+
+            "install"+_settings._sep+"templates.json","rb") as json_file:
+                json_text = json_file.read()
+        
+        new_theme = mgmt.create_theme(
+            title="Amano 2015",
+            description="A simple and beautiful blog template",
+            json = json_text
+            )
+    
+        mgmt.install_theme(new_theme,new_blog)
+        
+        report.append("Theme created and installed successfully for initial blog.")
+    
+    db.close()
     
     output_file_name = (_settings.APPLICATION_PATH + _settings.DATA_FILE_PATH + 
         os.sep + "config.ini")

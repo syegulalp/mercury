@@ -1,8 +1,8 @@
 from core.utils import Status, encrypt_password
 from core.log import logger
 
-from models import (TemplateMapping, KeyValue,
-    template_tags, Permission, Site, Blog, User, Category)
+from models import (TemplateMapping, KeyValue, Template,
+    template_tags, Permission, Site, Blog, User, Category, Theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
@@ -24,7 +24,54 @@ def login_verify(email, password):
         user.save()
         return user
 
+def create_theme(**new_theme_data):
+    
+    new_theme = Theme()
+    
+    new_theme.title = new_theme_data['title']
+    new_theme.description = new_theme_data['description']
+    new_theme.json = new_theme_data['json']
+    
+    new_theme.save()
+    
+    return new_theme
+    
+def install_theme(theme,blog):
+    
+    import json
+    json_obj = json.loads(theme.json.decode('utf-8'))
+    
+    for q in json_obj["data"]:
+        
+        template = json_obj["data"][q]["template"]
+        
+        table_obj = globals()['Template']()
+        
+        for name in table_obj._meta.fields:
+            if name not in ("id"):
+                setattr(table_obj,name,template[name])
+        
+        table_obj.theme = theme
+        table_obj.blog = blog
+            
+        table_obj.save()
+        
+        template_mappings = json_obj["data"][q]["mapping"]
+        print (template_mappings)
+        
+        for m in template_mappings:
+            mapping_obj = globals()['TemplateMapping']()
+            q=template_mappings[m] 
+            for n in q:
+                for name in mapping_obj._meta.fields:
+                    if name not in ("id"):
+                        setattr(mapping_obj,name,q[name])
+                mapping_obj.template = table_obj.id
+                mapping_obj.save()
+            
+    
 
+    
 def site_create(**new_site_data):
     
     new_site = Site()

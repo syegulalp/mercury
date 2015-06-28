@@ -9,7 +9,7 @@ from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NA
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT)
 
 from libs.bottle import request, url, _stderr
-from libs.peewee import DeleteQuery, fn
+from libs.peewee import DeleteQuery, fn, BaseModel
 
 from libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check) 
@@ -1036,6 +1036,7 @@ class Tag(BaseModel):
 class Theme(BaseModel):
     title = TextField()
     description = TextField()
+    json = TextField(null=True)    
 
 class Template(BaseModel):
     title = TextField(default="Untitled Template", null=False)
