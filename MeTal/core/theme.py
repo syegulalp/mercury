@@ -38,6 +38,20 @@ def export_theme_for_blog(blog_id):
                 separators = (', ', ': '),
                 indent=1))
 
+    # save all master KVs that relate to this theme
+    # cascade through all objects recursively, append them to a list
+    # save the list as JSON
+    
+    # start at top of list
+    # any children?
+    # if so
+        # add those to the list
+        # write out the source's JSON
+        # delete the source 
+    # iterate until nothing left
+    
+    
+
     import settings
     with open(settings.APPLICATION_PATH+settings._sep+"install"+settings._sep+
         "templates.json", "w", encoding='utf-8') as output_file:

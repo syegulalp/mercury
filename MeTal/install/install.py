@@ -262,8 +262,26 @@ def step_4_pre():
         
         mgmt.install_theme_to_blog(new_theme, new_blog)
         
-        report.append("Theme installed in new blog successfully.")       
+        report.append("Theme installed in new blog successfully.")
         
+        from models import System
+        system_ref = System()
+        
+        system_ref.add_kv(
+            object='System',
+            objectid=0,
+            key='MaxPageRevisions',
+            value=20,
+            is_schema=True,
+            is_unique=True)       
+        
+        system_ref.add_kv(
+            object='System',
+            objectid=0,
+            key='AutomaticallyReleaseLocksAfter',
+            value=3600,
+            is_schema=True,
+            is_unique=True)   
     
     db.close()
     
