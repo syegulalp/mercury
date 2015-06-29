@@ -78,7 +78,9 @@ def install_theme_to_blog(installed_theme, blog):
                 mapping_obj.template = table_obj.id
                 mapping_obj.save()
             
+    # install KVs from theme
     
+    ## work out format for dumping existing KVs
 
     
 def site_create(**new_site_data):
@@ -403,21 +405,3 @@ def add_user_permission(user, **permission):
     new_permission.save()
     
     return new_permission
-
-# TODO: move to schema
-
-def add_key(**ka):
-        
-    new_key = KeyValue(
-        object=ka['object_name'],
-        object_id=ka['object_id'],
-        key=ka['key'],
-        value=ka['value'],
-        value_type=ka['value_type'],
-        parent_id=ka['parent_id'],
-        is_schema=ka['is_schema'],
-        is_unique=ka['is_unique'])
-
-    new_key.save()
-    
-    return new_key

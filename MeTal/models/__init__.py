@@ -115,7 +115,19 @@ class BaseModel(Model):
             return 'System'
      
     def add_kv(self, **kw):
-        pass
+        
+        kv = KeyValue(
+            object = kw['object'],
+            objectid = kw['objectid'],
+            key = kw['key'],
+            value = kw['value'],
+            parent = kw['parent'] if 'parent' in kw else None,
+            is_schema = kw['is_schema'] if 'is_schema' in kw else False,
+            is_unique = kw['is_unique'] if 'is_unique' in kw else False,
+            value_type = kw['value_type'] if 'value_type' in kw else ''
+            )
+        
+        kv.save()        
     
     def remove_kv(self, **kw):
         pass
