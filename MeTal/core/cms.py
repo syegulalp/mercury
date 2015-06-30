@@ -15,13 +15,13 @@ from models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, te
 
 from settings import MAX_BATCH_OPS
 
-save_actions = Struct()  
+save_action_list = Struct()  
 
-save_actions.SAVE_TO_DRAFT = 1 
-save_actions.UPDATE_LIVE_PAGE = 2
-save_actions.EXIT_EDITOR = 4
-save_actions.UNPUBLISH_PAGE = 8
-save_actions.DELETE_PAGE = 16
+save_action_list.SAVE_TO_DRAFT = 1 
+save_action_list.UPDATE_LIVE_PAGE = 2
+save_action_list.EXIT_EDITOR = 4
+save_action_list.UNPUBLISH_PAGE = 8
+save_action_list.DELETE_PAGE = 16
 
 job_type = Struct()
 job_type.page = "Page"
@@ -321,26 +321,26 @@ def save_page(page, user, blog=None):
 
     # UNPUBLISH
     if (
-        (save_action & save_actions.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
+        (save_action & save_action_list.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
         (original_page_status == page_status.published and page.status == page_status.unpublished) or  # set a published page to draft 
-        (save_action & save_actions.DELETE_PAGE)  # delete a page, regardless of status
+        (save_action & save_action_list.DELETE_PAGE)  # delete a page, regardless of status
         ): 
         
         pass
         
 
     # DELETE; IMPLIES UNPUBLISH
-    if (save_action & save_actions.DELETE_PAGE):
+    if (save_action & save_action_list.DELETE_PAGE):
         
         pass
         
     # UNPUBLISHED TO PUBLISHED
-    if original_page_status == page_status.unpublished and (save_action & save_actions.UPDATE_LIVE_PAGE):
+    if original_page_status == page_status.unpublished and (save_action & save_action_list.UPDATE_LIVE_PAGE):
         
         page.status = page_status.published
     
     # SAVE DRAFT    
-    if (save_action & save_actions.SAVE_TO_DRAFT):
+    if (save_action & save_action_list.SAVE_TO_DRAFT):
         
         backup_only = True if request.forms.getunicode('draft') == "Y" else False
         try:
@@ -374,20 +374,20 @@ def save_page(page, user, blog=None):
         
     
     # BUILD FILEINFO IF NO DELETE ACTION
-    if not (save_action & save_actions.DELETE_PAGE):
+    if not (save_action & save_action_list.DELETE_PAGE):
         
         build_page_fileinfo(page)
         build_archive_fileinfo((page,))        
 
     # PUBLISH CHANGES        
-    if (save_action & save_actions.UPDATE_LIVE_PAGE) and (page.status == page_status.published):
+    if (save_action & save_action_list.UPDATE_LIVE_PAGE) and (page.status == page_status.published):
 
         queue_page_actions(page)
         queue_index_actions(page.blog)
         
         msg += (" Live page updated.")
 
-    if (save_action & (save_actions.SAVE_TO_DRAFT + save_actions.UPDATE_LIVE_PAGE)) and (save_result[1]) is None:
+    if (save_action & (save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE)) and (save_result[1]) is None:
         msg += (" (Page unchanged.)")
         
     tags = template_tags(page_id=page.id, user=user)
