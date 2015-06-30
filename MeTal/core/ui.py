@@ -1260,6 +1260,8 @@ def page_revision_restore(page_id, revision_id):
     
     referer = BASE_URL + "/blog/" + str(page.blog.id)
     
+    from core.cms import save_actions
+    
     tpl = template('edit_page_ui',
         status_badge=status_badge,
         save_action=save_action,
@@ -1269,6 +1271,7 @@ def page_revision_restore(page_id, revision_id):
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
+            save_actions = save_actions,
             **tags.__dict__
             ),
         **tags.__dict__)
@@ -1285,9 +1288,12 @@ def page_revision_restore_save(page_id):
     permission = auth.is_page_editor(user, page)
     tags = cms.save_page(page, user, page.blog)
     
+    from core.cms import save_actions
+    
     tpl = template('edit_page_ajax_response',
         status_badge=status_badge,
         save_action=save_action,
+        save_actions = save_actions,
         sidebar='',
         **tags.__dict__)
 
