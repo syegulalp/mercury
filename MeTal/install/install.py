@@ -285,6 +285,8 @@ def step_4_pre():
     
     db.close()
     
+    raise
+    
     output_file_name = (_settings.APPLICATION_PATH + _settings.DATA_FILE_PATH + 
         os.sep + "config.ini")
     

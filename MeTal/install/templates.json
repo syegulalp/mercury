@@ -272,5 +272,62 @@
   }
  },
  "description": "A beautiful and simple blog theme.",
+ "kv": {
+  "1": {
+   "id": 1,
+   "is_schema": true,
+   "is_unique": false,
+   "key": "Key",
+   "object": "Blog",
+   "objectid": 1,
+   "parent": 11,
+   "value": null,
+   "value_type": "P"
+  },
+  "3": {
+   "id": 3,
+   "is_schema": true,
+   "is_unique": true,
+   "key": "HeaderImage",
+   "object": "Page",
+   "objectid": 0,
+   "parent": 1,
+   "value": null,
+   "value_type": "M"
+  },
+  "6": {
+   "id": 6,
+   "is_schema": true,
+   "is_unique": true,
+   "key": "Copyright",
+   "object": "Media",
+   "objectid": 0,
+   "parent": 1,
+   "value": "",
+   "value_type": ""
+  },
+  "10": {
+   "id": 10,
+   "is_schema": true,
+   "is_unique": true,
+   "key": "CoAuthor",
+   "object": "Page",
+   "objectid": 0,
+   "parent": 1,
+   "value": null,
+   "value_type": ""
+  },
+  "11": {
+   "id": 11,
+   "is_schema": true,
+   "is_unique": false,
+   "key": "",
+   "object": "Theme",
+   "objectid": 1,
+   "parent": null,
+   "value": null,
+   "value_type": ""
+  }
+ },
  "title": "Amano 2015"
 }

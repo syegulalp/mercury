@@ -1,5 +1,6 @@
 from core.utils import Status, encrypt_password
 from core.log import logger
+import json
 
 from models import (TemplateMapping, KeyValue, Template,
     template_tags, Permission, Site, Blog, User, Category, Theme)
@@ -38,25 +39,27 @@ def create_theme(**new_theme_data):
     
 def install_theme_to_site(theme_data):
     
-    import json
     json_obj = json.loads(theme_data.decode('utf-8'))
     
     new_theme = create_theme(
         title = json_obj["title"],
         description = json_obj["description"],
-        json = json_obj["data"])
+        json = json_obj 
+        )
     
     return new_theme
 
 def install_theme_to_blog(installed_theme, blog):
     
     json_obj = installed_theme.json
-
-    for q in json_obj:
+    
+    templates = json_obj["data"]
+    kvs = json_obj["kv"]
+    
+    for t in templates:
         
-        template = json_obj[q]["template"]
-        
-        table_obj = globals()['Template']()
+        template = templates[t]["template"]
+        table_obj = Template()
         
         for name in table_obj._meta.fields:
             if name not in ("id"):
@@ -66,22 +69,24 @@ def install_theme_to_blog(installed_theme, blog):
         table_obj.blog = blog
         table_obj.save()
         
-        template_mappings = json_obj[q]["mapping"]
+        mappings = templates[t]["mapping"]
         
-        for m in template_mappings:
-            mapping_obj = globals()['TemplateMapping']()
-            q=template_mappings[m] 
-            for n in q:
-                for name in mapping_obj._meta.fields:
-                    if name not in ("id"):
-                        setattr(mapping_obj,name,q[name])
-                mapping_obj.template = table_obj.id
-                mapping_obj.save()
+        for mapping in mappings:
+            mapping_obj = TemplateMapping()
             
-    # install KVs from theme
+            for name in mapping_obj._meta.fields:
+                if name not in ("id"):
+                    setattr(mapping_obj,name,mappings[mapping][name])
+            
+            mapping_obj.template = table_obj 
+            mapping_obj.save()
+                
+    kv_index = {}
     
-    ## work out format for dumping existing KVs
-
+    # There should be a single root KV for the whole theme.
+    # Let's look that one up first, make sure it's attached to the theme ID.
+    # In other words, install them in cascading order, like we extracted them.
+    
     
 def site_create(**new_site_data):
     
