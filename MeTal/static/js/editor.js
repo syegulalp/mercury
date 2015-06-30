@@ -455,6 +455,7 @@ $(window).load(function() {
             style_formats: [
 		        {title: 'Standard graf', block: 'p'},
 		        {title: 'Head', block: 'p', classes: 'lead'},
+		        {title: 'Small', block: 'small'},
 		    ],
 	        toolbar1: "save | styleselect formatselect | bold italic underline strikethrough removeformat | bullist numlist | outdent indent blockquote hr | link unlink anchor image | visualchars visualblocks nonbreaking template pagebreak | code fullscreen",
 	
