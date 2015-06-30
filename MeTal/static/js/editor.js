@@ -80,6 +80,21 @@ function add_template(template_id, media_id){
      
 }
 
+function server_failure(xhr,status,error,sorry_message){
+            if (xhr.readyState == 0)
+            {
+                reason = "Couldn't reach the server.";
+                details= "";
+            }
+            else
+            {
+                reason = xhr.statusText;
+                details = $(xhr.responseText).filter('#error_text').html();
+            }
+            
+            error_report(sorry_message,reason+details);
+}
+
 function open_modal(url) {
     $.get(url)
         .done(function(data) {
@@ -88,6 +103,11 @@ function open_modal(url) {
             $('#modal_container').append($(data));
             $('#modal_contents').modal();
 
+        })
+        .fail(function(xhr, status, error) {
+            server_failure(xhr,status,error,
+                "Sorry, an error occurred when trying to load the list of page revisions: ");
+                
         });
 }
 
@@ -237,19 +257,8 @@ function form_save(form) {
         })
         .fail(function(xhr, status, error) {
 
-            if (xhr.readyState == 0)
-            {
-                reason = "Couldn't reach the server.";
-                details= "";
-            }
-            else
-            {
-                reason = xhr.statusText;
-                details = $(xhr.responseText).filter('#error_text').html();
-            }
-            
-            error_report("Sorry, an error occurred when trying to save: ",reason+details);
-            
+            server_failure(xhr,status,error,
+                "Sorry, an error occurred when trying to save: ");
 
             $('#save_animation').html(icon('remove-sign'));
 
