@@ -255,6 +255,78 @@ def system_sites(errormsg=None):
         **tags.__dict__)
     
     return tpl
+
+
+@transaction
+def system_queue():
+    
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user) 
+    queue = Queue.select().order_by(Queue.site.asc(), Queue.blog.asc(), Queue.job_type.asc(),
+        Queue.date_touched.desc())
+    
+    tags = template_tags(user=user)
+    
+    paginator, queue_list = utils.generate_paginator(queue, request)    
+            
+    tpl = template('queue_ui',
+        queue_list=queue_list,
+        paginator=paginator,
+        job_type=job_type.description,
+        menu=generate_menu('system_queue', None),
+        search_context=(search_context['site_queue'], None),
+        **tags.__dict__)
+    
+    return tpl
+
+@transaction
+def system_log():
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user) 
+    log = Log.select().order_by(Log.date.desc(), Log.id.desc())
+    
+    tags = template_tags(user=user)    
+    paginator, rowset = utils.generate_paginator(log, request)    
+            
+    tpl = template('listing_ui',
+        rowset=rowset,
+        colset=colsets['system_log'],
+        paginator=paginator,
+        menu=generate_menu('system_log', None),
+        search_context=(search_context['system_log'], None),
+        **tags.__dict__)
+    
+    return tpl
+
+@transaction
+def system_plugins():
+        
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    
+    tags = template_tags(
+        user=user)
+    
+    plugins = Plugin.select()        
+    
+    tpl = template('plugins_ui',
+        menu=generate_menu('system_plugins', None),
+        search_context=(search_context['sites'], None),
+        plugins=plugins,
+        **tags.__dict__)
+    
+    return tpl
+
+@transaction
+def register_plugin(plugin_path):
+    from data.plugins import register_plugin, PluginImportError
+    try:
+        new_plugin = register_plugin(plugin_path)
+    except PluginImportError as e:
+        return (str(e))
+    return ("Plugin " + new_plugin.friendly_name + " registered.")
+
+
     
 @transaction
 def site(site_id, errormsg=None):
@@ -295,76 +367,6 @@ def site(site_id, errormsg=None):
     return tpl
 
 @transaction
-def blog_create(site_id):
-    
-    user = auth.is_logged_in(request)
-    site = get_site(site_id)
-    permission = auth.is_site_admin(user, site)
-    
-    new_blog = Blog(
-        name="",
-        description="",
-        url="",
-        path="")
-    
-    tags = template_tags(site_id=site.id,
-        user=user)
-    
-    tags.blog = new_blog
-    
-    tpl = template('blog_settings_ui',
-        section_title="Create new blog",
-        search_context=(search_context['sites'], None),
-        menu=generate_menu('create_blog', site),
-        **tags.__dict__
-        )
-
-    return tpl
-
-def blog_create_save(site_id):
-    
-    user = auth.is_logged_in(request)
-    site = get_site(site_id)
-    permission = auth.is_site_admin(user, site)
-    
-    new_blog = mgmt.create_blog(
-        site=site,
-        name=request.forms.getunicode('blog_name'),
-        description=request.forms.getunicode('blog_description'),
-        url=request.forms.getunicode('blog_url'),
-        path=request.forms.getunicode('blog_path'),
-        )
-        
-    redirect(BASE_URL + "/blog/" + str(new_blog.id))
-    
-# TODO: make this universal to create a user for both a blog and a site
-# use ka
-@transaction
-def blog_create_user(blog_id):
-    '''
-    Creates a user and gives it certain permissions within the context of a given blog
-    '''
-
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_admin(user, blog)
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-    
-    edit_user = Struct()
-    edit_user.name = ""
-    edit_user.email = ""
-    
-    tpl = template('user_settings_ui',
-        section_title="Create new blog user",
-        search_context=(search_context['sites'], None),
-        edit_user=edit_user,
-        **tags.__dict__
-        )
-
-    return tpl
-
-@transaction
 def site_create_user(site_id):
     '''
     Creates a user and gives it certain permissions within the context of a given blog
@@ -388,28 +390,6 @@ def site_create_user(site_id):
         )
 
     return tpl
-
-# TODO: make this universal to createa user for both a blog and a site
-# use ka
-# TODO: add proper transaction support
-def blog_create_user_save(blog_id):
-    
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_admin(user, blog)
-    
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-    
-    new_user = mgmt.create_user_blog(
-        name=request.forms.getunicode('user_name'),
-        email=request.forms.getunicode('user_email'),
-        permission=127,
-        blog=blog,
-        site=blog.site
-        )
-        
-    redirect(BASE_URL + "/blog/" + str(blog.id) + "/user/" + str(new_user.id))
 
 # TODO: add proper transaction support
 def site_create_user_save(site_id):
@@ -507,6 +487,161 @@ def site_edit_user_output(tags, edit_user):
         **tags.__dict__
         )
     return tpl
+
+@transaction
+def site_list_users(site_id):
+    
+    user = auth.is_logged_in(request)
+    site = get_site(site_id)
+    permission = auth.is_site_admin(user, site)
+    user_list = site.users
+    
+    tags = template_tags(site_id=site.id,
+        user=user)
+
+    paginator, page_list = utils.generate_paginator(user_list, request)
+            
+    tpl = template('user_listing_ui',
+        menu=generate_menu('site_manage_users', site),
+        search_context=(search_context['sites'], None),
+        paginator=paginator,
+        page_list=page_list,
+        user_list=user_list,
+        **tags.__dict__
+        )
+    
+    return tpl
+
+@transaction
+def blog(blog_id, errormsg=None):
+    '''
+    UI for listing contents of a given blog
+    '''
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_member(user, blog)
+    
+    try:
+        pages_searched, search = blog_search_results(request, blog)
+    except (KeyError, ValueError):
+        pages_searched, search = None, None
+        
+    tags = template_tags(blog_id=blog.id,
+        search=search,
+        user=user)
+
+    taglist = tags.blog.pages(pages_searched)
+    
+    paginator, rowset = utils.generate_paginator(taglist, request)
+    
+    tags.status = errormsg if errormsg is not None else None        
+    
+    tpl = template('listing_ui',
+        paginator=paginator,
+        search_context=(search_context['blog'], blog),
+        menu=generate_menu('blog', blog),
+        rowset=rowset,
+        colset=colsets['blog'],
+        icons=icons,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
+def blog_create(site_id):
+    
+    user = auth.is_logged_in(request)
+    site = get_site(site_id)
+    permission = auth.is_site_admin(user, site)
+    
+    new_blog = Blog(
+        name="",
+        description="",
+        url="",
+        path="")
+    
+    tags = template_tags(site_id=site.id,
+        user=user)
+    
+    tags.blog = new_blog
+    
+    tpl = template('blog_settings_ui',
+        section_title="Create new blog",
+        search_context=(search_context['sites'], None),
+        menu=generate_menu('create_blog', site),
+        **tags.__dict__
+        )
+
+    return tpl
+
+def blog_create_save(site_id):
+    
+    user = auth.is_logged_in(request)
+    site = get_site(site_id)
+    permission = auth.is_site_admin(user, site)
+    
+    new_blog = mgmt.create_blog(
+        site=site,
+        name=request.forms.getunicode('blog_name'),
+        description=request.forms.getunicode('blog_description'),
+        url=request.forms.getunicode('blog_url'),
+        path=request.forms.getunicode('blog_path'),
+        )
+        
+    redirect(BASE_URL + "/blog/" + str(new_blog.id))
+    
+# TODO: make this universal to create a user for both a blog and a site
+# use ka
+@transaction
+def blog_create_user(blog_id):
+    '''
+    Creates a user and gives it certain permissions within the context of a given blog
+    '''
+
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_admin(user, blog)
+    tags = template_tags(blog_id=blog.id,
+        user=user)
+    
+    edit_user = Struct()
+    edit_user.name = ""
+    edit_user.email = ""
+    
+    tpl = template('user_settings_ui',
+        section_title="Create new blog user",
+        search_context=(search_context['sites'], None),
+        edit_user=edit_user,
+        **tags.__dict__
+        )
+
+    return tpl
+
+
+
+# TODO: make this universal to createa user for both a blog and a site
+# use ka
+# TODO: add proper transaction support
+def blog_create_user_save(blog_id):
+    
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_admin(user, blog)
+    
+    tags = template_tags(blog_id=blog.id,
+        user=user)
+    
+    new_user = mgmt.create_user_blog(
+        name=request.forms.getunicode('user_name'),
+        email=request.forms.getunicode('user_email'),
+        permission=127,
+        blog=blog,
+        site=blog.site
+        )
+        
+    redirect(BASE_URL + "/blog/" + str(blog.id) + "/user/" + str(new_user.id))
+
+
 
 # TODO: make this universal to createa user for both a blog and a site
 # use ka
@@ -617,29 +752,7 @@ def blog_list_users(blog_id):
     
     return tpl
 
-@transaction
-def site_list_users(site_id):
-    
-    user = auth.is_logged_in(request)
-    site = get_site(site_id)
-    permission = auth.is_site_admin(user, site)
-    user_list = site.users
-    
-    tags = template_tags(site_id=site.id,
-        user=user)
 
-    paginator, page_list = utils.generate_paginator(user_list, request)
-            
-    tpl = template('user_listing_ui',
-        menu=generate_menu('site_manage_users', site),
-        search_context=(search_context['sites'], None),
-        paginator=paginator,
-        page_list=page_list,
-        user_list=user_list,
-        **tags.__dict__
-        )
-    
-    return tpl
 
 @transaction
 def blog_new_page(blog_id):
@@ -712,96 +825,6 @@ def blog_new_page_save(blog_id):
     response.add_header('X-Redirect', BASE_URL + '/page/{}/edit'.format(str(tags.page.id)))
 
     return response
-
-@transaction
-def blog(blog_id, errormsg=None):
-    '''
-    UI for listing contents of a given blog
-    '''
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_member(user, blog)
-    
-    try:
-        pages_searched, search = blog_search_results(request, blog)
-    except (KeyError, ValueError):
-        pages_searched, search = None, None
-        
-    tags = template_tags(blog_id=blog.id,
-        search=search,
-        user=user)
-
-    taglist = tags.blog.pages(pages_searched)
-    
-    paginator, rowset = utils.generate_paginator(taglist, request)
-    
-    tags.status = errormsg if errormsg is not None else None        
-    
-    tpl = template('listing_ui',
-        paginator=paginator,
-        search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog', blog),
-        rowset=rowset,
-        colset=colsets['blog'],
-        icons=icons,
-        **tags.__dict__)
-
-    return tpl
-
-@transaction
-def template_edit(template_id):
-    '''
-    UI for editing a blog template
-    '''
-
-    user = auth.is_logged_in(request)
-    edit_template = get_template(template_id)
-    blog = get_blog(edit_template.blog.id)
-    permission = auth.is_blog_designer(user, blog)
-    
-    tags = template_tags(template_id=template_id,
-                        user=user)
-
-    tags.mappings = template_mapping_index[edit_template.template_type]
-    
-    return template_edit_output(tags)
-
-@transaction
-def template_edit_save(template_id):
-    '''
-    UI for saving a blog template
-    '''
-    user = auth.is_logged_in(request)
-    template = get_template(template_id)
-    blog = get_blog(template.blog)
-    permission = auth.is_blog_designer(user, blog)
-    status = mgmt.save_template(request, user, template)
-    
-    tags = template_tags(template_id=template_id,
-                        user=user)
-    
-    tags.mappings = template_mapping_index[template.template_type]
-    
-    if status is not None:
-        tags.status = status
-    
-    return template_edit_output(tags)
-    
-
-def template_edit_output(tags):
-    
-    tpl = template('edit_template_ui',
-        icons=icons,
-        search_context=(search_context['blog'], tags.blog),
-        menu=generate_menu('blog_edit_template', tags.template),
-        sidebar=ui_mgr.render_sidebar(
-            panel_set='edit_template',
-            **tags.__dict__
-            ),
-        **tags.__dict__)
-
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-    return tpl
 
 @transaction
 def blog_media(blog_id):
@@ -1053,255 +1076,6 @@ def blog_templates(blog_id):
 
     return tpl
 
-page_edit_functions = {
-    'append': lambda x, y:x + y,
-    'prepend':lambda x, y:y + x
-    }
-
-@transaction
-# TODO: page-locking algorithm
-def page_edit(page_id):
-    '''
-    UI for editing a page in a blog
-    '''
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    
-    from core.cms import save_action_list
-    
-    status = None
-    referer = request.headers.get('Referer')
-    
-    if (referer is None
-        or page.modified_date is None
-        or re.match(re.escape(BASE_URL + "/blog/" + str(page.blog.id)), referer) is None): 
-        
-        referer = BASE_URL + "/blog/" + str(page.blog.id)
-    
-    if page.modified_date is None:
-        status = utils.Status(
-            type='info',
-            message="Page <b>{}</b> created.",
-            vals=(page.title,))        
-        page.modified_date = datetime.datetime.now()
-        page.save(user)
-        
-    tags = template_tags(page_id=page_id,
-        user=user,
-        status=status)
-    
-    for n in request.query:
-        try:
-            tags.page.text = page_edit_functions[n](tags.page.text, request.query[n])
-        except KeyError: pass
-   
-    tpl = template('edit_page_ui',
-        menu=generate_menu('edit_page', page),
-        parent_path=referer,
-        search_context=(search_context['blog'], page.blog),
-        sidebar=ui_mgr.render_sidebar(
-            panel_set='edit_page',
-            status_badge=status_badge,
-            save_action_list=save_action_list,
-            save_action=save_action,
-            **tags.__dict__
-            ),
-        **tags.__dict__
-    )
-
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-    
-    logger.info("Page {} opened for editing by {}.".format(
-        page.for_log,
-        user.for_log))
-
-    return tpl
-
-@transaction
-def page_edit_save(page_id):
-    '''
-    UI for saving changes to an edited blog page
-    '''
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    tags = cms.save_page(page, user, page.blog)
-
-    from core.cms import save_action_list
-        
-    tpl = template('edit_page_ajax_response',
-        sidebar=ui_mgr.render_sidebar(
-            panel_set='edit_page',
-            status_badge=status_badge,
-            save_action=save_action,
-            save_action_list=save_action_list,
-            **tags.__dict__
-            ),
-        **tags.__dict__)
-
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-
-    return tpl
-
-@transaction
-def page_revisions(page_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    tags = template_tags(page_id=page_id)
-    
-    tpl = template('revisions_modal',
-        **tags.__dict__)
-    
-    return tpl
-
-@transaction
-def page_media_upload_confirm(page_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    
-    # get file NAMES, attributes, size, etc. first
-    # request.form.getunicode('filename')
-    # check each one on the SERVER side, not the client
-    # if each file is OK, then respond appropriately and have the client send the whole file
-    # if not, respond with a warning to be added to the notification area
-
-    _g = request.forms.getunicode
-    
-    file_name = _g('filename')
-    file_size = _g('filesize')
-    
-    # check for file types against master list
-    # check for file length
-    # check for name collision
-    
-    for n in request.files:
-        x = request.files.get(n)
-        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
-        if _exists(file_path):
-            pass
-        else:
-            pass
-        
-    
-        
-@transaction
-def page_media_upload(page_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    
-    overwrite = []
-    
-    for n in request.files:
-        x = request.files.get(n)
-        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
-        if _exists(file_path):
-            raise FileExistsError("File '{}' already exists on the server.".format(
-                utils.html_escape(x.filename)))
-        else:
-            cms.register_media(x.filename, file_path, user, page=page)
-            x.save(file_path)
-            
-            
-    tags = template_tags(page_id=page_id)
-    
-    return template('edit_page_sidebar_media_list.tpl',
-        **tags.__dict__)
-
-@transaction
-def page_media_delete(page_id, media_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-
-    media = get_media(media_id)
-    media_reference = MediaAssociation.get(
-        MediaAssociation.page == page,
-        MediaAssociation.media == media)
-    media_reference.delete_instance(recursive=True,
-        delete_nullable=True)
-
-    tags = template_tags(page_id=page_id)
-    
-    return template('edit_page_sidebar_media_list.tpl',
-        **tags.__dict__)
-            
-
-# TODO: find ways to merge this and the save function with the regular save function
-
-@transaction
-def page_revision_restore(page_id, revision_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    page_revision = PageRevision.select().where(PageRevision.id == revision_id).get()
-    
-    status = utils.Status(
-        type='success',
-        message='Page <b>{}</b> (#{}) has been restored from backup dated {}.',
-        vals=(page.title, page.id, page_revision.modified_date)
-        )        
-    
-    tags = template_tags(page_id=page_id,
-        user=user,
-        status=status)
-    
-    page_revision.id = page.id
-    tags.page = page_revision
-    
-    referer = BASE_URL + "/blog/" + str(page.blog.id)
-    
-    from core.cms import save_action_list
-    
-    tpl = template('edit_page_ui',
-        status_badge=status_badge,
-        save_action=save_action,
-        menu=generate_menu('edit_page', page),
-        search_context=(search_context['blog'], page.blog),
-        sidebar=ui_mgr.render_sidebar(
-            panel_set='edit_page',
-            status_badge=status_badge,
-            save_action=save_action,
-            save_action_list=save_action_list,
-            **tags.__dict__
-            ),
-        **tags.__dict__)
-    
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-    
-    return tpl
-
-@transaction
-def page_revision_restore_save(page_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    tags = cms.save_page(page, user, page.blog)
-    
-    from core.cms import save_action_list
-    
-    tpl = template('edit_page_ajax_response',
-        status_badge=status_badge,
-        save_action=save_action,
-        save_action_list=save_action_list,
-        sidebar='',
-        **tags.__dict__)
-
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-    response.add_header('X-Redirect', BASE_URL + '/page/{}/edit'.format(str(tags.page.id)))
-    
-    return tpl
-
 @transaction
 def blog_republish(blog_id):
     '''
@@ -1347,36 +1121,6 @@ def blog_purge(blog_id):
     return tpl
 
 @transaction
-def page_delete(page_id):
-    '''
-    Deletes a selected page -- no confirmation yet
-    Returns user to list of pages in blog with a notice about the deleted file
-    '''
-
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    blog_id = page.blog.id
-
-    delete_query = page.delete_instance(
-        recursive=True,
-        delete_nullable=True)
-    
-    status = utils.Status(
-        type='success',
-        message='Page <b>{}</b> (#{}) has been deleted from the database.',
-        vals=(page.title, page.id)
-        )
-    
-    # TODO: move to model?
-    logger.info("Page {} deleted by user {}.".format(
-        page_id,
-        user.for_log))
-
-    # TODO: proper delete page, not a repurposing of the main page
-    return ("Deleted.")
-
-@transaction
 def blog_queue(blog_id):
     
     user = auth.is_logged_in(request)
@@ -1402,46 +1146,6 @@ def blog_queue(blog_id):
     
     return tpl
 
-@transaction
-def system_queue():
-    
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user) 
-    queue = Queue.select().order_by(Queue.site.asc(), Queue.blog.asc(), Queue.job_type.asc(),
-        Queue.date_touched.desc())
-    
-    tags = template_tags(user=user)
-    
-    paginator, queue_list = utils.generate_paginator(queue, request)    
-            
-    tpl = template('queue_ui',
-        queue_list=queue_list,
-        paginator=paginator,
-        job_type=job_type.description,
-        menu=generate_menu('system_queue', None),
-        search_context=(search_context['site_queue'], None),
-        **tags.__dict__)
-    
-    return tpl
-
-@transaction
-def system_log():
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user) 
-    log = Log.select().order_by(Log.date.desc(), Log.id.desc())
-    
-    tags = template_tags(user=user)    
-    paginator, rowset = utils.generate_paginator(log, request)    
-            
-    tpl = template('listing_ui',
-        rowset=rowset,
-        colset=colsets['system_log'],
-        paginator=paginator,
-        menu=generate_menu('system_log', None),
-        search_context=(search_context['system_log'], None),
-        **tags.__dict__)
-    
-    return tpl
 
 @transaction
 def blog_settings(blog_id):
@@ -1482,19 +1186,6 @@ def blog_settings_output(tags):
 
     return tpl
 
-@transaction
-def page_preview(page_id):
-    
-    with db.atomic():
-        user = auth.is_logged_in(request)
-        page = get_page(page_id)
-        permission = auth.is_page_editor(user, page)
-        
-    f = page.fileinfos[0]
-    tags = template_tags(page_id=f.page.id)
-    page_text = cms.generate_page_text(f, tags)
-        
-    return page_text
 
 @transaction
 def blog_publish(blog_id):
@@ -1603,32 +1294,399 @@ def blog_publish_process(blog_id):
         
     return tpl
 
-@transaction
-def register_plugin(plugin_path):
-    from data.plugins import register_plugin, PluginImportError
-    try:
-        new_plugin = register_plugin(plugin_path)
-    except PluginImportError as e:
-        return (str(e))
-    return ("Plugin " + new_plugin.friendly_name + " registered.")
-
 
 @transaction
-def system_plugins():
-        
+def template_edit(template_id):
+    '''
+    UI for editing a blog template
+    '''
+
     user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
+    edit_template = get_template(template_id)
+    blog = get_blog(edit_template.blog.id)
+    permission = auth.is_blog_designer(user, blog)
     
-    tags = template_tags(
-        user=user)
+    tags = template_tags(template_id=template_id,
+                        user=user)
+
+    tags.mappings = template_mapping_index[edit_template.template_type]
     
-    plugins = Plugin.select()        
+    return template_edit_output(tags)
+
+@transaction
+def template_edit_save(template_id):
+    '''
+    UI for saving a blog template
+    '''
+    user = auth.is_logged_in(request)
+    template = get_template(template_id)
+    blog = get_blog(template.blog)
+    permission = auth.is_blog_designer(user, blog)
+    status = mgmt.save_template(request, user, template)
     
-    tpl = template('plugins_ui',
-        menu=generate_menu('system_plugins', None),
-        search_context=(search_context['sites'], None),
-        plugins=plugins,
+    tags = template_tags(template_id=template_id,
+                        user=user)
+    
+    tags.mappings = template_mapping_index[template.template_type]
+    
+    if status is not None:
+        tags.status = status
+    
+    return template_edit_output(tags)
+    
+
+def template_edit_output(tags):
+    
+    tpl = template('edit_template_ui',
+        icons=icons,
+        search_context=(search_context['blog'], tags.blog),
+        menu=generate_menu('blog_edit_template', tags.template),
+        sidebar=ui_mgr.render_sidebar(
+            panel_set='edit_template',
+            **tags.__dict__
+            ),
         **tags.__dict__)
+
+    response.add_header('X-Content-Security-Policy', "allow 'self'")
+    return tpl
+
+
+page_edit_functions = {
+    'append': lambda x, y:x + y,
+    'prepend':lambda x, y:y + x
+    }
+
+media_buttons = '''
+<button type="button" id="modal_close_button" class="btn btn-default" data-dismiss="modal">Close</button>
+<button type="button" {} class="btn btn-primary">{}</button>
+'''
+
+
+@transaction
+# TODO: page-locking algorithm
+def page_edit(page_id):
+    '''
+    UI for editing a page in a blog
+    '''
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    
+    from core.cms import save_action_list
+    
+    status = None
+    referer = request.headers.get('Referer')
+    
+    if (referer is None
+        or page.modified_date is None
+        or re.match(re.escape(BASE_URL + "/blog/" + str(page.blog.id)), referer) is None): 
+        
+        referer = BASE_URL + "/blog/" + str(page.blog.id)
+    
+    if page.modified_date is None:
+        status = utils.Status(
+            type='info',
+            message="Page <b>{}</b> created.",
+            vals=(page.title,))        
+        page.modified_date = datetime.datetime.now()
+        page.save(user)
+        
+    tags = template_tags(page_id=page_id,
+        user=user,
+        status=status)
+    
+    for n in request.query:
+        try:
+            tags.page.text = page_edit_functions[n](tags.page.text, request.query[n])
+        except KeyError: pass
+   
+    tpl = template('edit_page_ui',
+        menu=generate_menu('edit_page', page),
+        parent_path=referer,
+        search_context=(search_context['blog'], page.blog),
+        sidebar=ui_mgr.render_sidebar(
+            panel_set='edit_page',
+            status_badge=status_badge,
+            save_action_list=save_action_list,
+            save_action=save_action,
+            **tags.__dict__
+            ),
+        **tags.__dict__
+    )
+
+    response.add_header('X-Content-Security-Policy', "allow 'self'")
+    
+    logger.info("Page {} opened for editing by {}.".format(
+        page.for_log,
+        user.for_log))
+
+    return tpl
+
+@transaction
+def page_edit_save(page_id):
+    '''
+    UI for saving changes to an edited blog page
+    '''
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    tags = cms.save_page(page, user, page.blog)
+
+    from core.cms import save_action_list
+        
+    tpl = template('edit_page_ajax_response',
+        sidebar=ui_mgr.render_sidebar(
+            panel_set='edit_page',
+            status_badge=status_badge,
+            save_action=save_action,
+            save_action_list=save_action_list,
+            **tags.__dict__
+            ),
+        **tags.__dict__)
+
+    response.add_header('X-Content-Security-Policy', "allow 'self'")
+
+    return tpl
+
+@transaction
+def page_delete(page_id):
+    '''
+    Deletes a selected page -- no confirmation yet
+    Returns user to list of pages in blog with a notice about the deleted file
+    '''
+
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    blog_id = page.blog.id
+
+    delete_query = page.delete_instance(
+        recursive=True,
+        delete_nullable=True)
+    
+    status = utils.Status(
+        type='success',
+        message='Page <b>{}</b> (#{}) has been deleted from the database.',
+        vals=(page.title, page.id)
+        )
+    
+    # TODO: move to model?
+    logger.info("Page {} deleted by user {}.".format(
+        page_id,
+        user.for_log))
+
+    # TODO: proper delete page, not a repurposing of the main page
+    return ("Deleted.")
+
+@transaction
+def page_preview(page_id):
+    
+    with db.atomic():
+        user = auth.is_logged_in(request)
+        page = get_page(page_id)
+        permission = auth.is_page_editor(user, page)
+        
+    f = page.fileinfos[0]
+    tags = template_tags(page_id=f.page.id)
+    page_text = cms.generate_page_text(f, tags)
+        
+    return page_text
+
+@transaction
+def page_revisions(page_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    tags = template_tags(page_id=page_id)
+    
+    tpl = template('revisions_modal',
+        **tags.__dict__)
+    
+    return tpl
+
+@transaction
+def page_media_upload_confirm(page_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    
+    # get file NAMES, attributes, size, etc. first
+    # request.form.getunicode('filename')
+    # check each one on the SERVER side, not the client
+    # if each file is OK, then respond appropriately and have the client send the whole file
+    # if not, respond with a warning to be added to the notification area
+
+    _g = request.forms.getunicode
+    
+    file_name = _g('filename')
+    file_size = _g('filesize')
+    
+    # check for file types against master list
+    # check for file length
+    # check for name collision
+    
+    for n in request.files:
+        x = request.files.get(n)
+        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
+        if _exists(file_path):
+            pass
+        else:
+            pass
+        
+@transaction
+def page_media_upload(page_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    
+    overwrite = []
+    
+    for n in request.files:
+        x = request.files.get(n)
+        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
+        if _exists(file_path):
+            raise FileExistsError("File '{}' already exists on the server.".format(
+                utils.html_escape(x.filename)))
+        else:
+            cms.register_media(x.filename, file_path, user, page=page)
+            x.save(file_path)
+            
+            
+    tags = template_tags(page_id=page_id)
+    
+    return template('edit_page_sidebar_media_list.tpl',
+        **tags.__dict__)
+
+@transaction
+def page_media_delete(page_id, media_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+
+    media = get_media(media_id)
+    media_reference = MediaAssociation.get(
+        MediaAssociation.page == page,
+        MediaAssociation.media == media)
+    media_reference.delete_instance(recursive=True,
+        delete_nullable=True)
+
+    tags = template_tags(page_id=page_id)
+    
+    return template('edit_page_sidebar_media_list.tpl',
+        **tags.__dict__)
+            
+
+def page_get_media_templates(page_id, media_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    
+    media = get_media(media_id, page.blog)
+    
+    media_templates = Template.select().where(
+        Template.blog == page.blog,
+        Template.template_type == template_type.media)
+    
+    media_tpl = template('image_templates',
+        media=media,
+        templates=media_templates)
+    
+    buttons = media_buttons.format(
+        'onclick="add_template();"',
+        'Apply')
+    
+    tpl = template('modal',
+        base=media_tpl,
+        buttons=buttons,
+        title='Choose a template for {}'.format(
+            media.for_log))
+    
+    return tpl
+
+def page_add_media_with_template(page_id, media_id, template_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    
+    media = get_media(media_id, page.blog)
+    
+    media_template = Template.get(
+        Template.id == template_id)
+    
+    generated_template = utils.tpl(media_template.body,
+        media=media)
+    
+    return generated_template
+
+@transaction
+def page_revision_restore(page_id, revision_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    page_revision = PageRevision.select().where(PageRevision.id == revision_id).get()
+    
+    status = utils.Status(
+        type='success',
+        message='Page <b>{}</b> (#{}) has been restored from backup dated {}.',
+        vals=(page.title, page.id, page_revision.modified_date)
+        )        
+    
+    tags = template_tags(page_id=page_id,
+        user=user,
+        status=status)
+    
+    page_revision.id = page.id
+    tags.page = page_revision
+    
+    referer = BASE_URL + "/blog/" + str(page.blog.id)
+    
+    from core.cms import save_action_list
+    
+    tpl = template('edit_page_ui',
+        status_badge=status_badge,
+        save_action=save_action,
+        menu=generate_menu('edit_page', page),
+        search_context=(search_context['blog'], page.blog),
+        sidebar=ui_mgr.render_sidebar(
+            panel_set='edit_page',
+            status_badge=status_badge,
+            save_action=save_action,
+            save_action_list=save_action_list,
+            **tags.__dict__
+            ),
+        **tags.__dict__)
+    
+    response.add_header('X-Content-Security-Policy', "allow 'self'")
+    
+    return tpl
+
+@transaction
+def page_revision_restore_save(page_id):
+    
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+    tags = cms.save_page(page, user, page.blog)
+    
+    from core.cms import save_action_list
+    
+    tpl = template('edit_page_ajax_response',
+        status_badge=status_badge,
+        save_action=save_action,
+        save_action_list=save_action_list,
+        sidebar='',
+        **tags.__dict__)
+
+    response.add_header('X-Content-Security-Policy', "allow 'self'")
+    response.add_header('X-Redirect', BASE_URL + '/page/{}/edit'.format(str(tags.page.id)))
     
     return tpl
 
@@ -1711,51 +1769,4 @@ def make_tag_for_page(blog_id=None, page_id=None):
     
     return tpl
 
-media_buttons = '''
-<button type="button" id="modal_close_button" class="btn btn-default" data-dismiss="modal">Close</button>
-<button type="button" {} class="btn btn-primary">{}</button>
-'''
 
-def page_get_media_templates(page_id, media_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    
-    media = get_media(media_id, page.blog)
-    
-    media_templates = Template.select().where(
-        Template.blog == page.blog,
-        Template.template_type == template_type.media)
-    
-    media_tpl = template('image_templates',
-        media=media,
-        templates=media_templates)
-    
-    buttons = media_buttons.format(
-        'onclick="add_template();"',
-        'Apply')
-    
-    tpl = template('modal',
-        base=media_tpl,
-        buttons=buttons,
-        title='Choose a template for {}'.format(
-            media.for_log))
-    
-    return tpl
-
-def page_add_media_with_template(page_id, media_id, template_id):
-    
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-    
-    media = get_media(media_id, page.blog)
-    
-    media_template = Template.get(
-        Template.id == template_id)
-    
-    generated_template = utils.tpl(media_template.body,
-        media=media)
-    
-    return generated_template
