@@ -124,12 +124,12 @@ def step_2_pre():
     
     domain = get_ini("path", "base_url_root")
     if domain is None: 
-        domain = "http://"+request.environ['HTTP_HOST']
+        domain = "http://" + request.environ['HTTP_HOST']
         
         
     install_path = _settings.APPLICATION_PATH
-    blog_path = install_path.rsplit(os.sep,1)[0]
-    cms_path = "/"+install_path.rsplit(os.sep,1)[1]
+    blog_path = install_path.rsplit(os.sep, 1)[0]
+    cms_path = "/" + install_path.rsplit(os.sep, 1)[1]
     
     return {'domain':domain,
         'install_path':install_path,
@@ -214,55 +214,6 @@ def step_4_pre():
     db.connect()
     
     with db.atomic():
-    
-        new_site = mgmt.site_create(
-            name = "Your first site",
-            description = "The description for your first site.",
-            url = get_ini('path','base_url_root'),
-            path = blog_path )
-        
-        report.append("Initial site created successfully.")
-        
-        # create a blog within that site
-        
-        new_blog = mgmt.blog_create(
-            site = new_site,
-            name = "Your first blog",
-            description = "The description for your first blog.",
-            url = new_site.url,
-            path = new_site.path
-            )
-        
-        new_user = mgmt.create_user(
-            name='Administrator',
-            email=email,
-            encrypted_password=password)
-        
-        new_user.save()
-        
-        from core.auth import role
-        
-        new_user_permissions = mgmt.add_user_permission(
-            new_user,
-            permission = role.SYS_ADMIN,
-            site = new_site
-            )
-        
-        new_user_permissions.save()
-        
-        report.append("Initial blog created successfully.")
-    
-        with open(_settings.APPLICATION_PATH+_settings._sep+
-            "install"+_settings._sep+"templates.json","rb") as json_file:
-                json_text = json_file.read()
-        
-        new_theme = mgmt.install_theme_to_site(json_text)
-        
-        report.append("Theme created and installed successfully to system.") 
-        
-        mgmt.install_theme_to_blog(new_theme, new_blog)
-        
-        report.append("Theme installed in new blog successfully.")
         
         from models import System
         system_ref = System()
@@ -281,7 +232,56 @@ def step_4_pre():
             key='AutomaticallyReleaseLocksAfter',
             value=3600,
             is_schema=True,
-            is_unique=True)   
+            is_unique=True)          
+    
+        new_site = mgmt.site_create(
+            name="Your first site",
+            description="The description for your first site.",
+            url=get_ini('path', 'base_url_root'),
+            path=blog_path)
+        
+        report.append("Initial site created successfully.")
+        
+        # create a blog within that site
+        
+        new_blog = mgmt.blog_create(
+            site=new_site,
+            name="Your first blog",
+            description="The description for your first blog.",
+            url=new_site.url,
+            path=new_site.path
+            )
+        
+        new_user = mgmt.create_user(
+            name='Administrator',
+            email=email,
+            encrypted_password=password)
+        
+        new_user.save()
+        
+        from core.auth import role
+        
+        new_user_permissions = mgmt.add_user_permission(
+            new_user,
+            permission=role.SYS_ADMIN,
+            site=new_site
+            )
+        
+        new_user_permissions.save()
+        
+        report.append("Initial blog created successfully.")
+    
+        with open(_settings.APPLICATION_PATH + _settings._sep + 
+            "install" + _settings._sep + "templates.json", "rb") as json_file:
+                json_text = json_file.read()
+        
+        new_theme = mgmt.install_theme_to_site(json_text)
+        
+        report.append("Theme created and installed successfully to system.") 
+        
+        mgmt.install_theme_to_blog(new_theme, new_blog)
+        
+        report.append("Theme installed in new blog successfully.")
     
     db.close()
     
@@ -292,7 +292,7 @@ def step_4_pre():
     
     config_parser = ConfigParser()
         
-    sections = ('db','path','key')
+    sections = ('db', 'path', 'key')
     
     for s in sections:
         for name, value in parser.items(s):
@@ -302,9 +302,9 @@ def step_4_pre():
                 pass
             config_parser.set(s, name, value)
     
-    if request.environ['HTTP_HOST']==_settings.DEFAULT_LOCAL_ADDRESS+_settings.DEFAULT_LOCAL_PORT:
+    if request.environ['HTTP_HOST'] == _settings.DEFAULT_LOCAL_ADDRESS + _settings.DEFAULT_LOCAL_PORT:
         config_parser.add_section('server')
-        config_parser.set('server','DESKTOP_MODE','True')
+        config_parser.set('server', 'DESKTOP_MODE', 'True')
     
     try:
         with open(output_file_name, "w", encoding='utf-8') as output_file: 
@@ -340,7 +340,7 @@ def step_4_post():
     from core.boot import reboot
     reboot()
     
-    #return {}
+    # return {}
 
 tpl = '''
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/jquery.min.js"></script>

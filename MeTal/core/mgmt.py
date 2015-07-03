@@ -2,7 +2,7 @@ from core.utils import Status, encrypt_password
 from core.log import logger
 import json
 
-from models import (TemplateMapping, KeyValue, Template,
+from models import (TemplateMapping, Template,
     template_tags, Permission, Site, Blog, User, Category, Theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
@@ -42,9 +42,9 @@ def install_theme_to_site(theme_data):
     json_obj = json.loads(theme_data.decode('utf-8'))
     
     new_theme = create_theme(
-        title = json_obj["title"],
-        description = json_obj["description"],
-        json = json_obj 
+        title=json_obj["title"],
+        description=json_obj["description"],
+        json=json_obj 
         )
     
     return new_theme
@@ -63,7 +63,7 @@ def install_theme_to_blog(installed_theme, blog):
         
         for name in table_obj._meta.fields:
             if name not in ("id"):
-                setattr(table_obj,name,template[name])
+                setattr(table_obj, name, template[name])
         
         table_obj.theme = installed_theme
         table_obj.blog = blog
@@ -76,7 +76,7 @@ def install_theme_to_blog(installed_theme, blog):
             
             for name in mapping_obj._meta.fields:
                 if name not in ("id"):
-                    setattr(mapping_obj,name,mappings[mapping][name])
+                    setattr(mapping_obj, name, mappings[mapping][name])
             
             mapping_obj.template = table_obj 
             mapping_obj.save()
@@ -125,11 +125,6 @@ def blog_create(**new_blog_data):
     
     # template installation should be its own function
     # install whatever the currently set system default templates are
-    
-    from install.templates import templates
-    
-    for n in templates:
-        pass  # for templates, to add later
     
     user = user_from_ka(**new_blog_data)
         
