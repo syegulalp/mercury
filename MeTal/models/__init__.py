@@ -9,7 +9,7 @@ from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NA
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT)
 
 from libs.bottle import request, url, _stderr
-from libs.peewee import DeleteQuery, fn, BaseModel
+from libs.peewee import DeleteQuery, fn#, BaseModel
 
 from libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check) 
@@ -127,7 +127,9 @@ class BaseModel(Model):
             value_type = kw['value_type'] if 'value_type' in kw else ''
             )
         
-        kv.save()        
+        kv.save()     
+        
+        return kv   
     
     def remove_kv(self, **kw):
         pass

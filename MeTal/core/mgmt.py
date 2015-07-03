@@ -2,7 +2,7 @@ from core.utils import Status, encrypt_password
 from core.log import logger
 import json
 
-from models import (TemplateMapping, Template,
+from models import (TemplateMapping, Template, System, KeyValue,
     template_tags, Permission, Site, Blog, User, Category, Theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
@@ -82,12 +82,29 @@ def install_theme_to_blog(installed_theme, blog):
             mapping_obj.save()
                 
     kv_index = {}
+    kx = System()
     
-    # There should be a single root KV for the whole theme.
-    # Let's look that one up first, make sure it's attached to the theme ID.
-    # In other words, install them in cascading order, like we extracted them.
-    
-    
+    for kv in kvs:
+        kv_current = kvs[kv]
+        new_kv = kx.add_kv(**kv_current)
+        kv_index[kv_current['id']] = new_kv.id
+        
+    for kv in kv_index:
+        kv_current = kv
+        new_kv_value = kv_index[kv]
+        
+        kv_to_change = KeyValue.get(
+            KeyValue.id == new_kv_value)
+        
+        parent = kv_to_change.__dict__['_data']['parent']
+        
+        if parent is None:
+            continue
+        
+        kv_to_change.parent = kv_index[parent]
+        kv_to_change.save()
+        
+
 def site_create(**new_site_data):
     
     new_site = Site()
