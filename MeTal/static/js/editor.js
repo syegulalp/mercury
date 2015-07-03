@@ -452,6 +452,7 @@ $(window).load(function() {
                 });
             },            
 	        selector: "textarea.editor",
+	        convert_urls: false,
 	        entity_encoding: "named",
 	        browser_spellcheck: true,
 	        cleanup_on_startup: true, 
