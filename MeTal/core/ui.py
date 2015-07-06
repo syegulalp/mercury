@@ -1436,6 +1436,9 @@ def page_edit_save(page_id):
     tags = cms.save_page(page, user, page.blog)
 
     from core.cms import save_action_list
+    
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(page.kvs())
         
     tpl = template('edit_page_ajax_response',
         sidebar=ui_mgr.render_sidebar(
@@ -1443,6 +1446,7 @@ def page_edit_save(page_id):
             status_badge=status_badge,
             save_action=save_action,
             save_action_list=save_action_list,
+            kv_ui = kv_ui_data,
             **tags.__dict__
             ),
         **tags.__dict__)
