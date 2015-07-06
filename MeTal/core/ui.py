@@ -1399,6 +1399,9 @@ def page_edit(page_id):
         try:
             tags.page.text = page_edit_functions[n](tags.page.text, request.query[n])
         except KeyError: pass
+        
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(page.kvs())
    
     tpl = template('edit_page_ui',
         menu=generate_menu('edit_page', page),
@@ -1409,10 +1412,9 @@ def page_edit(page_id):
             status_badge=status_badge,
             save_action_list=save_action_list,
             save_action=save_action,
-            **tags.__dict__
-            ),
-        **tags.__dict__
-    )
+            kv_ui = kv_ui_data,
+            **tags.__dict__),
+        **tags.__dict__)
 
     response.add_header('X-Content-Security-Policy', "allow 'self'")
     

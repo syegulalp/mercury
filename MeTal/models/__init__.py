@@ -974,7 +974,7 @@ class KeyValue(BaseModel):
     parent = ForeignKeyField('self', null=True, index=True)
     is_schema = BooleanField(default=False)
     is_unique = BooleanField(default=False)
-    value_type = CharField(max_length=1)
+    value_type = CharField(max_length=64)
 
 
 tag_template = '''
