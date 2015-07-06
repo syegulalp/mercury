@@ -787,6 +787,9 @@ def blog_new_page(blog_id):
     
     from core.cms import save_action_list
     
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(blog_new_page.kvs())
+    
     tpl = template('edit_page_ui',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
@@ -796,6 +799,7 @@ def blog_new_page(blog_id):
             status_badge=status_badge,
             save_action=save_action,
             save_action_list=save_action_list,
+            kv_ui = kv_ui_data,
             **tags.__dict__
             ),
         **tags.__dict__
