@@ -13,6 +13,6 @@ function init_typeahead(target_name){
 		  name: 'tags',
 		  source: tags,
 		  display: 'tag'
-		});
-		
+		});	
+        
 }
