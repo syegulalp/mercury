@@ -10,7 +10,7 @@ from libs.bottle import (Bottle, static_file, request, response, abort, template
 from models import (db, get_blog, get_media,FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.utils import csrf_hash
-from data.plugins import enable_plugin as e_plugin, disable_plugin as d_plugin
+
 
 app = Bottle()
 _route = app.route
@@ -82,11 +82,13 @@ def plugin_settings(plugin_id):
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
-    e_plugin(plugin_id)
+    from core.plugins import enable_plugin
+    enable_plugin(plugin_id)
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
-    d_plugin(plugin_id)
+    from core.plugins import disable_plugin
+    disable_plugin(plugin_id)
 
 @_route(BASE_PATH + '/test/<blog_id:int>')
 def test_function(blog_id):

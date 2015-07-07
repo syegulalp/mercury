@@ -47,7 +47,7 @@ def export_theme_for_blog(blog_id):
         KeyValue.objectid == theme_to_export[0].theme.id,
         KeyValue.is_schema == True)
     
-    for n in top_kvs:
+    for n in top_kvs:        
         kv_list.append(n)
     
     while len(kv_list) > 0:

@@ -52,6 +52,9 @@ def store_ini(section, setting, value):
         raise SetupError(str(e.__class__.__name__) + ": " + str(e))
 
 def step_0_pre():
+    path_to_check = _settings.APPLICATION_PATH + _settings.DATA_FILE_PATH
+    if os.path.isdir(path_to_check) is False:
+        os.makedirs(path_to_check)
     
     store_ini('main', 'INSTALL_STEP', '0')
     store_ini('key', 'PASSWORD_KEY', generate_key(32))
@@ -282,10 +285,14 @@ def step_4_pre():
         mgmt.install_theme_to_blog(new_theme, new_blog)
         
         report.append("Theme installed in new blog successfully.")
+        
+        # copy default plugins from install directory
+        
+        # TODO: export installed theme to data directory
     
     db.close()
     
-    raise
+    #raise
     
     output_file_name = (_settings.APPLICATION_PATH + _settings.DATA_FILE_PATH + 
         os.sep + "config.ini")
@@ -312,25 +319,9 @@ def step_4_pre():
     except BaseException as e:
         raise SetupError(str(e.__class__.__name__) + ": " + str(e))
     
-    '''write settings:
-    #db
-    #path
-    #key
-    
-    BASE_URL_ROOT
-    BASE_URL_PATH
-    PASSWORD_KEY
-    SECRET_KEY
-    
-    and all DB-related settings
-    '''
-
-    
     finished = '''
     <p>Installation is complete.
     '''
-    
-    # rewrite all settings
     
     return {'report':report,
         'finished':finished}

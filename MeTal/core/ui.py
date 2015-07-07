@@ -319,7 +319,7 @@ def system_plugins():
 
 @transaction
 def register_plugin(plugin_path):
-    from data.plugins import register_plugin, PluginImportError
+    from core.plugins import register_plugin, PluginImportError
     try:
         new_plugin = register_plugin(plugin_path)
     except PluginImportError as e:
@@ -747,8 +747,7 @@ def blog_list_users(blog_id):
         paginator=paginator,
         page_list=page_list,
         user_list=user_list,
-        **tags.__dict__
-        )
+        **tags.__dict__)
     
     return tpl
 
@@ -799,11 +798,9 @@ def blog_new_page(blog_id):
             status_badge=status_badge,
             save_action=save_action,
             save_action_list=save_action_list,
-            kv_ui = kv_ui_data,
-            **tags.__dict__
-            ),
-        **tags.__dict__
-    )
+            kv_ui=kv_ui_data,
+            **tags.__dict__),
+        **tags.__dict__)
 
     response.add_header('X-Content-Security-Policy', "allow 'self'")    
 
@@ -1416,7 +1413,7 @@ def page_edit(page_id):
             status_badge=status_badge,
             save_action_list=save_action_list,
             save_action=save_action,
-            kv_ui = kv_ui_data,
+            kv_ui=kv_ui_data,
             **tags.__dict__),
         **tags.__dict__)
 
@@ -1450,7 +1447,7 @@ def page_edit_save(page_id):
             status_badge=status_badge,
             save_action=save_action,
             save_action_list=save_action_list,
-            kv_ui = kv_ui_data,
+            kv_ui=kv_ui_data,
             **tags.__dict__
             ),
         **tags.__dict__)

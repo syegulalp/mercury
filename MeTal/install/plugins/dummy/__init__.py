@@ -1,5 +1,6 @@
-__theme_name__ = "Amano 2015"
-__theme_description__ = "A simple, beautiful Bootstrap-based theme for MeTal."
+__plugin_name__ = "Dummy Plugin"
+__short_name__ = "dummy"
+__plugin_description__ = "Example plugin for demo purposes."
 __author__ = 'Serdar Yegulalp'
 __version__ = '0.1'
 __license__ = 'MIT'
@@ -14,3 +15,4 @@ def uninstall():
 def load():
     pass
 
+#load()
