@@ -96,7 +96,7 @@ plugin_list = {}
     
 def activate_plugins():
     
-    #from core.plugins.minify import load 
+    #from plugins.minify import load 
     
     from core.utils import _stddebug_
     _stddebug = _stddebug_()
@@ -112,7 +112,7 @@ def activate_plugins():
     for n in plugins_to_activate:
         
         try:
-            added_plugin = importlib.import_module("."+n.path,package='core.plugins')
+            added_plugin = importlib.import_module("plugins."+n.path)
         except ImportError as e:
             plugin_errors.append("\nPlugin " + n.friendly_name + " could not be activated. The path '" + PLUGIN_FILE_PATH + _sep + n.path + "' may be wrong. ({})".format(str(e)))
             continue

@@ -1283,7 +1283,7 @@ class Plugin(BaseModel):
     
     @property
     def _plugin_list(self):
-        from core.plugins import plugin_list
+        from plugins import plugin_list
         return plugin_list
     
     def _get_plugin_property(self, plugin_property, deactivated_message):

@@ -12,7 +12,7 @@ def install():
 def load():
     
     from core import cms
-    from core.plugins import plugin_after
+    from plugins import plugin_after
     from .minify import minify
     
     cms.generate_page_text = plugin_after(minify)(cms.generate_page_text)

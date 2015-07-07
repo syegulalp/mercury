@@ -22,7 +22,7 @@ PRODUCT_NAME = "MeTal " + __version__
 
 DATA_FILE_PATH = _sep + 'data'
 EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
-PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + "plugins"
+PLUGIN_FILE_PATH = _sep + 'plugins'
 
 # Top-level path to the application.
 # Automatically calculated; does not need to be changed.

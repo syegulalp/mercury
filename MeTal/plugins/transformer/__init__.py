@@ -14,7 +14,7 @@ def uninstall():
 
 def load():
     from core import cms
-    from core.plugins import plugin_before
+    from plugins import plugin_before
     from .transform import transform 
 
     cms.generate_page_text = plugin_before(transform)(cms.generate_page_text)

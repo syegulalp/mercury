@@ -319,7 +319,7 @@ def system_plugins():
 
 @transaction
 def register_plugin(plugin_path):
-    from core.plugins import register_plugin, PluginImportError
+    from plugins import register_plugin, PluginImportError
     try:
         new_plugin = register_plugin(plugin_path)
     except PluginImportError as e:
