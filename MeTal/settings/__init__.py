@@ -27,7 +27,6 @@ PLUGIN_FILE_PATH = _sep + 'plugins'
 # Top-level path to the application.
 # Automatically calculated; does not need to be changed.
 
-BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
 PLUGIN_PATH = APPLICATION_PATH + PLUGIN_FILE_PATH
 STATIC_FILE_PATH = APPLICATION_PATH + _sep + 'static'
 STATIC_PATH = '/static'
@@ -39,20 +38,31 @@ SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
 
-DEFAULT_LOCAL_PORT = ":" + DEFAULT_LOCAL_PORT
+try:
+    # TODO: http or https?
+    BASE_URL_ROOT = "http://"+os.environ["HTTP_HOST"]
+    BASE_URL_PATH = DEFAULT_URL_PATH
+    DEFAULT_LOCAL_ADDRESS = os.environ["HTTP_HOST"]
+except KeyError:
+    # TODO: what if this throws a false positive
+    # if we're simply running as a server?
+    DESKTOP_MODE = True    
 
 if DESKTOP_MODE is True:
-    BASE_PATH = "/~"
-    BASE_URL_ROOT = 'http://' + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
+    if NO_SETUP is True:
+        BASE_PATH = ""
+        BASE_URL = DEFAULT_LOCAL_ADDRESS
+        BASE_URL_PATH = ""
+    else:
+        BASE_PATH = "/~"
+
+    BASE_URL_ROOT = "http://"+DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
     BASE_URL = BASE_URL_ROOT + BASE_PATH
+    
     USE_WSGI = False
 else:
     BASE_PATH = ""
-    # BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
-    # BASE_URL = BASE_URL_ROOT + BASE_PATH
-    # BASE_PATH = BASE_URL_PATH
-    # BASE_URL = BASE_URL_ROOT + BASE_PATH
-    # pass
+    BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
     
 try:
     DB_TYPE_NAME

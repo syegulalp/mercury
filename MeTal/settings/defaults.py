@@ -1,6 +1,26 @@
-# Application install
-# Do NOT change these settings! Use config.ini instead!
-#####
+'''
+Default launch should ALWAYS be CGI.
+To launch as WSGI or a dev server, use a different starter stub.
+This will solve a lot of problems at a very high level.
+'''
+
+# Application install defaults
+# Do NOT change these settings directly! Use config.ini instead!
+
+import os
+_environ = os.environ
+_sep = os.sep
+
+# Default port for when running in desktop mode.
+# You generally don't need to change this unless
+# another application is using it.
+DEFAULT_LOCAL_ADDRESS = "127.0.0.1"
+DEFAULT_LOCAL_PORT = ":8080"
+DEFAULT_URL_PATH = "/cms"
+
+# Set this to True when you are using the program
+# on your own desktop PC.
+DESKTOP_MODE = False
 
 # The encryption key for your logins.
 # Change this after installation!
@@ -10,23 +30,10 @@ SECRET_KEY = "change_this_key_please"
 # DO NOT CHANGE THIS AFTER YOU HAVE CREATED YOUR USER ACCOUNTS!
 PASSWORD_KEY = "also_change_this_key_please"
 
-# The base URL for your MeTal installation.
-# This should be the full URL to the folder
-# where MeTal is installed, e.g.
-# http://www.example.com/metal
-BASE_URL_ROOT = "http://127.0.0.1"
-BASE_URL_PATH = "/cms"
-
 # Set this to True if you are running MeTal as an WSGI application,
 # for instance on a shared webhost.
 # Desktop mode overrides this to False. 
 USE_WSGI = True
-
-
-# Set this to True when you are using the program
-# on your own desktop PC.
-DESKTOP_MODE = False
-#DESKTOP_MODE = True
 
 # Debug mode. Set to True for more detailed error messages.
 # Don't set this to True in production unless you know what you're doing.
@@ -40,46 +47,24 @@ LAUNCH_BROWSER = False
 # ? to be phased out and replaced with a command line setting?
 RESET = None
 
-# Default port for when running in desktop mode.
-# You generally don't need to change this unless
-# another application is using it.
-DEFAULT_LOCAL_PORT = "8080"
-DEFAULT_LOCAL_ADDRESS = "127.0.0.1"
-MAX_BASENAME_LENGTH = 128
-
-# Number of operations to be performed from the queue in a single batch.
-# You can set this to a higher value on systems where you aren't worried
-# about batch operations timing out, but the default should suffice.
-MAX_BATCH_OPS = 100
-
-# Number of items listed on a page in a listing view.
-ITEMS_PER_PAGE = 15
-
-# For MySQL compatibility. Do not change.
-ENFORCED_CHARFIELD_CONSTRAINT = 767
-
-MAX_FILESIZE = 300000
-
 INSTALL_STEP = None
 
 INI_FILE_NAME = 'config.ini'
 
+# For MySQL compatibility. Do not change.
+ENFORCED_CHARFIELD_CONSTRAINT = 767
+
+# TODO: move these?
 DAYS_TO_KEEP_LOGS = 30
-
-
-# if desktop mode on install...
-# if WSGI
-
-
-# TODO: we may need to put in another test here for desktop mode on install
-# or move these checks into the actuall install routine so they aren't
-# constantly being hit here
-
-#####
-# Apply settings from config.ini to these install
-
-import os
-_sep = os.sep
+MAX_FILESIZE = 300000
+# Number of operations to be performed from the queue in a single batch.
+# You can set this to a higher value on systems where you aren't worried
+# about batch operations timing out, but the default should suffice.
+MAX_BATCH_OPS = 100
+# Number of items listed on a page in a listing view.
+ITEMS_PER_PAGE = 15
+# Maximum length of basenames for pages.
+MAX_BASENAME_LENGTH = 128
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
@@ -104,5 +89,4 @@ else:
                 locals()[option]=value
             
 if INSTALL_STEP is not None:
-    NO_SETUP = True 
-# detect setup in progress here
+    NO_SETUP = True

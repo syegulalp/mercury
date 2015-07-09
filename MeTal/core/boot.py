@@ -26,10 +26,16 @@ def setup_args():
 
     return arguments
 
-def boot():
+def boot(aux_settings=None):
     '''
     Reads setup options and starts the Web server for the application.
     '''
+    
+    if aux_settings is not None:
+        for n in aux_settings:
+            if n in settings.__dict__:
+                #settings.__dict__[n] = aux_settings[n]
+                print (settings.__dict__[n],aux_settings[n]) 
     
     import sys
 
@@ -49,15 +55,6 @@ def boot():
     
     if settings.NO_SETUP:
         
-        # from libs import bottle
-        try:
-            bottle.request.environ['REQUEST_METHOD']
-        except KeyError:
-            settings.USE_WSGI = False
-            settings.BASE_URL_ROOT = "http://" + settings.DEFAULT_LOCAL_ADDRESS + settings.DEFAULT_LOCAL_PORT
-            settings.BASE_URL_PATH = settings.BASE_URL_ROOT
-            settings.BASE_URL = settings.BASE_URL_ROOT
-        
         _stderr('\nNo configuration file [{}] found in \'{}\'.\n'.format(
             settings.INI_FILE_NAME,
             settings.config_file))
@@ -65,13 +62,27 @@ def boot():
                 settings.DEFAULT_LOCAL_ADDRESS,
                 settings.DEFAULT_LOCAL_PORT[1:]))
         
-        from core.routes import setup, server_static
+        from core.routes import server_static #,setup
+        
+        def setup(step_id=None):
+            if step_id is None:
+                step_id = 0
+            # TODO: also attempt to fetch step ID from ini file?
+            from install import install
+            return install.step(step_id)
         
         app = bottle.Bottle()
-        app.route(path='/', callback=setup)
-        app.route(path='/install', callback=setup)
-        app.route(path='/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
-        app.route(path=settings.STATIC_PATH + '/<filepath:path>', callback=server_static)
+        app.route(path=settings.BASE_PATH+"/", callback=setup)
+        app.route(path=settings.BASE_PATH+'/install', callback=setup)
+        app.route(path=settings.BASE_PATH+'/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
+        app.route(path=settings.BASE_PATH+settings.STATIC_PATH + '/<filepath:path>', callback=server_static)
+        
+        '''
+        @app.hook('before_request')
+        def strip_path():
+            if len(bottle.request.environ['PATH_INFO']) > 1:
+                bottle.request.environ['PATH_INFO'] = bottle.request.environ['PATH_INFO'].rstrip('/')
+        '''
         
         @app.error(404)
         def fnf_error(error):  # @UnusedVariable
@@ -111,7 +122,8 @@ def boot():
         
         bottle.run(app,
             server="auto",
-            port=settings.DEFAULT_LOCAL_PORT[1:],
+            #port=settings.DEFAULT_LOCAL_PORT[1:],
+            port = settings.DEFAULT_LOCAL_PORT[1:],
             debug=settings.DEBUG_MODE)
     
 def reboot():

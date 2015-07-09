@@ -1,5 +1,5 @@
 from libs.bottle import (request, template, redirect)
-import settings as _settings
+from core.boot import settings as _settings
 import os, random, string
 
 from configparser import ConfigParser, DuplicateSectionError
@@ -60,11 +60,7 @@ def step_0_pre():
     store_ini('key', 'PASSWORD_KEY', generate_key(32))
     store_ini('key', 'SECRET_KEY', generate_key(32))
     
-    # TODO: generate password storage secret
-    
     return {}
-
-    # check to make sure config and data directories are writeable, create files there
 
 def step_0_post():
     
@@ -86,8 +82,6 @@ def step_1_pre():
     return {'email':email,
         'password':password}
     
-    # todo: don't change the password if the raw value matches the hash?
-    
 
 def step_1_post():
     step_error = []
@@ -105,15 +99,18 @@ def step_1_post():
         raise SetupError('\n'.join(step_error))
     
     from libs.bottle import touni
-    from core.utils import encrypt_password
+    #from core.utils import encrypt_password
     
-    p_key = get_ini('key', 'PASSWORD_KEY')
+    #p_key = get_ini('key', 'PASSWORD_KEY')
     
     existing_password = get_ini("main", "password")
     new_password = user_password
+    
     print (existing_password, new_password)
-    if existing_password != new_password:
-        existing_password = encrypt_password(new_password, p_key)
+    
+    if (existing_password == "" or
+        existing_password != new_password):
+        existing_password = new_password 
     
     store_ini("user", "password", touni(existing_password))    
     store_ini("user", "email", user_email)
@@ -210,6 +207,10 @@ def step_4_pre():
     email = get_ini("user", "email")
     password = get_ini("user", "password")
     blog_path = get_ini("install", "blog_path")
+    
+    from core.utils import encrypt_password
+    p_key = get_ini('key', 'PASSWORD_KEY')
+    password = encrypt_password(password, p_key)
 
     from core import mgmt
     
@@ -328,6 +329,8 @@ def step_4_pre():
 
 def step_4_post():
     
+    # TODO: securely delete setup file 
+    
     from core.boot import reboot
     reboot()
     
@@ -368,8 +371,8 @@ def button(step, next_action, error=None):
         
     if step > 0:
         previous = '''
-<a href="/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
-'''.format(step - 1)
+<a href="{}/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
+'''.format(_settings.BASE_URL_PATH,step - 1)
     else:
         previous = ""
         
@@ -381,8 +384,8 @@ def button(step, next_action, error=None):
     else:
         if error is None:
             next_str = '''
-<a href="/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
-'''.format(step + 1)
+<a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
+'''.format(_settings.BASE_URL_PATH,step + 1)
         else:
             next_str = "<button class='btn btn-danger'>Can't continue until the above error is fixed</button>"
 
@@ -393,7 +396,7 @@ crumb_element_active = '''
 '''
 
 crumb_element_link = '''
-<li><a href="/install/step-{}">{}</a></li>
+<li><a href="{}/install/step-{}">{}</a></li>
 '''
 
 step_text = {
@@ -420,7 +423,7 @@ step_text = {
 This will be used to identify the administrator on this installation.
 <p>Do <i>not</i> use the same password that you use to access the email account in question.
 <hr>
-<form action="/install/step-1"  method="post" class="form-horizontal">
+<form action="{{form_action}}"  method="post" class="form-horizontal">
   <div class="form-group">
     <label for="input_email" class="col-sm-2 control-label">Email</label>
     <div class="col-sm-7">
@@ -455,7 +458,7 @@ This will be used to identify the administrator on this installation.
         </ul> 
         <p>We've made a best guess as to what these might be, so if you're not sure about what to do here,
         just press Continue. You can always change them later.
-<form action="/install/step-2"  method="post" class="form-horizontal">
+<form action="{{form_action}}"  method="post" class="form-horizontal">
   
   <div class="form-group">
     <label for="input_domain" class="col-sm-2 control-label">Domain name</label>
@@ -499,7 +502,7 @@ This will be used to identify the administrator on this installation.
         'text':'''
 <p>Now you'll need to specify the database you'll be using to store the site's data.
 <p>If you don't know what to do here, just hit Continue and a database will be configured automatically.</p>
-<form action="/install/step-3" method="post" class="form-horizontal">
+<form action="{{form_action}}" method="post" class="form-horizontal">
     <div class="form-group">
         <label for='dbtype' class="col-sm-2 control-label">Database:</label>
         <div class="col-sm-7">
@@ -572,8 +575,6 @@ This will be used to identify the administrator on this installation.
 '''}
     }
 
-# database config
-
 def crumbs(step):
     
     crumbs = []
@@ -588,7 +589,7 @@ def crumbs(step):
         if m > step:
             crumb = crumb_element_active.format(n['crumb'])
         else:
-            crumb = crumb_element_link.format(m, n['crumb'])
+            crumb = crumb_element_link.format(_settings.BASE_URL_PATH,m, n['crumb'])
         
         crumbs.append(crumb)
         m += 1
@@ -610,7 +611,7 @@ def step(step):
             error_msg = e
         else:
             step += 1
-            redirect('/install/step-{}'.format(step))
+            redirect('{}/install/step-{}'.format(_settings.BASE_URL_PATH,step))
             
     else:
         try:
@@ -630,7 +631,7 @@ def step(step):
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
             button=template_button,
+            form_action = '{}/install/step-{}'.format(_settings.BASE_URL_PATH,step),
             **results),
         crumbs=crumbs(step),
-        error=error_msg
-        )
+        error=error_msg)
