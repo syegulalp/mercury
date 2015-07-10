@@ -1,9 +1,3 @@
-'''
-Default launch should ALWAYS be CGI.
-To launch as WSGI or a dev server, use a different starter stub.
-This will solve a lot of problems at a very high level.
-'''
-
 # Application install defaults
 # Do NOT change these settings directly! Use config.ini instead!
 
@@ -83,10 +77,10 @@ else:
     for items in parser.sections():
         for name, value in parser.items(items):
             option = name.upper()
-            if value in ('True','False','None'):
-                locals()[option]=parser.getboolean(items, option)
+            if value in ('True', 'False', 'None'):
+                locals()[option] = parser.getboolean(items, option)
             else:
-                locals()[option]=value
+                locals()[option] = value
             
 if INSTALL_STEP is not None:
     NO_SETUP = True

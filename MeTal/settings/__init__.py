@@ -40,7 +40,7 @@ DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
 
 try:
     # TODO: http or https?
-    BASE_URL_ROOT = "http://"+os.environ["HTTP_HOST"]
+    BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
     BASE_URL_PATH = DEFAULT_URL_PATH
     DEFAULT_LOCAL_ADDRESS = os.environ["HTTP_HOST"]
 except KeyError:
@@ -56,7 +56,7 @@ if DESKTOP_MODE is True:
     else:
         BASE_PATH = "/~"
 
-    BASE_URL_ROOT = "http://"+DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
+    BASE_URL_ROOT = "http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
     BASE_URL = BASE_URL_ROOT + BASE_PATH
     
     USE_WSGI = False

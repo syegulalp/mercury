@@ -34,8 +34,7 @@ def boot(aux_settings=None):
     if aux_settings is not None:
         for n in aux_settings:
             if n in settings.__dict__:
-                #settings.__dict__[n] = aux_settings[n]
-                print (settings.__dict__[n],aux_settings[n]) 
+                settings.__dict__[n] = aux_settings[n]
     
     import sys
 
@@ -62,27 +61,19 @@ def boot(aux_settings=None):
                 settings.DEFAULT_LOCAL_ADDRESS,
                 settings.DEFAULT_LOCAL_PORT[1:]))
         
-        from core.routes import server_static #,setup
+        from core.routes import server_static  # ,setup
         
         def setup(step_id=None):
             if step_id is None:
                 step_id = 0
-            # TODO: also attempt to fetch step ID from ini file?
             from install import install
             return install.step(step_id)
         
         app = bottle.Bottle()
-        app.route(path=settings.BASE_PATH+"/", callback=setup)
-        app.route(path=settings.BASE_PATH+'/install', callback=setup)
-        app.route(path=settings.BASE_PATH+'/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
-        app.route(path=settings.BASE_PATH+settings.STATIC_PATH + '/<filepath:path>', callback=server_static)
-        
-        '''
-        @app.hook('before_request')
-        def strip_path():
-            if len(bottle.request.environ['PATH_INFO']) > 1:
-                bottle.request.environ['PATH_INFO'] = bottle.request.environ['PATH_INFO'].rstrip('/')
-        '''
+        app.route(path=settings.BASE_PATH + "/", callback=setup)
+        app.route(path=settings.BASE_PATH + '/install', callback=setup)
+        app.route(path=settings.BASE_PATH + '/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
+        app.route(path=settings.BASE_PATH + settings.STATIC_PATH + '/<filepath:path>', callback=server_static)
         
         @app.error(404)
         def fnf_error(error):  # @UnusedVariable
@@ -122,8 +113,8 @@ def boot(aux_settings=None):
         
         bottle.run(app,
             server="auto",
-            #port=settings.DEFAULT_LOCAL_PORT[1:],
-            port = settings.DEFAULT_LOCAL_PORT[1:],
+            # port=settings.DEFAULT_LOCAL_PORT[1:],
+            port=settings.DEFAULT_LOCAL_PORT[1:],
             debug=settings.DEBUG_MODE)
     
 def reboot():
