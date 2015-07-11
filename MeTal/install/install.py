@@ -80,7 +80,9 @@ def step_1_pre():
         password = ""
     
     return {'email':email,
-        'password':password}
+        'password':password,
+        'password_confirm':password
+        }
     
 
 def step_1_post():
@@ -95,13 +97,7 @@ def step_1_post():
     if user_password == "" or len(user_password) < 8:
         step_error.append ("Your password cannot be blank or less than eight characters.")
         
-    if len(step_error) > 0:
-        raise SetupError('\n'.join(step_error))
-    
     from libs.bottle import touni
-    #from core.utils import encrypt_password
-    
-    #p_key = get_ini('key', 'PASSWORD_KEY')
     
     existing_password = get_ini("main", "password")
     new_password = user_password
@@ -110,8 +106,14 @@ def step_1_post():
     
     if (existing_password == "" or
         existing_password != new_password):
-        existing_password = new_password 
-    
+        existing_password = new_password
+        
+    if existing_password !=  request.forms.getunicode('input_password_confirm'):
+        step_error.append('Your password and password confirmation did not match.')
+        
+    if len(step_error) > 0:
+        raise SetupError('\n'.join(step_error))
+        
     store_ini("user", "password", touni(existing_password))    
     store_ini("user", "email", user_email)
     store_ini('main', 'INSTALL_STEP', '2')
@@ -346,7 +348,7 @@ tpl = '''
 {{!crumbs}}
 % if error is not None:
 <div class="alert alert-warning">
-<b>Oops:</b> The system encountered an error during setup:<p>{{error}}
+<b>Oops:</b> The system encountered an error during setup:<p><b>{{error}}</b></p>
 <p>If you don't know what this means, contact your administrator.
 </div>
 % end
@@ -387,7 +389,7 @@ def button(step, next_action, error=None):
 <a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
 '''.format(_settings.BASE_URL_PATH,step + 1)
         else:
-            next_str = "<button class='btn btn-danger'>Can't continue until the above error is fixed</button>"
+            next_str = "<button class='btn btn-danger'>Fix the above error and click here to continue</button>"
 
     return "<hr/>" + previous + next_str
 
@@ -438,6 +440,13 @@ This will be used to identify the administrator on this installation.
       value ="{{password}}">
     </div>
   </div>
+  <div class="form-group">
+    <label for="input_password_confirm" class="col-sm-2 control-label">Confirm password</label>
+    <div class="col-sm-7">
+      <input type="password" class="form-control" id="input_password_confirm" name="input_password_confirm" placeholder="Password"
+      value ="{{password_confirm}}">
+    </div>
+  </div>  
 {{!button}}
 </form>     
 '''
