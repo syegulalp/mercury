@@ -983,7 +983,7 @@ type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button 
 data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
 '''
 tag_link_template = '''
-<a class="tag_link" href="{url}">{tag}</a>'''
+<a class="tag_link" target="_blank" href="{url}">{tag}</a>'''
 
 new_tag_template = '''
 <span class="tag_link">{tag}</span>'''    
