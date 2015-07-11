@@ -1763,6 +1763,9 @@ def make_tag_for_page(blog_id=None, page_id=None):
     
     tag_name = request.forms.getunicode('tag')
     
+    if len(tag_name)<1:
+        return None
+    
     try:
         tag = Tag.get(Tag.tag == tag_name,
             Tag.blog == blog)
