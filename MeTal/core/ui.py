@@ -12,8 +12,8 @@ from models import (Struct, get_site, get_blog, get_media, get_template,
 
 from models.transaction import transaction
 
-from libs.bottle import (template, request, response, redirect)
-from libs import peewee
+from core.libs.bottle import (template, request, response, redirect)
+from core.libs import peewee
 
 from settings import (BASE_URL, BASE_PATH, SECRET_KEY, _sep)
 
@@ -1494,8 +1494,8 @@ def page_preview(page_id):
         page = get_page(page_id)
         permission = auth.is_page_editor(user, page)
         
-    f = page.fileinfos[0]
-    tags = template_tags(page_id=f.page.id)
+    f = page.default_fileinfo
+    tags = template_tags(page=page)
     page_text = cms.generate_page_text(f, tags)
         
     return page_text
@@ -1763,7 +1763,7 @@ def make_tag_for_page(blog_id=None, page_id=None):
     
     tag_name = request.forms.getunicode('tag')
     
-    if len(tag_name)<1:
+    if len(tag_name) < 1:
         return None
     
     try:

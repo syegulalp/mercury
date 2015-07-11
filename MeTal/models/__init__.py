@@ -8,10 +8,10 @@ from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT)
 
-from libs.bottle import request, url, _stderr
-from libs.peewee import DeleteQuery, fn#, BaseModel
+from core.libs.bottle import request, url, _stderr
+from core.libs.peewee import DeleteQuery, fn  # , BaseModel
 
-from libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
+from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check) 
 
 from functools import wraps
@@ -117,14 +117,14 @@ class BaseModel(Model):
     def add_kv(self, **kw):
         
         kv = KeyValue(
-            object = kw['object'],
-            objectid = kw['objectid'],
-            key = kw['key'],
-            value = kw['value'],
-            parent = kw['parent'] if 'parent' in kw else None,
-            is_schema = kw['is_schema'] if 'is_schema' in kw else False,
-            is_unique = kw['is_unique'] if 'is_unique' in kw else False,
-            value_type = kw['value_type'] if 'value_type' in kw else ''
+            object=kw['object'],
+            objectid=kw['objectid'],
+            key=kw['key'],
+            value=kw['value'],
+            parent=kw['parent'] if 'parent' in kw else None,
+            is_schema=kw['is_schema'] if 'is_schema' in kw else False,
+            is_unique=kw['is_unique'] if 'is_unique' in kw else False,
+            value_type=kw['value_type'] if 'value_type' in kw else ''
             )
         
         kv.save()     
@@ -703,22 +703,35 @@ class Page(BaseModel):
     def fileinfos(self):
         '''
         Returns any fileinfo objects associated with this page.
-        In theory this should return only one such object.
         '''
         
-        fileinfos = FileInfo.select(FileInfo, TemplateMapping).join(
-            TemplateMapping, on=(TemplateMapping.template == FileInfo.template_mapping)).where(
-            FileInfo.page == self.id,
-            TemplateMapping.is_default == True)
+        fileinfos = FileInfo.select().where(
+            FileInfo.page == self)
             
         return fileinfos
+    
+    @property
+    def default_fileinfo(self):
+        '''
+        Returns the default fileinfo associated with the page.
+        Useful if you have pages that have multiple mappings.
+        '''
+       
+        default_mapping = TemplateMapping.get(
+            TemplateMapping.id << self.template_mappings,
+            TemplateMapping.is_default == True)
+        
+        default_fileinfo = FileInfo.get(
+            FileInfo.template_mapping == default_mapping) 
+        
+        return default_fileinfo
     
     @property
     def permalink(self):
 
         if self.id is not None:
-            f_info = self.fileinfos.dicts()[0]
-            permalink = self.blog.url + "/" + f_info['file_path']
+            f_info = self.default_fileinfo
+            permalink = self.blog.url + "/" + f_info.file_path
         else:
             permalink = ""
             
@@ -1039,7 +1052,7 @@ class Tag(BaseModel):
         template = tag_template.format(
             id=0,
             tag=new_tag_template.format(
-                tag=html_escape(self.tag)),                
+                tag=html_escape(self.tag)),
             btn_type=btn_type,
             new='data-new-tag="{}" '.format(html_escape(self.tag))
             )
@@ -1425,9 +1438,12 @@ class TemplateTags(object):
         self.csrf = csrf_hash(token)
 
         if 'page_id' in ka:
-            
             self.page = get_page(ka['page_id'])
+            ka['page'] = self.page
 
+        if 'page' in ka:
+            self.page = ka['page']
+            
             ka['blog_id'] = self.page.blog.id
             ka['site_id'] = self.page.blog.site.id
 
