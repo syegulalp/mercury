@@ -49,7 +49,6 @@
         <li class="dropdown">
           
           <a href="#" title="Publishing queue status" id="queue_status" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-          % #queue_count = queue.count()
           % include('queue_counter_include.tpl')
           <span class="visible-xs-inline">&nbsp;Queue</span>
           </a>
@@ -89,7 +88,7 @@
           </a>
          
           <ul class="dropdown-menu" role="menu">
-            
+            <li role="presentation" class="dropdown-header" >Create ...</li>
             % if blog:
             <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/newpage">Page</a></li>
             % elif user.blogs():
