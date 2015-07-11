@@ -9,10 +9,6 @@ from core.error import PluginImportError
 
 from models import Plugin, db
 
-# eventually make this our standard interface for plugins?
-class _Plugin():
-    pass
-
 def plugin_before(plugin_function):
 
     def decorate(func):
@@ -45,8 +41,7 @@ def plugin_after(plugin_function):
     return decorate
 
 def register_plugin(path_to_plugin):
-    # Adds a plugin to the list of available plugins in the system registry
-    # Plugins are not automatically registered
+
     if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
         
         try:
@@ -77,9 +72,6 @@ def register_plugin(path_to_plugin):
             else:
                 raise PluginImportError("Plugin at " + PLUGIN_FILE_PATH + "/" + path_to_plugin + " is already registered.")
 
-# eventually we will iterate through the list of registered plugins, not the directory
-# and load them in the specified order, too
-
 plugin_attributes = (
     '__plugin_name__',
     '__short_name__',
@@ -92,8 +84,6 @@ plugin_attributes = (
 plugin_list = {}
     
 def activate_plugins():
-    
-    # from plugins.minify import load 
     
     from core.utils import _stddebug_
     _stddebug = _stddebug_()
