@@ -38,10 +38,10 @@ import math
 import sqlite3
 import struct
 
-from libs.peewee import *
-from libs.peewee import Expression
-from libs.peewee import QueryCompiler
-from libs.peewee import transaction
+from core.libs.peewee import *
+from core.libs.peewee import Expression
+from core.libs.peewee import QueryCompiler
+from core.libs.peewee import transaction
 
 
 FTS_VER = sqlite3.sqlite_version_info[:3] >= (3, 7, 4) and 'FTS4' or 'FTS3'

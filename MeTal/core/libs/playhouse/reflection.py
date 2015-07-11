@@ -3,7 +3,7 @@
 from collections import namedtuple
 import re
 
-from libs.peewee import *
+from core.libs.peewee import *
 try:
     from MySQLdb.constants import FIELD_TYPE
 except ImportError:

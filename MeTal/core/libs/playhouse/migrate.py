@@ -105,13 +105,13 @@ from collections import namedtuple
 import functools
 import re
 
-from libs.peewee import *
-from libs.peewee import CommaClause
-from libs.peewee import EnclosedClause
-from libs.peewee import Entity
-from libs.peewee import Expression
-from libs.peewee import Node
-from libs.peewee import OP_EQ
+from core.libs.peewee import *
+from core.libs.peewee import CommaClause
+from core.libs.peewee import EnclosedClause
+from core.libs.peewee import Entity
+from core.libs.peewee import Expression
+from core.libs.peewee import Node
+from core.libs.peewee import OP_EQ
 
 
 class Operation(object):

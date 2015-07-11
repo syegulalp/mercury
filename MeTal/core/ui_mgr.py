@@ -1,4 +1,4 @@
-from libs.bottle import template
+from core.libs.bottle import template
 
 # TODO: use this ordering mechanism elsewhere, too?
 

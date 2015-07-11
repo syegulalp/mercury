@@ -6,7 +6,7 @@ from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
 
 from core import (cms, mgmt, ui, auth)
 
-from libs.bottle import (Bottle, static_file, request, response, abort, template)
+from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
 
 from models import (db, get_blog, get_media,FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)

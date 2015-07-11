@@ -5,8 +5,8 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
-from libs.peewee import *
-from libs.playhouse.sqlite_ext import SqliteExtDatabase
+from core.libs.peewee import *
+from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 try:
     from playhouse.apsw_ext import APSWDatabase
 except ImportError:

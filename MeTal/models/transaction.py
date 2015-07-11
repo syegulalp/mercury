@@ -1,6 +1,6 @@
 from core.error import LoggedException
 from functools import wraps
-from libs.bottle import request
+from core.libs.bottle import request
 from models import db
 from settings import DB
 from sys import exc_info

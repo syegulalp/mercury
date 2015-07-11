@@ -3,7 +3,7 @@
 # or you know what you're doing.
 # 
 
-from libs.playhouse.sqlite_ext import SqliteExtDatabase, MySQLDatabase
+from core.libs.playhouse.sqlite_ext import SqliteExtDatabase, MySQLDatabase
 
 import os
 _sep = os.sep

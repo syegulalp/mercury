@@ -1,5 +1,5 @@
 import settings
-from libs import bottle
+from core.libs import bottle
 _stderr = bottle._stderr
 from models import Page
 
@@ -79,7 +79,7 @@ def media_search():
 def db_warnings():
     import warnings
     warnings.filterwarnings("error", "Data truncated *")
-    from libs.pymysql import MySQLError
+    from core.libs.pymysql import MySQLError
     DBError = MySQLError
     error_text = "MySQL error: {} ({})"
     return DBError, error_text

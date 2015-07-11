@@ -1,4 +1,4 @@
-from libs.bottle import (request, template, redirect)
+from core.libs.bottle import (request, template, redirect)
 from core.boot import settings as _settings
 import os, random, string
 
@@ -97,7 +97,7 @@ def step_1_post():
     if user_password == "" or len(user_password) < 8:
         step_error.append ("Your password cannot be blank or less than eight characters.")
         
-    from libs.bottle import touni
+    from core.libs.bottle import touni
     
     existing_password = get_ini("main", "password")
     new_password = user_password

@@ -7,7 +7,7 @@ from models import (TemplateMapping, Template, System, KeyValue,
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
-from libs.playhouse.dataset import DataSet
+from core.libs.playhouse.dataset import DataSet
 
 import os, datetime
 

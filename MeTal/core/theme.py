@@ -1,5 +1,5 @@
 import json
-from libs.playhouse.shortcuts import model_to_dict
+from core.libs.playhouse.shortcuts import model_to_dict
  
 def default(obj):
     import datetime

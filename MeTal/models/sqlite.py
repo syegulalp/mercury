@@ -2,13 +2,13 @@ import os
 import settings
 from models import init_db,db
 from models import Page, TextField
-from libs import bottle
+from core.libs import bottle
 from core.error import LoggedException
-from libs.peewee import OperationalError
+from core.libs.peewee import OperationalError
 _stderr = bottle._stderr
 
 try:
-    from libs.playhouse.sqlite_ext import FTSModel 
+    from core.libs.playhouse.sqlite_ext import FTSModel 
     
     class Page_Search(FTSModel):
         title = TextField()

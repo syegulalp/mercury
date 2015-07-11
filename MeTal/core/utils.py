@@ -3,11 +3,11 @@ import urllib, re, html
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, BASE_URL_ROOT)
  
-from libs.bottle import template, redirect
+from core.libs.bottle import template, redirect
 
 import hashlib, base64
 
-from libs.bottle import _stderr
+from core.libs.bottle import _stderr
 
 def url_escape(url):
     return urllib.parse.quote_plus(url)

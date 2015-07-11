@@ -2,7 +2,7 @@ from functools import wraps
 from settings import PLUGIN_PATH, DEBUG_MODE, PLUGIN_FILE_PATH, BASE_PATH, _sep
 import os, importlib
 
-from libs import bottle
+from core.libs import bottle
 _stderr = bottle._stderr
 
 from core.error import PluginImportError

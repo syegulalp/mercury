@@ -5,8 +5,8 @@ from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueu
     QueueInProgressException, PageTemplateError)
 from core.log import logger
 
-from libs.bottle import request
-from libs.peewee import DeleteQuery
+from core.libs.bottle import request
+from core.libs.peewee import DeleteQuery
 import json
 
 from models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
@@ -234,6 +234,7 @@ def queue_index_actions(blog):
             blog.for_log)) 
     
     else:
+        
         mappings = TemplateMapping.select().where(TemplateMapping.template << templates)
         
         fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
@@ -715,7 +716,7 @@ def build_page_fileinfo(page_id):
     tags = template_tags(page_id=page.id)
 
     for t in template_mappings:
-
+        print (t.id)
         path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
         master_path_string = path_string + "." + page.blog.base_extension       
         add_page_fileinfo(page, t, master_path_string,

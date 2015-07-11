@@ -1,4 +1,4 @@
-from libs.bottle import redirect, request
+from core.libs.bottle import redirect, request
 from models import User, Permission, Struct, MediaAssociation
 from settings import BASE_URL, SECRET_KEY
 from core.error import PermissionsException, UserNotFound

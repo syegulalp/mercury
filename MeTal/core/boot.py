@@ -38,7 +38,7 @@ def boot(aux_settings=None):
     
     import sys
 
-    from libs import bottle
+    from core.libs import bottle
     _stderr = bottle._stderr
 
     if len(sys.argv) > 0:
