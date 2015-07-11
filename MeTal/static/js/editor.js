@@ -65,7 +65,6 @@ function add_template(template_id, media_id){
     
     form = $('#img_template');
     form_array = $(form).serializeArray();
-    console.log(form_array);
     template_id = form_array[0].value;
     media_id = form_array[1].value;
     
@@ -314,7 +313,7 @@ function sidebar_wireup() {
     init_typeahead('tags');
     
     $('.typeahead').bind('typeahead:select', function(ev, suggestion) {
-        console.log('Selection: ' + suggestion);        
+        //console.log('Selection: ' + suggestion);        
     });
     
     $('.typeahead').on('keypress',function(event) {
@@ -351,10 +350,11 @@ function add_tag(e){
 
     tag = e.value;
     
+    if (tag.length<1) { return false; }
+    
     var no_match = true;
     
     $('.tag_link').each(function(){
-        console.log($(this).text());
         if (e.value == $(this).text())
         {
             $(this).parent().parent().fadeIn(200).fadeOut(200).fadeIn(200).fadeOut(200).fadeIn(200);
