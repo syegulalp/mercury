@@ -187,7 +187,7 @@ def step_4_pre():
     
     report = []
     
-    from models import db, Template
+    from core.models import db, Template
     try:
         db.connect()
     except:
@@ -221,7 +221,7 @@ def step_4_pre():
     
     with db.atomic():
         
-        from models import System
+        from core.models import System
         system_ref = System()
         
         system_ref.add_kv(

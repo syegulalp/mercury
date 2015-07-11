@@ -1,7 +1,7 @@
 import os
 import settings
-from models import init_db,db
-from models import Page, TextField
+from core.models import init_db,db
+from core.models import Page, TextField
 from core.libs import bottle
 from core.error import LoggedException
 from core.libs.peewee import OperationalError

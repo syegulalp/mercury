@@ -16,7 +16,7 @@ def json_dump(obj):
 
 def export_theme_for_blog(blog_id):
     
-    from models import Template, TemplateMapping, KeyValue
+    from core.models import Template, TemplateMapping, KeyValue
 
     theme_to_export = Template.select().where(
         Template.blog == blog_id)

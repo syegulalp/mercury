@@ -71,10 +71,10 @@ except:
     
 if DB_TYPE_NAME == 'sqlite':
     DB_TYPE = SqliteExtDatabase(FULL_SQLITE_DATABASE_PATH, threadlocals=True)
-    from models import sqlite
+    from core.models import sqlite
     DB = sqlite    
 
 if DB_TYPE_NAME == 'mysql':
     DB_TYPE = MySQLDatabase(DB_ID, user=DB_USER, passwd=DB_PASSWORD)
-    from models import mysql
+    from core.models import mysql
     DB = mysql

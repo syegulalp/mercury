@@ -1,5 +1,5 @@
 from core.utils import utf8_escape
-from models import Page, get_site
+from core.models import Page, get_site
 from settings import DB
 
 # TODO: merge these two 

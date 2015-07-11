@@ -7,7 +7,7 @@ _stderr = bottle._stderr
 
 from core.error import PluginImportError
 
-from models import Plugin, db
+from core.models import Plugin, db
 
 def plugin_before(plugin_function):
 

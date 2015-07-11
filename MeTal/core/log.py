@@ -6,7 +6,7 @@ import datetime
 logger = logging.getLogger(PRODUCT_NAME)
 logger.setLevel(logging.DEBUG)
 
-from models import Log, db
+from core.models import Log, db
 
 log_record = Log()
 

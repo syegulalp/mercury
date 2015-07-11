@@ -1,4 +1,4 @@
-from models import get_page, page_status
+from core.models import get_page, page_status
 from settings import BASE_URL
 from core import cms
 from core.utils import date_format, html_escape, breaks, utf8_escape

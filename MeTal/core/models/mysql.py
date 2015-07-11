@@ -1,7 +1,7 @@
 import settings
 from core.libs import bottle
 _stderr = bottle._stderr
-from models import Page
+from core.models import Page
 
 def make_db_connection():
     _stderr ("Using MySQL database: {}\n".format(settings.DB_ID))
@@ -9,7 +9,7 @@ def make_db_connection():
         recreate_database()
         
 def recreate_database():
-    from models import init_db
+    from core.models import init_db
     init_db.recreate_database()
     
 def create_index_table():

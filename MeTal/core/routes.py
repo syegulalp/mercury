@@ -8,7 +8,7 @@ from core import (cms, mgmt, ui, auth)
 
 from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
 
-from models import (db, get_blog, get_media,FileInfo)
+from core.models import (db, get_blog, get_media,FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.utils import csrf_hash
 
@@ -412,7 +412,7 @@ if DESKTOP_MODE:
         return (k)
 
     def system_site_index():
-        from models import Site
+        from core.models import Site
         sites = Site.select()
         
         tpl = '''

@@ -5,12 +5,12 @@ from core.menu import generate_menu, colsets, icons
 from core.error import UserNotFound, EmptyQueueError
 from core.search import blog_search_results, site_search_results
 
-from models import (Struct, get_site, get_blog, get_media, get_template,
+from core.models import (Struct, get_site, get_blog, get_media, get_template,
     template_tags, get_page, Page, PageRevision, Blog, Queue, Template, Log,
     TemplateMapping, get_user, Plugin, Media, User, db,
     MediaAssociation, Tag, template_type)
 
-from models.transaction import transaction
+from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, response, redirect)
 from core.libs import peewee
@@ -1028,7 +1028,7 @@ def blog_templates(blog_id):
     '''
     List all templates in a given blog
     '''
-    from models import publishing_mode
+    from core.models import publishing_mode
     
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)

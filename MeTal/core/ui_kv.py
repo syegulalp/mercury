@@ -35,7 +35,7 @@ def kv_ui(keys):
                 
         else:
             if n.parent.value_type == "Media":
-                from models import Media
+                from core.models import Media
                 m = Media.get(Media.id == n.value)
                 kv_ui.append(media_item.format(
                     m.preview_url,

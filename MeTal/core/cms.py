@@ -9,7 +9,7 @@ from core.libs.bottle import request
 from core.libs.peewee import DeleteQuery
 import json
 
-from models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
+from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
     Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User,
     FileInfoContext, Media, MediaAssociation, Struct, page_status)
 

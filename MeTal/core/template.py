@@ -1,4 +1,4 @@
-from models import Template
+from core.models import Template
 import re
 
 include_re = re.compile("\{\{incl(.*?)\}\}")

@@ -2,7 +2,7 @@ from core.utils import Status, encrypt_password
 from core.log import logger
 import json
 
-from models import (TemplateMapping, Template, System, KeyValue,
+from core.models import (TemplateMapping, Template, System, KeyValue,
     template_tags, Permission, Site, Blog, User, Category, Theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)

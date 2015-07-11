@@ -108,7 +108,7 @@ def create_basename(input_string, blog):
     are to be written. By default this is enforced in the database by way of a
     unique column constraint.
     '''
-    from models import Page
+    from core.models import Page
     
     if not input_string:
         input_string = "page"

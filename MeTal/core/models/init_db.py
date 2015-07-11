@@ -1,7 +1,7 @@
 import settings
 def recreate_database():
 	
-	from models import (db, User, Site, Blog, Page, PageCategory,
+	from core.models import (db, User, Site, Blog, Page, PageCategory,
 		KeyValue, Tag, TagAssociation, Category,
 		Theme, Template, TemplateMapping, Media, FileInfo,
 		Queue, Permission, MediaAssociation, PageRevision, FileInfoContext, Plugin, Log,)	

@@ -11,7 +11,7 @@ class SetupTest(unittest.TestCase):
 
         # tear down and create new DB
         
-        from models import init_db
+        from core.models import init_db
         from core.auth import role
         
         init_db.recreate_database()
