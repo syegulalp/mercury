@@ -14,5 +14,3 @@ def uninstall():
 
 def load():
     pass
-
-#load()
