@@ -156,13 +156,20 @@ def breaks(string):
     string = string.replace('/', '/<wbr>')
     return string
 
+def tpl_oneline(*args, **ka):
+    
+    if args[0][0]=='%':
+        args[0] = '\\'+args[0]
+
+    return tpl(*args,**ka) 
+
 def tpl(*args, **ka):
     '''
     Shim for the template function to force it to use a string that might be
     ambiguously a filename.
     '''
     # TODO: debug handler for errors in submitted user templates here?
-
+    
     x = template("\n" + args[0], ka)
     return x[1:]
 
