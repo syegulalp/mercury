@@ -85,7 +85,7 @@ def boot(aux_settings=None):
         
         settings.DB.make_db_connection()
         
-        import plugins
+        from data import plugins
         try:
             plugins.activate_plugins()
         except (plugins.PluginImportError, BaseException) as e:
