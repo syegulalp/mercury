@@ -132,3 +132,7 @@ body {
 #save_animation {
     display: inline-block;
 }
+
+.twitter-typeahead {
+    width: 100%
+}
