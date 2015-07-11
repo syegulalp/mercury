@@ -1,6 +1,6 @@
 import os, datetime
 
-from core.utils import (create_basename, Status, tpl, generate_date_mapping, date_format)
+from core.utils import (create_basename, Status, tpl, tpl_oneline, generate_date_mapping, date_format)
 from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueueError,
     QueueInProgressException, PageTemplateError)
 from core.log import logger
@@ -778,19 +778,18 @@ def build_index_fileinfo(template_id):
     This will port the code currently found in build_blog_fileinfo, much as the above function did.
     
     '''
-    
     report = []
     
     index_mappings = TemplateMapping.select().where(
-        TemplateMapping.id == template_id)
+        TemplateMapping.template == template_id)
     
     blog = index_mappings[0].template.blog
 
     tags = template_tags(blog_id=blog.id)
     
     for i in index_mappings:
-
-        path_string = tpl(i.path_string, **tags.__dict__)
+        
+        path_string = tpl_oneline(i.path_string, **tags.__dict__)
 
         master_path_string = path_string
 
