@@ -716,7 +716,6 @@ def build_page_fileinfo(page_id):
     tags = template_tags(page_id=page.id)
 
     for t in template_mappings:
-        print (t.id)
         path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
         master_path_string = path_string + "." + page.blog.base_extension       
         add_page_fileinfo(page, t, master_path_string,
