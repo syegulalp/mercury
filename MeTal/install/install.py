@@ -102,8 +102,6 @@ def step_1_post():
     existing_password = get_ini("main", "password")
     new_password = user_password
     
-    print (existing_password, new_password)
-    
     if (existing_password == "" or
         existing_password != new_password):
         existing_password = new_password
@@ -121,8 +119,6 @@ def step_1_post():
     return {}    
 
 def step_2_pre():
-    
-    print (request.environ)
     
     domain = get_ini("path", "base_url_root")
     if domain is None: 
@@ -168,8 +164,7 @@ def step_3_post():
     database_type = request.forms.getunicode('dbtype')
     
     if database_type == 'sqlite':
-        store_ini('db', 'db_type_name', 'sqlite')
-        print ('db')
+        store_ini('db', 'db_type_name', 'sqlite')        
         
     if database_type == 'mysql':
         store_ini('db', 'db_type_name', 'mysql')
