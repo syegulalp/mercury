@@ -12,7 +12,7 @@
   
 <div id="modal_container"></div>
   
-<nav class="navbar navbar-default" style="margin-bottom:8px">
+<nav id="menu_bar" class="navbar navbar-default" style="margin-bottom:8px">
   <div class="">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">

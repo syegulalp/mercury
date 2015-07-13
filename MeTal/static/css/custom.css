@@ -136,3 +136,11 @@ body {
 .twitter-typeahead {
     width: 100%
 }
+
+#menu_bar {
+  margin-bottom: 8px;
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
