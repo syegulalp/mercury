@@ -1,7 +1,7 @@
 import os, urllib, re
 
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
-    APPLICATION_PATH, #DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT, 
+    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT, 
     SECRET_KEY, _sep)
 
 from core import (cms, mgmt, ui, auth)
