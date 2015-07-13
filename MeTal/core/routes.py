@@ -82,12 +82,12 @@ def plugin_settings(plugin_id):
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
-    from data.plugins import enable_plugin
+    from core.plugins import enable_plugin
     enable_plugin(plugin_id)
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
-    from data.plugins import disable_plugin
+    from core.plugins import disable_plugin
     disable_plugin(plugin_id)
 
 @_route(BASE_PATH + '/test/<blog_id:int>')
