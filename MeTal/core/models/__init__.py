@@ -722,6 +722,7 @@ class Page(BaseModel):
             TemplateMapping.is_default == True)
         
         default_fileinfo = FileInfo.get(
+            FileInfo.page == self,
             FileInfo.template_mapping == default_mapping) 
         
         return default_fileinfo
@@ -1296,7 +1297,7 @@ class Plugin(BaseModel):
     
     @property
     def _plugin_list(self):
-        from data.plugins import plugin_list
+        from core.plugins import plugin_list
         return plugin_list
     
     def _get_plugin_property(self, plugin_property, deactivated_message):
