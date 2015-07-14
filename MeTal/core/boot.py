@@ -44,7 +44,9 @@ def boot(aux_settings=None):
     if len(sys.argv) > 0:
         arguments = setup_args()
 
-    bottle.TEMPLATE_PATH = [settings.APPLICATION_PATH + "/views"]
+    bottle.TEMPLATE_PATH = [settings.APPLICATION_PATH +
+        settings._sep+"core"+
+        settings._sep+"views"]
 
     _stderr (settings.PRODUCT_NAME + "\n")
     _stderr ("Running in " + settings.APPLICATION_PATH + "\n")    
@@ -113,7 +115,6 @@ def boot(aux_settings=None):
         
         bottle.run(app,
             server="auto",
-            # port=settings.DEFAULT_LOCAL_PORT[1:],
             port=settings.DEFAULT_LOCAL_PORT[1:],
             debug=settings.DEBUG_MODE)
     
