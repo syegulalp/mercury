@@ -73,6 +73,11 @@ def register_plugin(path_to_plugin):
                 raise PluginImportError("Plugin at " + PLUGIN_FILE_PATH +
                     "/" + path_to_plugin + " is already registered.")
 
+plugin_action = {
+    'after':plugin_after,
+    'before':plugin_before
+    }
+
 plugin_attributes = (
     '__plugin_name__',
     '__short_name__',
@@ -121,19 +126,17 @@ def activate_plugins():
         
         try:
             plugin_loader = added_plugin.load()
+            
             for func in plugin_loader:
-                if func == 'before':
-                    action = plugin_before
-                if func == 'after':
-                    action = plugin_after
-                fn = plugin_loader[func]
-                module = importlib.import_module(fn[0])
-                func_to_wrap = module.__dict__[fn[1]]                    
-                func_wrapper = fn[2]
-                module.__dict__[fn[1]] = action(func_wrapper)(func_to_wrap)            
+                action = plugin_action[func['action']]
+                module = importlib.import_module(func['module'])
+                func_to_wrap = module.__dict__[func['function']]                    
+                func_wrapper = func['wrap']
+                module.__dict__[func['function']] = action(func_wrapper)(func_to_wrap)
+                            
         except BaseException as e:
             plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
-                "' could not be activated. Its source may be damaged.")
+                "' could not be activated. Its source may be damaged. ({})".format(e))
             continue
             
         _stddebug("Plugin activated: " + added_plugin.__plugin_name__ + "\n")

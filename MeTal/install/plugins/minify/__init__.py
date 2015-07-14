@@ -13,9 +13,12 @@ def load():
     
     from .lib import minify
     
-    return {'after':
-        ('core.cms','generate_page_text',minify)
-        }
+    return ({
+        'action':'after',
+        'module':'core.cms',
+        'function':'generate_page_text',
+        'wrap':minify
+        },)
     
 def uninstall():
     pass

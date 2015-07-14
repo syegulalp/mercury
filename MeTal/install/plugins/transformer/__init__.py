@@ -15,6 +15,9 @@ def uninstall():
 def load():
     from .lib import transform 
 
-    return {'before':
-        ('core.cms', 'generate_page_text', transform)
-        }
+    return ({
+        'action':'before',
+        'module':'core.cms',
+        'function':'generate_page_text',
+        'wrap':transform
+        },)
