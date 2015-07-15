@@ -40,8 +40,15 @@ menus = {
         'menu':(
             # 'system_settings',
             'dashboard', 'system_queue', 'system_log', 'system_plugins',
+            'system_info',
             'sites_div', 'all_sites', 'create_site'),
         },
+    'system_info':{
+        'parent':'system',
+        'label':'System information',
+        'path':lambda x:'/system/info',
+        'parent_ref':_none,
+        },    
     'sites_div':{
         'label':'Sites',
         'divider':True

@@ -226,10 +226,45 @@ def main_ui():
     return tpl
 
 @transaction
+def system_info():
+    
+    user = auth.is_logged_in(request)
+    
+    tags = template_tags(
+        user=user)
+    
+    python_list = []
+    environ_list = []
+    settings_list = []
+    
+    # Generate interpreter info
+    import os
+    data = os.environ.__dict__['_data']
+    for n in data:
+        environ_list.append((n, data[n]))
+    
+    # List all settings variables
+    import settings    
+    s_dict = settings.__dict__
+    for n in s_dict:
+        if n is not '__builtins__':
+            settings_list.append((n, s_dict[n]))
+        
+    # List all plugins
+    
+    tpl = template('system_info',
+        menu=generate_menu('all_sites', None),
+        search_context=(search_context['sites'], None),
+        environ_list=sorted(environ_list),
+        settings_list=sorted(settings_list),
+        **tags.__dict__)
+    
+    return tpl
+
+@transaction
 def system_sites(errormsg=None):
         
     user = auth.is_logged_in(request)
-    # permission = auth.is_sys_admin(user)
     
     try:
         sites_searched, search = site_search_results(request)
@@ -319,7 +354,7 @@ def system_plugins():
 
 @transaction
 def register_plugin(plugin_path):
-    from plugins import register_plugin, PluginImportError
+    from core.plugins import register_plugin, PluginImportError
     try:
         new_plugin = register_plugin(plugin_path)
     except PluginImportError as e:

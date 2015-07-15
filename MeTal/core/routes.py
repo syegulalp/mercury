@@ -80,6 +80,10 @@ def system_plugins():
 def plugin_settings(plugin_id):
     pass
 
+@_route(BASE_PATH + "/system/info")
+def site_info():
+    return ui.system_info()
+
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
     from core.plugins import enable_plugin
