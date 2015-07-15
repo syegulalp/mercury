@@ -52,9 +52,13 @@ def store_ini(section, setting, value):
         raise SetupError(str(e.__class__.__name__) + ": " + str(e))
 
 def step_0_pre():
+    
     path_to_check = _settings.APPLICATION_PATH + _settings.DATA_FILE_PATH
     if os.path.isdir(path_to_check) is False:
         os.makedirs(path_to_check)
+        
+    with open(path_to_check+_settings._sep+"__init__.py","w",encoding='utf-8') as output_file:
+        output_file.write('')        
     
     store_ini('main', 'INSTALL_STEP', '0')
     store_ini('key', 'PASSWORD_KEY', generate_key(32))
