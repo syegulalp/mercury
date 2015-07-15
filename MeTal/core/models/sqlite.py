@@ -29,7 +29,12 @@ def recreate_database():
     
     try:
         os.mkdir(settings.APPLICATION_PATH+"/data")
-    except FileExistsError: pass
+    except OSError as e:
+        import errno
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise e
 
     init_db.recreate_database()
     
