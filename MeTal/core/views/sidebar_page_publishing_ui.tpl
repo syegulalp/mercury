@@ -40,10 +40,13 @@
         [<i>Save page to create a permalink</i>]
         % else:
         {{!utils.breaks(page.permalink)}}
-        % if page.status_id == 2:
-        <a title="See preview or live page" href="{{page.preview_permalink}}" target="_blank">
-        <span class="glyphicon glyphicon-new-window"></span>
+        % if page.status_id != 2:
+        % preview_link = page.preview_permalink
+        % else:
+        % preview_link = page.permalink
         % end
+        <a title="See preview or live page" href="{{preview_link}}" target="_blank">
+        <span class="glyphicon glyphicon-new-window"></span>
         % end
         </a>
     </p>
