@@ -9,6 +9,8 @@ function toggle_search()
 }
 
 function clear_search() {
-    $('#search_text').val('');
-    $('#search_button').click();
+    if ($('#search_text').val().length>0) 
+    {$('#search_text').val('');}
+    else    
+    {$('#search_button').click();}
 }
