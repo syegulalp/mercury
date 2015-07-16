@@ -1,7 +1,7 @@
 import os
 import settings
 from core.models import init_db,db
-from core.models import Page, TextField
+from core.models import Page, TextField, get_site
 from core.libs import bottle
 from core.error import LoggedException
 from core.libs.peewee import OperationalError
@@ -84,30 +84,49 @@ def recreate_indexes():
     Page_Search.rebuild()
     Page_Search.optimize()
     
-def site_search(search_terms_enc):
+def site_search(search_terms_enc, site):
+    ct = 0
+    
+    if site is not None:
+        site_to_search = get_site(site).pages().select(Page.id).tuples()
+    
     try:
         search_results = (Page_Search.select(Page_Search.id)
-            .where(Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
+            .where(Page_Search.id << site_to_search,
+                Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
             .order_by(Page_Search.id.desc()).tuples())
-        ct = search_results.count()
-        # This statement is used to trap FTS4 errors
+        ct = search_results.count() # This statement is used to trap FTS4 errors
     except OperationalError:
+        pass
+    if ct == 0:
         search_results = (Page.select(Page.id)
-            .where(Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
+            .where(Page.blog.site == site,
+                Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
             .order_by(Page.id.desc()).tuples())
+    
     return search_results
     
-def blog_search(search_terms_enc):
+def blog_search(search_terms_enc, blog):
+    
+    ct = 0
+    
+    if blog is not None:
+        blog_to_search = blog.pages().select(Page.id).tuples()
+    
     try:
         search_results = (Page_Search.select(Page_Search.id)
-            .where(Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
+            .where(Page_Search.id << blog_to_search,
+                Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
             .order_by(Page_Search.id.desc()).tuples())
-        ct = search_results.count()
-        # This statement is used to trap FTS4 errors
+        ct = search_results.count() # This statement is used to trap FTS4 errors
     except OperationalError:
+        pass
+    if ct == 0:
         search_results = (Page.select(Page.id)
-            .where(Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
+            .where(Page.blog == blog,
+                Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
             .order_by(Page.id.desc()).tuples())
+    
     return search_results
     
 def media_search():
@@ -132,4 +151,4 @@ def post_recreate():
     return ""
 
 def db_warnings():
-    return LoggedException, "{} ({})"
+   return LoggedException, "{} ({})"

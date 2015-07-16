@@ -60,16 +60,18 @@ ALTER TABLE `page` ADD FULLTEXT INDEX `page_title` (`title`);
 ALTER TABLE `page` ADD FULLTEXT INDEX `page_text` (`text`);
 '''
 
-def site_search(search_terms_enc):
+def site_search(search_terms_enc, site):
     
     return (Page.select(Page.id)
-        .where(Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
+        .where(Page.blog.site == site,
+            Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
         .order_by(Page.id.desc()).tuples())
     
-def blog_search(search_terms_enc):
+def blog_search(search_terms_enc,blog):
     
     return (Page.select(Page.id)
-        .where(Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
+        .where(Page.blog == blog,
+            Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
         .order_by(Page.id.desc()).tuples())
     
 def media_search():

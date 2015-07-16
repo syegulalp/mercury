@@ -373,7 +373,7 @@ def site(site_id, errormsg=None):
     permission = auth.is_site_member(user, site)
     
     try:
-        blogs_searched, search = site_search_results(request, site.id)
+        blogs_searched, search = site_search_results(request, site)
     except (KeyError, ValueError):
         blogs_searched, search = None, None
     

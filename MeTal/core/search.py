@@ -1,8 +1,6 @@
 from core.utils import utf8_escape
-from core.models import Page, get_site
 from settings import DB
 
-# TODO: merge these two 
 def blog_search_results(request, blog=None):
         
     try:
@@ -14,14 +12,11 @@ def blog_search_results(request, blog=None):
         raise ValueError('Search field is empty.')
     
     search_terms_enc = utf8_escape(search_terms)
-    pages_searched = DB.blog_search(search_terms_enc)
-    
-    if blog is not None:
-        pages_searched = blog.pages(pages_searched).select(Page.id).tuples()
+    pages_searched = DB.blog_search(search_terms_enc, blog)
     
     return pages_searched, search_terms
 
-def site_search_results(request, site_id=None):
+def site_search_results(request, site=None):
         
     try:
         search_terms = request.query['search']
@@ -32,10 +27,7 @@ def site_search_results(request, site_id=None):
         raise ValueError('Search field is empty.')
     
     search_terms_enc = utf8_escape(search_terms)
-    pages_searched = DB.site_search(search_terms_enc)
-
-    if site_id is not None:
-        pages_searched = get_site(site_id).pages(pages_searched).select(Page.id).tuples()
+    pages_searched = DB.site_search(search_terms_enc, site)    
     
     return pages_searched, search_terms
 
