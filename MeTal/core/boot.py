@@ -99,7 +99,9 @@ def boot(aux_settings=None):
         webbrowser.open('http://' + settings.DEFAULT_LOCAL_ADDRESS + settings.DEFAULT_LOCAL_PORT + '/' + arguments.url)
 
     
-    if (settings.DEBUG_MODE is True and settings.NO_SETUP is False):
+    if (settings.DEBUG_MODE is True and settings.NO_SETUP is False
+        and settings.USE_WSGI is False):
+        
         from core.log import logger
         logger.info("Starting server at {} on port {}".format(
             settings.DEFAULT_LOCAL_ADDRESS,
