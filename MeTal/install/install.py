@@ -290,6 +290,8 @@ def step_4_pre():
         
         # copy default plugins from install directory
         
+        # install plugins using APIs
+        
         # TODO: export installed theme to data directory
     
     db.close()
@@ -314,23 +316,26 @@ def step_4_pre():
     if request.environ['HTTP_HOST'] == _settings.DEFAULT_LOCAL_ADDRESS + _settings.DEFAULT_LOCAL_PORT:
         config_parser.add_section('server')
         config_parser.set('server', 'DESKTOP_MODE', 'True')
-    
+        
     try:
         with open(output_file_name, "w", encoding='utf-8') as output_file: 
             config_parser.write(output_file)
     except BaseException as e:
         raise SetupError(str(e.__class__.__name__) + ": " + str(e))
     
+    try:
+        os.remove(config_file_name)
+    except FileNotFoundError:
+        pass
+    
     finished = '''
     <p>Installation is complete.
     '''
-    
+        
     return {'report':report,
         'finished':finished}
 
 def step_4_post():
-    
-    # TODO: securely delete setup file 
     
     from core.boot import reboot
     reboot()
