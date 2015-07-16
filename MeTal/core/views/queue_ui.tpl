@@ -31,7 +31,7 @@
                 <td>{{row.priority}}</td>
                 <td>{{job_type[row.job_type]}}</td>
                 <td>{{row.data_string}}</td>
-                <td>{{row.date_touched}}</td>
+                <td>{{utils.date_format(row.date_touched)}}</td>
             </tr>
             % end
             % end
