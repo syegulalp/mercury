@@ -62,25 +62,4 @@ MAX_BASENAME_LENGTH = 128
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
-from configparser import ConfigParser
 
-config_file = APPLICATION_PATH + os.sep + 'data' + os.sep + INI_FILE_NAME
-
-parser = ConfigParser()
-parser.read(config_file)
-
-if len(parser.sections()) == 0:
-    NO_SETUP = True
-else:
-    NO_SETUP = False
-
-    for items in parser.sections():
-        for name, value in parser.items(items):
-            option = name.upper()
-            if value in ('True', 'False', 'None'):
-                locals()[option] = parser.getboolean(items, option)
-            else:
-                locals()[option] = value
-            
-if INSTALL_STEP is not None:
-    NO_SETUP = True

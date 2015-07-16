@@ -20,8 +20,7 @@ def safe_redirect(url):
     if url_unquoted.startswith(BASE_URL_ROOT + "/"):
         redirect(url)
     else:
-        redirect(BASE_URL)
-    
+        redirect(BASE_URL)    
    
 def _stddebug_():
     from core.boot import settings

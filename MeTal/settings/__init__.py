@@ -38,6 +38,29 @@ SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
 
+from configparser import ConfigParser
+
+config_file = APPLICATION_PATH + os.sep + 'data' + os.sep + INI_FILE_NAME
+
+parser = ConfigParser()
+parser.read(config_file)
+
+if len(parser.sections()) == 0:
+    NO_SETUP = True
+else:
+    NO_SETUP = False
+
+    for items in parser.sections():
+        for name, value in parser.items(items):
+            option = name.upper()
+            if value in ('True', 'False', 'None'):
+                locals()[option] = parser.getboolean(items, option)
+            else:
+                locals()[option] = value
+            
+if INSTALL_STEP is not None:
+    NO_SETUP = True
+
 try:
     # TODO: http or https?
     BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
