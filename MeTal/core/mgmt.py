@@ -104,6 +104,12 @@ def install_theme_to_blog(installed_theme, blog):
         kv_to_change.parent = kv_index[parent]
         kv_to_change.save()
         
+    from core import cms
+    for n in blog.pages():
+        cms.build_page_fileinfo(n.id)
+        
+    for n in blog.index_templates:
+        cms.build_index_fileinfo(n.id)
 
 def site_create(**new_site_data):
     
