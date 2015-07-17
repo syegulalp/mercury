@@ -42,10 +42,12 @@
         {{!utils.breaks(page.permalink)}}
         % if page.status_id != 2:
         % preview_link = page.preview_permalink
+        % preview_text = "See preview"
         % else:
         % preview_link = page.permalink
+        % preview_text = "See live page"
         % end
-        <a title="See preview or live page" href="{{preview_link}}" target="_blank">
+        <a title="{{preview_text}}" href="{{preview_link}}" target="_blank">
         <span class="glyphicon glyphicon-new-window"></span>
         % end
         </a>
