@@ -626,7 +626,7 @@ class Page(BaseModel):
     def tags(self):
         tag_list = Tag.select().where(
             Tag.id << TagAssociation.select(TagAssociation.tag).where(
-                TagAssociation.page == self))
+                TagAssociation.page == self)).order_by(Tag.tag)
         
         return tag_list
     
