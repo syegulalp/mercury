@@ -1,13 +1,15 @@
 # MeTal
-Pure Python CMS and blogging solution
+Pure Python (3.2+) CMS and blogging solution
 
 ## Features
 * Open source (MIT license)
-* Pure Python; no binaries or external dependencies save for the Python 3 interpreter
+* Pure Python; no binaries or external dependencies save for the Python interpreter
 * Static HTML publishing
 * Dynamic page and site previews
 * Plugin system
- 
+* Drag-and-drop media management included but optional
+* Multiple sites and blogs supported in a single installation
+* Multiple users and granular permissions (contribute, write, edit, publish, manage, etc.)
 
 ## Planned additions
 * Multiple edit format support (e.g., Markdown)
