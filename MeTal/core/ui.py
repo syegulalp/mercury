@@ -19,7 +19,7 @@ from settings import (BASE_URL, BASE_PATH, SECRET_KEY, _sep)
 
 import re, datetime, json
 from os.path import exists as _exists
-from os import remove as _remove
+from os import remove as _remove, makedirs
 
 queue_selections = (
     ('Remove from queue', '1', ''),
@@ -1589,14 +1589,16 @@ def page_media_upload(page_id):
     
     for n in request.files:
         x = request.files.get(n)
-        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
+        media_path = page.blog.local_path + page.blog.media_path
+        file_path = media_path + _sep + x.filename
         if _exists(file_path):
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
             cms.register_media(x.filename, file_path, user, page=page)
+            if not _exists(media_path):
+                makedirs(media_path)
             x.save(file_path)
-            
             
     tags = template_tags(page_id=page_id)
     
