@@ -999,7 +999,7 @@ def blog_media_delete(blog_id, media_id):
         report.append('<h3>Media <b>#{} ({})</b> successfully deleted</h3>'.format(
             media.id, media.friendly_name))
         report.append('<a href="{}/blog/{}/media">Return to the media listing</a>'.format(
-            BASE_PATH, blog.id))
+            BASE_URL, blog.id))
     else:
         report.append('<h3>You are about to delete media object <b>#{} ({})</b> from blog <b>{}</b></h3>'.format(
             media.id, media.friendly_name,

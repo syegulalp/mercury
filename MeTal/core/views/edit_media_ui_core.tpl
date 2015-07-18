@@ -45,7 +45,7 @@
         <div class="col-sm-offset-2 col-sm-9">
             <button type="submit" class="btn btn-primary">Save changes</button>
             <span class='pull-right'>
-                <a href="{{settings.BASE_PATH}}/blog/{{blog.id}}/media/{{media.id}}/delete"><button type="button" name="delete" class="btn btn-danger">Delete from server</button></a>
+                <a href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/delete"><button type="button" name="delete" class="btn btn-danger">Delete from server</button></a>
             </span>            
         </div>
     </div>
