@@ -363,16 +363,21 @@ function add_tag(e){
         }
     }); 
     
-    if (no_match==false) { return false;}       
+    if (no_match==false) { return false;}
+    
+    $('.typeahead').typeahead('val', '');
+    $('.typeahead').typeahead('close');       
     
     var fd=new FormData();
     fd.append('csrf',global.csrf);
     fd.append('tag',tag)
     
     if (global.page == "None")
-    { url_link = "blog/"+global.blog}
+    { url_link = "blog/"+global.blog;}
     else
-    { url_link = "page/"+global.page}
+    { url_link = "page/"+global.page;}
+    
+    $('#tag_activity').show();
     
     $.ajax({
         type:"POST",
@@ -383,8 +388,6 @@ function add_tag(e){
         data: fd,
     }).done(function (data,textStatus,request)
         {
-            $('.typeahead').typeahead('val', '');
-            $('.typeahead').typeahead('close');
             
             $('#tag_list').append($(data));
             
@@ -395,6 +398,8 @@ function add_tag(e){
         server_failure(xhr,status,error,
             "Sorry, an error occurred when trying to add tag: ");
 
+    }).always(function(){
+        $('#tag_activity').hide();
     }); 
  
 }
