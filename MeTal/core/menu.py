@@ -251,6 +251,14 @@ menus = {
         'button_title':'All media in this blog',
         'parent_ref':lambda x:x.blog,
         },
+    'blog_delete_media':{
+        'parent':'blog_edit_media',
+        'button_label':lambda x:'Delete #{}'.format(x.id),
+        'path':lambda x:BASE_URL + "/blog/{}/media/{}/delete".format(x.blog.id,x.id),
+        'button': lambda x:'Media #{}'.format(x.id),
+        'button_title':lambda x:'Media #{}'.format(x.id),
+        'parent_ref':lambda x:x,
+        },        
     'pages_div':{
         'label':'Pages',
         'divider':True
