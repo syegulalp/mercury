@@ -1001,8 +1001,9 @@ def blog_media_delete(blog_id, media_id):
         report.append('<a href="{}/blog/{}/media">Return to the media listing</a>'.format(
             BASE_URL, blog.id))
     else:
-        report.append('<h3>You are about to delete media object <b>#{} ({})</b> from blog <b>{}</b></h3>'.format(
-            media.id, media.friendly_name,
+        report.append('<h3>You are about to delete media object <a href="{}">{}</a> from blog <b>{}</b></h3>'.format(
+            media.link_format,
+            media.for_display,
             blog.for_display))
         report.append("If you delete this media object, it will no longer be available to the following pages:")
         
@@ -1015,16 +1016,21 @@ def blog_media_delete(blog_id, media_id):
         report.append(used_in_tpl.format("".join(used_in)))
         
         ok_button = '''
+<hr/>
 <form method='post'>{}<input type='hidden' name='confirm' value='y'>
-<button class='btn' action='submit'>Delete</button></form>
-'''.format(tags.csrf_token)
+<span class="pull-right">
+<a href="../{}/edit"><button type='button' class='btn btn-primary'>No, cancel</button></a>
+</span>
+<button class='btn btn-danger' action='submit'>Yes, delete this media</button>
+</form>
+'''.format(tags.csrf_token,media.id)
         
         report.append(ok_button)       
     
     
     
     tpl = template('report_ui',
-        menu=generate_menu('blog_manage_media', blog),
+        menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
         search_context=(search_context['blog_media'], blog),
@@ -1592,6 +1598,7 @@ def page_media_upload(page_id):
         media_path = page.blog.local_path + page.blog.media_path
         file_path = media_path + _sep + x.filename
         if _exists(file_path):
+            from core.error import FileExistsError
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:

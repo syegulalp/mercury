@@ -38,3 +38,9 @@ class PageTemplateError(LoggedException):
 
 class DatabaseError(LoggedException):
     pass
+
+try:
+    FileExistsError
+except NameError:
+    class FileExistsError(LoggedException):
+        pass
