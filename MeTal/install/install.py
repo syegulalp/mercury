@@ -57,7 +57,7 @@ def step_0_pre():
     if os.path.isdir(path_to_check) is False:
         os.makedirs(path_to_check)
         
-    with open(path_to_check+_settings._sep+"__init__.py","w",encoding='utf-8') as output_file:
+    with open(path_to_check + _settings._sep + "__init__.py", "w", encoding='utf-8') as output_file:
         output_file.write('')        
     
     store_ini('main', 'INSTALL_STEP', '0')
@@ -110,7 +110,7 @@ def step_1_post():
         existing_password != new_password):
         existing_password = new_password
         
-    if existing_password !=  request.forms.getunicode('input_password_confirm'):
+    if existing_password != request.forms.getunicode('input_password_confirm'):
         step_error.append('Your password and password confirmation did not match.')
         
     if len(step_error) > 0:
@@ -275,9 +275,11 @@ def step_4_pre():
         new_user_permissions.save()
         
         report.append("Initial blog created successfully.")
+        
+        install_directory = (_settings.APPLICATION_PATH + _settings._sep + 
+            "install")
     
-        with open(_settings.APPLICATION_PATH + _settings._sep + 
-            "install" + _settings._sep + "templates.json", "rb") as json_file:
+        with open(install_directory + _settings._sep + "templates.json", "rb") as json_file:
                 json_text = json_file.read()
         
         new_theme = mgmt.install_theme_to_site(json_text)
@@ -288,11 +290,26 @@ def step_4_pre():
         
         report.append("Theme installed in new blog successfully.")
         
-        # copy default plugins from install directory
+        plugindir = (_settings.APPLICATION_PATH + _settings._sep + 'data' + 
+            _settings._sep + 'plugins')
         
-        # install plugins using APIs
+        import shutil
         
+        if (os.path.isdir(plugindir)):
+            shutil.rmtree(plugindir)
+            
+        shutil.copytree(install_directory + _settings._sep + 'plugins',
+            plugindir)
+        
+        from core import plugins
+        
+        for x in os.listdir(plugindir):
+            if (os.path.isdir(plugindir + _settings._sep + x) is True and
+                x != '__pycache__'):
+                plugins.register_plugin(x)
+
         # TODO: export installed theme to data directory
+        
     
     db.close()
     
@@ -378,7 +395,7 @@ def button(step, next_action, error=None):
     if step > 0:
         previous = '''
 <a href="{}/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
-'''.format(_settings.BASE_URL_PATH,step - 1)
+'''.format(_settings.BASE_URL_PATH, step - 1)
     else:
         previous = ""
         
@@ -391,7 +408,7 @@ def button(step, next_action, error=None):
         if error is None:
             next_str = '''
 <a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
-'''.format(_settings.BASE_URL_PATH,step + 1)
+'''.format(_settings.BASE_URL_PATH, step + 1)
         else:
             next_str = "<button class='btn btn-danger'>Fix the above error and click here to continue</button>"
 
@@ -602,7 +619,7 @@ def crumbs(step):
         if m > step:
             crumb = crumb_element_active.format(n['crumb'])
         else:
-            crumb = crumb_element_link.format(_settings.BASE_URL_PATH,m, n['crumb'])
+            crumb = crumb_element_link.format(_settings.BASE_URL_PATH, m, n['crumb'])
         
         crumbs.append(crumb)
         m += 1
@@ -624,7 +641,7 @@ def step(step):
             error_msg = e
         else:
             step += 1
-            redirect('{}/install/step-{}'.format(_settings.BASE_URL_PATH,step))
+            redirect('{}/install/step-{}'.format(_settings.BASE_URL_PATH, step))
             
     else:
         try:
@@ -644,7 +661,7 @@ def step(step):
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
             button=template_button,
-            form_action = '{}/install/step-{}'.format(_settings.BASE_URL_PATH,step),
+            form_action='{}/install/step-{}'.format(_settings.BASE_URL_PATH, step),
             **results),
         crumbs=crumbs(step),
         error=error_msg)

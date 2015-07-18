@@ -44,7 +44,7 @@ def register_plugin(path_to_plugin):
     if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
         
         try:
-            added_plugin = importlib.import_module("plugins." + path_to_plugin)
+            added_plugin = importlib.import_module("data.plugins." + path_to_plugin)
         except SystemError:
             raise PluginImportError("Plugin at " + PLUGIN_PATH + _sep +
                 path_to_plugin + " could not be registered.")
