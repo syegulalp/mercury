@@ -60,6 +60,8 @@ ITEMS_PER_PAGE = 15
 # Maximum length of basenames for pages.
 MAX_BASENAME_LENGTH = 128
 
+DATABASE_TIMEOUT = 10
+
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
 

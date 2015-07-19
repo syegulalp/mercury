@@ -93,7 +93,10 @@ except:
     DB_TYPE_NAME = 'sqlite'
     
 if DB_TYPE_NAME == 'sqlite':
-    DB_TYPE = SqliteExtDatabase(FULL_SQLITE_DATABASE_PATH, threadlocals=True)
+    DB_TYPE = SqliteExtDatabase(
+        FULL_SQLITE_DATABASE_PATH,
+        threadlocals=True,
+        timeout=DATABASE_TIMEOUT)
     from core.models import sqlite
     DB = sqlite    
 
