@@ -915,7 +915,6 @@ def blog_media_edit_save(blog_id, media_id):
     '''
     Save changes to a media entry.
     '''
-    
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     is_member = auth.is_blog_member(user, blog)
@@ -973,7 +972,7 @@ def blog_media_edit_output(tags):
 # with a list of all the pages that will be affected by this delete action
 # maybe later also offer the option to cleanly remove links to such things?
 @transaction
-def blog_media_delete(blog_id, media_id):
+def blog_media_delete(blog_id, media_id, confirm='N'):
     
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
@@ -986,12 +985,12 @@ def blog_media_delete(blog_id, media_id):
     
     report = []
         
-    if request.forms.get('confirm') == "y":
+    if confirm == "y":
         
         try:
             _remove(media.path)
-        except BaseException:
-            raise
+        except:
+            pass
         
         media.delete_instance(recursive=True,
             delete_nullable=True)
@@ -1587,10 +1586,11 @@ def page_media_upload_confirm(page_id):
 @transaction
 def page_media_upload(page_id):
     
+    #with db.atomic():
     user = auth.is_logged_in(request)
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
-    
+
     overwrite = []
     
     for n in request.files:
@@ -1602,6 +1602,7 @@ def page_media_upload(page_id):
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
+            #with db.atomic():
             cms.register_media(x.filename, file_path, user, page=page)
             if not _exists(media_path):
                 makedirs(media_path)

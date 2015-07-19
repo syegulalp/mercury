@@ -94,14 +94,24 @@ def disable_plugin(plugin_id):
     from core.plugins import disable_plugin
     disable_plugin(plugin_id)
 
+
 @_route(BASE_PATH + '/test/<blog_id:int>')
 def test_function(blog_id):
-    db.connect()
     with db.atomic():
-        blog = get_blog(blog_id)
-        f_n = cms.purge_blog_(blog)
-    db.close()
-    return f_n
+        from core.models import Media
+        from os import remove as _remove
+        media_list = Media.select().where(
+            Media.id>3)
+        n=""
+        for x in media_list:
+            n+=str(x.id)+","
+            try:
+                _remove(x.path)
+            except:
+                pass
+            x.delete_instance(recursive=True,
+                delete_nullable=True)
+    return n
 
 @_route(BASE_PATH + '/login')
 def login():
@@ -230,9 +240,12 @@ def blog_media_edit_save(blog_id, media_id):
     return ui.blog_media_edit_save(blog_id, media_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
-@_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete(blog_id, media_id):
-    return ui.blog_media_delete(blog_id, media_id)
+    return ui.blog_media_delete(blog_id, media_id,None)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
+def blog_media_delete_confirm(blog_id, media_id):
+    return ui.blog_media_delete(blog_id, media_id,request.forms.get('confirm'))
         
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
