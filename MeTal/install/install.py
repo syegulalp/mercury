@@ -276,19 +276,23 @@ def step_4_pre():
         
         report.append("Initial blog created successfully.")
         
+        # make this into a mgmt function
+        
+        # make into a common variable?
         install_directory = (_settings.APPLICATION_PATH + _settings._sep + 
             "install")
     
         with open(install_directory + _settings._sep + "templates.json", "rb") as json_file:
                 json_text = json_file.read()
         
-        new_theme = mgmt.install_theme_to_site(json_text)
+        new_theme = mgmt.install_theme_to_system(json_text)
         
         report.append("Theme created and installed successfully to system.") 
         
         mgmt.install_theme_to_blog(new_theme, new_blog)
         
         report.append("Theme installed in new blog successfully.")
+        
         
         plugindir = (_settings.APPLICATION_PATH + _settings._sep + 'data' + 
             _settings._sep + 'plugins')
