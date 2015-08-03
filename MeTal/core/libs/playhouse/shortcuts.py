@@ -25,11 +25,11 @@ try:
 except ImportError:
     AES = Random = None
 
-from libs.peewee import *
-from libs.peewee import binary_construct
-from libs.peewee import Field
-from libs.peewee import FieldDescriptor
-from libs.peewee import SelectQuery
+from core.libs.peewee import *
+from core.libs.peewee import binary_construct
+from core.libs.peewee import Field
+from core.libs.peewee import FieldDescriptor
+from core.libs.peewee import SelectQuery
 
 PY2 = sys.version_info[0] == 2
 
