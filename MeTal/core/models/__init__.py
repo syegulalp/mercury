@@ -571,6 +571,14 @@ class Blog(SiteBase):
             self.template_mappings.select(TemplateMapping.id))
         
         return fileinfos_for_blog
+    
+    @property
+    def theme(self):
+        '''
+        Returns the blog's current theme association.
+        This is a stub; later this will return an actual DB column.
+        '''
+        pass
         
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
@@ -1354,6 +1362,13 @@ def get_template(template_id):
         raise Template.DoesNotExist('Template {} does not exist'.format(template_id), e)
 
     return template
+
+def get_theme(theme_id):
+    try:
+        theme = Theme.get(Theme.id == theme_id)
+    except Theme.DoesNotExist as e:
+        raise Theme.DoesNotExist('Theme {} does not exist.'.format(theme_id),e)
+    return theme
 
 def get_blog(blog_id):
 
