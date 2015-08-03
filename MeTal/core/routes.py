@@ -1,14 +1,14 @@
 import os, urllib, re
 
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
-    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT, 
+    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
     SECRET_KEY, _sep)
 
-from core import (cms, mgmt, ui, auth)
+from core import (mgmt, ui, auth)
 
 from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
 
-from core.models import (db, get_blog, get_media,FileInfo)
+from core.models import (db, get_blog, get_theme, get_media, FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.utils import csrf_hash
 
@@ -95,16 +95,17 @@ def disable_plugin(plugin_id):
     disable_plugin(plugin_id)
 
 
+'''
 @_route(BASE_PATH + '/test/<blog_id:int>')
 def test_function(blog_id):
     with db.atomic():
         from core.models import Media
         from os import remove as _remove
         media_list = Media.select().where(
-            Media.id>3)
-        n=""
+            Media.id > 3)
+        n = ""
         for x in media_list:
-            n+=str(x.id)+","
+            n += str(x.id) + ","
             try:
                 _remove(x.path)
             except:
@@ -112,6 +113,15 @@ def test_function(blog_id):
             x.delete_instance(recursive=True,
                 delete_nullable=True)
     return n
+'''
+    
+@_route(BASE_PATH + '/apply-theme/<blog_id:int>/<theme_id:int>')
+def apply_theme_test(blog_id,theme_id):
+    blog = get_blog(blog_id)
+    theme = get_theme(theme_id)
+    with db.atomic():
+        n= mgmt.apply_theme_to_blog(theme, blog)
+    return n    
 
 @_route(BASE_PATH + '/login')
 def login():
@@ -241,11 +251,11 @@ def blog_media_edit_save(blog_id, media_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
 def blog_media_delete(blog_id, media_id):
-    return ui.blog_media_delete(blog_id, media_id,None)
+    return ui.blog_media_delete(blog_id, media_id, None)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete_confirm(blog_id, media_id):
-    return ui.blog_media_delete(blog_id, media_id,request.forms.get('confirm'))
+    return ui.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
         
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
@@ -359,7 +369,7 @@ def media_preview(media_id):
 def preview(path):
     
     page = FileInfo.get(
-        FileInfo.url==path)
+        FileInfo.url == path)
     
     # return template mapping if no page found
     
