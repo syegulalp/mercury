@@ -5,6 +5,7 @@ from core.models import Page, TextField, get_site
 from core.libs import bottle
 from core.error import LoggedException
 from core.libs.peewee import OperationalError
+from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 _stderr = bottle._stderr
 
 try:
@@ -18,6 +19,16 @@ try:
 except:
     raise
 # would it be possible to just proxy PageSearch to Page?
+
+'''
+can't do this b/c of circulal references to settings 
+def db_type(db_path,db_timeout):
+    return SqliteExtDatabase(
+        #settings.FULL_SQLITE_DATABASE_PATH,
+        db_path,
+        threadlocals=True,
+        timeout=db_timeout)
+'''
 
 def recreate_database():
     
