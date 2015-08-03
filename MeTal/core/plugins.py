@@ -39,14 +39,14 @@ def plugin_after(plugin_function):
        
     return decorate
 
-def register_plugin(path_to_plugin):
+def register_plugin(path_to_plugin, enable_on_install=False):
 
     if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
         
         try:
             added_plugin = importlib.import_module("data.plugins." + path_to_plugin)
         except SystemError:
-            raise PluginImportError("Plugin at " + PLUGIN_PATH + _sep +
+            raise PluginImportError("Plugin at " + PLUGIN_PATH + _sep + 
                 path_to_plugin + " could not be registered.")
         else:
             
@@ -56,12 +56,13 @@ def register_plugin(path_to_plugin):
             except:
                         
                 new_plugin = Plugin(
-                    # TODO: use path, not short_name
-                    name=added_plugin.__short_name__,
+                    #name=added_plugin.__short_name__,
+                    name=path_to_plugin,
                     friendly_name=added_plugin.__plugin_name__,
                     path=path_to_plugin,
                     priority=1,
-                    enabled=True)
+                    enabled=enable_on_install)
+
                 new_plugin.save()
                 
                 if DEBUG_MODE:
@@ -70,7 +71,7 @@ def register_plugin(path_to_plugin):
                 return new_plugin
             
             else:
-                raise PluginImportError("Plugin at " + PLUGIN_FILE_PATH +
+                raise PluginImportError("Plugin at " + PLUGIN_FILE_PATH + 
                     "/" + path_to_plugin + " is already registered.")
 
 plugin_action = {
@@ -105,12 +106,12 @@ def activate_plugins():
         try:
             added_plugin = importlib.import_module("data.plugins." + n.path)
         except ImportError as e:
-            plugin_errors.append("\nPlugin " + n.friendly_name +
-                " could not be activated. The path '" + PLUGIN_FILE_PATH + _sep + n.path +
+            plugin_errors.append("\nPlugin " + n.friendly_name + 
+                " could not be activated. The path '" + PLUGIN_FILE_PATH + _sep + n.path + 
                 "' may be wrong. ({})".format(str(e)))
             continue
         except SystemError:
-            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
+            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path + 
                 "' could not be activated. The plugin may be improperly installed.")
             continue
         
@@ -118,7 +119,7 @@ def activate_plugins():
             for m in plugin_attributes:
                 p_a = added_plugin.__getattribute__(m)
         except AttributeError:
-            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
+            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path + 
                 "' is missing one or more of its configuration attributes. The plugin may be damaged or improperly installed.")
             continue
         
@@ -135,7 +136,7 @@ def activate_plugins():
                 module.__dict__[func['function']] = action(func_wrapper)(func_to_wrap)
                             
         except BaseException as e:
-            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
+            plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path + 
                 "' could not be activated. Its source may be damaged. ({})".format(e))
             continue
             
