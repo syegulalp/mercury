@@ -20,10 +20,11 @@ function drag_enter_event(event)
 function drag_over_event(event)
 {
 }
- var increment, percentage
  
- function update_progress()
- {              
+var increment, percentage
+ 
+function update_progress()
+{              
     percentage = percentage + increment;
 	$("#upload_progress_bar").attr('style','width: '+percentage+'%');
 	$("#upload_progress_text").text(percentage+'%');
@@ -35,7 +36,7 @@ function drag_over_event(event)
 	        $("#upload_progress_text").text('');
 	    },3000);
                 }
- }
+}
 
 function drop_event(event)
 {
@@ -88,13 +89,15 @@ function drop_event(event)
 	        enctype:"multipart/form-data",
 	        processData: false,
 	        contentType: false,
+	        file: f,
 	        data: fd,
 	    }).done(function (data,textStatus,request)
 	        {
+                console.log(request);
                 $('#media_list').html(data);
                 $('[data-toggle="tooltip"]').tooltip();
                 status_message('success',
-                    "File <b>"+file_name+"</b> uploaded successfully.",
+                    "File <b>"+this.file.name+"</b> uploaded successfully.",
                     'file-upload-success-'+i);
 	        }
 	    ).fail(function(xhr, status, error) {
@@ -106,13 +109,7 @@ function drop_event(event)
             update_progress();
 	    });
 	    
-
-	    
     }
     
-    //$("#upload_progress").hide();
-    /*
 
-    */
-   
 }
