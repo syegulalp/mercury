@@ -5,7 +5,7 @@
 
 from core.libs.playhouse.sqlite_ext import SqliteExtDatabase, MySQLDatabase
 
-import os
+import os, importlib
 _sep = os.sep
 
 from .defaults import *
@@ -92,6 +92,14 @@ try:
 except:
     DB_TYPE_NAME = 'sqlite'
     
+# get the matching module from core.models.db (move it around to avoid name collisions)
+# put these functions in those modules
+# better than this clumsy multi-if and more flexible
+
+#db_module = importlib.import_module("core.models." + DB_TYPE_NAME)
+#DB = db_module
+#DB_TYPE = DB.db_type()
+
 if DB_TYPE_NAME == 'sqlite':
     DB_TYPE = SqliteExtDatabase(
         FULL_SQLITE_DATABASE_PATH,
