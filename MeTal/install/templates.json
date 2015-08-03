@@ -292,8 +292,8 @@
    "object": "Page",
    "objectid": 0,
    "parent": 1,
-   "value": null,
-   "value_type": "M"
+   "value": "Article header image",
+   "value_type": "Media"
   },
   "6": {
    "id": 6,
@@ -314,8 +314,8 @@
    "object": "Page",
    "objectid": 0,
    "parent": 1,
-   "value": null,
-   "value_type": ""
+   "value": "Article co-author",
+   "value_type": "User"
   },
   "11": {
    "id": 11,
