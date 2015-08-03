@@ -144,3 +144,7 @@ body {
   border-left: none;
   border-right: none;
 }
+
+.CodeMirror {
+border: 1px rgb(204,204,204) solid;
+}
