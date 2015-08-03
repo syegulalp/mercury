@@ -15,7 +15,7 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request, response, redirect)
 from core.libs import peewee
 
-from settings import (BASE_URL, BASE_PATH, SECRET_KEY, _sep)
+from settings import (BASE_URL, SECRET_KEY, _sep)
 
 import re, datetime, json
 from os.path import exists as _exists
@@ -968,9 +968,10 @@ def blog_media_edit_output(tags):
     response.add_header('X-Content-Security-Policy', "allow 'self'")
     return tpl
 
-# TODO: make this into its own url, /delete
-# with a list of all the pages that will be affected by this delete action
-# maybe later also offer the option to cleanly remove links to such things?
+# TODO: be able to process multiple media at once via a list
+# using the list framework
+# also allows for actions like de-associate, etc.
+# any delete action that works with an attached asset, like a tag, should also behave this way
 @transaction
 def blog_media_delete(blog_id, media_id, confirm='N'):
     
@@ -1022,7 +1023,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 </span>
 <button class='btn btn-danger' action='submit'>Yes, delete this media</button>
 </form>
-'''.format(tags.csrf_token,media.id)
+'''.format(tags.csrf_token, media.id)
         
         report.append(ok_button)       
     
@@ -1586,7 +1587,7 @@ def page_media_upload_confirm(page_id):
 @transaction
 def page_media_upload(page_id):
     
-    #with db.atomic():
+    # with db.atomic():
     user = auth.is_logged_in(request)
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
@@ -1602,7 +1603,7 @@ def page_media_upload(page_id):
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
-            #with db.atomic():
+            # with db.atomic():
             cms.register_media(x.filename, file_path, user, page=page)
             if not _exists(media_path):
                 makedirs(media_path)
