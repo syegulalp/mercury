@@ -155,12 +155,18 @@ def breaks(string):
     string = string.replace('/', '/<wbr>')
     return string
 
-def tpl_oneline(*args, **ka):
+def tpl_oneline(string):
     
+    '''
     if args[0][0]=='%':
         args[0] = '\\'+args[0]
 
-    return tpl(*args,**ka) 
+    return tpl(*args,**ka)
+    '''
+    if string[0] == '%':
+        string = '\\'+string
+        
+    return string 
 
 def tpl(*args, **ka):
     '''

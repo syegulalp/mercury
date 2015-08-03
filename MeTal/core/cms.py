@@ -788,8 +788,8 @@ def build_index_fileinfo(template_id):
     tags = template_tags(blog_id=blog.id)
     
     for i in index_mappings:
-        
-        path_string = tpl_oneline(i.path_string, **tags.__dict__)
+        print (i.path_string)
+        path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
 
         master_path_string = path_string
 
