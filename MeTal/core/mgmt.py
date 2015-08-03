@@ -37,7 +37,7 @@ def create_theme(**new_theme_data):
     
     return new_theme
     
-def install_theme_to_site(theme_data):
+def install_theme_to_system(theme_data):
     
     json_obj = json.loads(theme_data.decode('utf-8'))
     
@@ -49,10 +49,31 @@ def install_theme_to_site(theme_data):
     
     return new_theme
 
+def apply_theme_to_blog(theme, blog):
+    '''
+    Applies a given theme to a given blog.
+    Removes and regenerates fileinfos for the pages on the blog.
+    '''
+
+    from core import cms
+    cms.purge_fileinfo(blog.fileinfos)
+    
+    mappings_to_remove = TemplateMapping.delete().where(
+        TemplateMapping.template << blog.templates)
+    mappings_to_remove.execute()
+    
+    theme_to_remove = Template.delete().where(
+        Template.blog == blog)
+    theme_to_remove.execute()
+    
+    install_theme_to_blog(theme, blog)
+    
+    # TODO: add column in blog to represent which theme is currently active   
+    
+
 def install_theme_to_blog(installed_theme, blog):
     
-    json_obj = installed_theme.json
-    
+    json_obj = json.loads(installed_theme.json)
     templates = json_obj["data"]
     kvs = json_obj["kv"]
     
@@ -111,6 +132,7 @@ def install_theme_to_blog(installed_theme, blog):
     for n in blog.index_templates:
         cms.build_index_fileinfo(n.id)
 
+
 def site_create(**new_site_data):
     
     new_site = Site()
@@ -165,16 +187,6 @@ def user_from_ka(**ka):
         user = User(id=0,
             name='[System]')
         return user
-
-def add_template(blog, template_data):
-    '''
-    Adds a template to a blog
-    Template_data is a tuple made up of keywords (see "install")
-    '''
-    
-    for n in template_data:
-        for m in n:
-            pass
 
 
 def blog_settings_save(request, blog, user):
