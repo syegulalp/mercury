@@ -146,5 +146,6 @@ body {
 }
 
 .CodeMirror {
-border: 1px rgb(204,204,204) solid;
+    border: 1px rgb(204,204,204) solid;
+    height: auto;
 }
