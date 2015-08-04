@@ -41,9 +41,7 @@ def strip_path():
         
 @_hook('before_request')
 def csrf_protection():
-    # Form protection from CSRF attacks. DON'T EVER DISABLE THIS
     if request.method == "POST":
-        
         try:
             user = auth.is_logged_in_core(request)
         except UserNotFound:
@@ -53,7 +51,7 @@ def csrf_protection():
             csrf_code = csrf_hash(user.last_login) 
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
-                request.url))
+                request.url))    
 
 @_route(BASE_PATH + "/system/sites")
 def site_list():
@@ -116,11 +114,11 @@ def test_function(blog_id):
 '''
     
 @_route(BASE_PATH + '/apply-theme/<blog_id:int>/<theme_id:int>')
-def apply_theme_test(blog_id,theme_id):
+def apply_theme_test(blog_id, theme_id):
     blog = get_blog(blog_id)
     theme = get_theme(theme_id)
     with db.atomic():
-        n= mgmt.apply_theme_to_blog(theme, blog)
+        n = mgmt.apply_theme_to_blog(theme, blog)
     return n    
 
 @_route(BASE_PATH + '/login')
