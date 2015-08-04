@@ -504,6 +504,8 @@ $(window).load(function() {
                 ($(".footer").height() * 5)
             ));
         }
+        
+        setTimeout(function(){delayed_resize()},50)
     }
     
     
