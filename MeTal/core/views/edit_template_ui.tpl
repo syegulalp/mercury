@@ -16,8 +16,11 @@
             <textarea name="template_body" id="template_body" class="form-control" rows="8">{{template.body}}</textarea>
         </div>
         
+    % for m in template.mappings:
     <div class="form-group">
+    % if m.is_default is True:
     <label for="template_mapping">Default template mapping</label>
+    % end
     <div class="input-group">   
 	<div class="input-group-btn dropup">
 		<button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Select predefined mapping <span class="caret"></span></button>
@@ -27,12 +30,13 @@
 		  % end
 		  <li><a href="#">(<i>Custom</i>)</a></li>
 		</ul>
-	</div>   
-	<input value="{{template.default_mapping.path_string}}" type="text" class="form-control input-sm" id="template_mapping" placeholder=""
-            name="template_mapping">
+	</div>
+	
+	<input value="{{m.path_string}}" type="text" class="form-control input-sm" id="template_mapping_{{m.id}}" placeholder=""
+            name="template_mapping_{{m.id}}">
 	</div>
 	</div>
-        
+    % end
         
         <button type="submit" name="save" value="1" class="btn btn-sm btn-primary">Save</button>
         <span class="pull-right">
