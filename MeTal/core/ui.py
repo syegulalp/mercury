@@ -615,7 +615,7 @@ def blog_create_save(site_id):
     site = get_site(site_id)
     permission = auth.is_site_admin(user, site)
     
-    new_blog = mgmt.create_blog(
+    new_blog = mgmt.blog_create(
         site=site,
         name=request.forms.getunicode('blog_name'),
         description=request.forms.getunicode('blog_description'),
@@ -1351,6 +1351,9 @@ def template_edit(template_id):
     tags = template_tags(template_id=template_id,
                         user=user)
 
+    # find out if the template object returns a list of all the mappings, or just the first one
+    # it's edit_template.mappings 
+    
     tags.mappings = template_mapping_index[edit_template.template_type]
     
     return template_edit_output(tags)
