@@ -72,7 +72,7 @@ publishing_mode = {
             'description':'Changes are pushed to the queue but held for whenever the queue is next triggered.'},
         'Manual':{
             'label':'warning',
-            'description':'Changes are published only on-demand.'},
+            'description':'Changes are published only when "regenerate pages" is selected.'},
         'Do not publish':{
             'label':'danger',
             'description':'Changes are never published.'},
