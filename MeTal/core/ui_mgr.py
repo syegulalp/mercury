@@ -4,14 +4,20 @@ from core.libs.bottle import template
 
 panels_dict = {
     'edit_template':
-        {'panel_order':['publishing'],
+        {'panel_order':['publishing', 'status'],
         'panels':
             {'publishing':{
                 'template':'sidebar_template_publishing_ui',
                 'title':'Publishing',
                 'label':'publishing',
                 'icon':'book',
-                'collapse':' in'}
+                'collapse':' in'},
+            'status':{
+                'template':'sidebar_template_status_ui',
+                'title':'Status',
+                'label':'status',
+                'icon':'info-sign'
+                }
             }
         },
     'edit_page':
@@ -53,18 +59,18 @@ panels_dict = {
                 'title':'Media',
                 'label':'media',
                 'icon':'picture'
-                }                
+                }
             }
         }
     }
 
 
 def render_sidebar(**k):
-    
+
     panels = panels_dict[k['panel_set']]['panel_order']
-    panel_set = panels_dict[k['panel_set']]['panels'] 
+    panel_set = panels_dict[k['panel_set']]['panels']
     sidebar_panels = []
-    
+
     for n in panels:
         panels_n = panel_set[n]
         if not 'collapse' in panels_n:
@@ -72,11 +78,11 @@ def render_sidebar(**k):
         panel_body = template(panels_n['template'], **k)
         panel = template('sidebar_panel_ui',
             body=panel_body,
-            **panels_n)         
+            **panels_n)
         sidebar_panels.append(panel)
-        
+
     sidebar_template = template('sidebar_ui', panels=''.join(sidebar_panels))
-    
+
     return sidebar_template
 
 def register_sidebar():
