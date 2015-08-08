@@ -1382,7 +1382,9 @@ def template_edit_save(template_id):
 
 def template_edit_output(tags):
 
-    from core.models import publishing_mode, publishing_modes
+    from core.models import (publishing_mode, publishing_modes,
+        template_type as template_types)
+
 
     tpl = template('edit_template_ui',
         icons=icons,
@@ -1392,6 +1394,7 @@ def template_edit_output(tags):
             panel_set='edit_template',
             mode=publishing_mode,
             modes=publishing_modes,
+            types=template_types,
             **tags.__dict__
             ),
         **tags.__dict__)
