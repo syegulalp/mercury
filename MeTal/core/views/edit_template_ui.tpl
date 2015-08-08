@@ -1,58 +1,46 @@
 % include('header.tpl')
 % include('messages_float_include.tpl')
-<form method="post" id="main_form">
-{{!csrf_token}}
+<form method="post" id="main_form">{{!csrf_token}}
     <div class="col-sm-9">
-    
-        %#include('hiders_include.tpl')
-
         <div class="form-group">
-
             <input type="text" class="form-control input-lg" id="template_title" placeholder="Template title"
             name="template_title" value="{{template.title}}">
         </div>
-        
+
         <div class="form-group" id="editor_div">
             <textarea name="template_body" id="template_body" class="form-control" rows="8">{{template.body}}</textarea>
         </div>
-        
-    % for m in template.mappings:
-    <div class="form-group">
-    % if m.is_default is True:
-    <label for="template_mapping">Default template mapping</label>
-    % end
-    <div class="input-group">   
-	<div class="input-group-btn dropup">
-		<button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Select predefined mapping <span class="caret"></span></button>
-		<ul class="dropdown-menu" role="menu">
-		  % for n in mappings:
-		  <li><a href="#">{{!n[1]}}</a></li>
-		  % end
-		  <li><a href="#">(<i>Custom</i>)</a></li>
-		</ul>
-	</div>
-	
-	<input value="{{m.path_string}}" type="text" class="form-control input-sm" id="template_mapping_{{m.id}}" placeholder=""
-            name="template_mapping_{{m.id}}">
-	</div>
-	</div>
-    % end
-        
-        <button type="submit" name="save" value="1" class="btn btn-sm btn-primary">Save</button>
-        <span class="pull-right">
-        <button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save and regenerate pages</button>
-        </span>
+        % for m in template.mappings:
+        <div class="form-group">
+            % if m.is_default is True:
+            <label for="template_mapping">Default template mapping</label>
+            % end
+            <div class="input-group">
+                <div class="input-group-btn dropup">
+                    <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Select predefined mapping <span class="caret"></span></button>
+                    <ul class="dropdown-menu" role="menu">
+                    % for n in mappings:
+                      <li><a href="#">{{!n[1]}}</a></li>
+                    % end
+                      <li><a href="#">(<i>Custom</i>)</a></li>
+                    </ul>
+                </div>
+                <input value="{{m.path_string}}" type="text" class="form-control input-sm" id="template_mapping_{{m.id}}" placeholder="" name="template_mapping_{{m.id}}">
+            </div>
+        </div>
+        % end
+
+
+
         <br/><br/>
-    
+
     </div>
-    
-    
+
     <div id="sidebar" class="col-sm-3">
         <div id="sidebar_inner">
-        {{!sidebar}}            
+        {{!sidebar}}
         </div>
-    </div>    
-    
+    </div>
 
 </form>
 % include('footer.tpl')
