@@ -11,8 +11,8 @@
 % if status:
 <div id="alert_message" class="alert alert-{{status.type}}" role="alert">
 <span class="glyphicon glyphicon-{{status.icon}}"></span>
-{{!status.message}}
 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+{{!status.message}}
 </div>
 %end
 </div>
