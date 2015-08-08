@@ -532,20 +532,12 @@ def generate_page_text(f, tags):
             line_number
             ))
 
-
-def build_file(f, blog):
+def generate_file(f, blog):
     '''
-    Builds a single file based on a fileinfo entry f for a given blog.
-    Returns details about the built file.
-
-    This does _not_ perform any checking for the page's publication status,
-    nor does it perform any other higher-level security.
-
-    This should be the action that is pushed to the queue, and consolidated
-    based on the generated filename. (The conslidation should be part of the queue push function)
+    Returns the page text and the pathname for a file to generate.
+    Used with build_file but can be used for other things as well.
     '''
 
-    report = []
     split_path = f.file_path.rsplit('/', 1)
     path_to_check = blog.path + "/" + f.file_path.rsplit('/', 1)[0]
 
@@ -571,8 +563,24 @@ def build_file(f, blog):
 
     page_text = generate_page_text(f, tags)
     pathname = blog.path + "/" + f.file_path
-    report.append("Output: " + pathname)
 
+    return (page_text, pathname)
+
+def build_file(f, blog):
+    '''
+    Builds a single file based on a fileinfo entry f for a given blog.
+    Returns details about the built file.
+
+    This does _not_ perform any checking for the page's publication status,
+    nor does it perform any other higher-level security.
+
+    This should be the action that is pushed to the queue, and consolidated
+    based on the generated filename. (The conslidation should be part of the queue push function)
+    '''
+
+    report = []
+    page_text, pathname = generate_file(f, blog)
+    report.append("Output: " + pathname)
     encoded_page = page_text.encode('utf8')
 
     with open(pathname, "wb") as output_file:
