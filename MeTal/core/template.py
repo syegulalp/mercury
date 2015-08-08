@@ -3,11 +3,6 @@ from core.utils import Status, is_blank
 from core.log import logger
 import re
 
-include_re = re.compile("\{\{incl(.*?)\}\}")
-
-def list_includes(template_obj):
-    pass
-
 def save(request, user, cms_template):
 
     errors = []
