@@ -1367,7 +1367,7 @@ def template_edit_save(template_id):
     template = get_template(template_id)
     blog = get_blog(template.blog)
     permission = auth.is_blog_designer(user, blog)
-    status = mgmt.save_template(request, user, template)
+    status = mgmt.template_save(request, user, template)
 
     tags = template_tags(template_id=template_id,
                         user=user)
