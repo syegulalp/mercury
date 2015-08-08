@@ -1237,7 +1237,7 @@ class TagAssociation(BaseModel):
 class FileInfo(BaseModel):
 
     page = ForeignKeyField(Page, null=True, index=True)
-    template_mapping = ForeignKeyField(TemplateMapping, null=False)
+    template_mapping = ForeignKeyField(TemplateMapping, null=False, index=True)
     file_path = EnforcedCharField(null=False)
     sitewide_file_path = EnforcedCharField(index=True, null=False, unique=True)
     url = EnforcedCharField(null=False, index=True, unique=True)
