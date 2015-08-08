@@ -1,4 +1,4 @@
-from core import (auth, mgmt, utils, cms, ui_mgr)
+from core import (auth, mgmt, utils, cms, ui_mgr, template as _template)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
@@ -1367,7 +1367,7 @@ def template_edit_save(template_id):
     template = get_template(template_id)
     blog = get_blog(template.blog)
     permission = auth.is_blog_designer(user, blog)
-    status = mgmt.template_save(request, user, template)
+    status = _template.save(request, user, template)
 
     tags = template_tags(template_id=template_id,
                         user=user)
