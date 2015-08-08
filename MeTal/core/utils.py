@@ -2,12 +2,17 @@ import urllib, re, html
 
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, BASE_URL_ROOT)
- 
+
 from core.libs.bottle import template, redirect
 
 import hashlib, base64
 
 from core.libs.bottle import _stderr
+
+def is_blank(string):
+    if string and string.strip():
+        return False
+    return True
 
 def url_escape(url):
     return urllib.parse.quote_plus(url)
@@ -20,16 +25,16 @@ def safe_redirect(url):
     if url_unquoted.startswith(BASE_URL_ROOT + "/"):
         redirect(url)
     else:
-        redirect(BASE_URL)    
-   
+        redirect(BASE_URL)
+
 def _stddebug_():
     from core.boot import settings
     _stddebug = lambda x: _stderr(x) if (settings.DEBUG_MODE is True) else lambda x: None  # @UnusedVariable
     return _stddebug
-    
+
 class Status:
     '''
-    Used to create status messages for AJAX UI.        
+    Used to create status messages for AJAX UI.
     '''
     def __init__(self, **ka):
 
@@ -47,40 +52,40 @@ class Status:
 
 
 def logout_nonce(user):
-    
+
     return csrf_hash(str(user.id) + str(user.last_login) + 'LOGOUT')
-    
+
 def csrf_hash(csrf):
     '''
     Generates a CSRF token value, by taking an input and generating a SHA-256 hash from it,
-    in conjunction with the secret key set for the installation.   
+    in conjunction with the secret key set for the installation.
     '''
-    
+
     enc = str(csrf) + SECRET_KEY
-        
+
     m = hashlib.sha256()
     m.update(enc.encode('utf-8'))
     m = m.digest()
     encrypted_csrf = base64.b64encode(m).decode('utf-8')
-    
+
     return (encrypted_csrf)
 
 def csrf_tag(csrf):
     '''
-    Generates a hidden input field used to carry the CSRF token for form submissions.  
+    Generates a hidden input field used to carry the CSRF token for form submissions.
     '''
-    return "<input type='hidden' name='csrf' id='csrf' value='{}'>".format(csrf_hash(csrf)) 
+    return "<input type='hidden' name='csrf' id='csrf' value='{}'>".format(csrf_hash(csrf))
 
 def date_format(datetime):
     '''
     Formats a datetime value in a consistent way for presentation.
-    '%Y-%m-%d %H:%M:%S' is the standard format. 
+    '%Y-%m-%d %H:%M:%S' is the standard format.
     '''
     if datetime is None:
         return ''
     else:
-        return datetime.strftime('%Y-%m-%d %H:%M:%S')    
-    
+        return datetime.strftime('%Y-%m-%d %H:%M:%S')
+
 
 def utf8_escape(input_string):
     '''
@@ -100,15 +105,15 @@ def html_escape(input_string):
 def create_basename(input_string, blog):
     '''
     Generate a basename from a given input string.
-    
+
     Checks across the entire blog in question for a basename collision.
-    
+
     Basenames need to be unique to the filesystem for where the target files
     are to be written. By default this is enforced in the database by way of a
     unique column constraint.
     '''
     from core.models import Page
-    
+
     if not input_string:
         input_string = "page"
 
@@ -118,17 +123,17 @@ def create_basename(input_string, blog):
         basename = basename.casefold()
     except BaseException:
         basename = basename.lower()
-    
+
     basename = re.sub(r'[^a-z0-9\-]', r'', basename)
     basename = re.sub(r'\-\-', r'-', basename)
     basename = urllib.parse.quote_plus(basename)
-    
+
     basename_test = basename
-    
+
     n = 0
-    
+
     while True:
-        
+
         try:
             Page.get(Page.basename == basename_test,
                 Page.blog == blog)
@@ -156,7 +161,7 @@ def breaks(string):
     return string
 
 def tpl_oneline(string):
-    
+
     '''
     if args[0][0]=='%':
         args[0] = '\\'+args[0]
@@ -164,9 +169,9 @@ def tpl_oneline(string):
     return tpl(*args,**ka)
     '''
     if string[0] == '%':
-        string = '\\'+string
-        
-    return string 
+        string = '\\' + string
+
+    return string
 
 def tpl(*args, **ka):
     '''
@@ -174,7 +179,7 @@ def tpl(*args, **ka):
     ambiguously a filename.
     '''
     # TODO: debug handler for errors in submitted user templates here?
-    
+
     x = template("\n" + args[0], ka)
     return x[1:]
 
@@ -184,30 +189,30 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     Generates a paginator block for browsing lists, for instance in the blog or site view.
     '''
     page_num = page_list_id(request)
-    
+
     paginator = {}
-    
+
     paginator['page_count'] = obj.count()
-    
+
     paginator['max_pages'] = int((paginator['page_count'] / items_per_page) + (paginator['page_count'] % items_per_page > 0))
-    
+
     if page_num > paginator['max_pages']:
         page_num = paginator['max_pages']
-    
+
     paginator['next_page'] = (page_num + 1) if page_num < paginator['max_pages'] else paginator['max_pages']
     paginator['prev_page'] = (page_num - 1) if page_num > 1 else 1
-    
-    paginator['first_item'] = (page_num * items_per_page) - (items_per_page - 1) 
-    paginator['last_item'] = paginator['page_count'] if (page_num * items_per_page) > paginator['page_count'] else (page_num * items_per_page) 
-    
+
+    paginator['first_item'] = (page_num * items_per_page) - (items_per_page - 1)
+    paginator['last_item'] = paginator['page_count'] if (page_num * items_per_page) > paginator['page_count'] else (page_num * items_per_page)
+
     paginator['page_num'] = page_num
     paginator['items_per_page'] = items_per_page
-    
+
     obj_list = obj.paginate(page_num, ITEMS_PER_PAGE)
-    
+
     return paginator, obj_list
 
-   
+
 
 def generate_date_mapping(date_value, tags, path_string):
     '''
@@ -216,15 +221,15 @@ def generate_date_mapping(date_value, tags, path_string):
     This is often used for resolving template mappings.
     The tag set is contextual -- e.g., for a blog or a site.
     '''
-    
+
     time_string = date_value.strftime(path_string)
     path_string = tpl(time_string, **tags.__dict__)
-    
-    #path_string = path_string.replace('/', _sep)
-    
+
+    # path_string = path_string.replace('/', _sep)
+
     return path_string
 
-    
+
 def postpone(function):
     '''
     Thread launcher function
@@ -233,27 +238,27 @@ def postpone(function):
         t = Thread(target=function, args=args, kwargs=ka)
         t.daemon = True
         t.start()
-        
+
     return decorator
 
 
 def encrypt_password(password, key=None):
-    
+
     if key is None:
         p_key = PASSWORD_KEY
     else:
         p_key = key
-    
+
     bin_password = password.encode('utf-8')
     bin_salt = p_key.encode('utf-8')
-    
+
     m = hashlib.sha256()
     for n in range(1, 1000):
         m.update(bin_password + bin_salt)
     m = m.digest()
     encrypted_password = base64.b64encode(m)
-    
-    return encrypted_password  
+
+    return encrypted_password
 
 def memoize(f):
     '''
@@ -263,16 +268,16 @@ def memoize(f):
     class memodict(dict):
         def __getitem__(self, *key):
             return dict.__getitem__(self, key)
-            
+
         def __missing__(self, key):
             ret = self[key] = f(*key)
             return ret
-    
+
     return memodict().__getitem__
 
 def memoize_delete(obj, item):
-    obj.__self__.__delitem__(item) 
-    
+    obj.__self__.__delitem__(item)
+
 def _iter(item):
     try:
         (x for x in item)
@@ -283,7 +288,7 @@ def _iter(item):
 
 
 def page_list_id(request):
-    
+
     if not request.query.page:
         return 1
     try:
