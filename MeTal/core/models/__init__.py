@@ -1098,6 +1098,13 @@ class Template(BaseModel):
         return include.body
 
     @property
+    def includes(self):
+        # get most recent fileinfo for page
+        # use that to compute includes
+        # we may want to make that something we can control the context for
+        pass
+
+    @property
     def mappings(self):
         '''
         Returns all file mappings for the template.

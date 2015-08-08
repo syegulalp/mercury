@@ -169,11 +169,13 @@ def tpl_oneline(string):
 
 from core.libs.bottle import SimpleTemplate
 class MetalTemplate(SimpleTemplate):
+    includes = []
     def _include(self, env, _name=None, **kwargs):
         from core.models import Template
         template_to_import = Template.get(
             Template.title == _name)
         tpl = MetalTemplate(template_to_import.body)
+        self.includes.append(_name)
         return tpl.execute(env['_stdout'], env)
 
 def tpl(*args, **ka):

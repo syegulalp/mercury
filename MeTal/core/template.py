@@ -1,7 +1,6 @@
 from core.models import template_tags, TemplateMapping
 from core.utils import Status, is_blank
 from core.log import logger
-import re
 
 def save(request, user, cms_template):
 
