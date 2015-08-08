@@ -32,7 +32,7 @@ def expand_includes(template_obj):
 def list_includes(template_obj):
     pass
 
-def template_save(request, user, cms_template):
+def save(request, user, cms_template):
 
     errors = []
 
