@@ -524,9 +524,11 @@ $(window).load(function() {
             {childList:true, subtree:true});   
 
         
+        /*
         if ($('#alert_message').length) {
             dismiss('#alert_message', 2500);
         }
+        */
         
         window.onbeforeunload = leave;
     
