@@ -28,17 +28,17 @@ def export_theme(blog_id):
 def setup(step_id=None):
     if step_id is None:
         step_id = 0
-    
+
     # TODO: also attempt to fetch step ID from ini file
     from install import install
     return install.step(step_id)
-    
+
 @_hook('before_request')
 def strip_path():
     # Removes trailing slashes from a URL before processing
     if len(request.environ['PATH_INFO']) > 1:
         request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
-        
+
 @_hook('before_request')
 def csrf_protection():
     if request.method == "POST":
@@ -48,10 +48,10 @@ def csrf_protection():
             csrf_code = csrf_hash(SECRET_KEY)
             user = None
         else:
-            csrf_code = csrf_hash(user.last_login) 
+            csrf_code = csrf_hash(user.last_login)
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
-                request.url))    
+                request.url))
 
 @_route(BASE_PATH + "/system/sites")
 def site_list():
@@ -63,7 +63,7 @@ def css(blog_id):
     blog = get_blog(blog_id)
     if blog.editor_css is None:
         from core import static
-        template = static.editor_css 
+        template = static.editor_css
     else:
         template = blog.editor_css
     response.content_type = "text/css"
@@ -112,14 +112,14 @@ def test_function(blog_id):
                 delete_nullable=True)
     return n
 '''
-    
+
 @_route(BASE_PATH + '/apply-theme/<blog_id:int>/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
     blog = get_blog(blog_id)
     theme = get_theme(theme_id)
     with db.atomic():
-        n = mgmt.apply_theme_to_blog(theme, blog)
-    return n    
+        n = mgmt.theme_apply_to_blog(theme, blog)
+    return n
 
 @_route(BASE_PATH + '/login')
 def login():
@@ -238,7 +238,7 @@ def blog_tags(blog_id):
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):
     return ui.blog_media(blog_id)
-    
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit')
 def blog_media_edit(blog_id, media_id):
     return ui.blog_media_edit(blog_id, media_id)
@@ -254,7 +254,7 @@ def blog_media_delete(blog_id, media_id):
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete_confirm(blog_id, media_id):
     return ui.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
-        
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
     return ui.blog_templates(blog_id)
@@ -315,7 +315,7 @@ def export_data():
 @_route(BASE_PATH + '/import')
 def import_data():
     return mgmt.import_data()
-    
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
 def blog_queue(blog_id):
     return ui.blog_queue(blog_id)
@@ -323,15 +323,15 @@ def blog_queue(blog_id):
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
 def blog_settings(blog_id,):
     return ui.blog_settings(blog_id)
-    
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings", method='POST')
 def blog_settings_save(blog_id):
     return ui.blog_settings_save(blog_id)
-    
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish")
 def blog_publish(blog_id):
     return ui.blog_publish(blog_id)
-    
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/progress/<original_queue_length:int>")
 def blog_publish_progress(blog_id, original_queue_length):
     return ui.blog_publish_progress(blog_id, original_queue_length)
@@ -352,39 +352,39 @@ Static routing.
 
 @_route(BASE_PATH + '/media/<media_id:int>')
 def media_preview(media_id):
-    
+
     media = get_media(media_id)
     try:
         root = media.path.rsplit(_sep, 1)[0]
-    except: 
+    except:
         root = ''
     preview = static_file(media.filename, root=root)
-    
+
     return preview
 
 
 @_route('/preview/<path:path>')
 def preview(path):
-    
+
     page = FileInfo.get(
         FileInfo.url == path)
-    
+
     # return template mapping if no page found
-    
+
     # prefix urls in preview for virtual filesystem movement
-    
+
     return ui.page_preview(page.page.id)
-    
-  
+
+
 if DESKTOP_MODE:
-    
+
     @_route('/')
     def blog_root():
         '''
         Returns the root directory for the currently previewed blog.
         '''
         return blog_static('index.html')
-    
+
     @_route("<:re:(?!" + BASE_PATH + "/)><filepath:path>")
     def blog_static(filepath):
         '''
@@ -392,54 +392,54 @@ if DESKTOP_MODE:
         The blog ID is appended to the URL as a '_' parameter (e.g., ?_=1 for blog ID 1)
         The future of this function is currently being debated.
         '''
-        
+
         try:
             blog_id = int(request.query['_'])
         except KeyError:
             return system_site_index()
             # raise
-        
+
         blog = get_blog(blog_id)
-                
+
         root_path = blog.path
-    
+
         filesystem_filepath = urllib.parse.quote(filepath)
-    
+
         # TODO: replace this with results from /preview path,
-        # or another function that finds by abs path in db. 
-    
+        # or another function that finds by abs path in db.
+
         if os.path.isfile(root_path + "/" + filesystem_filepath) is False:
             filepath += ("index.html")
-    
+
         if os.path.isfile(root_path + "/" + filesystem_filepath) is False:
             abort(404, 'File not found')
-    
+
         k = static_file(filesystem_filepath, root=root_path)
-        
-        if (k.headers['Content-Type'][:5] == "text/" or 
+
+        if (k.headers['Content-Type'][:5] == "text/" or
             k.headers['Content-Type'] == "application/javascript"):
-            
+
             k.add_header('Cache-Control', 'max-age=7200, public, must-revalidate')
-    
+
         if (k._headers['Content-Type'][0][:5] == "text/" and not k.body == ""):
-    
+
             x = k.body.read()
             k.body.close()
-            
+
             y = x.decode('utf8')
             z = re.compile(r' href=["\']' + (blog.url) + '([^"\']*)["\']')
-            y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT + "\\1\?_=1'", y)           
+            y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT + "\\1\?_=1'", y)
             y = y.encode('utf8')
-    
+
             k.headers['Content-Length'] = len(y)
             k.body = y
-    
+
         return (k)
 
     def system_site_index():
         from core.models import Site
         sites = Site.select()
-        
+
         tpl = '''
 <p>This is the local web server for an installation of {}.
 <p><a href='{}'>Open the site dashboard</a>
@@ -463,15 +463,15 @@ if DESKTOP_MODE:
 </ul><hr/>
 '''
         return template(tpl, sites=sites)
-        
-    
+
+
 @_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
 def server_static(filepath):
     '''
     Serves static files from the application's own internal static path,
-    e.g. for its CSS/JS 
+    e.g. for its CSS/JS
     '''
-    
+
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
@@ -482,7 +482,7 @@ def error_handler(error):
     tpl = template('500_error',
         settings=_settings,
         error=error)
-    
+
     if error.exception.__class__ == CSRFTokenNotFound:
         response.status = '401 CSRF token not found'
     return tpl
@@ -502,7 +502,7 @@ def api_get_tag(tag_name):
 # TODO: make /page/<>/generate-tag when we rewrite the underlying routine
 # no need for an api path here?
 # for apis might want to use a variable, pass that to a control array
- 
+
 @_route(BASE_PATH + "/api/1/make-tag-for-page/blog/<blog_id:int>", method='POST')
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
 def api_make_tag_for_page(blog_id=None, page_id=None):
