@@ -25,7 +25,7 @@ def login_verify(email, password):
         user.save()
         return user
 
-def create_theme(**new_theme_data):
+def theme_create(**new_theme_data):
 
     new_theme = Theme()
 
@@ -37,11 +37,11 @@ def create_theme(**new_theme_data):
 
     return new_theme
 
-def install_theme_to_system(theme_data):
+def theme_install_to_system(theme_data):
 
     json_obj = json.loads(theme_data.decode('utf-8'))
 
-    new_theme = create_theme(
+    new_theme = theme_create(
         title=json_obj["title"],
         description=json_obj["description"],
         json=json_obj
@@ -49,7 +49,7 @@ def install_theme_to_system(theme_data):
 
     return new_theme
 
-def apply_theme_to_blog(theme, blog):
+def theme_apply_to_blog(theme, blog):
     '''
     Applies a given theme to a given blog.
     Removes and regenerates fileinfos for the pages on the blog.
@@ -66,12 +66,12 @@ def apply_theme_to_blog(theme, blog):
         Template.blog == blog)
     theme_to_remove.execute()
 
-    install_theme_to_blog(theme, blog)
+    theme_install_to_blog(theme, blog)
 
     # TODO: add column in blog to represent which theme is currently active
 
 
-def install_theme_to_blog(installed_theme, blog):
+def theme_install_to_blog(installed_theme, blog):
 
     json_obj = json.loads(installed_theme.json)
     templates = json_obj["data"]
@@ -325,7 +325,7 @@ def import_data():
     from core.routes import app
     app.reset()
 
-def save_template(request, user, cms_template):
+def template_save(request, user, cms_template):
 
     errors = []
 
@@ -400,7 +400,7 @@ def save_template(request, user, cms_template):
     return status
 
 
-def create_user(**new_user_data):
+def user_create(**new_user_data):
 
     new_user = User()
 
@@ -420,7 +420,7 @@ def create_user(**new_user_data):
 
 def create_user_blog(**new_user_data):
 
-    new_user = create_user(**new_user_data)
+    new_user = user_create(**new_user_data)
     blog = new_user_data['blog']
     site = blog.site
 
@@ -438,7 +438,7 @@ def create_user_blog(**new_user_data):
 
 def create_user_site(**new_user_data):
 
-    new_user = create_user(**new_user_data)
+    new_user = user_create(**new_user_data)
     site = new_user_data['site']
 
     saved_permission = add_user_permission(new_user,
@@ -465,6 +465,7 @@ def update_user(user, editing_user, **user_data):
 
     return user
 
+# TODO: move this into the User object schema itself?
 def add_user_permission(user, **permission):
 
     new_permission = Permission()
