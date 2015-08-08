@@ -4,7 +4,7 @@ from core.libs.bottle import template
 
 panels_dict = {
     'edit_template':
-        {'panel_order':['publishing', 'status'],
+        {'panel_order':['publishing', 'status', 'files'],
         'panels':
             {'publishing':{
                 'template':'sidebar_template_publishing_ui',
@@ -17,6 +17,12 @@ panels_dict = {
                 'title':'Status',
                 'label':'status',
                 'icon':'info-sign'
+                },
+            'files':{
+                'template':'sidebar_template_output_ui',
+                'title':'Output files',
+                'label':'output',
+                'icon':'file'
                 }
             }
         },
