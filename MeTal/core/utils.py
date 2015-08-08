@@ -162,16 +162,19 @@ def breaks(string):
 
 def tpl_oneline(string):
 
-    '''
-    if args[0][0]=='%':
-        args[0] = '\\'+args[0]
-
-    return tpl(*args,**ka)
-    '''
     if string[0] == '%':
         string = '\\' + string
 
     return string
+
+from core.libs.bottle import SimpleTemplate
+class MetalTemplate(SimpleTemplate):
+    def _include(self, env, _name=None, **kwargs):
+        from core.models import Template
+        template_to_import = Template.get(
+            Template.title == _name)
+        tpl = MetalTemplate(template_to_import.body)
+        return tpl.execute(env['_stdout'], env)
 
 def tpl(*args, **ka):
     '''
@@ -179,8 +182,8 @@ def tpl(*args, **ka):
     ambiguously a filename.
     '''
     # TODO: debug handler for errors in submitted user templates here?
-
-    x = template("\n" + args[0], ka)
+    tp = MetalTemplate('\n' + args[0])
+    x = tp.render(ka)
     return x[1:]
 
 def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):

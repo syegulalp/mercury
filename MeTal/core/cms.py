@@ -513,12 +513,12 @@ def generate_page_text(f, tags):
     Generates the text for a given page based on its fileinfo
     and a given tagset.
     '''
-    from core.template import expand_includes
+    # from core.template import expand_includes
 
     tp = f.template_mapping.template
 
     try:
-        return tpl(expand_includes(tp),
+        return tpl(tp.body,
             **tags.__dict__)
     except BaseException:
         import traceback, sys
