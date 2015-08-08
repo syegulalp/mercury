@@ -1,7 +1,8 @@
 TL;DR:
 ------
 
-MeTal is MIT-licensed, as are all its components save for CKEditor.
+MeTal is MIT-licensed, as are all its components save for CKEditor,
+which is licensed under the MPL v.1.1.
 
 
 Licenses for software in this project
