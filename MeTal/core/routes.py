@@ -12,26 +12,12 @@ from core.models import (db, get_blog, get_theme, get_media, FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.utils import csrf_hash
 
-
 app = Bottle()
 _route = app.route
 _hook = app.hook
 
 # any theme-based routes will be set up here
 # /blog/x/<path:path> -- for non-greedy matching
-
-@_route(BASE_PATH + "/system/theme/<blog_id:int>")
-def export_theme(blog_id):
-    from core import theme
-    return theme.export_theme_for_blog(blog_id)
-
-def setup(step_id=None):
-    if step_id is None:
-        step_id = 0
-
-    # TODO: also attempt to fetch step ID from ini file
-    from install import install
-    return install.step(step_id)
 
 @_hook('before_request')
 def strip_path():
@@ -52,6 +38,28 @@ def csrf_protection():
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
+
+@_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
+def server_static(filepath):
+    '''
+    Serves static files from the application's own internal static path,
+    e.g. for its CSS/JS
+    '''
+
+    response.add_header('Cache-Control', 'max-age=7200')
+    return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
+
+@_route(BASE_PATH + "/system/theme/<blog_id:int>")
+def export_theme(blog_id):
+    from core import theme
+    return theme.export_theme_for_blog(blog_id)
+
+def setup(step_id=None):
+    if step_id is None:
+        step_id = 0
+    # TODO: also attempt to fetch step ID from ini file
+    from install import install
+    return install.step(step_id)
 
 @_route(BASE_PATH + "/system/sites")
 def site_list():
@@ -218,14 +226,6 @@ def blog_new_page_save(blog_id):
 def blog(blog_id, errormsg=None):
     return ui.blog(blog_id, errormsg)
 
-@_route(BASE_PATH + '/template/<template_id:int>/edit')
-def template_edit(template_id):
-    return ui.template_edit(template_id)
-
-@_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
-def template_edit_save(template_id):
-    return ui.template_edit_save(template_id)
-
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
 def edit_tag(blog_id, tag_id):
@@ -258,6 +258,14 @@ def blog_media_delete_confirm(blog_id, media_id):
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
     return ui.blog_templates(blog_id)
+
+@_route(BASE_PATH + '/template/<template_id:int>/edit')
+def template_edit(template_id):
+    return ui.template_edit(template_id)
+
+@_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
+def template_edit_save(template_id):
+    return ui.template_edit_save(template_id)
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
@@ -465,16 +473,6 @@ if DESKTOP_MODE:
         return template(tpl, sites=sites)
 
 
-@_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
-def server_static(filepath):
-    '''
-    Serves static files from the application's own internal static path,
-    e.g. for its CSS/JS
-    '''
-
-    response.add_header('Cache-Control', 'max-age=7200')
-    return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
-
 # if DEBUG_MODE is False:
 @app.error(500)
 def error_handler(error):
@@ -507,8 +505,6 @@ def api_get_tag(tag_name):
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
 def api_make_tag_for_page(blog_id=None, page_id=None):
     return ui.make_tag_for_page(blog_id, page_id)
-
-
 
 '''
 @_route(BASE_PATH+"/api/1/remove-tag-from-page/<page_id:int>/<tag_id:int>", method='POST')
