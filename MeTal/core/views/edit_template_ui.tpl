@@ -46,6 +46,7 @@
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
 <script>
 var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('template_body'),{
-    lineNumbers: true
+    lineNumbers: true,
+    lineWrapping: true
 });
 </script>
