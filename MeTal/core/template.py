@@ -8,11 +8,15 @@ def save(request, user, cms_template):
 
     _forms = request.forms
 
+    # TODO: any changes to the template name should alert the user?
+    # checking against includes is likely to be really labor-intensive
+
     cms_template.title = _forms.getunicode('template_title')
     cms_template.body = _forms.getunicode('template_body')
 
     if is_blank(cms_template.title):
-        errors.append("Template title cannot be blank.")
+        cms_template.title = "New Template (#{})".format(
+            cms_template.id)
 
     from core.models import publishing_modes
     mode = _forms.getunicode('publishing_mode')
