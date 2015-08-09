@@ -46,15 +46,12 @@ def save(request, user, cms_template):
                         template_mapping.path_string))
                 else:
                     template_mapping.path_string = _forms.getunicode(n)
+                    # template_mapping.build_xref()
                     template_mapping.save()
 
-                # TODO: we must validate this mapping to make sure it corresponds to something valid!
-                # template_mapping.validate(path_string) ?
-                # what context to give it?
-                # index: blog
-                # page: most recent blog page
-                # archive: most recent blog page
-                # includes: ??
+
+                # 1. Regenerate archive_xref for mapping
+                # 2. Rebuild all fileinfos affected by that mapping
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
     tags = template_tags(template_id=cms_template.id,
@@ -73,7 +70,7 @@ def save(request, user, cms_template):
         if int(_forms.getunicode('save')) == 2:
             from core import cms
             for f in cms_template.fileinfos_published:
-                cms.push_to_queue(job_type=job_type.archive,
+                cms.push_to_queue(job_type=f.template_mapping.template.template_type,
                     blog=cms_template.blog,
                     site=cms_template.blog.site,
                     data_integer=f.id)
