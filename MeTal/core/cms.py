@@ -24,22 +24,25 @@ save_action_list.UNPUBLISH_PAGE = 8
 save_action_list.DELETE_PAGE = 16
 
 job_type = Struct()
-job_type.page = "Page"
-job_type.index = "Index"
-job_type.archive = "Archive"
-job_type.control = "Control"
+job_type.page = 'Page'
+job_type.index = 'Index'
+job_type.archive = 'Archive'
+job_type.include = 'Include'
+job_type.control = 'Control'
 
 job_type.description = {
     job_type.page: 'Page entry',
     job_type.index: 'Index entry',
     job_type.archive: 'Archive entry',
+    job_type.include: 'Include file',
     job_type.control: 'Control job'
     }
 
 job_type.action = {
-    job_type.page: lambda x:build_page(x),  # build_page
-    job_type.index: lambda x:build_page(x),  # build_index
-    job_type.archive: lambda x:build_page(x)  # build_index
+    job_type.page: lambda x:build_page(x),
+    job_type.index: lambda x:build_page(x),
+    job_type.archive: lambda x:build_page(x),
+    job_type.include: lambda x:build_page(x),
     }
 
 def build_page(q):
@@ -1019,3 +1022,121 @@ def register_media(filename, path, user, **ka):
         media.save()
 
     return media
+
+
+def _build_archive_fileinfo(blog):
+    '''
+    Creates fileinfo entries for the template mappings associated with
+    date-based archive types.
+
+    TODO: THIS FUNCTION IS BEING DISMANTLED AND DEPRECATED.
+    FOR NOW IT'S BEING KEPT AS A WAY TO GENERATE FILEINFOS
+    WHEN WE ADD NEW TEMPLATE MAPPINGS
+    BUT EVENTUALLY THAT WILL BE MOVED OUT.
+    DON'T DELETE THIS YET!
+
+
+    This will need to be run every time we create a new archive type,
+    or change a template mapping for an archive type
+
+    Also run on a purge action.
+
+    A control message should be used to signal such a rebuild.
+
+    Eventually this will just be a wrapper for the functions
+    broken out from it:
+
+        - update the template mapping data
+        - generate the fileinfos
+
+    The wrapper function that just supplies a blog ID
+    will in turn supply this with a list of items.
+
+    The function itself will in time take such a list.
+
+    '''
+
+    # TODO: if we need to batch really big operations, we can use the index #
+    # of the post in question as a pause point, since it's sorted
+    # if there's an insert during passes, what happens?
+
+
+    # replace these with their schema equivalents
+
+    blog_pages = blog.published_pages().order_by(Page.publication_date.desc())
+
+    template_list = Template.select().where(
+        Template.blog == blog)
+
+    templates_id = template_list.select(Template.id).where(Template.template_type > 2)
+
+    template_mappings = TemplateMapping.select().where(
+        TemplateMapping.template << templates_id)
+
+
+    '''
+    Iterate through each date-based template mapping
+    and build a context description for it.
+    That context will be saved with the mapping.
+    '''
+
+    # We can put this here because this function is not called often
+
+    # TODO: This part of the function should be pulled out and moved
+    # to wherever we change or update index mappings,
+    # since we don't actually need to run it here
+
+    iterable_tags = (
+        (re.compile('%Y'), 'Y'),
+        (re.compile('%m'), 'M'),
+        (re.compile('%d'), 'D'),
+        (re.compile('\{\{page\.categories\}\}'), 'C'),
+        (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
+        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
+        )
+
+    for mapping in template_mappings:
+
+        match_pos = []
+
+        for tag, func in iterable_tags:
+
+            match = tag.search(mapping.path_string)
+            if match is not None:
+                match_pos.append((func, match.start()))
+
+        sorted_match_list = sorted(match_pos, key=lambda row: row[1])
+
+        context_string = "".join(n for n, m in sorted_match_list)
+
+        mapping.archive_xref = context_string
+
+        mapping.save()
+
+
+    test_pages = blog_pages
+
+    mapping_list = {}
+
+    for n in test_pages:
+
+        tags = template_tags(page_id=n.id)
+
+        for m in template_mappings:
+
+            path_string = generate_date_mapping(n.publication_date, tags, m.path_string)
+
+            if path_string in mapping_list:
+                continue
+
+            tag_context = generate_archive_context_from_page(m.archive_xref, blog_pages, n)
+
+            mapping_list[path_string] = (None, m, path_string,
+                               n.blog.url + "/" + path_string,
+                               n.blog.path + '/' + path_string)
+
+    for n in mapping_list:
+
+        add_page_fileinfo(*mapping_list[n])
+
+    return mapping_list

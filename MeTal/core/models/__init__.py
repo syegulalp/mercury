@@ -1151,8 +1151,68 @@ class TemplateMapping(BaseModel):
     # 1 = Index
     # 2 = Page
     # 3 = Date-Based
+    # TODO: I believe this was deprecated a long time ago
     archive_xref = CharField(max_length=16, null=True)
     modified_date = DateTimeField(default=datetime.datetime.now)
+
+    def build_xref(self):
+
+        # TODO: first remove any existing fileinfos and fileinfocontexts for pages
+        # affected by this template mapping
+
+        import re
+        iterable_tags = (
+            (re.compile('%Y'), 'Y'),
+            (re.compile('%m'), 'M'),
+            (re.compile('%d'), 'D'),
+            (re.compile('\{\{page\.categories\}\}'), 'C'),
+            (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
+            (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
+            # TODO: change this to page.author
+            )
+
+        match_pos = []
+
+        for tag, func in iterable_tags:
+
+            match = tag.search(self.path_string)
+            if match is not None:
+                match_pos.append((func, match.start()))
+
+        sorted_match_list = sorted(match_pos, key=lambda row: row[1])
+
+        context_string = "".join(n for n, m in sorted_match_list)
+
+        self.archive_xref = context_string
+
+        '''
+        test_pages = blog_pages
+
+        mapping_list = {}
+
+        for n in test_pages:
+
+            tags = template_tags(page_id=n.id)
+
+            for m in template_mappings:
+
+                path_string = generate_date_mapping(n.publication_date, tags, m.path_string)
+
+                if path_string in mapping_list:
+                    continue
+
+                tag_context = generate_archive_context_from_page(m.archive_xref, blog_pages, n)
+
+                mapping_list[path_string] = (None, m, path_string,
+                                   n.blog.url + "/" + path_string,
+                                   n.blog.path + '/' + path_string)
+        for n in mapping_list:
+
+            add_page_fileinfo(*mapping_list[n])
+
+        '''
+
+        # also rebuild the appropriate fileinfos
 
     @property
     def fileinfos(self):
