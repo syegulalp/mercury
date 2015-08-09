@@ -26,7 +26,7 @@ PASSWORD_KEY = "also_change_this_key_please"
 
 # Set this to True if you are running MeTal as an WSGI application,
 # for instance on a shared webhost.
-# Desktop mode overrides this to False. 
+# Desktop mode overrides this to False.
 USE_WSGI = True
 
 # Debug mode. Set to True for more detailed error messages.
@@ -60,7 +60,7 @@ ITEMS_PER_PAGE = 15
 # Maximum length of basenames for pages.
 MAX_BASENAME_LENGTH = 128
 
-DATABASE_TIMEOUT = 60.0
+DATABASE_TIMEOUT = 600000
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
