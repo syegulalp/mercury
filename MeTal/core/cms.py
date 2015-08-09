@@ -26,17 +26,20 @@ save_action_list.DELETE_PAGE = 16
 job_type = Struct()
 job_type.page = "Page"
 job_type.index = "Index"
+job_type.archive = "Archive"
 job_type.control = "Control"
 
 job_type.description = {
     job_type.page: 'Page entry',
     job_type.index: 'Index entry',
+    job_type.archive: 'Archive entry',
     job_type.control: 'Control job'
     }
 
 job_type.action = {
     job_type.page: lambda x:build_page(x),  # build_page
-    job_type.index: lambda x:build_page(x)  # build_index
+    job_type.index: lambda x:build_page(x),  # build_index
+    job_type.archive: lambda x:build_page(x)  # build_index
     }
 
 def build_page(q):
@@ -110,6 +113,10 @@ def push_to_queue(**ka):
     if queue_job.job_type == job_type.index:
 
         queue_job.data_string = "Index: " + FileInfo.get(FileInfo.id == queue_job.data_integer).file_path
+
+    if queue_job.job_type == job_type.archive:
+
+        queue_job.data_string = "Archive: " + FileInfo.get(FileInfo.id == queue_job.data_integer).file_path
 
     queue_job.date_touched = datetime.datetime.now()
     queue_job.save()
@@ -210,7 +217,7 @@ def queue_page_archive_actions(page):
 
             fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
 
-            push_to_queue(job_type=job_type.page,
+            push_to_queue(job_type=job_type.archive,
                           blog=page.blog,
                           site=page.blog.site,
                           data_integer=fileinfo_mapping.id)

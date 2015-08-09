@@ -62,7 +62,7 @@ def save(request, user, cms_template):
 
     if len(errors) == 0:
 
-        # from core.models import page_status
+        from core.cms import job_type
         status = Status(
             type='success',
             message="Template <b>{}</b> saved.",
@@ -73,8 +73,7 @@ def save(request, user, cms_template):
         if int(_forms.getunicode('save')) == 2:
             from core import cms
             for f in cms_template.fileinfos_published:
-                cms.push_to_queue(job_type=cms_template.template_type,
-                    priority=1,
+                cms.push_to_queue(job_type=job_type.archive,
                     blog=cms_template.blog,
                     site=cms_template.blog.site,
                     data_integer=f.id)
