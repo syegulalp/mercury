@@ -247,8 +247,6 @@ def queue_index_actions(blog):
                 site=blog.site,
                 data_integer=f.id)
 
-
-
 def save_page(page, user, blog=None):
     '''
     Saves edits to a page in the CMS.

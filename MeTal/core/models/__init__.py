@@ -1118,8 +1118,19 @@ class Template(BaseModel):
         Returns a list of all fileinfos associated with the selected template.
         '''
         fileinfos = FileInfo.select().where(
-            FileInfo.template_mapping << self.template_mappings)
+            FileInfo.template_mapping << self.mappings)
         return fileinfos
+
+    @property
+    def fileinfos_published(self):
+        if self.template_type == "Page":
+            return self.fileinfos.select().join(Page).where(
+                Page.status == page_status.published)
+        else:
+            if self.publishing_mode != "Do not publish":
+                return self.fileinfos
+
+
 
     @property
     def default_mapping(self):

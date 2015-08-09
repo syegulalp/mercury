@@ -61,11 +61,27 @@ def save(request, user, cms_template):
                             user=user)
 
     if len(errors) == 0:
+
+        # from core.models import page_status
         status = Status(
             type='success',
             message="Template <b>{}</b> saved.",
             vals=(cms_template.for_log,)
             )
+
+        # regenerate templates
+        if int(_forms.getunicode('save')) == 2:
+            from core import cms
+            for f in cms_template.fileinfos_published:
+                cms.push_to_queue(job_type=cms_template.template_type,
+                    priority=1,
+                    blog=cms_template.blog,
+                    site=cms_template.blog.site,
+                    data_integer=f.id)
+
+            status.message += " {} files regenerated from template.".format(
+                cms_template.fileinfos_published.count())
+
     else:
         status = Status(
             type='danger',
