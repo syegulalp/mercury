@@ -7,6 +7,20 @@ var editor_set_dirty = function(){}
 var rotate_timeout = null;
 var rotate = 0;
 
+function calc_size(){
+	
+	ht = 0;
+	$('.resize,.footer').each(function(){
+		ht += $(this).height();
+		ht += parseInt($(this).css('margin-bottom'), 10);
+		ht += parseInt($(this).css('margin-top'), 10);
+	});
+	
+	ht += parseInt($('#editor_div').css('margin-bottom'), 10);
+	
+	return ht;
+}
+
 function leave(){}
 
 function stay(){
@@ -428,16 +442,16 @@ $(window).load(function() {
 	        
 	        if ($('.mce-fullscreen').length != 0){return}
              
-            e = tinymce.activeEditor;                  	        
-	        
+            e = tinymce.activeEditor;
+            
 	        var targetHeight = window.innerHeight - $("#editor_div").offset().top;
 	        var mce_bars_height = 0;
 	        $('.mce-toolbar, .mce-statusbar, .mce-menubar').each(function(){
 	                mce_bars_height += $(this).height();
 	        });
-	        var myHeight = targetHeight - mce_bars_height - $('#page_text_label').height();        
-	 
-	        e.theme.resizeTo(null,myHeight);
+	        var myHeight = targetHeight - mce_bars_height - $('#page_text_label').height();
+	        
+	        e.theme.resizeTo(null,myHeight); 
             
 	    }
 	    
@@ -499,10 +513,10 @@ $(window).load(function() {
         editor = 1
 
         editor_resize = function() {
-            $('.CodeMirror').css('height', (
-                window.innerHeight - $(".CodeMirror").offset().top - 
-                ($(".footer").height() * 5)
-            ));
+        	
+			$('.CodeMirror').css('height', (
+					window.innerHeight - $(".CodeMirror").offset().top - calc_size()));
+
         }
         
         setTimeout(function(){delayed_resize()},50)
@@ -523,13 +537,6 @@ $(window).load(function() {
         observer.observe(document.querySelector('#editor_div'),
             {childList:true, subtree:true});   
 
-        
-        /*
-        if ($('#alert_message').length) {
-            dismiss('#alert_message', 2500);
-        }
-        */
-        
         window.onbeforeunload = leave;
     
         sidebar_wireup();

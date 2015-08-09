@@ -11,7 +11,7 @@
             <textarea name="template_body" id="template_body" class="form-control" rows="8">{{template.body}}</textarea>
         </div>
         % for m in template.mappings:
-        <div class="form-group">
+        <div class="form-group resize" id="mappings_div">
             % if m.is_default is True:
             <label for="template_mapping">Default template mapping</label>
             % end
@@ -29,10 +29,6 @@
             </div>
         </div>
         % end
-
-
-
-        <br/><br/>
 
     </div>
 
