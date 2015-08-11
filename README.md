@@ -7,16 +7,17 @@ Pure Python (3.2+) CMS and blogging solution
 * Static HTML publishing
 * Dynamic page and site previews
 * Plugin system
-* Drag-and-drop media management included but optional
 * Multiple sites and blogs supported in a single installation
 * Multiple users and granular permissions (contribute, write, edit, publish, manage, etc.)
+* Drag-and-drop media management included but optional
 
 ## Planned additions
 * Multiple edit format support (e.g., Markdown)
+* Multiple template type support (e.g., Jinja)
 * Publishing from external files rather than in-DB data
 * Command-line functionality
 * L10N
-* Python 2.x backwards compatiblity
+* Python 2.x backwards compatibility
 
 ... more to come ...
 

@@ -3,7 +3,7 @@ import urllib, re, html
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, BASE_URL_ROOT)
 
-from core.libs.bottle import template, redirect
+from core.libs.bottle import redirect, template
 
 import hashlib, base64
 
