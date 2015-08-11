@@ -58,7 +58,7 @@
             
             % if blog is not None:
             % if queue.count():
-            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/publish">Publish items in queue</a></li>
+            <li><a target="_blank" href="{{settings.BASE_URL}}/blog/{{blog.id}}/publish">Publish items in queue</a></li>
             <li class="divider"></li>
             % else:
             <li class="disabled"><a href="#">Queue empty</a></li>
