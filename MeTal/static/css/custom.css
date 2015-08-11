@@ -149,7 +149,6 @@ body {
     border: 1px rgb(204,204,204) solid;
     height: auto;
 }
-.panel-body {
+.hide-overflow {
 	overflow: hidden
-}
 }

@@ -11,13 +11,15 @@
     </select>
 </div>
 
-<div class="form-group">
-<div class="btn-group">
-<button type="submit" name="save" value="1" class="btn btn-sm btn-primary">Save</button>
-</div>
-</div>
-<div class="form-group">
-<div class="btn-group">
-<button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save and regenerate pages</button>
-</div>
+<div class="hide-overflow">
+    <div class="form-group">
+        <div class="btn-group">
+            <button type="submit" name="save" value="1" class="btn btn-sm btn-primary">Save</button>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="btn-group">
+            <button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save and regenerate pages</button>
+        </div>
+    </div>
 </div>

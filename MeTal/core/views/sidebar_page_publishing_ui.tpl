@@ -10,7 +10,7 @@
     % end
     </select>
 </div>
-    
+
 <div class="form-group">
     <label for="publication_date">Publication date:</label>
     <div class='input-group input-group-sm date' id='publication_date_picker'>
@@ -32,7 +32,7 @@
         </span>
     </div>
 </div>
-    
+
 <div class="form-group">
     <label for="permalink">Permalink:</label>
     <p id="permalink">
@@ -53,7 +53,7 @@
         </a>
     </p>
 </div>
-    
+
 <div class="form-group">
     <label for="change_note">Change note: <small>(optional)</small></label>
     <input type="text" class="form-control input-sm unsaved entersubmit" id="change_note" placeholder=""
@@ -67,7 +67,7 @@
             id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}}">
             {{save_action[page.status_id][1]}}
             <div id="save_animation"></div>
-            </button>                           
+            </button>
         <button type="button" class="btn btn-sm btn-{{status_badge[page.status_id]}} dropdown-toggle"
         data-toggle="dropdown" aria-expanded="false">
         <span class="caret"></span>
