@@ -19,6 +19,26 @@ _hook = app.hook
 # any theme-based routes will be set up here
 # /blog/x/<path:path> -- for non-greedy matching
 
+
+# use this pattern for breaking up the router into multiple modules later on?
+'''
+@_route(BASE_PATH + "/t1")
+def t1():
+    return "T1"
+
+@_route(BASE_PATH + "/t1/<path>")
+def t(path):
+    print ("t")
+
+    @_route(BASE_PATH + "/t1/t2")
+    def t2():
+        print ("t2")
+        return "T2"
+
+    return app.router.match(request)[0]()
+'''
+
+
 @_hook('before_request')
 def strip_path():
     # Removes trailing slashes from a URL before processing
@@ -49,6 +69,7 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
+
 @_route(BASE_PATH + "/system/theme/<blog_id:int>")
 def export_theme(blog_id):
     from core import theme
@@ -64,19 +85,6 @@ def setup(step_id=None):
 @_route(BASE_PATH + "/system/sites")
 def site_list():
     return ui.system_sites()
-
-# TODO: the default should be whatever editor theme is installed by the current blog theme
-@_route(BASE_PATH + "/blog/<blog_id:int>/editor-css")
-def css(blog_id):
-    blog = get_blog(blog_id)
-    if blog.editor_css is None:
-        from core import static
-        template = static.editor_css
-    else:
-        template = blog.editor_css
-    response.content_type = "text/css"
-    response.add_header('Cache-Control', 'max-age=7200')
-    return template
 
 @_route(BASE_PATH + "/system/plugins")
 def system_plugins():
@@ -162,37 +170,25 @@ def system_queue():
 def system_log():
     return ui.system_log()
 
+@_route(BASE_PATH + '/export')
+def system_export_data():
+    return mgmt.export_data()
+
+@_route(BASE_PATH + '/import')
+def system_import_data():
+    return mgmt.import_data()
+
 @_route(BASE_PATH + '/site/<site_id:int>/blogs')
 def site_blogs(site_id):
     return ui.site(site_id)
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog')
-def blog_create(site_id):
+def site_blog_create(site_id):
     return ui.blog_create(site_id)
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog', method='POST')
-def blog_create_save(site_id):
+def site_blog_create_save(site_id):
     return ui.blog_create_save(site_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
-def blog_create_user(blog_id):
-    return ui.blog_create_user(blog_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/create-user', method='POST')
-def blog_create_user_save(blog_id):
-    return ui.blog_create_user_save(blog_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>')
-def blog_user_edit(blog_id, user_id):
-    return ui.blog_user_edit(blog_id, user_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>', method='POST')
-def blog_user_edit_save(blog_id, user_id):
-    return ui.blog_user_edit_save(blog_id, user_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/users')
-def blog_list_users(blog_id):
-    return ui.blog_list_users(blog_id)
 
 @_route(BASE_PATH + '/site/<site_id:int>/users')
 def site_list_users(site_id):
@@ -214,6 +210,39 @@ def site_edit_user(site_id, user_id):
 def site_edit_user_save(site_id, user_id):
     return ui.site_edit_user_save(site_id, user_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
+def blog_create_user(blog_id):
+    return ui.blog_create_user(blog_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/create-user', method='POST')
+def blog_create_user_save(blog_id):
+    return ui.blog_create_user_save(blog_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>')
+def blog_user_edit(blog_id, user_id):
+    return ui.blog_user_edit(blog_id, user_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>', method='POST')
+def blog_user_edit_save(blog_id, user_id):
+    return ui.blog_user_edit_save(blog_id, user_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/users')
+def blog_list_users(blog_id):
+    return ui.blog_list_users(blog_id)
+
+# TODO: the default should be whatever editor theme is installed by the current blog theme
+@_route(BASE_PATH + "/blog/<blog_id:int>/editor-css")
+def blog_editor_css(blog_id):
+    blog = get_blog(blog_id)
+    if blog.editor_css is None:
+        from core import static
+        template = static.editor_css
+    else:
+        template = blog.editor_css
+    response.content_type = "text/css"
+    response.add_header('Cache-Control', 'max-age=7200')
+    return template
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage')
 def blog_new_page(blog_id):
     return ui.blog_new_page(blog_id)
@@ -228,7 +257,7 @@ def blog(blog_id, errormsg=None):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
-def edit_tag(blog_id, tag_id):
+def blog_edit_tag(blog_id, tag_id):
     return ui.edit_tag(blog_id, tag_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tags')
@@ -315,14 +344,6 @@ def blog_purge(blog_id):
 @_route(BASE_PATH + '/page/<page_id:int>/delete', method='POST')
 def page_delete(page_id):
     return ui.page_delete(page_id)
-
-@_route(BASE_PATH + '/export')
-def export_data():
-    return mgmt.export_data()
-
-@_route(BASE_PATH + '/import')
-def import_data():
-    return mgmt.import_data()
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
 def blog_queue(blog_id):
