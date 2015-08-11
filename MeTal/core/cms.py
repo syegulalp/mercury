@@ -10,7 +10,7 @@ from core.libs.peewee import DeleteQuery
 import json
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
-    Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User,
+    Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User, Blog, Site,
     FileInfoContext, Media, MediaAssociation, Struct, page_status)
 
 from settings import MAX_BATCH_OPS
@@ -88,41 +88,28 @@ def push_to_queue(**ka):
             )
     except Queue.DoesNotExist:
         queue_job = Queue()
+    else:
+        return
 
     queue_job.job_type = ka['job_type']
+    queue_job.data_integer = int(ka.get('data_integer', None))
+    queue_job.blog = ka.get('blog', Blog()).id
+    queue_job.site = ka.get('site', Site()).id
+    queue_job.priority = ka.get('priority', 9)
+    queue_job.is_control = ka.get('is_control', False)
 
-    if 'data_integer' in ka:
-        queue_job.data_integer = int(ka['data_integer'])
-
-    if 'blog' in ka:
-        queue_job.blog = ka['blog'].id
-        queue_job.site = ka['blog'].site.id
-
-    if 'site' in ka:
-        queue_job.site = ka['site'].id
-
-    if 'priority' in ka:
-
-        queue_job.priority = ka['priority']
-
-    if 'is_control' in ka:
-
-        queue_job.is_control = True
-
-    if queue_job.job_type == job_type.page:
-
-        queue_job.data_string = "Page: " + FileInfo.get(FileInfo.id == queue_job.data_integer).file_path
-
-    if queue_job.job_type == job_type.index:
-
-        queue_job.data_string = "Index: " + FileInfo.get(FileInfo.id == queue_job.data_integer).file_path
-
-    if queue_job.job_type == job_type.archive:
-
-        queue_job.data_string = "Archive: " + FileInfo.get(FileInfo.id == queue_job.data_integer).file_path
+    queue_job.data_string = (queue_job.job_type + ": " +
+        FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
 
     queue_job.date_touched = datetime.datetime.now()
     queue_job.save()
+
+def _remove_from_queue(queue_deletes):
+    '''
+    Batch deletion of queue jobs.
+    '''
+    deletes = Queue.delete().where(Queue.id << queue_deletes)
+    return deletes.execute()
 
 def remove_from_queue(queue_id):
     '''
@@ -510,7 +497,6 @@ def unpublish_page(page, remove_fileinfo=False):
     '''
     Removes all the physical files associated with a given page,
     and queues any related files
-
     '''
 
     pass
@@ -521,8 +507,6 @@ def generate_page_text(f, tags):
     Generates the text for a given page based on its fileinfo
     and a given tagset.
     '''
-    # from core.template import expand_includes
-
     tp = f.template_mapping.template
 
     try:
@@ -545,13 +529,6 @@ def generate_file(f, blog):
     Returns the page text and the pathname for a file to generate.
     Used with build_file but can be used for other things as well.
     '''
-
-    split_path = f.file_path.rsplit('/', 1)
-    path_to_check = blog.path + "/" + f.file_path.rsplit('/', 1)[0]
-
-    if len(split_path) > 1:
-        if os.path.isdir(path_to_check) is False:
-            os.makedirs(path_to_check)
 
     if f.page is None:
 
@@ -590,6 +567,13 @@ def build_file(f, blog):
     page_text, pathname = generate_file(f, blog)
     report.append("Output: " + pathname)
     encoded_page = page_text.encode('utf8')
+
+    split_path = f.file_path.rsplit('/', 1)
+    path_to_check = blog.path + "/" + f.file_path.rsplit('/', 1)[0]
+
+    if len(split_path) > 1:
+        if os.path.isdir(path_to_check) is False:
+            os.makedirs(path_to_check)
 
     with open(pathname, "wb") as output_file:
         output_file.write(encoded_page)
@@ -804,13 +788,9 @@ def build_index_fileinfo(template_id):
     tags = template_tags(blog_id=blog.id)
 
     for i in index_mappings:
-        print (i.path_string)
         path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
-
         master_path_string = path_string
-
         report.append("Index page: " + master_path_string)
-
         add_page_fileinfo(None, i, master_path_string,
              blog.url + "/" + master_path_string,
              blog.path + '/' + master_path_string)
@@ -853,12 +833,14 @@ def publish_blog(blog_id):
 def republish_blog(blog_id):
 
     import time
-    begin = time.clock()
-
-    data = []
-    data.extend(["<h3>Files built:</h3><hr>"])
 
     blog = get_blog(blog_id)
+
+    data = []
+    data.extend(["<h3>Rebuilding {}:</h3><hr>".format(
+        blog.name)])
+
+    begin = time.clock()
 
     for p in blog.published_pages():
         queue_page_actions(p, True)
@@ -870,11 +852,9 @@ def republish_blog(blog_id):
     data.append("Total processing time: {0:.2f} seconds.".format(end - begin))
     return data
 
-# TODO: rework this to become a wrapper for a more general set of functions in core.queue
 def process_queue(blog):
     '''
-    Processes the jobs currently in the queue, for the selected blog.
-    Eventually this will take ka for diff. object scopes (blog, site, etc.)
+    Processes the jobs currently in the queue for the selected blog.
     '''
     with db.atomic():
 
@@ -884,10 +864,11 @@ def process_queue(blog):
         except BaseException:
             raise EmptyQueueError('No control jobs found for this blog.')
 
-        if queue_control.data_string is not None:
-            raise QueueInProgressException("Job already running ({})".format(queue_control.data_string))
+        if queue_control.data_string == 'Running':
+            raise QueueInProgressException("Job already running for blog {}".format(
+                queue_control.blog))
 
-        queue_control.data_string = "Running"
+        queue_control.data_string = 'Running'
         queue_control.save()
 
         queue = Queue.select().order_by(Queue.priority.desc(),
@@ -915,7 +896,7 @@ def process_queue(blog):
         queue_control = Queue.get(Queue.blog == blog,
             Queue.is_control == True)
 
-        queue_control.data_integer = queue_control.data_integer - queue_length
+        queue_control.data_integer -= queue_length
 
         if queue_control.data_integer <= 0:
             queue_control.delete_instance()
@@ -924,7 +905,7 @@ def process_queue(blog):
                 date_format(queue_control.date_touched),
                 queue_control.blog.id))
         else:
-            queue_control.data_string = None
+            queue_control.data_string = 'Paused'
             queue_control.save()
             logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left.".format(
                 queue_control.id,
@@ -1001,7 +982,7 @@ def register_media(filename, path, user, **ka):
         path=path,
         type=media_filetypes.types[os.path.splitext(filename)[1][1:]],
         user=user,
-        friendly_name=ka['friendly_name'] if 'friendly_name' in ka else filename
+        friendly_name=ka.get('friendly_name', filename)
         )
 
     media.save()
