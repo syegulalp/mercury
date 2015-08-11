@@ -181,12 +181,16 @@ def blog_create(**new_blog_data):
     return new_blog
 
 def user_from_ka(**ka):
+    user = ka.get('user', User(id=0,
+            name='[System]'))
+    '''
     if 'user' in ka:
         return ka['user']
     else:
         user = User(id=0,
             name='[System]')
-        return user
+    '''
+    return user
 
 
 def blog_settings_save(request, blog, user):
