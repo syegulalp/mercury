@@ -9,6 +9,10 @@ class SetupTest(unittest.TestCase):
 
     def setUp(self):
 
+        # TODO: copy in custom ini file from test folder
+        # maybe have it so that we're using a custom data directory as well?
+        # or at least rename existing data directory
+
         # tear down and create new DB
 
         from core.models import init_db
@@ -30,6 +34,7 @@ class SetupTest(unittest.TestCase):
         # create a blog
         # create users for each, assign permissions
 
+    '''
     def test_create_admin_user(self):
         print ("hi")
         pass
@@ -49,6 +54,7 @@ class SetupTest(unittest.TestCase):
     def test_create_blog_user(self):
 
         pass
+    '''
 
 if __name__ == '__main__':
     unittest.main()
