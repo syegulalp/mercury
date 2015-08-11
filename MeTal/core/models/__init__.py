@@ -297,8 +297,8 @@ class User(BaseModel):
             Permission.blog >0,
             Permission.permission.bin_and(bitmask))
         '''
-        for n in permissions:
-            print (n.permission, n.blog.id, n.site.id)
+        # for n in permissions:
+            # print (n.permission, n.blog.id, n.site.id)
 
         blogs = Blog.select().where(
             Blog.id << permissions.select(Permission.blog).tuples())
@@ -1514,8 +1514,8 @@ def default_template_mapping(page):
     return time_string
 
 
-tags_init = ("blog", "page", "pages", "authors", "site", "user",
-    "template", "status", "media", "archive")
+tags_init = ("blog", "page", "authors", "site", "user",
+    "template", "archive")
 
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
@@ -1539,15 +1539,10 @@ class TemplateTags(object):
                 self.search_terms = ka['search']
                 self.search_query = "&search=" + self.search_terms
 
-        if 'pages' in ka:
+        self.pages = ka.get('pages', None)
+        self.status = ka.get('status', None)
 
-            self.pages = ka['pages']
-
-        if 'media' in ka:
-            self.media = ka['media']
-
-        if 'status' in ka:
-            self.status = ka['status']
+        # self.media = ka.get('media', None)
 
         if 'user' in ka:
             self.user = ka['user']
@@ -1564,28 +1559,20 @@ class TemplateTags(object):
 
         if 'page' in ka:
             self.page = ka['page']
-
             ka['blog_id'] = self.page.blog.id
-            ka['site_id'] = self.page.blog.site.id
+            self.pages = (self.page,)
 
         if 'template_id' in ka:
-
             self.template = get_template(ka['template_id'])
-
             ka['blog_id'] = self.template.blog.id
-            ka['site_id'] = self.template.blog.site.id
 
         if 'blog_id' in ka:
-
             self.blog = get_blog(ka['blog_id'])
-
             ka['site_id'] = self.blog.site.id
 
-        if 'blog' in ka:
-            self.blog = ka['blog']
+        self.blog = ka.get('blog', self.blog)
 
         if 'site_id' in ka:
-
             self.site = get_site(ka['site_id'])
 
         if self.blog:
@@ -1595,12 +1582,11 @@ class TemplateTags(object):
         else:
             self.queue = Queue.select()
 
-
         if 'archive' in ka:
-
             self.archive = Struct()
             setattr(self.archive, "pages", self.blog.pages(ka['archive']))
 
+            # TODO: replace this with a proper fixed list of archive types!!
             for n in ('year', 'month', 'category', 'author'):
                 setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
 
