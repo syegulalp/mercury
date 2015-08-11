@@ -54,7 +54,7 @@ MAX_FILESIZE = 300000
 # Number of operations to be performed from the queue in a single batch.
 # You can set this to a higher value on systems where you aren't worried
 # about batch operations timing out, but the default should suffice.
-MAX_BATCH_OPS = 100
+MAX_BATCH_OPS = 50
 # Number of items listed on a page in a listing view.
 ITEMS_PER_PAGE = 15
 # Maximum length of basenames for pages.
