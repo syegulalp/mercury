@@ -1,14 +1,16 @@
 %from core.utils import breaks
 % include('header.tpl')
 % include('header_messages.tpl')
-<div class="col-xs-12">
+<div class="col-sm-9">
 
+    % n=0
     % for template_type in list_items:
+    % n+=1
     <h4>{{template_type['title']}} <span title="Create new {{template_type['title'][:-1]}}" class="glyphicon glyphicon-plus-sign"></span></h4>
-    <table class="table table-condensed table-bordered table-hover">
+    <table class="table table-condensed table-bordered table-hover" id="templ-{{n}}">
         <thead>
             <tr>
-            <th style="width:1%"><input type="checkbox" id="check-all" name="check-all"></th>
+            <th style="width:1%"><input type="checkbox" id="check-all-{{n}}" name="check-all-{{n}}"></th>
             <th style="width:33%">Title</th>
             <th style="width:33%">Default File Mapping</th>
             <th style="width:33%">Publishing Mode</th>
@@ -23,7 +25,16 @@
         </tr>
     % end
     </table>
-    
+
     % end
 </div>
+
+<div id="sidebar" class="col-sm-3">
+    <div id="sidebar_inner">
+
+    </div>
+</div>
 % include('footer.tpl')
+<script>
+
+</script>
