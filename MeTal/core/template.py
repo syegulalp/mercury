@@ -1,15 +1,13 @@
-from core.models import template_tags, TemplateMapping
+from core.models import template_tags, TemplateMapping, publishing_modes
 from core.utils import Status, is_blank
 from core.log import logger
+from core.cms import build_mapping_xrefs
 
 def save(request, user, cms_template):
 
     errors = []
 
     _forms = request.forms
-
-    # TODO: any changes to the template name should alert the user?
-    # checking against includes is likely to be really labor-intensive
 
     cms_template.title = _forms.getunicode('template_title')
     cms_template.body = _forms.getunicode('template_body')
@@ -18,7 +16,6 @@ def save(request, user, cms_template):
         cms_template.title = "New Template (#{})".format(
             cms_template.id)
 
-    from core.models import publishing_modes
     mode = _forms.getunicode('publishing_mode')
 
     if mode in publishing_modes:
@@ -28,6 +25,8 @@ def save(request, user, cms_template):
 
     if len(errors) == 0:
         cms_template.save()
+
+    mappings = []
 
     for n in _forms:
         if n.startswith('template_mapping_'):
@@ -45,13 +44,12 @@ def save(request, user, cms_template):
                         mapping_id,
                         template_mapping.path_string))
                 else:
-                    template_mapping.path_string = _forms.getunicode(n)
-                    # template_mapping.build_xref()
+                    if _forms.getunicode(n) != template_mapping.path_string:
+                        template_mapping.path_string = _forms.getunicode(n)
                     template_mapping.save()
+                    mappings.append(template_mapping)
 
-
-                # 1. Regenerate archive_xref for mapping
-                # 2. Rebuild all fileinfos affected by that mapping
+    build_mapping_xrefs(mappings)
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
     tags = template_tags(template_id=cms_template.id,
@@ -66,7 +64,6 @@ def save(request, user, cms_template):
             vals=(cms_template.for_log,)
             )
 
-        # regenerate templates
         if int(_forms.getunicode('save')) == 2:
             from core import cms
             for f in cms_template.fileinfos_published:
