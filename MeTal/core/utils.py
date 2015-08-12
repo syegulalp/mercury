@@ -167,6 +167,13 @@ def tpl_oneline(string):
 
     return string
 
+def tpl_include(tpl):
+    # get absolute path for template relative to blog root
+    # get default mapping
+    # prepend /? do we need to have those in the mapping?
+    return '<!--#include virtual="{}" -->'.format(
+        tpl)
+
 from core.libs.bottle import SimpleTemplate
 class MetalTemplate(SimpleTemplate):
     includes = []
