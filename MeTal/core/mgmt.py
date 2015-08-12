@@ -56,7 +56,7 @@ def theme_apply_to_blog(theme, blog):
     '''
 
     from core import cms
-    cms.purge_fileinfo(blog.fileinfos)
+    cms.purge_fileinfos(blog.fileinfos)
 
     mappings_to_remove = TemplateMapping.delete().where(
         TemplateMapping.template << blog.templates)
@@ -126,11 +126,14 @@ def theme_install_to_blog(installed_theme, blog):
         kv_to_change.save()
 
     from core import cms
-    for n in blog.pages():
-        cms.build_page_fileinfo(n.id)
 
-    for n in blog.index_templates:
-        cms.build_index_fileinfo(n.id)
+    # TODO: use purge_blog instead
+
+    # for n in blog.pages():
+    cms.build_pages_fileinfos(blog.pages())
+
+    # for n in blog.index_templates:
+    cms.build_indexes_fileinfos(blog.index_templates)
 
 
 def site_create(**new_site_data):
