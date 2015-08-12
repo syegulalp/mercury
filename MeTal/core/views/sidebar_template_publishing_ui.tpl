@@ -19,7 +19,7 @@
     </div>
     <div class="form-group">
         <div class="btn-group">
-            <button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save and regenerate pages</button>
+            <button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save & publish</button>
         </div>
     </div>
 </div>
