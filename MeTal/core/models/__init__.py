@@ -1155,10 +1155,11 @@ class TemplateMapping(BaseModel):
     archive_xref = CharField(max_length=16, null=True)
     modified_date = DateTimeField(default=datetime.datetime.now)
 
-    def build_xref(self):
+    '''
+    def _build_xrefs(self):
 
-        # TODO: first remove any existing fileinfos and fileinfocontexts for pages
-        # affected by this template mapping
+        from core import cms
+        cms.purge_fileinfos(self.fileinfos)
 
         import re
         iterable_tags = (
@@ -1168,13 +1169,12 @@ class TemplateMapping(BaseModel):
             (re.compile('\{\{page\.categories\}\}'), 'C'),
             (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
             (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
-            # TODO: change this to page.author
+            (re.compile('\{\{page\.author.?[^\}]*\}\}'), 'A')
             )
 
         match_pos = []
 
         for tag, func in iterable_tags:
-
             match = tag.search(self.path_string)
             if match is not None:
                 match_pos.append((func, match.start()))
@@ -1185,34 +1185,14 @@ class TemplateMapping(BaseModel):
 
         self.archive_xref = context_string
 
-        '''
-        test_pages = blog_pages
-
-        mapping_list = {}
-
-        for n in test_pages:
-
-            tags = template_tags(page_id=n.id)
-
-            for m in template_mappings:
-
-                path_string = generate_date_mapping(n.publication_date, tags, m.path_string)
-
-                if path_string in mapping_list:
-                    continue
-
-                tag_context = generate_archive_context_from_page(m.archive_xref, blog_pages, n)
-
-                mapping_list[path_string] = (None, m, path_string,
-                                   n.blog.url + "/" + path_string,
-                                   n.blog.path + '/' + path_string)
-        for n in mapping_list:
-
-            add_page_fileinfo(*mapping_list[n])
-
-        '''
-
-        # also rebuild the appropriate fileinfos
+        content_type = self.template.template_type
+        if content_type == 'Page':
+            cms.build_pages_fileinfos(self.template.blog.pages())
+        if content_type == 'Archive':
+            cms.build_archives_fileinfos(self.template.blog.pages())
+        if content_type == 'Index':
+            cms.build_indexes_fileinfos(self.template.blog.index_templates())
+    '''
 
     @property
     def fileinfos(self):
