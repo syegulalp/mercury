@@ -125,22 +125,24 @@ def remove_from_queue(queue_id):
 
 def queue_page_actions(page, no_neighbors=False, no_archive=False):
     '''
-    Pushes a page along with all its related items into the queue for publication.
+    Pushes a Page object along with all its related items into the queue for publication.
     This includes any archive indices associated with the page, and the page's next and
-    previous entries in its respective categories. Note that this will only queue
-    items that are actually published.
+    previous entries in its respective categories.
+
+    Note that this will only queue items that are actually set to be published.
 
     :param page:
-        The page object whose actions are to be queued.
+        The Page object whose actions are to be queued.
     :param no_neighbors:
         Set to True to suppress generation of next/previous posts. Useful if you've loaded
         all the posts for a blog into a queue.
-    :param no_archove:
+    :param no_archive:
         Set to True to suppress generation of archive pages associated with this page. Also
         useful for mass-queued actions.
     '''
 
-    fileinfos = FileInfo.select().where(FileInfo.page == page)
+    # fileinfos = FileInfo.select().where(FileInfo.page == page)
+    fileinfos = page.fileinfos
 
     blog = page.blog
     site = page.blog.site
@@ -372,8 +374,8 @@ def save_page(page, user, blog=None):
     # BUILD FILEINFO IF NO DELETE ACTION
     if not (save_action & save_action_list.DELETE_PAGE):
 
-        build_page_fileinfo(page)
-        build_archive_fileinfo((page,))
+        build_pages_fileinfos((page,))
+        build_archives_fileinfos((page,))
 
     # PUBLISH CHANGES
     if (save_action & save_action_list.UPDATE_LIVE_PAGE) and (page.status == page_status.published):
@@ -626,8 +628,6 @@ def generate_archive_context(context_list, original_pageset, **ka):
     return tag_context
 
 
-
-
 def category_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
@@ -701,31 +701,35 @@ archive_functions = {
         "context":author_context}
     }
 
-def build_page_fileinfo(page_id):
+def build_pages_fileinfos(pages):
     '''
     Creates fileinfo entries for the template mappings associated with
-    individual pages.
+    an iterable list of Page objects.
     '''
 
-    page = Page.get(id=page_id)
-    template_mappings = page.template_mappings
+    n = 0
+    for page in pages:
+        n += 1
+        template_mappings = page.template_mappings
 
-    if template_mappings.count() == 0:
-        raise TemplateMapping.DoesNotExist('No template mappings found for this page.')
+        if template_mappings.count() == 0:
+            raise TemplateMapping.DoesNotExist('No template mappings found for this page.')
 
-    tags = template_tags(page_id=page.id)
+        tags = template_tags(page_id=page.id)
 
-    for t in template_mappings:
-        path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
-        master_path_string = path_string + "." + page.blog.base_extension
-        add_page_fileinfo(page, t, master_path_string,
-            page.blog.url + "/" + master_path_string,
-            page.blog.path + '/' + master_path_string)
+        for t in template_mappings:
+            path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
+            master_path_string = path_string + "." + page.blog.base_extension
+            add_page_fileinfo(page, t, master_path_string,
+                page.blog.url + "/" + master_path_string,
+                page.blog.path + '/' + master_path_string)
 
+    return n
 
-def build_archive_fileinfo(pages):
+def build_archives_fileinfos(pages):
     '''
-    Takes a page (maybe a collection of same) and produces fileinfos for the date-based archive entries for each
+    Takes a page (maybe a collection of same) and produces fileinfos
+    for the date-based archive entries for each
     '''
 
     mapping_list = {}
@@ -765,7 +769,7 @@ def build_archive_fileinfo(pages):
 
     return mapping_list
 
-def build_index_fileinfo(template_id):
+def build_indexes_fileinfos(templates):
 
     '''
     Rebuilds a fileinfo entry for a given main index.
@@ -778,24 +782,27 @@ def build_index_fileinfo(template_id):
     This will port the code currently found in build_blog_fileinfo, much as the above function did.
 
     '''
-    report = []
+    n = 0
 
-    index_mappings = TemplateMapping.select().where(
-        TemplateMapping.template == template_id)
+    for template in templates:
+        n += 1
 
-    blog = index_mappings[0].template.blog
+        index_mappings = TemplateMapping.select().where(
+            TemplateMapping.template == template)
 
-    tags = template_tags(blog_id=blog.id)
+        blog = index_mappings[0].template.blog
 
-    for i in index_mappings:
-        path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
-        master_path_string = path_string
-        report.append("Index page: " + master_path_string)
-        add_page_fileinfo(None, i, master_path_string,
-             blog.url + "/" + master_path_string,
-             blog.path + '/' + master_path_string)
+        tags = template_tags(blog_id=blog.id)
 
-    return report
+        for i in index_mappings:
+            path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
+            master_path_string = path_string
+            # report.append("Index page: " + master_path_string)
+            add_page_fileinfo(None, i, master_path_string,
+                 blog.url + "/" + master_path_string,
+                 blog.path + '/' + master_path_string)
+
+    return n
 
 
 def publish_page(page_id):
@@ -915,16 +922,61 @@ def process_queue(blog):
 
     return queue_control.data_integer
 
-def purge_fileinfo(fileinfos):
+def build_fileinfos():
+    pass
+
+def build_mapping_xrefs(mapping_list):
+
+    import re
+    iterable_tags = (
+        (re.compile('%Y'), 'Y'),
+        (re.compile('%m'), 'M'),
+        (re.compile('%d'), 'D'),
+        (re.compile('\{\{page\.categories\}\}'), 'C'),
+        # (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
+        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
+        (re.compile('\{\{page\.author.?[^\}]*\}\}'), 'A')
+        )
+
+    map_types = []
+
+    for mapping in mapping_list:
+        purge_fileinfos(mapping.fileinfos)
+
+        match_pos = []
+
+        for tag, func in iterable_tags:
+            match = tag.search(mapping.path_string)
+            if match is not None:
+                match_pos.append((func, match.start()))
+
+        sorted_match_list = sorted(match_pos, key=lambda row: row[1])
+        context_string = "".join(n for n, m in sorted_match_list)
+        mapping.archive_xref = context_string
+        mapping.save()
+
+        map_types.append(mapping.template.template_type)
+
+    for content_type in map_types:
+        if content_type == 'Page':
+            build_pages_fileinfos(self.template.blog.pages())
+        if content_type == 'Archive':
+            build_archives_fileinfos(self.template.blog.pages())
+        if content_type == 'Index':
+            build_indexes_fileinfos(self.template.blog.index_templates())
+
+def purge_fileinfos(fileinfos):
     '''
     Takes a collection of fileinfos in the form of a model
     and removes them from the fileinfo list.
     Returns how many entries were purged.
     No security checks are performed.
     '''
-
-    purge = DeleteQuery(FileInfo).where(FileInfo.id << fileinfos.select(FileInfo.id).tuples())
-    return purge.execute()
+    context_purge = DeleteQuery(FileInfoContext).where(FileInfoContext.fileinfo << fileinfos)
+    n = context_purge.execute()
+    purge = DeleteQuery(FileInfo).where(FileInfo.id << fileinfos)
+    m = purge.execute()
+    return m, n
 
 
 def purge_blog(blog):
@@ -933,6 +985,10 @@ def purge_blog(blog):
     This function may also eventually be expanded to delete all the files
     associated with a given blog (except for assets)
     No security checks are performed.
+
+    Eventually we will make each of these purge and append actions
+    into queueable behaviors, so that these operations don't time out.
+
     '''
 
     import time
@@ -942,21 +998,21 @@ def purge_blog(blog):
 
     begin = time.clock()
 
-    fileinfos_purged = purge_fileinfo(blog.fileinfos)
-    report.append("<hr/>{} file objects erased.".format(fileinfos_purged))
+    fileinfos_purged, fileinfocontexts_purged = purge_fileinfos(blog.fileinfos)
+    report.append("<hr/>{} fileinfo objects (and {} fileinfo context objects) erased.".format(
+        fileinfos_purged,
+        fileinfocontexts_purged))
+
     pages_to_insert = blog.pages()
+    pages_inserted = build_pages_fileinfos(pages_to_insert)
+    report.append("<hr/>{} page objects created.".format(pages_inserted))
 
-    for n in pages_to_insert:
-        build_page_fileinfo(n.id)
-
-    report.append("<hr/>{} page objects created.".format(pages_to_insert.count()))
-    f_i = build_archive_fileinfo(pages_to_insert)
+    f_i = build_archives_fileinfos(pages_to_insert)
     report.append("{} archive objects created.".format(len(f_i)))
 
-    for n in blog.index_templates:
-        build_index_fileinfo(n.id)
+    index_objects = build_indexes_fileinfos(blog.index_templates)
+    report.append("{} index objects created.".format(index_objects))
 
-    report.append("{} index objects created.".format(blog.index_templates.count()))
     end = time.clock()
 
     total_objects = pages_to_insert.count() + len(f_i) + blog.index_templates.count()
@@ -964,7 +1020,6 @@ def purge_blog(blog):
     report.append("Total processing time: {0:.2f} seconds.".format(end - begin))
 
     return report
-
 
 
 media_filetypes = Struct()
@@ -1003,121 +1058,3 @@ def register_media(filename, path, user, **ka):
         media.save()
 
     return media
-
-
-def _build_archive_fileinfo(blog):
-    '''
-    Creates fileinfo entries for the template mappings associated with
-    date-based archive types.
-
-    TODO: THIS FUNCTION IS BEING DISMANTLED AND DEPRECATED.
-    FOR NOW IT'S BEING KEPT AS A WAY TO GENERATE FILEINFOS
-    WHEN WE ADD NEW TEMPLATE MAPPINGS
-    BUT EVENTUALLY THAT WILL BE MOVED OUT.
-    DON'T DELETE THIS YET!
-
-
-    This will need to be run every time we create a new archive type,
-    or change a template mapping for an archive type
-
-    Also run on a purge action.
-
-    A control message should be used to signal such a rebuild.
-
-    Eventually this will just be a wrapper for the functions
-    broken out from it:
-
-        - update the template mapping data
-        - generate the fileinfos
-
-    The wrapper function that just supplies a blog ID
-    will in turn supply this with a list of items.
-
-    The function itself will in time take such a list.
-
-    '''
-
-    # TODO: if we need to batch really big operations, we can use the index #
-    # of the post in question as a pause point, since it's sorted
-    # if there's an insert during passes, what happens?
-
-
-    # replace these with their schema equivalents
-
-    blog_pages = blog.published_pages().order_by(Page.publication_date.desc())
-
-    template_list = Template.select().where(
-        Template.blog == blog)
-
-    templates_id = template_list.select(Template.id).where(Template.template_type > 2)
-
-    template_mappings = TemplateMapping.select().where(
-        TemplateMapping.template << templates_id)
-
-
-    '''
-    Iterate through each date-based template mapping
-    and build a context description for it.
-    That context will be saved with the mapping.
-    '''
-
-    # We can put this here because this function is not called often
-
-    # TODO: This part of the function should be pulled out and moved
-    # to wherever we change or update index mappings,
-    # since we don't actually need to run it here
-
-    iterable_tags = (
-        (re.compile('%Y'), 'Y'),
-        (re.compile('%m'), 'M'),
-        (re.compile('%d'), 'D'),
-        (re.compile('\{\{page\.categories\}\}'), 'C'),
-        (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
-        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
-        )
-
-    for mapping in template_mappings:
-
-        match_pos = []
-
-        for tag, func in iterable_tags:
-
-            match = tag.search(mapping.path_string)
-            if match is not None:
-                match_pos.append((func, match.start()))
-
-        sorted_match_list = sorted(match_pos, key=lambda row: row[1])
-
-        context_string = "".join(n for n, m in sorted_match_list)
-
-        mapping.archive_xref = context_string
-
-        mapping.save()
-
-
-    test_pages = blog_pages
-
-    mapping_list = {}
-
-    for n in test_pages:
-
-        tags = template_tags(page_id=n.id)
-
-        for m in template_mappings:
-
-            path_string = generate_date_mapping(n.publication_date, tags, m.path_string)
-
-            if path_string in mapping_list:
-                continue
-
-            tag_context = generate_archive_context_from_page(m.archive_xref, blog_pages, n)
-
-            mapping_list[path_string] = (None, m, path_string,
-                               n.blog.url + "/" + path_string,
-                               n.blog.path + '/' + path_string)
-
-    for n in mapping_list:
-
-        add_page_fileinfo(*mapping_list[n])
-
-    return mapping_list
