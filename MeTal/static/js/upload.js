@@ -27,7 +27,7 @@ function update_progress()
 {              
     percentage = percentage + increment;
 	$("#upload_progress_bar").attr('style','width: '+percentage+'%');
-	$("#upload_progress_text").text(percentage+'%');
+	$("#upload_progress_text").text(percentage.toFixed(0)+'%');
 	
 	if (percentage >=100){
 	    setTimeout(function(){
