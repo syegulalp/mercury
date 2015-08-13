@@ -42,6 +42,8 @@ class DatabaseError(LoggedException):
 class TemplateSaveException(LoggedException):
     pass
 
+# for earlier Python 3.x backwards compatibility
+
 try:
     FileExistsError
 except NameError:
