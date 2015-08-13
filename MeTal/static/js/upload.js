@@ -40,7 +40,6 @@ function update_progress()
 
 function next(file_list, pointer)
 {
-	alert("Next file");
     if (pointer<=file_list.length)
     {
     	process_file_list(file_list,pointer+1);
@@ -51,7 +50,6 @@ function process_file_list(file_list,pointer)
 {
 	
 	f = file_list[pointer];
-	//i = file_list.length;
 	i= pointer;
 	console.log(file_list,f);
 	var file_name = f.name;
