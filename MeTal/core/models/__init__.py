@@ -1512,7 +1512,7 @@ class TemplateTags(object):
         self.utils = _utils
         self.sites = Site.select()
         self.status_modes = page_status
-        self.media = get_media
+        # self.media = get_media
 
         if 'search' in ka:
             if ka['search'] is not None:
@@ -1570,6 +1570,7 @@ class TemplateTags(object):
             for n in ('year', 'month', 'category', 'author'):
                 setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
 
+        self.media = ka.get('media', None)
 
 def template_tags(**ka):
     return TemplateTags(**ka)
