@@ -1,11 +1,12 @@
 from core.models import template_tags, TemplateMapping, publishing_modes
-from core.utils import Status, is_blank
+from core.utils import is_blank
 from core.log import logger
 from core.cms import build_mapping_xrefs
+from core.error import TemplateSaveException
 
 def save(request, user, cms_template):
 
-    errors = []
+    status = ''
 
     _forms = request.forms
 
@@ -21,10 +22,9 @@ def save(request, user, cms_template):
     if mode in publishing_modes:
         cms_template.publishing_mode = mode
     else:
-        errors.append("Invalid publishing mode selected.")
+        raise TemplateSaveException("Invalid publishing mode selected.")
 
-    if len(errors) == 0:
-        cms_template.save()
+    cms_template.save()
 
     mappings = []
 
@@ -36,52 +36,44 @@ def save(request, user, cms_template):
                     TemplateMapping.id == mapping_id
                     )
             except TemplateMapping.DoesNotExist:
-                errors.append('Template mapping with ID #{} does not exist.'.format(
+                raise TemplateSaveException('Template mapping with ID #{} does not exist.'.format(
                     mapping_id))
             else:
                 if is_blank(_forms.getunicode(n)):
-                    errors.append('Template mapping #{} ({}) cannot be blank.'.format(
+                    raise TemplateSaveException('Template mapping #{} ({}) cannot be blank.'.format(
                         mapping_id,
                         template_mapping.path_string))
                 else:
                     if _forms.getunicode(n) != template_mapping.path_string:
                         template_mapping.path_string = _forms.getunicode(n)
-                    template_mapping.save()
-                    mappings.append(template_mapping)
+                        # need to check for mapping validation
+                        # if invalid, return some kind of warning
+                        # not an exception per se?
+                        # template_mapping.save()
+                        mappings.append(template_mapping)
 
+    for n in mappings:
+        n.save()
+        status += " Mapping #{} ({}) rebuilt.".format(
+            n.id,
+            n.path_string)
     build_mapping_xrefs(mappings)
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
     tags = template_tags(template_id=cms_template.id,
                             user=user)
 
-    if len(errors) == 0:
 
-        from core.cms import job_type
-        status = Status(
-            type='success',
-            message="Template <b>{}</b> saved.",
-            vals=(cms_template.for_log,)
-            )
+    if int(_forms.getunicode('save')) == 2:
+        from core import cms
+        for f in cms_template.fileinfos_published:
+            cms.push_to_queue(job_type=f.template_mapping.template.template_type,
+                blog=cms_template.blog,
+                site=cms_template.blog.site,
+                data_integer=f.id)
 
-        if int(_forms.getunicode('save')) == 2:
-            from core import cms
-            for f in cms_template.fileinfos_published:
-                cms.push_to_queue(job_type=f.template_mapping.template.template_type,
-                    blog=cms_template.blog,
-                    site=cms_template.blog.site,
-                    data_integer=f.id)
-
-            status.message += " {} files regenerated from template.".format(
-                cms_template.fileinfos_published.count())
-
-    else:
-        status = Status(
-            type='danger',
-            message="Error saving template <b>{}</b>: <br>{}",
-            vals=(cms_template.for_log,
-                ' // '.join(errors))
-            )
+        status += " {} files regenerated from template.".format(
+            cms_template.fileinfos_published.count())
 
     logger.info("Template {} edited by user {}.".format(
         cms_template.for_log,

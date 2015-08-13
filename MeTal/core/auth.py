@@ -1,7 +1,8 @@
 from core.libs.bottle import redirect, request
-from core.models import User, Permission, Struct, MediaAssociation
+from core.models import User, Permission, Struct, MediaAssociation, Queue
 from settings import BASE_URL, SECRET_KEY
-from core.error import PermissionsException, UserNotFound
+from core.error import PermissionsException, UserNotFound, QueueInProgressException
+from core.utils import Status
 
 from urllib import parse
 from functools import wraps
@@ -10,7 +11,7 @@ role = Struct()
 
 role.CONTRIBUTOR = 1
 role.AUTHOR = 2
-role.EDITOR = 4 
+role.EDITOR = 4
 role.DESIGNER = 8
 role.BLOG_ADMIN = 16
 role.SITE_ADMIN = 32
@@ -31,7 +32,7 @@ def is_logged_in(request):
     '''
     Determines if a logged-in user exists, with a redirection wrapper.
     '''
-    
+
     try:
         user = is_logged_in_core(request)
     except UserNotFound:
@@ -54,37 +55,37 @@ def is_logged_in_core(request):
         raise UserNotFound("User at {} attempted to log in as '{}'. User not found.".format(
             request.remote_addr,
             user_name))
-    
+
     return user_found
 
 def get_permissions(user, level=None, blog=None, site=None):
-    
+
     permissions = Permission.select().where(
         Permission.user == user)
 
     if blog:
         permissions = permissions.select().where(
-            (Permission.blog == blog) | 
-            (Permission.permission.bin_and(role.SYS_ADMIN)) | 
+            (Permission.blog == blog) |
+            (Permission.permission.bin_and(role.SYS_ADMIN)) |
                 (
-                (Permission.site == blog.site) & 
+                (Permission.site == blog.site) &
                 (Permission.permission.bin_and(role.SITE_ADMIN))
                 )
             )
 
     if site:
         permissions = permissions.select().where(
-            (Permission.site == site) | 
+            (Permission.site == site) |
             (Permission.permission.bin_and(role.SYS_ADMIN))
             )
-        
+
     if level:
         permissions = permissions.select().where(
             Permission.permission.bin_and(level))
-        
+
     if permissions.count() == 0:
         raise PermissionsException('Permission {} not found'.format(level))
-    
+
     return permissions
 
 def is_sys_admin(user):
@@ -95,28 +96,28 @@ def is_sys_admin(user):
     except PermissionsException:
         raise PermissionsException('User {} does not have access to system admin resources.'.format(user.for_log))
 
-    
+
 def is_site_admin(user, site):
     '''Determines if the given user has site admin privileges on a given site.'''
     try:
         is_site_admin = get_permissions(user, bitmask.administrate_site, None, site)
-        return is_site_admin 
+        return is_site_admin
     except PermissionsException:
         raise PermissionsException('User {} does not have permission to change settings on site {}'.format(
             user.for_log, site.for_log))
-    
+
 
 def is_site_member(user, site):
     '''Determines if the given user has site member privileges on a given site.'''
     try:
         is_site_member = get_permissions(user, None, None, site)
-        return is_site_member 
+        return is_site_member
     except PermissionsException:
         raise PermissionsException("User {} does not have permission to work with site {}".format(
             user.for_log,
             site.for_log))
 
-        
+
 def is_blog_member(user, blog):
     '''Determines if the given user has member privileges on a given blog.'''
     try:
@@ -133,31 +134,31 @@ def is_blog_author(user, blog):
         is_blog_author = get_permissions(user, bitmask.author_page, blog)
         return is_blog_author
 
-    except PermissionsException: 
+    except PermissionsException:
         raise PermissionsException('User {} does not have permission to author pages on blog {}'.format(
             user.for_log, blog.for_log))
-        
+
 def is_blog_editor(user, blog):
     '''Determines if the given user has editor privileges on a given blog.'''
     try:
         is_blog_editor = get_permissions(user, bitmask.edit_page, blog)
         return is_blog_editor
 
-    except PermissionsException:        
+    except PermissionsException:
         raise PermissionsException('User {} does not have permission to edit pages on blog {}'.format(
             user.for_log, blog.for_log))
-        
+
 
 def is_page_editor(user, page):
     '''Determines if the given user has page editor privileges on a given page.
     A blog, site, or sysadmin will automatically have page editor privileges.'''
     if page.author == user:
-        return True 
+        return True
     try:
         is_page_editor = is_blog_editor(user, page.blog)
     except PermissionsException:
         raise PermissionsException('User {} does not have permission to work with page {}'.format(user.for_log, page.for_log))
-        
+
 
 def is_blog_designer(user, blog):
     '''Determines if the given user has blog designer privileges on a given blog.
@@ -179,8 +180,8 @@ def is_blog_publisher(user, blog):
     except PermissionsException:
         raise PermissionsException('User {} does not have permission to manually activate the publishing queue on blog {}'.format(
             user.for_log, blog.for_log))
-    
-   
+
+
 def is_blog_admin(user, blog):
     '''Determines if the given user has blog admin privileges on a given blog.
     #A site or sysadmin will automatically have blog admin privileges.'''
@@ -192,21 +193,21 @@ def is_blog_admin(user, blog):
         raise PermissionsException('User {} does not have permission to change settings on blog {}'.format(
             user.for_log, blog.for_log))
 
-    
+
 def is_media_owner(user, media):
     '''
     Determines if the given user has owner privileges on a given media item.
     A blog, site, or sysadmin will automatically have privileges for media.
-    ''' 
-    
+    '''
+
     if media.user == user:
         return media
-    
+
     # figure out if this media belongs to a blog where the user has designer permissions
-    
+
     media_association = MediaAssociation.select().where(
         MediaAssociation.media == media)
-    
+
     for m in media_association:
         if m.blog is not None:
             try:
@@ -214,10 +215,10 @@ def is_media_owner(user, media):
                 return media
             except PermissionsException:
                 pass
-                
+
     raise PermissionsException('User {} does not have permission to edit media ID {}'.format(
         user.for_log, media.id))
-   
+
 # Attempt at a user context decorator
 def _user(func):
     @wraps(func)
@@ -226,6 +227,67 @@ def _user(func):
             user = is_logged_in_core(request)
         except UserNotFound:
             redirect(BASE_URL + "/login?action=" + parse.quote_plus(request.path))
-        ka['_user'] = user 
+        ka['_user'] = user
         return func (*a, **ka)
     return wrapper
+
+
+def publishing_lock(blog, return_queue=False):
+    '''
+    Checks to see if a publishing job for a given blog is currently running.
+    If it is, it raises an exception.
+    If the return_queue flag is set, it returns the queue_control object instead.
+    If no job is locked, then it returns None.
+    '''
+    # from core.models import Queue
+
+    try:
+        queue_control = Queue.get(Queue.blog == blog,
+            Queue.is_control == True)
+    except Queue.DoesNotExist:
+        return None
+
+    if return_queue is True:
+        return queue_control
+    else:
+        raise QueueInProgressException("Publishing job currently running for blog {}".format(
+            queue_control.blog.for_log))
+
+def check_template_lock(blog, warn_only=False):
+    try:
+        publishing_lock(blog)
+    except QueueInProgressException as e:
+        if warn_only is True:
+            return Status(
+            type='warning',
+            message="Template editing is not available right now. Proceed with caution. Reason: {}".format(e)
+            )
+        else:
+            raise QueueInProgressException('You cannot edit templates for this blog right now. Reason: {}'.format(e))
+
+def check_settings_lock(blog, warn_only=False):
+    try:
+        publishing_lock(blog)
+    except QueueInProgressException as e:
+        if warn_only is True:
+            return Status(
+                type='warning',
+                message="Blog settings editing is not available right now. Proceed with caution. Reason: {}".format(e)
+                )
+        else:
+            raise QueueInProgressException('You cannot change settings for this blog right now. Reason: {}'.format(e))
+
+def check_tag_editing_lock(blog, warn_only=False):
+    try:
+        publishing_lock(blog)
+    except QueueInProgressException as e:
+        if warn_only is True:
+            return Status(
+                type='warning',
+                message="Tag editing is not available right now. Proceed with caution. Reason: {}".format(e)
+                )
+        else:
+            raise QueueInProgressException('You cannot edit tags for this blog right now. Reason: {}'.format(e))
+
+def check_page_editing_lock(page):
+    pass

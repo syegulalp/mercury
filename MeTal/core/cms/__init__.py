@@ -4,7 +4,7 @@ from core.utils import (create_basename, Status, tpl, tpl_oneline, generate_date
 from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueueError,
     QueueInProgressException, PageTemplateError)
 from core.log import logger
-
+from core.auth import publishing_lock
 from core.libs.bottle import request
 from core.libs.peewee import DeleteQuery
 import json
@@ -98,8 +98,13 @@ def push_to_queue(**ka):
     queue_job.priority = ka.get('priority', 9)
     queue_job.is_control = ka.get('is_control', False)
 
-    queue_job.data_string = (queue_job.job_type + ": " +
-        FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
+    if queue_job.is_control:
+        queue_job.data_string = (queue_job.job_type + ": Blog {}".format(
+            queue_job.blog.for_log))
+    else:
+        queue_job.data_string = (queue_job.job_type + ": " +
+            FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
+
 
     queue_job.date_touched = datetime.datetime.now()
     queue_job.save()
@@ -865,15 +870,10 @@ def process_queue(blog):
     '''
     with db.atomic():
 
-        try:
-            queue_control = Queue.get(Queue.blog == blog,
-                Queue.is_control == True)
-        except BaseException:
-            raise EmptyQueueError('No control jobs found for this blog.')
+        queue_control = publishing_lock(blog, True)
 
-        if queue_control.data_string == 'Running':
-            raise QueueInProgressException("Job already running for blog {}".format(
-                queue_control.blog))
+        if queue_control is None:
+            return 0
 
         queue_control.data_string = 'Running'
         queue_control.save()
@@ -934,11 +934,11 @@ def build_mapping_xrefs(mapping_list):
         (re.compile('%d'), 'D'),
         (re.compile('\{\{page\.categories\}\}'), 'C'),
         # (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
-        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
+        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A'),
         (re.compile('\{\{page\.author.?[^\}]*\}\}'), 'A')
         )
 
-    map_types = []
+    map_types = {}
 
     for mapping in mapping_list:
         purge_fileinfos(mapping.fileinfos)
@@ -955,15 +955,14 @@ def build_mapping_xrefs(mapping_list):
         mapping.archive_xref = context_string
         mapping.save()
 
-        map_types.append(mapping.template.template_type)
+        map_types[mapping.template.template_type] = ""
 
-    for content_type in map_types:
-        if content_type == 'Page':
-            build_pages_fileinfos(self.template.blog.pages())
-        if content_type == 'Archive':
-            build_archives_fileinfos(self.template.blog.pages())
-        if content_type == 'Index':
-            build_indexes_fileinfos(self.template.blog.index_templates())
+    if 'Page' in map_types:
+        build_pages_fileinfos(mapping.template.blog.pages())
+    if 'Archive' in map_types:
+        build_archives_fileinfos(mapping.template.blog.pages())
+    if 'Index' in map_types:
+        build_indexes_fileinfos(mapping.template.blog.index_templates)
 
 def purge_fileinfos(fileinfos):
     '''

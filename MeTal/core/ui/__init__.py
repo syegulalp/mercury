@@ -2,13 +2,13 @@ from core import (auth, mgmt, utils, cms, ui_mgr, template as _template)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.error import UserNotFound, EmptyQueueError
+from core.error import UserNotFound, EmptyQueueError, QueueInProgressException
 from core.search import blog_search_results, site_search_results
 
 from core.models import (Struct, get_site, get_blog, get_media, get_template,
     template_tags, get_page, Page, PageRevision, Blog, Queue, Template, Log,
     TemplateMapping, get_user, Plugin, Media, User, db,
-    MediaAssociation, Tag, template_type)
+    MediaAssociation, Tag, template_type, publishing_mode)
 
 from core.models.transaction import transaction
 
@@ -103,7 +103,6 @@ save_action = (
     (3, 'Save & update live'),
     (1, 'Save draft')
     )
-
 
 @transaction
 def login():
@@ -959,6 +958,8 @@ def blog_media_edit_save(blog_id, media_id):
 
 def blog_media_edit_output(tags):
 
+    print (tags.media)
+
     tpl = template('edit_media_ui',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
@@ -1045,11 +1046,15 @@ def blog_tags(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_author(user, blog)
 
+    reason = auth.check_tag_editing_lock(blog, True)
+
     blog_tag_list = Tag.select().where(
         Tag.blog == blog).order_by(Tag.tag.asc())
 
     tags = template_tags(blog_id=blog.id,
         user=user)
+
+    tags.status = reason
 
     paginator, rowset = utils.generate_paginator(blog_tag_list, request)
 
@@ -1069,14 +1074,16 @@ def blog_templates(blog_id):
     '''
     List all templates in a given blog
     '''
-    from core.models import publishing_mode
-
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_designer(user, blog)
 
+    reason = auth.check_template_lock(blog, True)
+
     tags = template_tags(blog_id=blog.id,
         user=user)
+
+    tags.status = reason
 
     template_list = Template.select(Template, TemplateMapping).join(
         TemplateMapping).where(
@@ -1114,7 +1121,7 @@ def blog_templates(blog_id):
         publishing_mode=publishing_mode,
         search_context=(search_context['blog_templates'], blog),
         menu=generate_menu('blog_manage_templates', blog),
-        **tags.__dict__)
+        ** tags.__dict__)
 
     return tpl
 
@@ -1196,6 +1203,8 @@ def blog_settings(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
+    auth.check_settings_lock(blog)
+
     tags = template_tags(blog_id=blog.id,
         user=user)
 
@@ -1255,17 +1264,17 @@ def blog_publish(blog_id):
 
         try:
             Queue.get(Queue.site == blog.site,
-                    Queue.blog == blog,
-                   Queue.is_control == True)
+                Queue.blog == blog,
+                Queue.is_control == True)
 
         except Queue.DoesNotExist:
 
             cms.push_to_queue(blog=blog,
-                        site=blog.site,
-                        job_type=job_type.control,
-                        is_control=True,
-                        data_integer=queue_length
-                        )
+                site=blog.site,
+                job_type=job_type.control,
+                is_control=True,
+                data_integer=queue_length
+                )
     else:
 
         start_message = "Queue empty."
@@ -1348,6 +1357,8 @@ def template_edit(template_id):
     blog = get_blog(edit_template.blog.id)
     permission = auth.is_blog_designer(user, blog)
 
+    auth.check_template_lock(blog)
+
     tags = template_tags(template_id=template_id,
                         user=user)
 
@@ -1367,15 +1378,34 @@ def template_edit_save(template_id):
     template = get_template(template_id)
     blog = get_blog(template.blog)
     permission = auth.is_blog_designer(user, blog)
-    status = _template.save(request, user, template)
+
+    from core.utils import Status
+    from core.error import TemplateSaveException
+
+    try:
+        message = _template.save(request, user, template)
+    except TemplateSaveException as e:
+        status = Status(
+            type='danger',
+            message="Error saving template <b>{}</b>: <br>{}",
+            vals=(template.for_log,
+                e)
+            )
+    except BaseException:
+        raise
+    else:
+        status = Status(
+            type='success',
+            message="Template <b>{}</b> saved.{}",
+            vals=(template.for_log, message)
+            )
 
     tags = template_tags(template_id=template_id,
                         user=user)
 
     tags.mappings = template_mapping_index[template.template_type]
 
-    if status is not None:
-        tags.status = status
+    tags.status = status
 
     return template_edit_output(tags)
 
@@ -1384,7 +1414,6 @@ def template_edit_output(tags):
 
     from core.models import (publishing_mode, publishing_modes,
         template_type as template_types)
-
 
     tpl = template('edit_template_ui',
         icons=icons,
@@ -1758,6 +1787,8 @@ def edit_tag(blog_id, tag_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_editor(user, blog)
+
+    auth.check_tag_editing_lock(blog)
 
     try:
         tag = Tag.get(Tag.id == tag_id)

@@ -1,7 +1,7 @@
 from core.log import logger
-    
+
 class LoggedException(Exception):
-    def __init__(self, msg):        
+    def __init__(self, msg):
         super().__init__(msg)
         self.msg = msg
         logger.error(msg)
@@ -39,8 +39,14 @@ class PageTemplateError(LoggedException):
 class DatabaseError(LoggedException):
     pass
 
+class TemplateSaveException(LoggedException):
+    pass
+
 try:
     FileExistsError
 except NameError:
     class FileExistsError(LoggedException):
+        pass
+else:
+    class FileExistsError(FileExistsError):
         pass
