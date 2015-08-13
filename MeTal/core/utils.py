@@ -50,9 +50,10 @@ class Status:
         else:
             self.icon = "info-sign"
 
+        self.message_list = ka.get('message_list', None)
+
 
 def logout_nonce(user):
-
     return csrf_hash(str(user.id) + str(user.last_login) + 'LOGOUT')
 
 def csrf_hash(csrf):
