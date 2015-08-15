@@ -953,8 +953,6 @@ def blog_media_edit_save(blog_id, media_id):
 
 def blog_media_edit_output(tags):
 
-    print (tags.media)
-
     tpl = template('edit_media_ui',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
@@ -1370,7 +1368,7 @@ def new_template(blog_id, template_type):
 
         new_template_mapping = TemplateMapping(
            template=template,
-           archive_type=1,
+           # archive_type=1,
            is_default=True,
            path_string=utils.create_basename(template.title, blog)
            )
@@ -1447,8 +1445,13 @@ def template_edit_save(template_id):
                 vals=(template.for_log,
                     e)
                 )
-        except BaseException:
-            raise
+        except BaseException as e:
+            status = Status(
+                type='warning',
+                message="Problem saving template <b>{}</b>: <br>{}",
+                vals=(template.for_log,
+                    e)
+                )
         else:
             status = Status(
                 type='success',
