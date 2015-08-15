@@ -249,14 +249,7 @@ def step_4_pre():
 
         # create a blog within that site
 
-        new_blog = mgmt.blog_create(
-            site=new_site,
-            name="Your first blog",
-            description="The description for your first blog.",
-            url=new_site.url,
-            path=new_site.path,
-            theme=0
-            )
+
 
         new_user = mgmt.user_create(
             name='Administrator',
@@ -293,6 +286,15 @@ def step_4_pre():
         # new_blog.save()
 
         report.append("Theme created and installed successfully to system.")
+
+        new_blog = mgmt.blog_create(
+            site=new_site,
+            name="Your first blog",
+            description="The description for your first blog.",
+            url=new_site.url,
+            path=new_site.path,
+            theme=new_theme
+            )
 
         mgmt.theme_install_to_blog(new_theme, new_blog)
 
