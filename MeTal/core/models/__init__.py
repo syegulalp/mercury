@@ -53,7 +53,6 @@ parent_obj = {
     'PageCategory':'Page',
     }
 
-# lookup not required for this, so a struct
 template_type = Struct()
 template_type.index = "Index"
 template_type.page = "Page"
@@ -96,36 +95,6 @@ publishing_mode.modes = (
     publishing_mode.do_not_publish,
     publishing_mode.include
     )
-# lookup required, so a dict
-'''
-publishing_mode = {
-        'Immediate':{
-            'label':'primary',
-            'description':'Changes are pushed to the queue and processed immediately.'
-            },
-        'Batch only':{
-            'label':'success',
-            'description':'Changes are pushed to the queue but held for whenever the queue is next triggered.'},
-        'Manual':{
-            'label':'warning',
-            'description':'Changes are published only when "regenerate pages" is selected.'},
-        'Do not publish':{
-            'label':'danger',
-            'description':'Changes are never published.'},
-        'Include':{
-            'label':'default',
-            'description':'Changes are only published when the include is present in another template.'
-            }
-    }
-
-publishing_modes = (
-    'Immediate',
-    'Batch only',
-    'Manual',
-    'Do not publish',
-    'Include'
-    )
-'''
 
 page_status_list = (
     ('unpublished', 'Unpublished', 1),
