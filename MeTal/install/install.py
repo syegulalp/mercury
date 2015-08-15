@@ -254,7 +254,8 @@ def step_4_pre():
             name="Your first blog",
             description="The description for your first blog.",
             url=new_site.url,
-            path=new_site.path
+            path=new_site.path,
+            theme=0
             )
 
         new_user = mgmt.user_create(
@@ -282,10 +283,14 @@ def step_4_pre():
         install_directory = (_settings.APPLICATION_PATH + _settings._sep +
             "install")
 
-        with open(install_directory + _settings._sep + "templates.json", "rb") as json_file:
+        with open(install_directory + _settings._sep + "themes" +
+            _settings._sep + "Amano 2015" + _settings._sep + "templates.json", "rb") as json_file:
                 json_text = json_file.read()
 
         new_theme = mgmt.theme_install_to_system(json_text)
+
+        # new_blog.theme = new_theme
+        # new_blog.save()
 
         report.append("Theme created and installed successfully to system.")
 

@@ -39,12 +39,13 @@ def theme_create(**new_theme_data):
 
 def theme_install_to_system(theme_data):
 
-    json_obj = json.loads(theme_data.decode('utf-8'))
+    json_raw = theme_data.decode('utf-8')
+    json_obj = json.loads(json_raw)
 
     new_theme = theme_create(
         title=json_obj["title"],
         description=json_obj["description"],
-        json=json_obj
+        json=json_raw
         )
 
     return new_theme
@@ -161,6 +162,7 @@ def blog_create(**new_blog_data):
     new_blog.url = new_blog_data['url']
     new_blog.path = new_blog_data['path']
     new_blog.local_path = new_blog.path
+    new_blog.theme = new_blog_data['theme']
 
     new_blog.save()
 
