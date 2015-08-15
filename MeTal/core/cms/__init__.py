@@ -540,7 +540,7 @@ def generate_file(f, blog):
 
     if f.page is None:
 
-        if f.xref.archive_type in [1]:
+        if f.xref.template.template_type == template_type.index:
             tags = template_tags(blog_id=blog.id)
         else:
 
@@ -617,7 +617,6 @@ def generate_archive_context(context_list, original_pageset, **ka):
             fileinfo = ka['fileinfo']
         except BaseException:
             raise BaseException("A page or a fileinfo object must be provided.", Exception)
-
 
     tag_context = original_pageset
 

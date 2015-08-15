@@ -700,8 +700,7 @@ class Page(BaseModel):
         Returns mappings for all date-based archives for this page.
         '''
         archive_mappings = TemplateMapping.select().where(
-            TemplateMapping.template << self.archives.select(Template.id).tuples(),
-            TemplateMapping.archive_type in [2, 3])
+            TemplateMapping.template << self.archives.select(Template.id).tuples())
 
         return archive_mappings
 
@@ -1160,7 +1159,7 @@ class TemplateMapping(BaseModel):
     template = ForeignKeyField(Template, null=False, index=True)
     is_default = BooleanField(default=False, null=True)
     path_string = TextField()
-    archive_type = IntegerField()
+    # archive_type = IntegerField()
     # 1 = Index
     # 2 = Page
     # 3 = Date-Based
