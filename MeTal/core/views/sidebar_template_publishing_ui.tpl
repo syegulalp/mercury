@@ -1,7 +1,7 @@
 <div class="form-group">
     <label for="publishing_mode">Publishing mode:</label>
     <select class="form-control input-sm unsaved" id="publishing_mode" name="publishing_mode">
-    % for m in modes:
+    % for m in publishing_mode.modes:
         % selected=""
         % if m == template.publishing_mode:
         % selected="selected"

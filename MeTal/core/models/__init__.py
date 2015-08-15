@@ -61,7 +61,43 @@ template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
 
+
+publishing_mode = Struct()
+publishing_mode.immediate = "Immediate"
+publishing_mode.batch_only = "Batch only"
+publishing_mode.manual = "Manual"
+publishing_mode.do_not_publish = "Do not publish"
+publishing_mode.include = "Include"
+
+publishing_mode.description = {
+        publishing_mode.immediate:{
+            'label':'primary',
+            'description':'Changes are pushed to the queue and processed immediately.'
+            },
+        publishing_mode.batch_only:{
+            'label':'success',
+            'description':'Changes are pushed to the queue but held for whenever the queue is next triggered.'},
+        publishing_mode.manual:{
+            'label':'warning',
+            'description':'Changes are published only when "regenerate pages" is selected.'},
+        publishing_mode.do_not_publish:{
+            'label':'danger',
+            'description':'Changes are never published.'},
+        publishing_mode.include:{
+            'label':'default',
+            'description':'Changes are only published when the include is present in another template.'
+            }
+    }
+
+publishing_mode.modes = (
+    publishing_mode.immediate,
+    publishing_mode.batch_only,
+    publishing_mode.manual,
+    publishing_mode.do_not_publish,
+    publishing_mode.include
+    )
 # lookup required, so a dict
+'''
 publishing_mode = {
         'Immediate':{
             'label':'primary',
@@ -89,6 +125,7 @@ publishing_modes = (
     'Do not publish',
     'Include'
     )
+'''
 
 page_status_list = (
     ('unpublished', 'Unpublished', 1),
@@ -1124,7 +1161,7 @@ class Template(BaseModel):
             return self.fileinfos.select().join(Page).where(
                 Page.status == page_status.published)
         else:
-            if self.publishing_mode != "Do not publish":
+            if self.publishing_mode != publishing_mode.do_not_publish:
                 return self.fileinfos
 
 

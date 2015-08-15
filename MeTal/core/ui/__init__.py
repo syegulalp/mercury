@@ -1361,7 +1361,7 @@ def new_template(blog_id, template_type):
             blog=blog,
             theme=blog.theme,
             template_type=template_type,
-            publishing_mode='Do not publish',
+            publishing_mode=publishing_mode.do_not_publish,
             body='',
             )
         template.save()
@@ -1467,7 +1467,7 @@ def template_edit_save(template_id):
 
 def template_edit_output(tags):
 
-    from core.models import (publishing_mode, publishing_modes,
+    from core.models import (publishing_mode,
         template_type as template_types)
 
     tpl = template('edit_template_ui',
@@ -1476,8 +1476,7 @@ def template_edit_output(tags):
         menu=generate_menu('blog_edit_template', tags.template),
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_template',
-            mode=publishing_mode,
-            modes=publishing_modes,
+            publishing_mode=publishing_mode,
             types=template_types,
             **tags.__dict__
             ),

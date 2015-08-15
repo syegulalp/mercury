@@ -21,7 +21,8 @@
             <td><input type="checkbox" id="check-{{template.id}}" name="check-{{template.id}}">
             <td><a href="{{settings.BASE_URL}}/template/{{template.id}}/edit">{{template.title}}</a></td>
             <td><code>{{!breaks(template.templatemapping.path_string)}}</code></td>
-            <td><span title="{{publishing_mode[template.publishing_mode]['description']}}" class="label label-{{publishing_mode[template.publishing_mode]['label']}}">{{template.publishing_mode}}</span></td>
+            <td><span title="{{publishing_mode.description[template.publishing_mode]['description']}}"
+            	class="label label-{{publishing_mode.description[template.publishing_mode]['label']}}">{{template.publishing_mode}}</span></td>
         </tr>
     % end
     </table>

@@ -11,7 +11,7 @@ import json
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
     Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User, Blog, Site,
-    FileInfoContext, Media, MediaAssociation, Struct, page_status)
+    FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode)
 
 from settings import MAX_BATCH_OPS
 
@@ -228,7 +228,7 @@ def queue_index_actions(blog):
     try:
         templates = Template.select().where(Template.blog == blog,
             Template.template_type == template_type.index,
-            Template.publishing_mode == 'Immediate')
+            Template.publishing_mode == publishing_mode.immediate)
 
         if templates.count() == 0:
             raise Template.DoesNotExist

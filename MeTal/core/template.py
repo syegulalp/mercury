@@ -1,4 +1,4 @@
-from core.models import template_tags, Template, TemplateMapping, publishing_modes
+from core.models import template_tags, Template, TemplateMapping, publishing_mode
 from core.utils import is_blank
 from core.log import logger
 from core.cms import build_mapping_xrefs
@@ -26,7 +26,7 @@ def save(request, user, cms_template):
 
     mode = _forms.getunicode('publishing_mode')
 
-    if mode in publishing_modes:
+    if mode in publishing_mode.modes:
         cms_template.publishing_mode = mode
     else:
         raise TemplateSaveException("Invalid publishing mode selected.")
