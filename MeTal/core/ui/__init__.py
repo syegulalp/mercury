@@ -114,7 +114,6 @@ def login():
 
     logger.info("Login page requested from IP {}.".format(request.remote_addr))
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
     response.delete_cookie("login", path="/")
 
     return tpl
@@ -162,7 +161,6 @@ def login_verify_core(email, password):
     else:
 
         response.set_cookie("login", user.email, secret=SECRET_KEY, path="/")
-        response.add_header('X-Content-Security-Policy', "allow 'self'")
 
         logger.info("User {} logged in from IP {}.".format(
             user.for_log,
@@ -836,8 +834,6 @@ def blog_new_page(blog_id):
             **tags.__dict__),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-
     return tpl
 
 @transaction
@@ -856,7 +852,6 @@ def blog_new_page_save(blog_id):
         tags.page.for_log,
         user.for_log))
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
     response.add_header('X-Redirect', BASE_URL + '/page/{}/edit'.format(str(tags.page.id)))
 
     return response
@@ -966,7 +961,6 @@ def blog_media_edit_output(tags):
         search_context=(search_context['blog_media'], tags.blog),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
     return tpl
 
 # TODO: be able to process multiple media at once via a list
@@ -1106,12 +1100,16 @@ def blog_templates(blog_id):
 
     tags.list_items = [
         {'title':'Index Templates',
+        'type': template_type.index,
         'data':index_templates},
         {'title':'Page Templates',
+        'type': template_type.page,
         'data':page_templates},
         {'title':'Archive Templates',
+        'type': template_type.archive,
         'data':archive_templates},
         {'title':'Includes',
+        'type': template_type.include,
         'data':template_includes},
         ]
 
@@ -1346,6 +1344,43 @@ def blog_publish_process(blog_id):
     return tpl
 
 
+def new_template(blog_id, template_type):
+    with db.atomic() as txn:
+
+        user = auth.is_logged_in(request)
+        blog = get_blog(blog_id)
+        permission = auth.is_blog_designer(user, blog)
+
+        auth.check_template_lock(blog)
+
+        mappings_index = template_mapping_index.get(template_type, None)
+        if mappings_index is None:
+            raise Exception('Mapping type not found')
+
+        template = Template(
+            blog=blog,
+            theme=blog.theme,
+            template_type=template_type,
+            publishing_mode='Do not publish',
+            body='',
+            )
+        template.save()
+        template.title = 'Untitled Template #{}'.format(template.id)
+        template.save()
+
+        new_template_mapping = TemplateMapping(
+           template=template,
+           archive_type=1,
+           is_default=True,
+           path_string=utils.create_basename(template.title, blog)
+           )
+
+        new_template_mapping.save()
+
+
+    redirect(BASE_URL + '/template/{}/edit'.format(
+        template.id))
+
 @transaction
 def template_edit(template_id):
     '''
@@ -1359,6 +1394,8 @@ def template_edit(template_id):
 
     auth.check_template_lock(blog)
 
+    response.set_header('Frame-Options', '')
+
     tags = template_tags(template_id=template_id,
                         user=user)
 
@@ -1368,6 +1405,10 @@ def template_edit(template_id):
     tags.mappings = template_mapping_index[edit_template.template_type]
 
     return template_edit_output(tags)
+
+def template_delete(template):
+    _template.delete(template)
+    return "Deleted"
 
 @transaction
 def template_edit_save(template_id):
@@ -1382,23 +1423,38 @@ def template_edit_save(template_id):
     from core.utils import Status
     from core.error import TemplateSaveException
 
-    try:
-        message = _template.save(request, user, template)
-    except TemplateSaveException as e:
-        status = Status(
-            type='danger',
-            message="Error saving template <b>{}</b>: <br>{}",
-            vals=(template.for_log,
-                e)
-            )
-    except BaseException:
-        raise
-    else:
-        status = Status(
-            type='success',
-            message="Template <b>{}</b> saved.{}",
-            vals=(template.for_log, message)
-            )
+    status = None
+
+    save_mode = int(request.forms.getunicode('save', default="0"))
+
+    if save_mode == 4:
+        if request.forms.getunicode('confirm') == 'Y':
+            return template_delete(template)
+        else:
+            status = Status(
+                type='warning',
+                message='You are attempting to delete this template. Are you sure you want to do this?',
+                confirm=('save', '4')
+                )
+
+    if save_mode in (1, 2):
+        try:
+            message = _template.save(request, user, template)
+        except TemplateSaveException as e:
+            status = Status(
+                type='danger',
+                message="Error saving template <b>{}</b>: <br>{}",
+                vals=(template.for_log,
+                    e)
+                )
+        except BaseException:
+            raise
+        else:
+            status = Status(
+                type='success',
+                message="Template <b>{}</b> saved.{}",
+                vals=(template.for_log, message)
+                )
 
     tags = template_tags(template_id=template_id,
                         user=user)
@@ -1408,7 +1464,6 @@ def template_edit_save(template_id):
     tags.status = status
 
     return template_edit_output(tags)
-
 
 def template_edit_output(tags):
 
@@ -1428,7 +1483,6 @@ def template_edit_output(tags):
             ),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
     return tpl
 
 
@@ -1497,8 +1551,6 @@ def page_edit(page_id):
             **tags.__dict__),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-
     logger.info("Page {} opened for editing by {}.".format(
         page.for_log,
         user.for_log))
@@ -1532,8 +1584,6 @@ def page_edit_save(page_id):
             ),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-
     return tpl
 
 @transaction
@@ -1558,7 +1608,6 @@ def page_delete(page_id):
         vals=(page.title, page.id)
         )
 
-    # TODO: move to model?
     logger.info("Page {} deleted by user {}.".format(
         page_id,
         user.for_log))
@@ -1569,14 +1618,15 @@ def page_delete(page_id):
 @transaction
 def page_preview(page_id):
 
-    with db.atomic():
-        user = auth.is_logged_in(request)
-        page = get_page(page_id)
-        permission = auth.is_page_editor(user, page)
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
 
     f = page.default_fileinfo
     tags = template_tags(page=page)
     page_text = cms.generate_page_text(f, tags)
+
+    response.set_header('Frame-Options', '')
 
     return page_text
 
@@ -1756,8 +1806,6 @@ def page_revision_restore(page_id, revision_id):
             ),
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
-
     return tpl
 
 @transaction
@@ -1777,7 +1825,6 @@ def page_revision_restore_save(page_id):
         sidebar='',
         **tags.__dict__)
 
-    response.add_header('X-Content-Security-Policy', "allow 'self'")
     response.add_header('X-Redirect', BASE_URL + '/page/{}/edit'.format(str(tags.page.id)))
 
     return tpl
