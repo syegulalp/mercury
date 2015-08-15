@@ -1,5 +1,5 @@
 % include('header.tpl')
-% include('messages_float_include.tpl')
+% include('header_messages.tpl')
 % if blog.id is not None:
 % disabled = "disabled='disabled'"
 % else:
