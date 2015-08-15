@@ -219,8 +219,10 @@ def is_media_owner(user, media):
     raise PermissionsException('User {} does not have permission to edit media ID {}'.format(
         user.for_log, media.id))
 
-# Attempt at a user context decorator
 def _user(func):
+    '''
+    Attempt at a user context decorator
+    '''
     @wraps(func)
     def wrapper(*a, **ka):
         try:
@@ -239,8 +241,6 @@ def publishing_lock(blog, return_queue=False):
     If the return_queue flag is set, it returns the queue_control object instead.
     If no job is locked, then it returns None.
     '''
-    # from core.models import Queue
-
     try:
         queue_control = Queue.get(Queue.blog == blog,
             Queue.is_control == True)
@@ -253,41 +253,40 @@ def publishing_lock(blog, return_queue=False):
         raise QueueInProgressException("Publishing job currently running for blog {}".format(
             queue_control.blog.for_log))
 
-def check_template_lock(blog, warn_only=False):
+def check_publishing_lock(blog, action_description, warn_only=False):
+    '''
+    Checks for a publishing lock and returns a status message if busy.
+    '''
     try:
         publishing_lock(blog)
     except QueueInProgressException as e:
+        msg = "{} is not available right now. Proceed with caution. Reason: {}".format(
+            action_description, e)
         if warn_only is True:
             return Status(
-            type='warning',
-            message="Template editing is not available right now. Proceed with caution. Reason: {}".format(e)
-            )
+                type='warning',
+                message=msg
+                )
         else:
-            raise QueueInProgressException('You cannot edit templates for this blog right now. Reason: {}'.format(e))
+            raise QueueInProgressException(msg)
+
+def check_template_lock(blog, warn_only=False):
+    '''
+    Checks for a publishing lock for template editing.
+    '''
+    return check_publishing_lock(blog, "Template editing", warn_only)
 
 def check_settings_lock(blog, warn_only=False):
-    try:
-        publishing_lock(blog)
-    except QueueInProgressException as e:
-        if warn_only is True:
-            return Status(
-                type='warning',
-                message="Blog settings editing is not available right now. Proceed with caution. Reason: {}".format(e)
-                )
-        else:
-            raise QueueInProgressException('You cannot change settings for this blog right now. Reason: {}'.format(e))
+    '''
+    Checks for a publishing lock for blog settings editing.
+    '''
+    return check_publishing_lock(blog, "Blog settings editing", warn_only)
 
 def check_tag_editing_lock(blog, warn_only=False):
-    try:
-        publishing_lock(blog)
-    except QueueInProgressException as e:
-        if warn_only is True:
-            return Status(
-                type='warning',
-                message="Tag editing is not available right now. Proceed with caution. Reason: {}".format(e)
-                )
-        else:
-            raise QueueInProgressException('You cannot edit tags for this blog right now. Reason: {}'.format(e))
+    '''
+    Checks for a publishing lock for tag editing.
+    '''
+    return check_publishing_lock(blog, "Tag editing", warn_only)
 
 def check_page_editing_lock(page):
     pass
