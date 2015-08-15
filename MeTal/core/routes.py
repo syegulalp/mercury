@@ -1,10 +1,13 @@
 import os, urllib, re
 
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
-    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT, BASE_URL,
+    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
     SECRET_KEY, _sep)
 
 from core import (mgmt, ui, auth)
+
+from core.libs import bottle
+# bottle.BaseRequest.MEMFILE_MAX = 1024000
 
 from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
 
@@ -15,10 +18,6 @@ from core.utils import csrf_hash, raise_request_limit
 app = Bottle()
 _route = app.route
 _hook = app.hook
-
-# any theme-based routes will be set up here
-# /blog/x/<path:path> -- for non-greedy matching
-
 
 # use this pattern for breaking up the router into multiple modules later on?
 '''
@@ -58,9 +57,9 @@ def csrf_protection():
     response.add_header('Frame-Options', 'sameorigin')
 
     if request.method == "POST":
-
+        # from core.libs import bottle
+        # bottle.BaseRequest.MEMFILE_MAX = 1024000
         raise_request_limit()
-
         try:
             user = auth.is_logged_in_core(request)
         except UserNotFound:

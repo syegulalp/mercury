@@ -64,4 +64,4 @@ DATABASE_TIMEOUT = 600000
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
-MAX_REQUEST = 204800
+MAX_REQUEST = 409600
