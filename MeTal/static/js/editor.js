@@ -391,6 +391,7 @@ function add_tag(e){
     else
     { url_link = "page/"+global.page;}
     
+    $('#tag_activity').removeClass('glyphicon-refresh').addClass('glyphicon-circle-arrow-up');
     $('#tag_activity').show();
     
     $.ajax({
@@ -402,9 +403,7 @@ function add_tag(e){
         data: fd,
     }).done(function (data,textStatus,request)
         {
-            
             $('#tag_list').append($(data));
-            
             activate_tags();
             editor_set_dirty();
         }
@@ -414,6 +413,7 @@ function add_tag(e){
 
     }).always(function(){
         $('#tag_activity').hide();
+        $('#tag_activity').removeClass('glyphicon-circle-arrow-up').addClass('glyphicon-refresh');
     }); 
  
 }
