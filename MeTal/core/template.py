@@ -1,8 +1,15 @@
-from core.models import template_tags, TemplateMapping, publishing_modes
+from core.models import template_tags, Template, TemplateMapping, publishing_modes
 from core.utils import is_blank
 from core.log import logger
 from core.cms import build_mapping_xrefs
 from core.error import TemplateSaveException
+
+def delete(template):
+
+    t1 = TemplateMapping.delete().where(TemplateMapping.id << template.mappings)
+    t1.execute()
+    t2 = Template.delete().where(Template.id == template.id)
+    t2.execute()
 
 def save(request, user, cms_template):
 
