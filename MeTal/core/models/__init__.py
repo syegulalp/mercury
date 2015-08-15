@@ -338,6 +338,11 @@ class ConnectionBase(BaseModel):
     remote_login = CharField(null=True)
     remote_password = CharField(null=True)
 
+class Theme(BaseModel):
+    title = TextField()
+    description = TextField()
+    json = TextField(null=True)
+
 class Site(SiteBase, ConnectionBase):
 
     @property
@@ -419,6 +424,8 @@ class Site(SiteBase, ConnectionBase):
 
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
+    theme = ForeignKeyField(Theme, null=False, index=True)
+
 
     @property
     def link_format(self):
@@ -579,13 +586,6 @@ class Blog(SiteBase):
 
         return fileinfos_for_blog
 
-    @property
-    def theme(self):
-        '''
-        Returns the blog's current theme association.
-        This is a stub; later this will return an actual DB column.
-        '''
-        pass
 
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
@@ -1076,10 +1076,7 @@ class Tag(BaseModel):
         return template
 
 
-class Theme(BaseModel):
-    title = TextField()
-    description = TextField()
-    json = TextField(null=True)
+
 
 class Template(BaseModel):
     title = TextField(default="Untitled Template", null=False)
