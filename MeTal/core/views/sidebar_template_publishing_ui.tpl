@@ -14,12 +14,18 @@
 <div class="hide-overflow">
     <div class="form-group">
         <div class="btn-group">
-            <button type="submit" name="save" value="1" class="btn btn-sm btn-primary">Save</button>
+            <button type="submit" name="save" value="1" class="btn btn-sm btn-warning">Save</button>
         </div>
     </div>
     <div class="form-group">
         <div class="btn-group">
-            <button type="submit" name="save" value="2" class="btn btn-sm btn-danger">Save & publish</button>
+            <button type="submit" name="save" value="2" class="btn btn-sm btn-success">Save & publish</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="btn-group">
+            <button type="submit" name="save" value="4" class="btn btn-sm btn-danger">Delete</button>
         </div>
     </div>
 </div>
