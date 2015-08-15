@@ -6,14 +6,14 @@
     % n=0
     % for template_type in list_items:
     % n+=1
-    <h4>{{template_type['title']}} <span title="Create new {{template_type['title'][:-1]}}" class="glyphicon glyphicon-plus-sign"></span></h4>
+    <h4>{{template_type['title']}} <a href="{{settings.BASE_URL}}/blog/{{blog.id}}/newtemplate/{{template_type['type']}}"><span title="Create new {{template_type['title'][:-1]}}" class="glyphicon glyphicon-plus-sign"></span></a></h4>
     <table class="table table-condensed table-bordered table-hover" id="templ-{{n}}">
         <thead>
             <tr>
             <th style="width:1%"><input type="checkbox" id="check-all-{{n}}" name="check-all-{{n}}"></th>
-            <th style="width:33%">Title</th>
-            <th style="width:33%">Default File Mapping</th>
-            <th style="width:33%">Publishing Mode</th>
+            <th style="width:50%">Title</th>
+            <th style="width:30%">Default File Mapping</th>
+            <th style="width:20%">Publishing Mode</th>
             </tr>
         </thead>
     % for template in template_type['data']:
