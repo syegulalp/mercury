@@ -730,6 +730,8 @@ def build_pages_fileinfos(pages):
 
         for t in template_mappings:
             path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
+            if path_string == '':
+                continue
             master_path_string = path_string + "." + page.blog.base_extension
             add_page_fileinfo(page, t, master_path_string,
                 page.blog.url + "/" + master_path_string,
@@ -759,6 +761,8 @@ def build_archives_fileinfos(pages):
         for m in page.archive_mappings:
 
             path_string = generate_date_mapping(page.publication_date, tags, m.path_string)
+            if path_string == '':
+                continue
             if path_string in mapping_list:
                 continue
 
@@ -817,8 +821,9 @@ def build_indexes_fileinfos(templates):
 
         for i in index_mappings:
             path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
+            if path_string == '':
+                continue
             master_path_string = path_string
-            # report.append("Index page: " + master_path_string)
             add_page_fileinfo(None, i, master_path_string,
                  blog.url + "/" + master_path_string,
                  blog.path + '/' + master_path_string)
