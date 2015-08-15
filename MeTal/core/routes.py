@@ -1,7 +1,7 @@
 import os, urllib, re
 
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
-    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
+    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT, BASE_URL,
     SECRET_KEY, _sep)
 
 from core import (mgmt, ui, auth)
@@ -10,7 +10,7 @@ from core.libs.bottle import (Bottle, static_file, request, response, abort, tem
 
 from core.models import (db, get_blog, get_theme, get_media, FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
-from core.utils import csrf_hash
+from core.utils import csrf_hash, raise_request_limit
 
 app = Bottle()
 _route = app.route
@@ -38,6 +38,14 @@ def t(path):
     return app.router.match(request)[0]()
 '''
 
+@_hook('after_request')
+def add_headers():
+    pass
+    # print (request.__dict__)
+    # if request.__dict__.get('no_protection', False) is False:
+        # response.add_header('Frame-Options', 'sameorigin')
+        # response.add_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
+        # TODO: Eventually we will get rid of all inline CSS & JS
 
 @_hook('before_request')
 def strip_path():
@@ -47,7 +55,12 @@ def strip_path():
 
 @_hook('before_request')
 def csrf_protection():
+    response.add_header('Frame-Options', 'sameorigin')
+
     if request.method == "POST":
+
+        raise_request_limit()
+
         try:
             user = auth.is_logged_in_core(request)
         except UserNotFound:
@@ -55,6 +68,7 @@ def csrf_protection():
             user = None
         else:
             csrf_code = csrf_hash(user.last_login)
+
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
@@ -65,7 +79,6 @@ def server_static(filepath):
     Serves static files from the application's own internal static path,
     e.g. for its CSS/JS
     '''
-
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
@@ -287,6 +300,10 @@ def blog_media_delete_confirm(blog_id, media_id):
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
     return ui.blog_templates(blog_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
+def template_new(blog_id, template_type):
+    return ui.new_template(blog_id, template_type)
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
