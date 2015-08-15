@@ -13,7 +13,7 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
     Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User, Blog, Site,
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode)
 
-from settings import MAX_BATCH_OPS
+from settings import MAX_BATCH_OPS, BASE_URL
 
 save_action_list = Struct()
 
@@ -862,6 +862,9 @@ def republish_blog(blog_id):
     end = time.clock()
 
     data.append("Total processing time: {0:.2f} seconds.".format(end - begin))
+    data.append("<hr/><a href='{}/blog/{}/publish'>Click here to activate the publishing queue.</a>".format(
+        BASE_URL,
+        blog.id))
     return data
 
 def process_queue(blog):
