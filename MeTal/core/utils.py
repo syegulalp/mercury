@@ -3,7 +3,7 @@ import urllib, re, html
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, BASE_URL_ROOT)
 
-from core.libs.bottle import redirect, template
+from core.libs.bottle import redirect, template, response
 
 import hashlib, base64
 
@@ -50,6 +50,7 @@ class Status:
         else:
             self.icon = "info-sign"
 
+        self.confirm = ka.get('confirm', None)
         self.message_list = ka.get('message_list', None)
 
 
@@ -159,6 +160,8 @@ def breaks(string):
     Used to break up URLs so that they break along /s
     '''
     string = string.replace('/', '/<wbr>')
+    string = string.replace('.', '.<wbr>')
+    string = string.replace('-', '-<wbr>')
     return string
 
 def tpl_oneline(string):
@@ -309,3 +312,12 @@ def page_list_id(request):
     except ValueError:
         return 1
     return page
+
+
+def raise_request_limit():
+    from core.libs import bottle
+    import settings
+    bottle.BaseRequest.MEMFILE_MAX = settings.MAX_REQUEST
+
+def disable_protection():
+    response.set_header('Frame-Options', '')
