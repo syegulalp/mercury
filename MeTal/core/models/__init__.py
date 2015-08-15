@@ -563,6 +563,16 @@ class Blog(SiteBase):
         return index_templates_in_blog
 
     @property
+    def archive(self, name):
+        '''
+        Gets the entry link for the named archive template.
+        '''
+        archive = self.templates.select().where(
+            Template.title == name,
+            Template.template_type == template_type.archive)
+        archive.default_mapping.fileinfos
+
+    @property
     def archive_templates(self):
 
         archive_templates_in_blog = self.templates.select().where(Template.template_type ==
@@ -1220,7 +1230,15 @@ class TemplateMapping(BaseModel):
 
     @property
     def previous_in_mapping(self):
+        pass
 
+    @property
+    def first_in_mapping(self):
+
+        pass
+
+    @property
+    def last_in_mapping(self):
         pass
 
 ##########################
@@ -1303,6 +1321,7 @@ class FileInfo(BaseModel):
     sitewide_file_path = EnforcedCharField(index=True, null=False, unique=True)
     url = EnforcedCharField(null=False, index=True, unique=True)
     modified_date = DateTimeField(default=datetime.datetime.now)
+    mapping_sort = EnforcedCharField(null=True, default=None, index=True)
 
     @property
     def xref(self):

@@ -453,7 +453,7 @@ def add_tags_to_page (tag_text, page):
     return tags_to_add, tags_to_delete, new_tags
 
 def add_page_fileinfo(page, template_mapping, file_path,
-        url, sitewide_file_path):
+        url, sitewide_file_path, mapping_sort=None):
     '''
     Add a given page (could also be an index) to the fileinfo index.
     Called by the page builder routines.
@@ -470,7 +470,8 @@ def add_page_fileinfo(page, template_mapping, file_path,
             template_mapping=template_mapping,
             file_path=file_path,
             sitewide_file_path=sitewide_file_path,
-            url=url)
+            url=url,
+            mapping_sort=mapping_sort)
 
         fileinfo = new_fileinfo
 
@@ -479,8 +480,8 @@ def add_page_fileinfo(page, template_mapping, file_path,
         existing_fileinfo.file_path = file_path
         existing_fileinfo.sitewide_file_path = sitewide_file_path
         existing_fileinfo.url = url
-
         existing_fileinfo.modified_date = datetime.datetime.now()
+        existing_fileinfo.mapping_sort = mapping_sort
         existing_fileinfo.save()
 
         fileinfo = existing_fileinfo
@@ -691,19 +692,24 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 archive_functions = {
     "C":{
         "mapping":lambda x:x.primary_category.id,
-        "context":category_context
+        "context":category_context,
+        'format':lambda x:'{}'.format(x)
         },
     "Y":{
         "mapping":lambda x:x.publication_date.year,
-        "context":year_context
+        "context":year_context,
+        'format':lambda x:'{}'.format(x)
         },
     "M":{
         "mapping":lambda x:x.publication_date.month,
-        "context":month_context
+        "context":month_context,
+        'format':lambda x:'{:02d}'.format(x)
         },
     "A":{
         "mapping":lambda x:x.user.id,
-        "context":author_context}
+        "context":author_context,
+        'format':lambda x:'{}'.format(x)
+        }
     }
 
 def build_pages_fileinfos(pages):
@@ -727,7 +733,8 @@ def build_pages_fileinfos(pages):
             master_path_string = path_string + "." + page.blog.base_extension
             add_page_fileinfo(page, t, master_path_string,
                 page.blog.url + "/" + master_path_string,
-                page.blog.path + '/' + master_path_string)
+                page.blog.path + '/' + master_path_string,
+                str(page.publication_date))
 
     return n
 
@@ -736,6 +743,9 @@ def build_archives_fileinfos(pages):
     Takes a page (maybe a collection of same) and produces fileinfos
     for the date-based archive entries for each
     '''
+
+
+    counter = 0
 
     mapping_list = {}
 
@@ -752,27 +762,33 @@ def build_archives_fileinfos(pages):
             if path_string in mapping_list:
                 continue
 
-            tag_context = generate_archive_context_from_page(m.archive_xref, page.blog, page)
-            mapping_list[path_string] = (None, m, path_string,
+            # tag_context = generate_archive_context_from_page(m.archive_xref, page.blog, page)
+            mapping_list[path_string] = ((None, m, path_string,
                                page.blog.url + "/" + path_string,
-                               page.blog.path + '/' + path_string)
+                               page.blog.path + '/' + path_string,
+                               ), (page))
 
     for n in mapping_list:
-
-        fileinfo = add_page_fileinfo(*mapping_list[n])
+        counter += 1
+        new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
         archive_context = []
-        m = mapping_list[n][1]
+        m = mapping_list[n][0][1]
 
-        for n in m.archive_xref:
-            archive_context.append(archive_functions[n]["mapping"](page))
+        for r in m.archive_xref:
+            archive_context.append(archive_functions[r]["format"](archive_functions[r]["mapping"](mapping_list[n][1])))
 
         for t, r in zip(archive_context, m.archive_xref):
             new_fileinfo_context = FileInfoContext.get_or_create(
-                fileinfo=fileinfo,
+                fileinfo=new_fileinfo,
                 object=r,
-                ref=t)
+                ref=t
+                )
 
-    return mapping_list
+        new_fileinfo.mapping_sort = archive_context
+        new_fileinfo.save()
+
+    # @return mapping_list
+    return counter
 
 def build_indexes_fileinfos(templates):
 
@@ -1001,23 +1017,32 @@ def purge_blog(blog):
     begin = time.clock()
 
     fileinfos_purged, fileinfocontexts_purged = purge_fileinfos(blog.fileinfos)
-    report.append("<hr/>{} fileinfo objects (and {} fileinfo context objects) erased.".format(
+
+    erase = time.clock()
+
+    report.append("<hr/>{} fileinfo objects (and {} fileinfo context objects) erased. {}".format(
         fileinfos_purged,
-        fileinfocontexts_purged))
+        fileinfocontexts_purged,
+        erase - begin
+        ))
 
     pages_to_insert = blog.pages()
     pages_inserted = build_pages_fileinfos(pages_to_insert)
-    report.append("<hr/>{} page objects created.".format(pages_inserted))
+
+    rebuild = time.clock()
+
+    report.append("<hr/>{} page objects created. {}".format(pages_inserted,
+        rebuild - erase))
 
     f_i = build_archives_fileinfos(pages_to_insert)
-    report.append("{} archive objects created.".format(len(f_i)))
+    report.append("{} archive objects created.".format(f_i))
 
     index_objects = build_indexes_fileinfos(blog.index_templates)
     report.append("{} index objects created.".format(index_objects))
 
     end = time.clock()
 
-    total_objects = pages_to_insert.count() + len(f_i) + blog.index_templates.count()
+    total_objects = pages_to_insert.count() + f_i + blog.index_templates.count()
     report.append("<hr/>Total objects created: {}.".format(total_objects))
     report.append("Total processing time: {0:.2f} seconds.".format(end - begin))
 
