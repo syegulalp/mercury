@@ -53,13 +53,19 @@ parent_obj = {
     'PageCategory':'Page',
     }
 
+archive_type = Struct()
+archive_type.page = 'Page'
+archive_type.category = 'Category'
+archive_type.index = 'Index'
+archive_type.author = 'Author'
+archive_type.archive = 'Archive'
+
 template_type = Struct()
 template_type.index = "Index"
 template_type.page = "Page"
 template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
-
 
 publishing_mode = Struct()
 publishing_mode.immediate = "Immediate"
@@ -667,7 +673,8 @@ class Page(BaseModel):
 
     @property
     def revisions(self):
-        revisions = PageRevision.select().where(PageRevision.page_id == self.id).order_by(PageRevision.modified_date.desc())
+        revisions = PageRevision.select().where(
+            PageRevision.page_id == self.id).order_by(PageRevision.modified_date.desc())
 
         return revisions
 
@@ -682,6 +689,15 @@ class Page(BaseModel):
 
         return page_templates
 
+    @property
+    def default_template(self):
+        '''
+        Returns the default page template used by this blog.
+        '''
+        default_template = self.templates.select().where(
+            Template.default_type == archive_type.page).get()
+
+        return default_template
 
     @property
     def archives(self):
@@ -723,11 +739,12 @@ class Page(BaseModel):
         '''
 
         t = TemplateMapping.get(TemplateMapping.is_default == True,
-            TemplateMapping.template << self.templates.select(Template.id).tuples())
+            TemplateMapping.template << self.templates.select(Template.id).where(
+                Template.default_type == "P").tuples())
 
-        template_mapping = self.publication_date.date().strftime(t.path_string)
+        default_template_mapping = self.publication_date.date().strftime(t.path_string)
 
-        return template_mapping
+        return default_template_mapping
 
     @property
     def fileinfos(self):
@@ -747,13 +764,9 @@ class Page(BaseModel):
         Useful if you have pages that have multiple mappings.
         '''
 
-        default_mapping = TemplateMapping.get(
-            TemplateMapping.id << self.template_mappings,
-            TemplateMapping.is_default == True)
-
         default_fileinfo = FileInfo.get(
             FileInfo.page == self,
-            FileInfo.template_mapping == default_mapping)
+            FileInfo.template_mapping == self.default_template.default_mapping)
 
         return default_fileinfo
 
@@ -1103,6 +1116,7 @@ class Template(BaseModel):
     external_path = TextField(null=True)  # used for linking in an external file
     modified_date = DateTimeField(default=datetime.datetime.now)
     is_include = BooleanField(default=False, null=True)
+    default_type = CharField(max_length=32, default=None, null=True)
 
     def include(self, include_name):
         include = Template.get(Template.title == include_name,
