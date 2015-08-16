@@ -109,12 +109,13 @@ function server_failure(xhr,status,error,sorry_message){
 }
 
 function open_modal(url) {
+	
+	$('#modal').modal();
+	$('#modal_content').empty().append('<div class="modal-body"><p>Loading...</p></div>');
+	
     $.get(url)
         .done(function(data) {
-
-            $('#modal_container').empty();
-            $('#modal_container').append($(data));
-            $('#modal_contents').modal();
+        	$('#modal_content').empty().append($(data));
 
         })
         .fail(function(xhr, status, error) {

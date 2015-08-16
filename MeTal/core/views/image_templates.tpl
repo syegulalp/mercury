@@ -1,3 +1,4 @@
+% rebase('modal-contents.tpl', title=title)
 <form id="img_template" action="">
 % for t in templates:
 <input type="radio" name="template" value="{{t.id}}" id="t-{{t.id}}">

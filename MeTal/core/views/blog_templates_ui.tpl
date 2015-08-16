@@ -19,7 +19,11 @@
     % for template in template_type['data']:
         <tr>
             <td><input type="checkbox" id="check-{{template.id}}" name="check-{{template.id}}">
-            <td><a href="{{settings.BASE_URL}}/template/{{template.id}}/edit">{{template.title}}</a></td>
+            <td><a href="{{settings.BASE_URL}}/template/{{template.id}}/edit">{{template.title}}</a>
+            % if template.default_type is not None:
+            <span title="Default template for {{template.default_type}}" class="label label-success pull-right">{{template.default_type}} default</span>
+            % end
+            </td>
             <td><code>{{!breaks(template.templatemapping.path_string)}}</code></td>
             <td><span title="{{publishing_mode.description[template.publishing_mode]['description']}}"
             	class="label label-{{publishing_mode.description[template.publishing_mode]['label']}}">{{template.publishing_mode}}</span></td>

@@ -1079,7 +1079,7 @@ def blog_templates(blog_id):
 
     template_list = Template.select(Template, TemplateMapping).join(
         TemplateMapping).where(
-        (TemplateMapping.is_default == True) &
+        # (TemplateMapping.is_default == True) &
         (Template.blog == blog)
         ).order_by(Template.title)
 
@@ -1641,6 +1641,8 @@ def page_revisions(page_id):
     tags = template_tags(page_id=page_id)
 
     tpl = template('revisions_modal',
+        title='Revisions for page #{}'.format(page.id),
+        buttons='',
         **tags.__dict__)
 
     return tpl
@@ -1737,16 +1739,20 @@ def page_get_media_templates(page_id, media_id):
         Template.blog == page.blog,
         Template.template_type == template_type.media)
 
+    '''
     media_tpl = template('image_templates',
         media=media,
         templates=media_templates)
+    '''
 
     buttons = media_buttons.format(
         'onclick="add_template();"',
         'Apply')
 
-    tpl = template('modal',
-        base=media_tpl,
+    tpl = template('image_templates',
+        # base=media_tpl,
+        media=media,
+        templates=media_templates,
         buttons=buttons,
         title='Choose a template for {}'.format(
             media.for_log))

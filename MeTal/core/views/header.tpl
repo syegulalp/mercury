@@ -10,8 +10,6 @@
   </head>
   <body>
   
-<div id="modal_container"></div>
-  
 <nav id="menu_bar" class="navbar navbar-default" style="margin-bottom:8px">
   <div class="">
     <div class="navbar-header">
