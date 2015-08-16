@@ -109,7 +109,7 @@ def login():
     '''
     User login interface
     '''
-    tpl = template('login_ui',
+    tpl = template('ui/ui_login',
         **template_tags().__dict__)
 
     logger.info("Login page requested from IP {}.".format(request.remote_addr))
@@ -136,7 +136,7 @@ def login_verify():
             redirect(BASE_URL)
 
     else:
-        return template('login_ui',
+        return template('ui/ui_login',
             **tags.__dict__)
 
 @transaction
@@ -213,7 +213,7 @@ def main_ui():
 
     your_blogs = user.blogs()
 
-    tpl = template('main_ui',
+    tpl = template('ui/ui_dashboard',
         search_context=(search_context['sites'], None),
         menu=generate_menu('system', None),
         recent_pages=recent_pages,
@@ -249,7 +249,7 @@ def system_info():
 
     # List all plugins
 
-    tpl = template('system_info',
+    tpl = template('ui/ui_system_info',
         menu=generate_menu('all_sites', None),
         search_context=(search_context['sites'], None),
         environ_list=sorted(environ_list),
@@ -278,7 +278,7 @@ def system_sites(errormsg=None):
 
     paginator, rowset = utils.generate_paginator(taglist, request)
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['sites'], None),
         menu=generate_menu('all_sites', None),
@@ -320,7 +320,7 @@ def system_log():
     tags = template_tags(user=user)
     paginator, rowset = utils.generate_paginator(log, request)
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         rowset=rowset,
         colset=colsets['system_log'],
         paginator=paginator,
@@ -341,7 +341,7 @@ def system_plugins():
 
     plugins = Plugin.select()
 
-    tpl = template('plugins_ui',
+    tpl = template('ui/ui_plugins',
         menu=generate_menu('system_plugins', None),
         search_context=(search_context['sites'], None),
         plugins=plugins,
@@ -387,7 +387,7 @@ def site(site_id, errormsg=None):
 
     paginator, rowset = utils.generate_paginator(taglist, request)
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['site'], site),
         menu=generate_menu('site', site),
@@ -414,7 +414,7 @@ def site_create_user(site_id):
     edit_user.name = ""
     edit_user.email = ""
 
-    tpl = template('user_settings_ui',
+    tpl = template('edit/edit_user_settings',
         menu=generate_menu('site_create_users', site),
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
@@ -512,7 +512,7 @@ def site_edit_user_save(site_id, user_id):
 
 def site_edit_user_output(tags, edit_user):
 
-    tpl = template('user_settings_ui',
+    tpl = template('edit/edit_user_settings',
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
         menu=generate_menu('site_manage_user', edit_user.from_site(tags.site)),
@@ -533,7 +533,7 @@ def site_list_users(site_id):
 
     paginator, page_list = utils.generate_paginator(user_list, request)
 
-    tpl = template('user_listing_ui',
+    tpl = template('user_listing/listing_ui',
         menu=generate_menu('site_manage_users', site),
         search_context=(search_context['sites'], None),
         paginator=paginator,
@@ -568,7 +568,7 @@ def blog(blog_id, errormsg=None):
 
     tags.status = errormsg if errormsg is not None else None
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
         menu=generate_menu('blog', blog),
@@ -597,7 +597,7 @@ def blog_create(site_id):
 
     tags.blog = new_blog
 
-    tpl = template('blog_settings_ui',
+    tpl = template('ui/ui_blog_settings',
         section_title="Create new blog",
         search_context=(search_context['sites'], None),
         menu=generate_menu('create_blog', site),
@@ -640,7 +640,7 @@ def blog_create_user(blog_id):
     edit_user.name = ""
     edit_user.email = ""
 
-    tpl = template('user_settings_ui',
+    tpl = template('edit/edit_user_settings',
         section_title="Create new blog user",
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
@@ -752,7 +752,7 @@ def blog_user_edit_save(blog_id, user_id):
 
 def blog_user_edit_output(tags, edit_user):
 
-    tpl = template('user_settings_ui',
+    tpl = template('edit/edit_user_settings',
         section_title="Edit blog user #" + str(edit_user.id),
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
@@ -773,7 +773,7 @@ def blog_list_users(blog_id):
 
     paginator, page_list = utils.generate_paginator(user_list, request)
 
-    tpl = template('user_listing_ui',
+    tpl = template('user_listing/listing_ui',
         section_title="List blog users",
         search_context=(search_context['sites'], None),
         paginator=paginator,
@@ -821,7 +821,7 @@ def blog_new_page(blog_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(blog_new_page.kvs())
 
-    tpl = template('edit_page_ui',
+    tpl = template('edit/edit_page_ui',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
         search_context=(search_context['blog'], blog),
@@ -874,7 +874,7 @@ def blog_media(blog_id):
     paginator, media_list = utils.generate_paginator(media, request)
     # media_list = media.paginate(paginator['page_num'], ITEMS_PER_PAGE)
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         paginator=paginator,
         media_list=media_list,
         menu=generate_menu('blog_manage_media', blog),
@@ -953,7 +953,7 @@ def blog_media_edit_save(blog_id, media_id):
 
 def blog_media_edit_output(tags):
 
-    tpl = template('edit_media_ui',
+    tpl = template('edit/edit_media_ui',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
         search_context=(search_context['blog_media'], tags.blog),
@@ -1022,7 +1022,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
 
 
-    tpl = template('report_ui',
+    tpl = template('listing/report',
         menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
@@ -1050,7 +1050,7 @@ def blog_tags(blog_id):
 
     paginator, rowset = utils.generate_paginator(blog_tag_list, request)
 
-    tpl = template('listing_ui',
+    tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
         menu=generate_menu('blog_manage_tags', blog),
@@ -1111,7 +1111,7 @@ def blog_templates(blog_id):
         'data':template_includes},
         ]
 
-    tpl = template('blog_templates_ui',
+    tpl = template('ui/ui_blog_templates',
         icons=icons,
         section_title="Templates",
         publishing_mode=publishing_mode,
@@ -1132,7 +1132,7 @@ def blog_republish(blog_id):
     permission = auth.is_blog_publisher(user, blog)
     report = cms.republish_blog(blog_id)
 
-    tpl = template('report_ui',
+    tpl = template('listing/report',
         report=report,
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_republish', blog),
@@ -1156,7 +1156,7 @@ def blog_purge(blog_id):
 
     report = cms.purge_blog(blog)
 
-    tpl = template('report_ui',
+    tpl = template('listing/report',
         report=report,
         search_context=(search_context['blog'], blog),
         menu=generate_menu('blog_purge', blog),
@@ -1225,7 +1225,7 @@ def blog_settings_save(blog_id):
 
 def blog_settings_output(tags):
 
-    tpl = template('blog_settings_ui',
+    tpl = template('ui/ui_blog_settings',
         section_title='Basic settings',
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_settings', tags.blog),
@@ -1473,7 +1473,7 @@ def template_edit_output(tags):
     from core.models import (publishing_mode,
         template_type as template_types)
 
-    tpl = template('edit_template_ui',
+    tpl = template('edit/edit_template_ui',
         icons=icons,
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),
@@ -1540,7 +1540,7 @@ def page_edit(page_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kvs())
 
-    tpl = template('edit_page_ui',
+    tpl = template('edit/edit_page_ui',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
@@ -1575,7 +1575,7 @@ def page_edit_save(page_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kvs())
 
-    tpl = template('edit_page_ajax_response',
+    tpl = template('edit/edit_page_ajax_response',
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
@@ -1707,7 +1707,7 @@ def page_media_upload(page_id):
 
     tags = template_tags(page_id=page_id)
 
-    return template('edit_page_sidebar_media_list.tpl',
+    return template('edit/edit_page_sidebar_media_list.tpl',
         **tags.__dict__)
 
 @transaction
@@ -1726,7 +1726,7 @@ def page_media_delete(page_id, media_id):
 
     tags = template_tags(page_id=page_id)
 
-    return template('edit_page_sidebar_media_list.tpl',
+    return template('edit/edit_page_sidebar_media_list.tpl',
         **tags.__dict__)
 
 
@@ -1796,7 +1796,7 @@ def page_revision_restore(page_id, revision_id):
 
     from core.cms import save_action_list
 
-    tpl = template('edit_page_ui',
+    tpl = template('edit/edit_page_ui',
         status_badge=status_badge,
         save_action=save_action,
         menu=generate_menu('edit_page', page),
@@ -1822,7 +1822,7 @@ def page_revision_restore_save(page_id):
 
     from core.cms import save_action_list
 
-    tpl = template('edit_page_ajax_response',
+    tpl = template('edit/edit_page_ajax_response',
         status_badge=status_badge,
         save_action=save_action,
         save_action_list=save_action_list,
@@ -1858,7 +1858,7 @@ def edit_tag(blog_id, tag_id):
     tags = template_tags(
         user=user)
 
-    tpl = template('edit_tag_ui',
+    tpl = template('edit/edit_tag_ui',
         menu=generate_menu('edit_tag', tag),
         search_context=(search_context['sites'], None),
         tag=tag,

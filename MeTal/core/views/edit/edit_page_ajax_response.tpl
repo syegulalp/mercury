@@ -1,4 +1,4 @@
-% include('page_title_include.tpl')
+% include('include/page_title.tpl')
 <div id="messages">
 % include('include/header_messages.tpl')
 </div>

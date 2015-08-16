@@ -1,4 +1,4 @@
-% include('header_min.tpl')
+% include('include/header_min.tpl')
 <style>
 body {
   padding-top: 40px;

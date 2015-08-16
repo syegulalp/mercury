@@ -1,4 +1,4 @@
-% include('header_min.tpl')
+% include('include/header_min.tpl')
 <div class="container" id="error_text">
 <h3>Error: {{error.exception.__class__.__name__}}</h3>
 <hr/>

@@ -6,7 +6,7 @@
 % if page.id:
 <div class="well uploadarea"><small><center>Drop images here to upload</center></small></div>
 <div id="media_list">
-    % include('edit_page_sidebar_media_list.tpl')
+    % include('edit/edit_page_sidebar_media_list.tpl')
 </div>
 <p><a href="#">Add other media</a><p>
 % else:

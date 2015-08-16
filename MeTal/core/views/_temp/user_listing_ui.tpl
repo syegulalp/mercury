@@ -1,7 +1,7 @@
 % include('include/header.tpl')
 % include('include/header_messages.tpl')
 <div class="col-xs-12">
-% include('list_nav.tpl')
+% include('listing/list_nav.tpl')
 
 <div style="width:100%; padding-bottom:8px;border-bottom: 1px solid rgb(221,221,221)">
 </div>
@@ -33,7 +33,7 @@
 
 <div style="width:100%; padding-top:8px;border-top: 1px solid rgb(221,221,221)">
 </div>
-% include('list_nav.tpl')
+% include('listing/list_nav.tpl')
 <br/>    
 </div>
 % include('include/footer.tpl')

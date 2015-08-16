@@ -1,5 +1,5 @@
 <div class="col-xs-12">
-% include('list_nav.tpl')
+% include('listing/list_nav.tpl')
 <div style="width:100%; padding-bottom:8px;border-bottom: 1px solid rgb(221,221,221)">
 </div>
     <fieldset>
@@ -61,6 +61,6 @@
     </fieldset>
 <div style="width:100%; padding-top:8px;border-top: 1px solid rgb(221,221,221)">
 </div>
-% include('list_nav.tpl')
+% include('listing/list_nav.tpl')
 <br>    
 </div>

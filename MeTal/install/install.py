@@ -373,7 +373,7 @@ def step_4_post():
 tpl = '''
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/jquery.min.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/bootstrap.min.js"></script>
-% include('header_min.tpl')
+% include('include/header_min.tpl')
 <div class="container">
 <h3>Welcome to {{settings.PRODUCT_NAME}}</h3>
 <hr/>
