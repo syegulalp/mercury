@@ -1,7 +1,7 @@
-% include('header.tpl')
+% include('include/header.tpl')
 % msg_float = True
-% include('header_messages.tpl')
-% include('modal.tpl')
+% include('include/header_messages.tpl')
+% include('include/modal.tpl')
 <link rel="stylesheet" href="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/css/bootstrap-datetimepicker.min.css" />
 <form method="post" id="main_form">
 {{!csrf_token}}
@@ -9,8 +9,6 @@
     <input type="hidden" id="blog_id" name="blog_id" value="{{blog.id}}">
 
     <div id="main_bar" class="col-sm-9">
-	    %# include('hiders_include.tpl')
-
 	    <div class="form-group">
 
 	            <input type="text" class="form-control input-lg entersubmit unsaved" id="page_title" placeholder="Page title"
@@ -54,7 +52,7 @@ static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}",
 blog_media_path:"{{blog.media_path}}",
 max_filesize:{{settings.MAX_FILESIZE}}
 }</script>
-% include('footer.tpl')
+% include('include/footer.tpl')
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/moment.min.js"></script>
 <script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/bootstrap-datetimepicker.min.js"></script>

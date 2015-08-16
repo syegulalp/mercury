@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="container">
 <h2>{{settings.PRODUCT_NAME}} installation data</h2><hr/>
 <h3>System information</h3>
@@ -25,4 +25,4 @@
     </div>
     % end
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')

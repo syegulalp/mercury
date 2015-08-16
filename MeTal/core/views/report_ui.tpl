@@ -1,4 +1,4 @@
-% include('header.tpl')
+% include('include/header.tpl')
 <div class="col-xs-12">
 
     % for k in report:
@@ -6,4 +6,4 @@
     % end
 
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')

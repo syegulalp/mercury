@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="col-xs-12">
 % include('list_nav.tpl')
 
@@ -46,5 +46,5 @@
 <br>    
 </div>
 
-% include('footer.tpl')
+% include('include/footer.tpl')
 <script async src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>

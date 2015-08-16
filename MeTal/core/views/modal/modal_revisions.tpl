@@ -1,4 +1,4 @@
-% rebase('modal-contents.tpl', title=title)
+% rebase('modal/modal_contents.tpl', title=title)
       % if page.revisions.count()>0:
       <ol>
         % for page in page.revisions:

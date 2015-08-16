@@ -1,4 +1,4 @@
-% include('header.tpl')
+% include('include/header.tpl')
 <div class="col-xs-12">
 <h3>Publishing Queue Progress</h3>
 <hr>
@@ -7,7 +7,7 @@
 </div>
 <hr/>
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')
 <script async src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
 <script>
 function update(){

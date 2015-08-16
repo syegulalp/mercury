@@ -42,9 +42,7 @@ def boot(aux_settings=None):
     if len(sys.argv) > 0:
         arguments = setup_args()
 
-    bottle.TEMPLATE_PATH = [settings.APPLICATION_PATH +
-        settings._sep + "core" +
-        settings._sep + "views"]
+    bottle.TEMPLATE_PATH = [settings.VIEW_PATH]
 
     _stderr (settings.PRODUCT_NAME + "\n")
     _stderr ("Running in " + settings.APPLICATION_PATH + "\n")

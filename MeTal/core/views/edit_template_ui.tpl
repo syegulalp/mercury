@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <form method="post" id="main_form">{{!csrf_token}}
     <div class="col-sm-9">
         <div class="form-group">
@@ -39,7 +39,7 @@
     </div>
 
 </form>
-% include('footer.tpl')
+% include('include/footer.tpl')
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.css">
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/xml/xml.js"></script>

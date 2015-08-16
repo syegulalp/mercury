@@ -47,7 +47,7 @@
         <li class="dropdown">
           
           <a href="#" title="Publishing queue status" id="queue_status" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-          % include('queue_counter_include.tpl')
+          % include('queue/queue_counter_include.tpl')
           <span class="visible-xs-inline">&nbsp;Queue</span>
           </a>
           

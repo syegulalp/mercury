@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 % if blog.id is not None:
 % disabled = "disabled='disabled'"
 % else:
@@ -105,4 +105,4 @@
     </form>
 
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')

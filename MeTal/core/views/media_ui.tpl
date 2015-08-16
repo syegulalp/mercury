@@ -1,6 +1,6 @@
 % from core.utils import breaks
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="col-xs-12">
 % include('list_nav.tpl')
 
@@ -42,4 +42,4 @@
 % include('list_nav.tpl')
 <br>    
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')

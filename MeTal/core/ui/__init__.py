@@ -301,7 +301,7 @@ def system_queue():
 
     paginator, queue_list = utils.generate_paginator(queue, request)
 
-    tpl = template('queue_ui',
+    tpl = template('queue/queue_ui',
         queue_list=queue_list,
         paginator=paginator,
         job_type=job_type.description,
@@ -1181,7 +1181,7 @@ def blog_queue(blog_id):
 
     paginator, queue_list = utils.generate_paginator(queue, request)
 
-    tpl = template('queue_ui',
+    tpl = template('queue/queue_ui',
         queue_list=queue_list,
         paginator=paginator,
         job_type=job_type.description,
@@ -1254,7 +1254,7 @@ def blog_publish(blog_id):
 
     if queue_length > 0:
 
-        start_message = template('queue_run_include',
+        start_message = template('queue/queue_run_include',
             queue=queue,
             percentage_complete=0)
 
@@ -1275,7 +1275,7 @@ def blog_publish(blog_id):
 
         start_message = "Queue empty."
 
-    tpl = template('queue_run_ui',
+    tpl = template('queue/queue_run_ui',
         original_queue_length=queue_length,
         start_message=start_message,
         search_context=(search_context['blog_queue'], blog),
@@ -1300,7 +1300,7 @@ def blog_publish_progress(blog_id, original_queue_length):
 
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
 
-    tpl = template('queue_run_include',
+    tpl = template('queue/queue_run_include',
             queue_count=queue_count,
             percentage_complete=percentage_complete)
 
@@ -1336,7 +1336,7 @@ def blog_publish_process(blog_id):
     else:
         queue_count = cms.process_queue(blog)
 
-    tpl = template('queue_counter_include',
+    tpl = template('queue/queue_counter_include',
             queue_count=queue_count)
 
     return tpl
@@ -1640,10 +1640,13 @@ def page_revisions(page_id):
     permission = auth.is_page_editor(user, page)
     tags = template_tags(page_id=page_id)
 
-    tpl = template('revisions_modal',
+    try:
+        tpl = template('modal/modal_revisions',
         title='Revisions for page #{}'.format(page.id),
         buttons='',
         **tags.__dict__)
+    except:
+        raise
 
     return tpl
 
@@ -1739,18 +1742,11 @@ def page_get_media_templates(page_id, media_id):
         Template.blog == page.blog,
         Template.template_type == template_type.media)
 
-    '''
-    media_tpl = template('image_templates',
-        media=media,
-        templates=media_templates)
-    '''
-
     buttons = media_buttons.format(
         'onclick="add_template();"',
         'Apply')
 
-    tpl = template('image_templates',
-        # base=media_tpl,
+    tpl = template('modal/modal_image_templates',
         media=media,
         templates=media_templates,
         buttons=buttons,

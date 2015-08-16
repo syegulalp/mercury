@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="xcontainer">
 <div class="col-xs-12">
 	<h3>Hello, {{user.name}}</h3><hr/>
@@ -40,4 +40,4 @@
     </div>
 </div>
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')

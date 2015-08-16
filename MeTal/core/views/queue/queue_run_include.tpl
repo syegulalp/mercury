@@ -20,5 +20,5 @@
     % end
 </div>
 % if percentage_complete>0:
-% include('queue_counter_include.tpl')
+% include('queue/queue_counter_include.tpl')
 % end

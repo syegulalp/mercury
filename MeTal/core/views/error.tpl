@@ -10,5 +10,5 @@
   </head>
   <body>
 <p>
-% include('header_messages.tpl')
-% include('footer.tpl')
+% include('include/header_messages.tpl')
+% include('include/footer.tpl')

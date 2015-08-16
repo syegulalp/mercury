@@ -1,6 +1,6 @@
 % include('page_title_include.tpl')
 <div id="messages">
-% include('header_messages.tpl')
+% include('include/header_messages.tpl')
 </div>
 <div id="sidebar_inner">
 % if queue.count():
@@ -11,4 +11,4 @@ run_queue({{blog.id}});
 {{!sidebar}}
 </div>
 % #queue_count = queue.count()
-% include('queue_counter_include.tpl')
+% include('queue/queue_counter_include.tpl')

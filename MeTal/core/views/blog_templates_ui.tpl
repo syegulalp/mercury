@@ -1,6 +1,6 @@
 %from core.utils import breaks
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="col-sm-9">
 
     % n=0
@@ -39,7 +39,7 @@
 
     </div>
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')
 <script>
 
 </script>

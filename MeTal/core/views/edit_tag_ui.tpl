@@ -1,5 +1,5 @@
-% include('header.tpl')
-% include('header_messages.tpl')
+% include('include/header.tpl')
+% include('include/header_messages.tpl')
 <div class="col-xs-12">
 <form class="form-horizontal" method="post">
 {{!csrf_token}}
@@ -25,4 +25,4 @@
 </form>
 <hr/>
 </div>
-% include('footer.tpl')
+% include('include/footer.tpl')
