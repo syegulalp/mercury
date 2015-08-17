@@ -10,7 +10,7 @@ var editor_set_dirty = function() {
 
 var animation_timeout = null;
 var rotate = 0;
-var colors = [ '#d00000', '#ffffff' ];
+var colors = [ ['#000','#f00'],[ '#fff','#f00' ]];
 
 function calc_size() {
 
@@ -45,7 +45,8 @@ function delayed_resize() {
 }
 
 function save_animation(n) {
-	n.css('color', colors[ rotate ])
+	n.css('color', colors[ rotate ][0])
+	n.css('text-shadow', '0 0 4px '+colors[ rotate ][1])
 	rotate = 1 - rotate;
 	animation_timeout = setTimeout(function() {
 		save_animation(n)
@@ -54,6 +55,7 @@ function save_animation(n) {
 
 function reset_animation(n) {
 	n.css('color', '#ffffff');
+	n.css('text-shadow','');
 	clearTimeout(animation_timeout);
 }
 
