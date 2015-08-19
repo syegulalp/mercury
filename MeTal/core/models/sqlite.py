@@ -1,16 +1,14 @@
 import os
 import settings
-from core.models import init_db,db
+from core.models import init_db, db
 from core.models import Page, TextField, get_site
-from core.libs import bottle
-from core.error import LoggedException
 from core.libs.peewee import OperationalError
-from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
+from core.libs import bottle
 _stderr = bottle._stderr
 
 try:
-    from core.libs.playhouse.sqlite_ext import FTSModel 
-    
+    from core.libs.playhouse.sqlite_ext import FTSModel
+
     class Page_Search(FTSModel):
         title = TextField()
         text = TextField()
@@ -18,28 +16,18 @@ try:
             database = db
 except:
     raise
-# would it be possible to just proxy PageSearch to Page?
-
-'''
-can't do this b/c of circulal references to settings 
-def db_type(db_path,db_timeout):
-    return SqliteExtDatabase(
-        #settings.FULL_SQLITE_DATABASE_PATH,
-        db_path,
-        threadlocals=True,
-        timeout=db_timeout)
-'''
 
 def recreate_database():
-    
+
     db.close()
-    
+
     try:
         os.remove(settings.FULL_SQLITE_DATABASE_PATH)
-    except FileNotFoundError: pass
-    
+    except FileNotFoundError:
+        pass
+
     try:
-        os.mkdir(settings.APPLICATION_PATH+"/data")
+        os.mkdir(settings.APPLICATION_PATH + settings._sep + settings.DATA_FILE_PATH)
     except OSError as e:
         import errno
         if e.errno == errno.EEXIST:
@@ -48,22 +36,22 @@ def recreate_database():
             raise e
 
     init_db.recreate_database()
-    
+
 def clean_database():
     recreate_database()
     remove_indexes()
-    
+
 def make_db_connection():
-    
+
     _stderr ("Looking for database in " + settings.DATABASE_PATH + "\n")
 
     if settings.RESET or not os.path.exists(settings.FULL_SQLITE_DATABASE_PATH):
 
         _stderr ("No database found or settings.RESET was set.\n")
-        
-        #db.close()
-        #throws spurious AttributeError when no DB present        
-        
+
+        # db.close()
+        # throws spurious AttributeError when no DB present
+
         try:
             os.remove(settings.FULL_SQLITE_DATABASE_PATH)
         except FileNotFoundError:
@@ -74,13 +62,13 @@ def make_db_connection():
             _stderr ("Re-initializing database.\n")
 
         init_db.recreate_database()
-        
+
 def create_index_table():
     _stderr ("Creating SQLite index tables.\n")
     try:
         Page_Search.create_table()
     except OperationalError:
-        _stderr ("Could not add full-text indexes to this version of SQLite.\n") 
+        _stderr ("Could not add full-text indexes to this version of SQLite.\n")
 
 def remove_indexes():
     _stderr ("Removing SQLite indexes.\n")
@@ -88,25 +76,25 @@ def remove_indexes():
         Page_Search.drop_table()
     except BaseException:
         _stderr ("Could not remove indexes.\n")
-            
+
 def recreate_indexes():
     _stderr ("Recreating SQLite indexes.\n")
     Page_Search.create_table(content=Page)
     Page_Search.rebuild()
     Page_Search.optimize()
-    
+
 def site_search(search_terms_enc, site):
     ct = 0
-    
+
     if site is not None:
         site_to_search = get_site(site).pages().select(Page.id).tuples()
-    
+
     try:
         search_results = (Page_Search.select(Page_Search.id)
             .where(Page_Search.id << site_to_search,
                 Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
             .order_by(Page_Search.id.desc()).tuples())
-        ct = search_results.count() # This statement is used to trap FTS4 errors
+        ct = search_results.count()  # This statement is used to trap FTS4 errors
     except OperationalError:
         pass
     if ct == 0:
@@ -114,22 +102,22 @@ def site_search(search_terms_enc, site):
             .where(Page.blog.site == site,
                 Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
             .order_by(Page.id.desc()).tuples())
-    
+
     return search_results
-    
+
 def blog_search(search_terms_enc, blog):
-    
+
     ct = 0
-    
+
     if blog is not None:
         blog_to_search = blog.pages().select(Page.id).tuples()
-    
+
     try:
         search_results = (Page_Search.select(Page_Search.id)
             .where(Page_Search.id << blog_to_search,
                 Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
             .order_by(Page_Search.id.desc()).tuples())
-        ct = search_results.count() # This statement is used to trap FTS4 errors
+        ct = search_results.count()  # This statement is used to trap FTS4 errors
     except OperationalError:
         pass
     if ct == 0:
@@ -137,11 +125,11 @@ def blog_search(search_terms_enc, blog):
             .where(Page.blog == blog,
                 Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
             .order_by(Page.id.desc()).tuples())
-    
+
     return search_results
-    
+
 def media_search():
-    pass        
+    pass
 
 def dataset_connection():
     return 'sqlite:///' + settings.DATABASE_PATH
@@ -162,4 +150,5 @@ def post_recreate():
     return ""
 
 def db_warnings():
-   return LoggedException, "{} ({})"
+    from core.error import LoggedException
+    return LoggedException, "{} ({})"
