@@ -1035,7 +1035,7 @@ class System(BaseModel):
 class KeyValue(BaseModel):
 
     object = CharField(max_length=64, null=False, index=True)  # table name
-    objectid = IntegerField(null=True)
+    objectid = IntegerField(null=True, index=True)
     key = EnforcedCharField(null=False, default="Key", index=True)
     value = TextField(null=True)
     parent = ForeignKeyField('self', null=True, index=True)
@@ -1043,17 +1043,27 @@ class KeyValue(BaseModel):
     is_unique = BooleanField(default=False)
     value_type = CharField(max_length=64)
 
-    def get_children(self):
+    def children(self, field=None, value=None):
         if self.is_schema is False:
             return None
         else:
-            return self.select().where(KeyValue.parent == self)
+            children = self.select().where(KeyValue.parent == self)
 
-    def get_siblings(self):
+        if field is not None:
+            children = children.select().where(getattr(KeyValue, field) == value)
+
+        return children
+
+    def siblings(self, field=None, value=None):
         if self.parent is None:
             return None
         else:
-            return self.select().where(KeyValue.parent == self.parent)
+            siblings = self.select().where(KeyValue.parent == self.parent)
+
+        if field is not None:
+            siblings = siblings.select().where(getattr(KeyValue, field) == value)
+
+        return siblings
 
 tag_template = '''
 <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
@@ -1568,6 +1578,7 @@ class TemplateTags(object):
         self.utils = _utils
         self.sites = Site.select()
         self.status_modes = page_status
+        self.tags = template_tags
         # self.media = get_media
 
         if 'search' in ka:
