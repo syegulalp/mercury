@@ -1,9 +1,7 @@
 #
 # This file should not be edited unless you're a high roller
 # or you know what you're doing.
-# 
-
-from core.libs.playhouse.sqlite_ext import SqliteExtDatabase, MySQLDatabase
+#
 
 import os, importlib
 _sep = os.sep
@@ -34,7 +32,7 @@ STATIC_PATH = '/static'
 # Database path for Sqlite. Leave this as it is
 # unless you want the database in another directory.
 SQLITE_FILE_NAME = 'my_database.db'
-SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME 
+SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
 
@@ -57,7 +55,7 @@ else:
                 locals()[option] = parser.getboolean(items, option)
             else:
                 locals()[option] = value
-            
+
 if INSTALL_STEP is not None:
     NO_SETUP = True
 
@@ -69,7 +67,7 @@ try:
 except KeyError:
     # TODO: what if this throws a false positive
     # if we're simply running as a server?
-    DESKTOP_MODE = True    
+    DESKTOP_MODE = True
 
 if DESKTOP_MODE is True:
     if NO_SETUP is True:
@@ -81,34 +79,26 @@ if DESKTOP_MODE is True:
 
     BASE_URL_ROOT = "http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
     BASE_URL = BASE_URL_ROOT + BASE_PATH
-    
+
     USE_WSGI = False
 else:
     BASE_PATH = ""
     BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
-    
+
 try:
     DB_TYPE_NAME
 except:
     DB_TYPE_NAME = 'sqlite'
-    
-# get the matching module from core.models.db (move it around to avoid name collisions)
-# put these functions in those modules
-# better than this clumsy multi-if and more flexible
-
-#db_module = importlib.import_module("core.models." + DB_TYPE_NAME)
-#DB = db_module
-#DB_TYPE = DB.db_type()
 
 if DB_TYPE_NAME == 'sqlite':
+    from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
     DB_TYPE = SqliteExtDatabase(
         FULL_SQLITE_DATABASE_PATH,
         threadlocals=True,
         timeout=DATABASE_TIMEOUT)
-    from core.models import sqlite
-    DB = sqlite    
+    from core.models import sqlite as DB
 
 if DB_TYPE_NAME == 'mysql':
+    from core.libs.playhouse.sqlite_ext import MySQLDatabase
     DB_TYPE = MySQLDatabase(DB_ID, user=DB_USER, passwd=DB_PASSWORD)
-    from core.models import mysql
-    DB = mysql
+    from core.models import mysql as DB
