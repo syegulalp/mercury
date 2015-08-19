@@ -1,10 +1,11 @@
 from core.libs.bottle import (request, template, redirect)
-from core.boot import settings as _settings
+from core.boot import settings as _s
+_sep = _s._sep
 import os, random, string
 
 from configparser import ConfigParser, DuplicateSectionError
-config_file_name = (_settings.APPLICATION_PATH + _settings.DATA_FILE_PATH +
-    os.sep + "install.ini")
+config_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
+    _sep + "install.ini")
 parser = ConfigParser()
 
 class SetupError(BaseException):
@@ -53,11 +54,11 @@ def store_ini(section, setting, value):
 
 def step_0_pre():
 
-    path_to_check = _settings.APPLICATION_PATH + _settings.DATA_FILE_PATH
+    path_to_check = _s.APPLICATION_PATH + _s.DATA_FILE_PATH
     if os.path.isdir(path_to_check) is False:
         os.makedirs(path_to_check)
 
-    with open(path_to_check + _settings._sep + "__init__.py", "w", encoding='utf-8') as output_file:
+    with open(path_to_check + _sep + "__init__.py", "w", encoding='utf-8') as output_file:
         output_file.write('')
 
     store_ini('main', 'INSTALL_STEP', '0')
@@ -129,9 +130,9 @@ def step_2_pre():
         domain = "http://" + request.environ['HTTP_HOST']
 
 
-    install_path = _settings.APPLICATION_PATH
-    blog_path = install_path.rsplit(os.sep, 1)[0]
-    cms_path = "/" + install_path.rsplit(os.sep, 1)[1]
+    install_path = _s.APPLICATION_PATH
+    blog_path = install_path.rsplit(_sep, 1)[0]
+    cms_path = "/" + install_path.rsplit(_sep, 1)[1]
 
     return {'domain':domain,
         'install_path':install_path,
@@ -196,13 +197,10 @@ def step_4_pre():
 
     report.append("Database connection successful.")
 
-    # create the database
     from settings import DB
     DB.recreate_database()
 
     report.append("Database tables created successfully.")
-
-    # create the user account
 
     username = "Administrator"
     email = get_ini("user", "email")
@@ -215,7 +213,6 @@ def step_4_pre():
 
     from core import mgmt
 
-    # create the first site
     db.connect()
 
     with db.atomic():
@@ -247,10 +244,6 @@ def step_4_pre():
 
         report.append("Initial site created successfully.")
 
-        # create a blog within that site
-
-
-
         new_user = mgmt.user_create(
             name='Administrator',
             email=email,
@@ -268,22 +261,16 @@ def step_4_pre():
 
         new_user_permissions.save()
 
-        report.append("Initial blog created successfully.")
+        report.append("Initial admin user created successfully.")
 
-        # make this into a mgmt function
+        install_directory = (_s.APPLICATION_PATH + _sep +
+            _s.INSTALL_SRC_PATH)
 
-        # make into a common variable?
-        install_directory = (_settings.APPLICATION_PATH + _settings._sep +
-            "install")
-
-        with open(install_directory + _settings._sep + "themes" +
-            _settings._sep + "Amano 2015" + _settings._sep + "templates.json", "rb") as json_file:
+        with open(install_directory + _sep + "themes" +
+            _sep + _s.DEFAULT_THEME + _sep + "templates.json", "rb") as json_file:
                 json_text = json_file.read()
 
         new_theme = mgmt.theme_install_to_system(json_text)
-
-        # new_blog.theme = new_theme
-        # new_blog.save()
 
         report.append("Theme created and installed successfully to system.")
 
@@ -296,38 +283,43 @@ def step_4_pre():
             theme=new_theme
             )
 
+        report.append("Initial blog created successfully.")
+
         mgmt.theme_install_to_blog(new_theme, new_blog)
 
         report.append("Theme installed in new blog successfully.")
 
-
-        plugindir = (_settings.APPLICATION_PATH + _settings._sep + 'data' +
-            _settings._sep + 'plugins')
+        plugindir = (_s.APPLICATION_PATH + _sep + 'data' +
+            _sep + 'plugins')
 
         import shutil
+
+        # TODO: warn on doing this?
+        # this should only happen with a totally fresh install, not an upgrade
 
         if (os.path.isdir(plugindir)):
             shutil.rmtree(plugindir)
 
-        shutil.copytree(install_directory + _settings._sep + 'plugins',
+        shutil.copytree(install_directory + _sep + 'plugins',
             plugindir)
 
         from core import plugins
 
         for x in os.listdir(plugindir):
-            if (os.path.isdir(plugindir + _settings._sep + x) is True and
+            if (os.path.isdir(plugindir + _sep + x) is True and
                 x != '__pycache__'):
                 plugins.register_plugin(x)
 
-        # TODO: export installed theme to data directory
+        # TODO: export installed theme to data directory in /themes
+        # that should be part of the theme installation process itself.
 
 
     db.close()
 
     # raise
 
-    output_file_name = (_settings.APPLICATION_PATH + _settings.DATA_FILE_PATH +
-        os.sep + "config.ini")
+    output_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
+        _sep + "config.ini")
 
     config_parser = ConfigParser()
 
@@ -341,7 +333,7 @@ def step_4_pre():
                 pass
             config_parser.set(s, name, value)
 
-    if request.environ['HTTP_HOST'] == _settings.DEFAULT_LOCAL_ADDRESS + _settings.DEFAULT_LOCAL_PORT:
+    if request.environ['HTTP_HOST'] == _s.DEFAULT_LOCAL_ADDRESS + _s.DEFAULT_LOCAL_PORT:
         config_parser.add_section('server')
         config_parser.set('server', 'DESKTOP_MODE', 'True')
 
@@ -406,7 +398,7 @@ def button(step, next_action, error=None):
     if step > 0:
         previous = '''
 <a href="{}/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
-'''.format(_settings.BASE_URL_PATH, step - 1)
+'''.format(_s.BASE_URL_PATH, step - 1)
     else:
         previous = ""
 
@@ -419,7 +411,7 @@ def button(step, next_action, error=None):
         if error is None:
             next_str = '''
 <a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
-'''.format(_settings.BASE_URL_PATH, step + 1)
+'''.format(_s.BASE_URL_PATH, step + 1)
         else:
             next_str = "<button class='btn btn-danger'>Fix the above error and click here to continue</button>"
 
@@ -439,7 +431,7 @@ step_text = {
         'post-step':step_0_post,
         'next_action':None,
         'crumb':'Welcome',
-        'title':'Welcome to the setup for <b>{}</b>!'.format(_settings.PRODUCT_NAME),
+        'title':'Welcome to the setup for <b>{}</b>!'.format(_s.PRODUCT_NAME),
         'text':'''
 <p>To get your installation up and running, we'll need to gather some information from you.
 <p>If at any time you need to go to an earlier step in this list, click on its title above.
@@ -630,7 +622,7 @@ def crumbs(step):
         if m > step:
             crumb = crumb_element_active.format(n['crumb'])
         else:
-            crumb = crumb_element_link.format(_settings.BASE_URL_PATH, m, n['crumb'])
+            crumb = crumb_element_link.format(_s.BASE_URL_PATH, m, n['crumb'])
 
         crumbs.append(crumb)
         m += 1
@@ -652,7 +644,7 @@ def step(step):
             error_msg = e
         else:
             step += 1
-            redirect('{}/install/step-{}'.format(_settings.BASE_URL_PATH, step))
+            redirect('{}/install/step-{}'.format(_s.BASE_URL_PATH, step))
 
     else:
         try:
@@ -672,7 +664,7 @@ def step(step):
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
             button=template_button,
-            form_action='{}/install/step-{}'.format(_settings.BASE_URL_PATH, step),
+            form_action='{}/install/step-{}'.format(_s.BASE_URL_PATH, step),
             **results),
         crumbs=crumbs(step),
         error=error_msg)
