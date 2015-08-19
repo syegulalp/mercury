@@ -3,7 +3,7 @@
 <div class="xcontainer">
 <div class="col-xs-12">
 	<h3>Hello, {{user.name}}</h3><hr/>
-	<div class="col-xs-9" id="recent_pages">
+	<div class="col-sm-9" id="recent_pages">
 	    <h4>Recently edited pages:</h4>
 	    <table class='table table-striped table-hover'>
 	    % if recent_pages.count()>0:
@@ -29,7 +29,7 @@
 	    </table>
 	    <hr/>
    </div>
-   <div class="col-xs-3" id="your_blogs">
+   <div class="col-sm-3" id="your_blogs">
         <h4>Blogs you contribute to:</h4>
         <ul>
         %for blog in your_blogs:
