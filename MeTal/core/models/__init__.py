@@ -1049,11 +1049,11 @@ class KeyValue(BaseModel):
         else:
             return self.select().where(KeyValue.parent == self)
 
-    def get_parent(self):
-        return self.select().where(KeyValue.id == self.parent)
-
     def get_siblings(self):
-        return self.select().where(KeyValue.parent == self.parent)
+        if self.parent is None:
+            return None
+        else:
+            return self.select().where(KeyValue.parent == self.parent)
 
 tag_template = '''
 <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
