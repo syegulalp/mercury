@@ -1,42 +1,20 @@
 import datetime, sys
 
-import settings as _settings
-
-from core import utils as _utils
 from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc
 
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT)
 
 from core.libs.bottle import request, url, _stderr
-from core.libs.peewee import DeleteQuery, fn  # , BaseModel
+from core.libs.peewee import DeleteQuery
 
 from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check)
 
 from functools import wraps
 
-class EnforcedCharField(CharField):
-    def __init__(self, max_length=255, *args, **kwargs):
-        self.max_length = max_length
-        super(CharField, self).__init__(*args, **kwargs)
-
-    def db_value(self, value):
-        if value is None:
-            length = 0
-        else:
-            try:
-                length = len(str.encode(value))
-            except TypeError:
-                length = len(value)
-
-        if length > ENFORCED_CHARFIELD_CONSTRAINT:
-            from core.error import DatabaseError
-            raise DatabaseError("The field '{}' cannot be longer than {} bytes. ({})".format(
-                self.name,
-                ENFORCED_CHARFIELD_CONSTRAINT,
-                request.url))
-        return super(CharField, self).db_value(value)
+import settings as _settings
+from core import utils as _utils
 
 class Struct(object):
     pass
@@ -121,6 +99,28 @@ for n in page_status_list:
     page_status.modes[n[2]] = n[1]
     page_status.id[n[1]] = n[2]
 
+
+class EnforcedCharField(CharField):
+    def __init__(self, max_length=255, *args, **kwargs):
+        self.max_length = max_length
+        super(CharField, self).__init__(*args, **kwargs)
+
+    def db_value(self, value):
+        if value is None:
+            length = 0
+        else:
+            try:
+                length = len(str.encode(value))
+            except TypeError:
+                length = len(value)
+
+        if length > ENFORCED_CHARFIELD_CONSTRAINT:
+            from core.error import DatabaseError
+            raise DatabaseError("The field '{}' cannot be longer than {} bytes. ({})".format(
+                self.name,
+                ENFORCED_CHARFIELD_CONSTRAINT,
+                request.url))
+        return super(CharField, self).db_value(value)
 
 class BaseModel(Model):
 
