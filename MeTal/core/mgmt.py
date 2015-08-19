@@ -3,7 +3,7 @@ from core.log import logger
 import json
 
 from core.models import (TemplateMapping, Template, System, KeyValue,
-    Permission, Site, Blog, User, Category, Theme)
+    Permission, Site, Blog, User, Category, Theme, get_theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
@@ -24,6 +24,13 @@ def login_verify(email, password):
         user.last_login = datetime.datetime.now()
         user.save()
         return user
+
+def theme_delete(theme):
+    pass
+    # remove everything that has a dependency to this theme
+    # TemplateMapping, Template, FileInfo, FileInfoContext
+    # we should write a function to purge a template set from a blog
+    # and invoke that
 
 def theme_create(**new_theme_data):
 
@@ -68,8 +75,6 @@ def theme_apply_to_blog(theme, blog):
     theme_to_remove.execute()
 
     theme_install_to_blog(theme, blog)
-
-    # TODO: add column in blog to represent which theme is currently active
 
 
 def theme_install_to_blog(installed_theme, blog):
