@@ -206,6 +206,16 @@ class BaseModel(Model):
             self.id)
 
 
+    def kv_list(self):
+        object_name = self.__class__.__name__
+        # original_object_name = object_name
+
+        kv_list = KeyValue.select().where(
+            KeyValue.object == object_name,
+            KeyValue.objectid == self.id)
+
+        return kv_list
+
     def kvs(self, key=None, context=None):
 
         # need context object
@@ -436,7 +446,7 @@ class Site(SiteBase, ConnectionBase):
 
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
-    theme = ForeignKeyField(Theme, null=False, index=True)
+    theme = ForeignKeyField(Theme, null=True, index=True)
 
 
     @property
@@ -1033,6 +1043,17 @@ class KeyValue(BaseModel):
     is_unique = BooleanField(default=False)
     value_type = CharField(max_length=64)
 
+    def get_children(self):
+        if self.is_schema is False:
+            return None
+        else:
+            return self.select().where(KeyValue.parent == self)
+
+    def get_parent(self):
+        return self.select().where(KeyValue.id == self.parent)
+
+    def get_siblings(self):
+        return self.select().where(KeyValue.parent == self.parent)
 
 tag_template = '''
 <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
@@ -1504,7 +1525,7 @@ def get_site(site_id):
     try:
         site = Site.get(Site.id == site_id)
     except Site.DoesNotExist as e:
-        raise Site.DoesNotExist('Site {} does not exist'.format(site_id), e)
+        raise Site.DoesNotExist('Site #{} does not exist'.format(site_id), e)
 
     return site
 
@@ -1512,7 +1533,7 @@ def get_media(media_id, blog=None):
     try:
         media = Media.get(Media.id == media_id)
     except Media.DoesNotExist as e:
-        raise Media.DoesNotExist ('Media element {} does not exist'.format(media_id), e)
+        raise Media.DoesNotExist ('Media element #{} does not exist'.format(media_id), e)
 
     if blog:
         if media.blog != blog:
