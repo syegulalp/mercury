@@ -67,3 +67,7 @@ APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep
 VIEW_PATH = APPLICATION_PATH + _sep + 'core' + _sep + 'views'
 
 MAX_REQUEST = 409600
+
+INSTALL_SRC_PATH = 'install'
+
+DEFAULT_THEME = 'Amano 2015'
