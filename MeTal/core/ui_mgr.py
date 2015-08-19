@@ -1,7 +1,3 @@
-from core.libs.bottle import template
-
-# TODO: use this ordering mechanism elsewhere, too?
-
 panels_dict = {
     'edit_template':
         {'panel_order':['publishing', 'status', 'files'],
@@ -73,6 +69,8 @@ panels_dict = {
 
 def render_sidebar(**k):
 
+    from core.libs.bottle import template
+
     panels = panels_dict[k['panel_set']]['panel_order']
     panel_set = panels_dict[k['panel_set']]['panels']
     sidebar_panels = []
@@ -91,8 +89,10 @@ def render_sidebar(**k):
 
     return sidebar_template
 
-def register_sidebar():
-    '''
-    Inputs are assumed to be unsafe.
-    '''
-    pass
+def register_sidebar(**k):
+
+    sidebar_to_add = k.get('add_to', None)
+    sidebar_panel = k.get('panel', None)
+
+    panels_dict[sidebar_to_add]['panel_order'].append(sidebar_panel['title'])
+    panels_dict[sidebar_to_add]['panels'][sidebar_panel['title']] = sidebar_panel
