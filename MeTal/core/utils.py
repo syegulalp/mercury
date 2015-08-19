@@ -321,3 +321,4 @@ def raise_request_limit():
 
 def disable_protection():
     response.set_header('Frame-Options', '')
+    response.set_header('Content-Security-Policy', '')
