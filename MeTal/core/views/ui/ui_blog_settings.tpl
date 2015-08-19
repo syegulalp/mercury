@@ -25,7 +25,7 @@
                 <input type="text" class="form-control" aria-describedby="blog_description_help"
                 value="{{blog.description}}"
                 id="blog_description" name="blog_description">
-                <span id="blog_description_help" class="help-block">A short description of your blog, typically displayed in the top bar.</span>
+                <span id="blog_description_help" class="help-block">A short description of your blog, for SEO use.</span>
             </div>
         </div>
         
