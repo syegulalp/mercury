@@ -6,9 +6,6 @@ from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
 
 from core import (mgmt, ui, auth)
 
-from core.libs import bottle
-# bottle.BaseRequest.MEMFILE_MAX = 1024000
-
 from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
 
 from core.models import (db, get_blog, get_theme, get_media, FileInfo)
@@ -37,28 +34,24 @@ def t(path):
     return app.router.match(request)[0]()
 '''
 
-@_hook('after_request')
-def add_headers():
-    pass
-    # print (request.__dict__)
-    # if request.__dict__.get('no_protection', False) is False:
-        # response.add_header('Frame-Options', 'sameorigin')
-        # response.add_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
-        # TODO: Eventually we will get rid of all inline CSS & JS
-
 @_hook('before_request')
 def strip_path():
-    # Removes trailing slashes from a URL before processing
+    '''
+    Removes trailing slashes from a URL before processing.
+    '''
     if len(request.environ['PATH_INFO']) > 1:
         request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
 @_hook('before_request')
 def csrf_protection():
+    '''
+    Adds CSP headers to requests by default, and checks for the presence of
+    CSRF protection in submitted forms.
+    '''
     response.add_header('Frame-Options', 'sameorigin')
+    response.add_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
 
     if request.method == "POST":
-        # from core.libs import bottle
-        # bottle.BaseRequest.MEMFILE_MAX = 1024000
         raise_request_limit()
         try:
             user = auth.is_logged_in_core(request)
@@ -81,8 +74,38 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
+@_route(BASE_PATH + "/system/import-theme/<theme_id:int>/<blog_id:int>")
+def import_theme_to_blog(theme_id, blog_id):
+    blog = get_blog(blog_id)
+    old_theme = get_theme(theme_id)
 
-@_route(BASE_PATH + "/system/theme/<blog_id:int>")
+    # import theme from file
+
+    new_theme = mgmt.theme_install_to_blog(blog)
+
+    mgmt.theme_install_to_blog(new_theme, blog)
+
+    mgmt.theme_delete(old_theme)
+
+    # when replacing a theme:
+    # all Theme KV objects should be marked and reparented
+    # perhaps we should specify the Theme head KV with a name
+    # so that way we can match the name against the theme itself, too
+    # have an option to force-delete
+
+
+
+
+    # should we create an entirely new instance?
+    # how do we distinguish between multiple instances of the same theme?
+
+    # load in new theme from json in file somewhere, or maybe via a POST
+    # register new theme with site
+    # apply new theme to blog
+
+    # rebuild all fileinfos = purge function
+
+@_route(BASE_PATH + "/system/export-theme/<blog_id:int>")
 def export_theme(blog_id):
     from core import theme
     return theme.export_theme_for_blog(blog_id)
@@ -122,6 +145,7 @@ def disable_plugin(plugin_id):
 
 
 '''
+
 @_route(BASE_PATH + '/test/<blog_id:int>')
 def test_function(blog_id):
     with db.atomic():
