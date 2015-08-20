@@ -5,3 +5,4 @@ settings/*.ini
 _*/*
 /backup/
 /.htaccess
+/data/
