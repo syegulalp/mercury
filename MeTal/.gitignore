@@ -3,3 +3,5 @@ blog/*
 *.py[oc]
 settings/*.ini
 _*/*
+/backup/
+/.htaccess
