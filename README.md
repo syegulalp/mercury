@@ -9,6 +9,7 @@ Pure Python (3.2+) CMS and blogging solution
 * Plugin system
 * Multiple sites and blogs supported in a single installation
 * Multiple users and granular permissions (contribute, write, edit, publish, manage, etc.)
+* Key/value store for metadata on objects
 * Drag-and-drop media management included but optional
 
 ## Planned additions
@@ -22,4 +23,4 @@ Pure Python (3.2+) CMS and blogging solution
 ... more to come ...
 
 This project is still very raw; it won't work yet if you try to deploy it. It's being
-committed publicly to show that progress is taking place on it.
+committed publicly to show that progress is taking place on it. 
