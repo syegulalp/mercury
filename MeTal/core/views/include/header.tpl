@@ -53,6 +53,8 @@
           
           
           <ul class="dropdown-menu" role="menu">
+          
+          	<li role="presentation" class="dropdown-header" >Publishing queue</li>
             
             % if blog is not None:
             % if queue.count():
