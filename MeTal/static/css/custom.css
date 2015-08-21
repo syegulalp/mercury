@@ -156,3 +156,9 @@ body {
 .navbar-compact>li>a {
     padding: 15px 8px;
 }
+
+.nav .breadcrumb .btn-group a.btn {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
