@@ -1,16 +1,17 @@
-import os, urllib, re
-
-from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
-    APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
-    SECRET_KEY, _sep)
+import os
+import re
+import urllib
 
 from core import (mgmt, ui, auth)
-
-from core.libs.bottle import (Bottle, static_file, request, response, abort, template)
-
-from core.models import (db, get_blog, get_theme, get_media, FileInfo)
 from core.error import (UserNotFound, CSRFTokenNotFound)
+from core.libs.bottle import (
+    Bottle, static_file, request, response, abort, template)
+from core.models import (db, get_blog, get_theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
+from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
+                      APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
+                      SECRET_KEY, _sep)
+
 
 app = Bottle()
 _route = app.route
@@ -34,6 +35,7 @@ def t(path):
     return app.router.match(request)[0]()
 '''
 
+
 @_hook('before_request')
 def strip_path():
     '''
@@ -42,6 +44,7 @@ def strip_path():
     if len(request.environ['PATH_INFO']) > 1:
         request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
 
+
 @_hook('before_request')
 def csrf_protection():
     '''
@@ -49,7 +52,8 @@ def csrf_protection():
     CSRF protection in submitted forms.
     '''
     response.add_header('Frame-Options', 'sameorigin')
-    response.add_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
+    response.add_header(
+        'Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
 
     if request.method == "POST":
         raise_request_limit()
@@ -65,6 +69,7 @@ def csrf_protection():
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
 
+
 @_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
 def server_static(filepath):
     '''
@@ -74,7 +79,8 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
-@_route(BASE_PATH + "/system/import-theme/<theme_id:int>/<blog_id:int>")
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
 def import_theme_to_blog(theme_id, blog_id):
     blog = get_blog(blog_id)
     old_theme = get_theme(theme_id)
@@ -93,9 +99,6 @@ def import_theme_to_blog(theme_id, blog_id):
     # so that way we can match the name against the theme itself, too
     # have an option to force-delete
 
-
-
-
     # should we create an entirely new instance?
     # how do we distinguish between multiple instances of the same theme?
 
@@ -105,10 +108,12 @@ def import_theme_to_blog(theme_id, blog_id):
 
     # rebuild all fileinfos = purge function
 
-@_route(BASE_PATH + "/system/export-theme/<blog_id:int>")
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/export-theme")
 def export_theme(blog_id):
     from core import theme
     return theme.export_theme_for_blog(blog_id)
+
 
 def setup(step_id=None):
     if step_id is None:
@@ -117,26 +122,32 @@ def setup(step_id=None):
     from install import install
     return install.step(step_id)
 
+
 @_route(BASE_PATH + "/system/sites")
 def site_list():
     return ui.system_sites()
+
 
 @_route(BASE_PATH + "/system/plugins")
 def system_plugins():
     return ui.system_plugins()
 
+
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>")
 def plugin_settings(plugin_id):
     pass
+
 
 @_route(BASE_PATH + "/system/info")
 def site_info():
     return ui.system_info()
 
+
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
     from core.plugins import enable_plugin
     enable_plugin(plugin_id)
+
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
@@ -165,6 +176,7 @@ def test_function(blog_id):
     return n
 '''
 
+
 @_route(BASE_PATH + '/apply-theme/<blog_id:int>/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
     blog = get_blog(blog_id)
@@ -173,100 +185,126 @@ def apply_theme_test(blog_id, theme_id):
         n = mgmt.theme_apply_to_blog(theme, blog)
     return n
 
+
 @_route(BASE_PATH + '/login')
 def login():
     return ui.login()
+
 
 @_route(BASE_PATH + '/login', method='POST')
 def login_verify():
     return ui.login_verify()
 
+
 @_route(BASE_PATH + '/logout')
 def logout():
     return ui.logout()
+
 
 @_route('/')
 @_route(BASE_PATH)
 def main_ui():
     return ui.main_ui()
 
+
 @_route(BASE_PATH + '/site/<site_id:int>')
 def site(site_id):
     return ui.site(site_id)
+
 
 @_route(BASE_PATH + "/system/plugins/register/<plugin_path>")
 def register_plugin(plugin_path):
     return ui.register_plugin(plugin_path)
 
+
 @_route(BASE_PATH + "/system/queue")
 def system_queue():
     return ui.system_queue()
+
 
 @_route(BASE_PATH + "/system/log")
 def system_log():
     return ui.system_log()
 
+
 @_route(BASE_PATH + '/export')
 def system_export_data():
     return mgmt.export_data()
+
 
 @_route(BASE_PATH + '/import')
 def system_import_data():
     return mgmt.import_data()
 
+
 @_route(BASE_PATH + '/site/<site_id:int>/blogs')
 def site_blogs(site_id):
     return ui.site(site_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog')
 def site_blog_create(site_id):
     return ui.blog_create(site_id)
 
+
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog', method='POST')
 def site_blog_create_save(site_id):
     return ui.blog_create_save(site_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/users')
 def site_list_users(site_id):
     return ui.site_list_users(site_id)
 
+
 @_route(BASE_PATH + '/site/<site_id:int>/create-user')
 def site_create_user(site_id):
     return ui.site_create_user(site_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-user', method='POST')
 def site_create_user_save(site_id):
     return ui.site_create_user_save(site_id)
 
+
 @_route(BASE_PATH + '/site/<site_id:int>/user/<user_id:int>')
 def site_edit_user(site_id, user_id):
     return ui.site_edit_user(site_id, user_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/user/<user_id:int>', method='POST')
 def site_edit_user_save(site_id, user_id):
     return ui.site_edit_user_save(site_id, user_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
 def blog_create_user(blog_id):
     return ui.blog_create_user(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/create-user', method='POST')
 def blog_create_user_save(blog_id):
     return ui.blog_create_user_save(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>')
 def blog_user_edit(blog_id, user_id):
     return ui.blog_user_edit(blog_id, user_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>', method='POST')
 def blog_user_edit_save(blog_id, user_id):
     return ui.blog_user_edit_save(blog_id, user_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/users')
 def blog_list_users(blog_id):
     return ui.blog_list_users(blog_id)
 
-# TODO: the default should be whatever editor theme is installed by the current blog theme
+# TODO: the default should be whatever editor theme is installed by the
+# current blog theme
+
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/editor-css")
 def blog_editor_css(blog_id):
     blog = get_blog(blog_id)
@@ -279,86 +317,107 @@ def blog_editor_css(blog_id):
     response.add_header('Cache-Control', 'max-age=7200')
     return template
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage')
 def blog_new_page(blog_id):
     return ui.blog_new_page(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage', method='POST')
 def blog_new_page_save(blog_id):
     return ui.blog_new_page_save(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>')
 def blog(blog_id, errormsg=None):
     return ui.blog(blog_id, errormsg)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
 def blog_edit_tag(blog_id, tag_id):
     return ui.edit_tag(blog_id, tag_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/tags')
 def blog_tags(blog_id):
     return ui.blog_tags(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):
     return ui.blog_media(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit')
 def blog_media_edit(blog_id, media_id):
     return ui.blog_media_edit(blog_id, media_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit', method='POST')
 def blog_media_edit_save(blog_id, media_id):
     return ui.blog_media_edit_save(blog_id, media_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
 def blog_media_delete(blog_id, media_id):
     return ui.blog_media_delete(blog_id, media_id, None)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete_confirm(blog_id, media_id):
     return ui.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
     return ui.blog_templates(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
 def template_new(blog_id, template_type):
     return ui.new_template(blog_id, template_type)
 
+
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
     return ui.template_edit(template_id)
+
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
 def template_edit_save(template_id):
     return ui.template_edit_save(template_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
     return ui.page_edit(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit', method='POST')
 def page_edit_save(page_id):
     return ui.page_edit_save(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit/revisions')
 def page_revisions(page_id):
     return ui.page_revisions(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>')
 def page_revision_restore(page_id, revision_id):
     return ui.page_revision_restore(page_id, revision_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>', method='POST')
 def page_revision_restore_save(page_id, revision_id):  # @UnusedVariable
     return ui.page_revision_restore_save(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/upload', method='POST')
 def page_media_upload(page_id):
     return ui.page_media_upload(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/media/<media_id:int>/delete', method='POST')
 def page_media_delete(page_id, media_id):
@@ -371,39 +430,49 @@ def page_media_edit(page_id, media_id):
     return ui.page_media_edit(page_id, media_id)
 '''
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish')
 def blog_republish(blog_id):
     return ui.blog_republish(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/purge')
 def blog_purge(blog_id):
     return ui.blog_purge(blog_id)
 
 # temporary
+
+
 @_route(BASE_PATH + '/page/<page_id:int>/del')
 @_route(BASE_PATH + '/page/<page_id:int>/delete', method='POST')
 def page_delete(page_id):
     return ui.page_delete(page_id)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
 def blog_queue(blog_id):
     return ui.blog_queue(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
 def blog_settings(blog_id,):
     return ui.blog_settings(blog_id)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings", method='POST')
 def blog_settings_save(blog_id):
     return ui.blog_settings_save(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish")
 def blog_publish(blog_id):
     return ui.blog_publish(blog_id)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/progress/<original_queue_length:int>")
 def blog_publish_progress(blog_id, original_queue_length):
     return ui.blog_publish_progress(blog_id, original_queue_length)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/process")
 def blog_publish_process(blog_id):
@@ -418,6 +487,7 @@ def page_preview(page_id):
 '''
 Static routing.
 '''
+
 
 @_route(BASE_PATH + '/media/<media_id:int>')
 def media_preview(media_id):
@@ -486,9 +556,10 @@ if DESKTOP_MODE:
         k = static_file(filesystem_filepath, root=root_path)
 
         if (k.headers['Content-Type'][:5] == "text/" or
-            k.headers['Content-Type'] == "application/javascript"):
+                k.headers['Content-Type'] == "application/javascript"):
 
-            k.add_header('Cache-Control', 'max-age=7200, public, must-revalidate')
+            k.add_header(
+                'Cache-Control', 'max-age=7200, public, must-revalidate')
 
         if (k._headers['Content-Type'][0][:5] == "text/" and not k.body == ""):
 
@@ -497,7 +568,8 @@ if DESKTOP_MODE:
 
             y = x.decode('utf8')
             z = re.compile(r' href=["\']' + (blog.url) + '([^"\']*)["\']')
-            y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT + "\\1\?_=1'", y)
+            y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS +
+                       DEFAULT_LOCAL_PORT + "\\1\?_=1'", y)
             y = y.encode('utf8')
 
             k.headers['Content-Length'] = len(y)
@@ -539,20 +611,23 @@ if DESKTOP_MODE:
 def error_handler(error):
     import settings as _settings
     tpl = template('500_error',
-        settings=_settings,
-        error=error)
+                   settings=_settings,
+                   error=error)
 
     if error.exception.__class__ == CSRFTokenNotFound:
         response.status = '401 CSRF token not found'
     return tpl
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/get-media-templates/<media_id:int>')
 def page_get_media_templates(page_id, media_id):
     return ui.page_get_media_templates(page_id, media_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/add-media/<media_id:int>/<template_id:int>')
 def page_add_media_with_template(page_id, media_id, template_id):
     return ui.page_add_media_with_template(page_id, media_id, template_id)
+
 
 @_route(BASE_PATH + "/api/1/get-tag/<tag_name>")
 def api_get_tag(tag_name):
@@ -561,6 +636,7 @@ def api_get_tag(tag_name):
 # TODO: make /page/<>/generate-tag when we rewrite the underlying routine
 # no need for an api path here?
 # for apis might want to use a variable, pass that to a control array
+
 
 @_route(BASE_PATH + "/api/1/make-tag-for-page/blog/<blog_id:int>", method='POST')
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
