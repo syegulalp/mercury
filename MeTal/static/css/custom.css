@@ -152,3 +152,7 @@ body {
 .hide-overflow {
 	overflow: hidden
 }
+
+.navbar-compact>li>a {
+    padding: 15px 8px;
+}

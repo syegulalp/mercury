@@ -37,7 +37,7 @@
       
       
       
-      <ul class="nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right navbar-compact">
              
         
         <li>
