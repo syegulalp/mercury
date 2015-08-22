@@ -3,7 +3,7 @@ import datetime, sys
 from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc
 
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
-        SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT)
+        SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
 
 from core.libs.bottle import request, url, _stderr
 from core.libs.peewee import DeleteQuery
@@ -15,6 +15,9 @@ from functools import wraps
 
 import settings as _settings
 from core import utils as _utils
+
+
+
 
 class Struct(object):
     pass
@@ -566,7 +569,7 @@ class Blog(SiteBase):
 
     def template(self, template_id):
 
-        template_in_blog = Template.select().where(Template.blog == self, Template.id == template_id)
+        template_in_blog = self.templates_in_blog.select().where(Template.id == template_id)
 
         return template_in_blog
 
@@ -602,8 +605,8 @@ class Blog(SiteBase):
         Returns all template mappings associated with a given blog.
         '''
 
-        template_mappings_in_blog = TemplateMapping.select().where(TemplateMapping.id <<
-            self.templates.select(Template.id))
+        template_mappings_in_blog = TemplateMapping.select().where(TemplateMapping.template <<
+            self.templates)
 
         return template_mappings_in_blog
 
@@ -614,7 +617,7 @@ class Blog(SiteBase):
         '''
 
         fileinfos_for_blog = FileInfo.select().where(FileInfo.template_mapping <<
-            self.template_mappings.select(TemplateMapping.id))
+            self.template_mappings)
 
         return fileinfos_for_blog
 
@@ -676,6 +679,11 @@ class Page(BaseModel):
                 TagAssociation.page == self)).order_by(Tag.tag)
 
         return tag_list
+
+    @property
+    def tags_text(self):
+        tags = self.tags
+        return [x.tag for x in tags]
 
     @property
     def author(self):
@@ -1139,7 +1147,7 @@ class Tag(BaseModel):
 
 class Template(BaseModel):
     title = TextField(default="Untitled Template", null=False)
-    theme = ForeignKeyField(Theme, null=False, index=True)
+    theme = ForeignKeyField(Theme, null=True, index=True)
     template_type = CharField(max_length=32, index=True, null=False)
     blog = ForeignKeyField(Blog, null=False, index=True)
     body = TextField(null=True)
@@ -1550,6 +1558,9 @@ def get_media(media_id, blog=None):
             raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.id))
 
     return media
+
+def get_default_theme():
+    return Theme.get(Theme.title == DEFAULT_THEME)
 
 def default_template_mapping(page):
     '''Returns the default template mapping for a given page,
