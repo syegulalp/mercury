@@ -244,6 +244,7 @@ def publishing_lock(blog, return_queue=False):
     try:
         queue_control = Queue.select().where(Queue.blog == blog,
             Queue.is_control == True).order_by(Queue.id.asc())
+        qc = queue_control.get()
     except Queue.DoesNotExist:
         return None
 
