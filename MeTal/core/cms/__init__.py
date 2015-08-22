@@ -11,7 +11,7 @@ import json
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
     Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User, Blog, Site,
-    FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode)
+    FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue, queue_jobs_waiting)
 
 from settings import MAX_BATCH_OPS, BASE_URL
 
@@ -28,6 +28,7 @@ job_type.page = 'Page'
 job_type.index = 'Index'
 job_type.archive = 'Archive'
 job_type.include = 'Include'
+job_type.insert = 'Insert'
 job_type.control = 'Control'
 
 job_type.description = {
@@ -35,7 +36,8 @@ job_type.description = {
     job_type.index: 'Index entry',
     job_type.archive: 'Archive entry',
     job_type.include: 'Include file',
-    job_type.control: 'Control job'
+    job_type.insert: 'Queue insert job',
+    job_type.control: 'Queue publishing job'
     }
 
 job_type.action = {
@@ -44,6 +46,14 @@ job_type.action = {
     job_type.archive: lambda x:build_page(x),
     job_type.include: lambda x:build_page(x),
     }
+
+job_insert_type = Struct()
+
+job_insert_type.page_fileinfo = "page_fileinfos"
+job_insert_type.index_fileinfo = "index_fileinfos"
+job_insert_type.page = "page"
+job_insert_type.index = "index"
+
 
 def build_page(q):
     '''
@@ -99,8 +109,8 @@ def push_to_queue(**ka):
     queue_job.is_control = ka.get('is_control', False)
 
     if queue_job.is_control:
-        queue_job.data_string = (queue_job.job_type + ": Blog {}".format(
-            queue_job.blog.for_log))
+        queue_job.data_string = ka.get('data_string', (queue_job.job_type + ": Blog {}".format(
+            queue_job.blog.for_log)))
     else:
         queue_job.data_string = (queue_job.job_type + ": " +
             FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
@@ -108,6 +118,29 @@ def push_to_queue(**ka):
 
     queue_job.date_touched = datetime.datetime.now()
     queue_job.save()
+
+def push_insert_to_queue(blog):
+
+    with db.atomic() as txn:
+
+        # pages ordered by id desc
+
+        push_to_queue(job_type=job_type.insert,
+            data_string=job_insert_type.page_fileinfo,
+            data_integer=blog.pages().count(),
+            is_control=True,
+            blog=blog,
+            site=blog.site)
+
+        # indexes ordered by id asc
+
+        push_to_queue(job_type=job_type.insert,
+            data_string=job_insert_type.index_fileinfo,
+            data_integer=blog.templates(template_type.index).count(),
+            is_control=True,
+            blog=blog,
+            site=blog.site)
+
 
 def _remove_from_queue(queue_deletes):
     '''
@@ -880,63 +913,121 @@ def republish_blog(blog_id):
         blog.id))
     return data
 
+def process_queue_publish(queue_control, blog):
+
+    queue_control.is_running = True
+    queue_control.save()
+
+    queue = Queue.select().order_by(Queue.priority.desc(),
+        Queue.date_touched.desc()).where(Queue.blog == blog,
+        Queue.is_control == False).limit(MAX_BATCH_OPS)
+
+    queue_length = queue.count()
+
+    if queue_length > 0:
+        logger.info("Queue job #{} @ {} (blog #{}, {} items) started.".format(
+            queue_control.id,
+            date_format(queue_control.date_touched),
+            queue_control.blog.id,
+            queue_length))
+
+    for q in queue:
+
+        try:
+            job_type.action[q.job_type](q)
+        except BaseException:
+            raise
+        else:
+            remove_from_queue(q.id)
+
+    queue_control = Queue.get(Queue.blog == blog,
+        Queue.is_control == True)
+
+    queue_control.data_integer -= queue_length
+
+    if queue_control.data_integer <= 0:
+        queue_control.delete_instance()
+        logger.info("Queue job #{} @ {} (blog #{}) finished.".format(
+            queue_control.id,
+            date_format(queue_control.date_touched),
+            queue_control.blog.id))
+    else:
+        queue_control.is_running = False
+        queue_control.save()
+        logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left.".format(
+            queue_control.id,
+            date_format(queue_control.date_touched),
+            queue_control.blog.id,
+            queue_length))
+
+    return queue_control.data_integer
+
+def process_queue_insert(queue_control, blog):
+
+    queue_control.is_running = True
+    queue_control.save()
+
+    result = 0
+
+    if queue_control.data_string == 'page_fileinfos':
+        page_list = blog.pages().order_by(Page.id.desc())
+        index = page_list.count() - queue_control.data_integer
+        n = 0
+        while n < MAX_BATCH_OPS and index < page_list.count():
+            build_pages_fileinfos((page_list[index],))
+            build_archives_fileinfos((page_list[index],))
+            index += 1
+            n += 1
+
+        if index >= page_list.count():
+            queue_control.delete_instance()
+        else:
+            queue_control.data_integer -= n
+
+        result = page_list.count() - index
+
+    if queue_control.data_string == 'index_fileinfos':
+        index_list = blog.templates(template_type.index)
+        index = index_list.count() - queue_control.data_integer
+        n = 0
+        while n < MAX_BATCH_OPS and index < index_list.count():
+            build_indexes_fileinfos((index_list[index],))
+            index += 1
+            n += 1
+
+        if index >= index_list.count():
+            queue_control.delete_instance()
+        else:
+            queue_control.data_integer -= n
+
+        result = index_list.count() - index
+
+    queue_control.is_running = False
+    queue_control.save()
+
+    return result
+
 def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
     '''
+
     with db.atomic():
 
-        queue_control = publishing_lock(blog, True)
+        q_c = publishing_lock(blog, True)
 
-        if queue_control is None:
+        if q_c is None:
             return 0
 
-        queue_control.data_string = 'Running'
-        queue_control.save()
+        queue_control = q_c[0]
 
-        queue = Queue.select().order_by(Queue.priority.desc(),
-            Queue.date_touched.desc()).where(Queue.blog == blog,
-            Queue.is_control == False).limit(MAX_BATCH_OPS)
+        if queue_control.job_type == job_type.control:
+            process_queue_publish(queue_control, blog)
 
-        queue_length = queue.count()
+        if queue_control.job_type == job_type.insert:
+            process_queue_insert(queue_control, blog)
 
-        if queue_length > 0:
-            logger.info("Queue job #{} @ {} (blog #{}, {} items) started.".format(
-                queue_control.id,
-                date_format(queue_control.date_touched),
-                queue_control.blog.id,
-                queue_length))
-
-        for q in queue:
-
-            try:
-                job_type.action[q.job_type](q)
-            except BaseException:
-                raise
-            else:
-                remove_from_queue(q.id)
-
-        queue_control = Queue.get(Queue.blog == blog,
-            Queue.is_control == True)
-
-        queue_control.data_integer -= queue_length
-
-        if queue_control.data_integer <= 0:
-            queue_control.delete_instance()
-            logger.info("Queue job #{} @ {} (blog #{}) finished.".format(
-                queue_control.id,
-                date_format(queue_control.date_touched),
-                queue_control.blog.id))
-        else:
-            queue_control.data_string = 'Paused'
-            queue_control.save()
-            logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left.".format(
-                queue_control.id,
-                date_format(queue_control.date_touched),
-                queue_control.blog.id,
-                queue_length))
-
-    return queue_control.data_integer
+    return queue_jobs_waiting(blog=blog)
 
 def build_fileinfos():
     pass

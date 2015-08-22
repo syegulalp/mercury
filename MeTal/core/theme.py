@@ -20,7 +20,7 @@ def export_theme_for_blog(blog_id):
 
     # theme_to_export = Template.select().where(Template.blog == blog_id)
     blog = get_blog(blog_id)
-    theme_to_export = blog.templates
+    theme_to_export = blog.templates()
 
     theme = {}
     theme["title"] = theme_to_export[0].theme.title

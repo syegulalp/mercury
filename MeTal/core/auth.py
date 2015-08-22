@@ -242,8 +242,8 @@ def publishing_lock(blog, return_queue=False):
     If no job is locked, then it returns None.
     '''
     try:
-        queue_control = Queue.get(Queue.blog == blog,
-            Queue.is_control == True)
+        queue_control = Queue.select().where(Queue.blog == blog,
+            Queue.is_control == True).order_by(Queue.id.asc())
     except Queue.DoesNotExist:
         return None
 

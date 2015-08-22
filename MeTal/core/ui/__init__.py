@@ -7,7 +7,7 @@ from core.search import blog_search_results, site_search_results
 
 from core.models import (Struct, get_site, get_blog, get_media, get_template,
     template_tags, get_page, Page, PageRevision, Blog, Queue, Template, Log,
-    TemplateMapping, get_user, Plugin, Media, User, db,
+    TemplateMapping, get_user, Plugin, Media, User, db, queue_jobs_waiting,
     MediaAssociation, Tag, template_type, publishing_mode, get_default_theme)
 
 from core.models.transaction import transaction
@@ -1173,14 +1173,17 @@ def blog_queue(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
+    '''
     queue = Queue.select().where(Queue.blog == blog_id).order_by(Queue.site.asc(), Queue.blog.asc(),
         Queue.job_type.asc(),
         Queue.date_touched.desc())
+    '''
+    # queue = queue_jobs_waiting(blog=blog)
 
     tags = template_tags(blog_id=blog.id,
             user=user)
 
-    paginator, queue_list = utils.generate_paginator(queue, request)
+    paginator, queue_list = utils.generate_paginator(tags['queue'], request)
 
     tpl = template('queue/queue_ui',
         queue_list=queue_list,
@@ -1244,11 +1247,17 @@ def blog_publish(blog_id):
 
     # TODO: check if control job already exists, if so, report back and quit
 
+    '''
     queue = Queue.select().where(
         Queue.blog == blog.id,
         Queue.is_control == False)
 
     queue_length = queue.count()
+    '''
+    queue = Queue.select().where(
+        Queue.blog == blog.id)
+
+    queue_length = queue_jobs_waiting(blog=blog)
 
     tags = template_tags(blog_id=blog.id,
             user=user)
@@ -1557,6 +1566,8 @@ def page_edit(page_id):
     logger.info("Page {} opened for editing by {}.".format(
         page.for_log,
         user.for_log))
+
+
 
     return tpl
 

@@ -52,8 +52,7 @@ def csrf_protection():
     CSRF protection in submitted forms.
     '''
     response.add_header('Frame-Options', 'sameorigin')
-    response.add_header(
-        'Content-Security-Policy', "default-src 'self' 'unsafe-inline'")
+    # response.add_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval'")
 
     if request.method == "POST":
         raise_request_limit()

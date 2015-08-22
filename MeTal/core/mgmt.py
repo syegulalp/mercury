@@ -27,9 +27,9 @@ def login_verify(email, password):
 
 def erase_theme(blog):
 
-    mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << blog.template_mappings)
+    mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << blog.template_mappings())
     m = mappings_to_delete.execute()
-    templates_to_delete = Template.delete().where(Template.id << blog.templates)
+    templates_to_delete = Template.delete().where(Template.id << blog.templates())
     n = templates_to_delete.execute()
     return m, n
 
@@ -76,7 +76,7 @@ def theme_apply_to_blog(theme, blog):
     cms.purge_fileinfos(blog.fileinfos)
 
     mappings_to_remove = TemplateMapping.delete().where(
-        TemplateMapping.template << blog.templates)
+        TemplateMapping.template << blog.templates())
     mappings_to_remove.execute()
 
     theme_to_remove = Template.delete().where(

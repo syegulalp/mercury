@@ -6,7 +6,7 @@ from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NA
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
 
 from core.libs.bottle import request, url, _stderr
-from core.libs.peewee import DeleteQuery
+from core.libs.peewee import DeleteQuery, fn
 
 from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check)
@@ -558,12 +558,14 @@ class Blog(SiteBase):
 
         return media
 
-    @property
-    def templates(self):
+    def templates(self, template_type=None):
         '''
         Returns all templates associated with a given blog.
         '''
         templates_in_blog = Template.select().where(Template.blog == self)
+
+        if template_type is not None:
+            templates_in_blog = templates_in_blog.select().where(Template.template_type == template_type)
 
         return templates_in_blog
 
@@ -594,19 +596,22 @@ class Blog(SiteBase):
     @property
     def archive_templates(self):
 
-        archive_templates_in_blog = self.templates.select().where(Template.template_type ==
+        archive_templates_in_blog = self.templates().select().where(Template.template_type ==
             template_type.archive)
 
         return archive_templates_in_blog
 
-    @property
-    def template_mappings(self):
+    def template_mappings(self, template_type=None):
         '''
         Returns all template mappings associated with a given blog.
         '''
 
         template_mappings_in_blog = TemplateMapping.select().where(TemplateMapping.template <<
-            self.templates)
+            self.templates())
+
+        if template_type is not None:
+            template_mappings_in_blog = template_mappings_in_blog.select().where(
+                TemplateMapping.template << self.templates(template_type))
 
         return template_mappings_in_blog
 
@@ -1439,6 +1444,7 @@ class FileInfoContext(BaseModel):
 class Queue(BaseModel):
     job_type = CharField(null=False, max_length=16, index=True)
     is_control = BooleanField(null=False, default=False, index=True)
+    is_running = BooleanField(null=False, default=False, index=True)
     priority = IntegerField(default=9, index=True)
     data_string = TextField(null=True)
     data_integer = IntegerField(null=True, index=True)
@@ -1446,6 +1452,22 @@ class Queue(BaseModel):
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
 
+def queue_jobs_waiting(blog=None, site=None):
+    from core.cms import job_type as jt
+
+    all_jobs = Queue.select()
+
+    if blog is not None:
+        all_jobs = all_jobs.select().where(Queue.blog == blog)
+    if site is not None:
+        all_jobs = all_jobs.select().where(Queue.blog == site)
+
+    publish_jobs = all_jobs.select().where(Queue.is_control == False).count()
+    insert_jobs = all_jobs.select(Queue, fn.SUM(Queue.data_integer).alias('total')).where(
+        Queue.is_control == True and Queue.job_type == jt.insert).get()
+
+    return int(0 if publish_jobs is None else publish_jobs) + int(
+        0 if insert_jobs.total is None else insert_jobs.total)
 
 class Permission(BaseModel):
     user = ForeignKeyField(User, index=True)
@@ -1635,10 +1657,14 @@ class TemplateTags(object):
 
         if self.blog:
             self.queue = Queue.select().where(Queue.blog == self.blog)
+            self.queue_count = queue_jobs_waiting(blog=self.blog)
         elif self.site:
             self.queue = Queue.select().where(Queue.site == self.site)
+            self.queue_count = queue_jobs_waiting(site=self.site)
         else:
             self.queue = Queue.select()
+            self.queue_count = queue_jobs_waiting()
+
 
         if 'archive' in ka:
             self.archive = Struct()
