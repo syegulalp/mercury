@@ -578,8 +578,7 @@ class Blog(SiteBase):
     @property
     def index_templates(self):
 
-        index_templates_in_blog = self.templates.select().where(Template.template_type ==
-            template_type.index)
+        index_templates_in_blog = self.templates(template_type.index)
 
         return index_templates_in_blog
 
@@ -622,7 +621,7 @@ class Blog(SiteBase):
         '''
 
         fileinfos_for_blog = FileInfo.select().where(FileInfo.template_mapping <<
-            self.template_mappings)
+            self.template_mappings())
 
         return fileinfos_for_blog
 
