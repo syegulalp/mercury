@@ -595,8 +595,7 @@ class Blog(SiteBase):
     @property
     def archive_templates(self):
 
-        archive_templates_in_blog = self.templates().select().where(Template.template_type ==
-            template_type.archive)
+        archive_templates_in_blog = self.templates(template_type.archive)
 
         return archive_templates_in_blog
 
