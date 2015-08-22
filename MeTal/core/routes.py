@@ -80,6 +80,29 @@ def server_static(filepath):
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
 
+@_route(BASE_PATH + "/blog/<blog_id:int>/overwrite-theme")
+def overwrite_blog_theme(blog_id):
+    '''
+    imports JSON and overwrites an existing blog's theme
+    '''
+    with open(APPLICATION_PATH + _sep + 'install' + _sep +
+        'templates.json' , "r", encoding='utf-8') as input_file:
+        theme_string = input_file.read()
+
+    from core.models import get_default_theme, Struct
+    # theme = get_default_theme()
+    theme = Struct()
+    theme.id = None
+    theme.json = theme_string
+    blog = get_blog(blog_id)
+    from core import cms
+    with db.atomic():
+        cms.purge_fileinfos(blog.fileinfos)
+        mgmt.erase_theme(blog)
+        mgmt.theme_install_to_blog(theme, blog)
+
+
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
 def import_theme_to_blog(theme_id, blog_id):
     blog = get_blog(blog_id)
@@ -177,7 +200,7 @@ def test_function(blog_id):
 '''
 
 
-@_route(BASE_PATH + '/apply-theme/<blog_id:int>/<theme_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/apply-theme/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
     blog = get_blog(blog_id)
     theme = get_theme(theme_id)
