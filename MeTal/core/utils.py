@@ -181,13 +181,20 @@ def tpl_include(tpl):
 from core.libs.bottle import SimpleTemplate
 class MetalTemplate(SimpleTemplate):
     includes = []
+    def __init__(self, *args, **kwargs):
+        super(MetalTemplate, self).__init__(*args, **kwargs)
+        self._tags = kwargs.get('tags', None)
+
     def _include(self, env, _name=None, **kwargs):
         from core.models import Template
         template_to_import = Template.get(
+            Template.blog == self._tags.get('blog', None),
             Template.title == _name)
         tpl = MetalTemplate(template_to_import.body)
         self.includes.append(_name)
         return tpl.execute(env['_stdout'], env)
+    def render(self, *args, **kwargs):
+        return super(MetalTemplate, self).render(*args, **kwargs)
 
 def tpl(*args, **ka):
     '''
@@ -195,7 +202,7 @@ def tpl(*args, **ka):
     ambiguously a filename.
     '''
     # TODO: debug handler for errors in submitted user templates here?
-    tp = MetalTemplate('\n' + args[0])
+    tp = MetalTemplate('\n' + args[0], tags=ka)
     x = tp.render(ka)
     return x[1:]
 

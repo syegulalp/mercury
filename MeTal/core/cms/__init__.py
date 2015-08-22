@@ -602,12 +602,18 @@ def build_file(f, blog):
     report.append("Output: " + pathname)
     encoded_page = page_text.encode('utf8')
 
+    print (f.file_path)
+
     split_path = f.file_path.rsplit('/', 1)
-    path_to_check = blog.path + "/" + f.file_path.rsplit('/', 1)[0]
+    print (len(split_path))
 
     if len(split_path) > 1:
-        if os.path.isdir(path_to_check) is False:
-            os.makedirs(path_to_check)
+        path_to_check = blog.path + "/" + split_path[0]
+    else:
+        path_to_check = blog.path
+
+    if os.path.isdir(path_to_check) is False:
+        os.makedirs(path_to_check)
 
     with open(pathname, "wb") as output_file:
         output_file.write(encoded_page)
@@ -1078,9 +1084,9 @@ def purge_fileinfos(fileinfos):
     Returns how many entries were purged.
     No security checks are performed.
     '''
-    context_purge = DeleteQuery(FileInfoContext).where(FileInfoContext.fileinfo << fileinfos)
+    context_purge = FileInfoContext.delete().where(FileInfoContext.fileinfo << fileinfos)
     n = context_purge.execute()
-    purge = DeleteQuery(FileInfo).where(FileInfo.id << fileinfos)
+    purge = FileInfo.delete().where(FileInfo.id << fileinfos)
     m = purge.execute()
     return m, n
 
