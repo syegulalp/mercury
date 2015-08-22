@@ -8,7 +8,7 @@ from core.search import blog_search_results, site_search_results
 from core.models import (Struct, get_site, get_blog, get_media, get_template,
     template_tags, get_page, Page, PageRevision, Blog, Queue, Template, Log,
     TemplateMapping, get_user, Plugin, Media, User, db,
-    MediaAssociation, Tag, template_type, publishing_mode)
+    MediaAssociation, Tag, template_type, publishing_mode, get_default_theme)
 
 from core.models.transaction import transaction
 
@@ -618,6 +618,7 @@ def blog_create_save(site_id):
         description=request.forms.getunicode('blog_description'),
         url=request.forms.getunicode('blog_url'),
         path=request.forms.getunicode('blog_path'),
+        theme=get_default_theme(),
         )
 
     redirect(BASE_URL + "/blog/" + str(new_blog.id))
