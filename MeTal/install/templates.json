@@ -430,6 +430,17 @@
    "parent": null,
    "value": null,
    "value_type": ""
+  },
+  "12": {
+   "id": 12,
+   "is_schema": true,
+   "is_unique": false,
+   "key": "Topic",
+   "object": "Page",
+   "objectid": 0,
+   "parent": 1,
+   "value": "Article topic",
+   "value_type": ""
   }
  },
  "title": "Amano 2015"
