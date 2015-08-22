@@ -25,6 +25,15 @@ def login_verify(email, password):
         user.save()
         return user
 
+def erase_theme(blog):
+
+    mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << blog.template_mappings)
+    m = mappings_to_delete.execute()
+    templates_to_delete = Template.delete().where(Template.id << blog.templates)
+    n = templates_to_delete.execute()
+    return m, n
+
+
 def theme_delete(theme):
     pass
     # remove everything that has a dependency to this theme
@@ -83,6 +92,8 @@ def theme_install_to_blog(installed_theme, blog):
     templates = json_obj["data"]
     kvs = json_obj["kv"]
 
+    # theme_ids = {}
+
     for t in templates:
 
         template = templates[t]["template"]
@@ -92,7 +103,6 @@ def theme_install_to_blog(installed_theme, blog):
             if name not in ("id"):
                 setattr(table_obj, name, template[name])
 
-        table_obj.theme = installed_theme
         table_obj.blog = blog
         table_obj.save()
 
@@ -105,7 +115,7 @@ def theme_install_to_blog(installed_theme, blog):
                 if name not in ("id"):
                     setattr(mapping_obj, name, mappings[mapping][name])
 
-            mapping_obj.template = table_obj
+            mapping_obj.template = table_obj.id
             mapping_obj.save()
 
     kv_index = {}
@@ -133,13 +143,13 @@ def theme_install_to_blog(installed_theme, blog):
 
     from core import cms
 
-    # TODO: use purge_blog instead
+    cms.purge_blog(blog)
 
     # for n in blog.pages():
-    cms.build_pages_fileinfos(blog.pages())
+    # cms.build_pages_fileinfos(blog.pages())
 
     # for n in blog.index_templates:
-    cms.build_indexes_fileinfos(blog.index_templates)
+    # cms.build_indexes_fileinfos(blog.index_templates)
 
 
 def site_create(**new_site_data):
