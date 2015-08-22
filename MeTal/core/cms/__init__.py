@@ -364,12 +364,6 @@ def save_page(page, user, blog=None):
 
         msg += ("Page <b>{}</b> saved.")
 
-    # SET TAGS
-
-    # when to do this?
-    # what happens when we delete a page?
-    # all tags for a page have to be deassigned.
-
     if request.forms.getunicode('tag_text') is not None:
         tag_text = json.loads(request.forms.getunicode('tag_text'))
         add_tags_to_page(tag_text, page)
@@ -465,7 +459,6 @@ def add_page_fileinfo(page, template_mapping, file_path,
             )
 
     except FileInfo.DoesNotExist:
-
         new_fileinfo = FileInfo.create(page=page,
             template_mapping=template_mapping,
             file_path=file_path,
