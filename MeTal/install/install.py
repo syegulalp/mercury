@@ -554,7 +554,7 @@ This will be used to identify the administrator on this installation.
             </div>
         </div>
         <div class="form-group">
-            <label for="db_port" class="col-sm-2 control-label">MySQL address</label>
+            <label for="db_port" class="col-sm-2 control-label">MySQL port</label>
             <div class="col-sm-7">
                 <input type="input" class="form-control" id="db_port" name="db_port" placeholder="IP port for database"
                 value="{{db_port}}">
@@ -659,7 +659,7 @@ def step(step):
         template_button = button(step, None, error_msg)
 
     return template(tpl,
-        settings=_settings,
+        settings=_s,
         step=step,
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
