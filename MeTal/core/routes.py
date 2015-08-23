@@ -78,6 +78,12 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
+@_route(BASE_PATH + "/blog/<blog_id:int>/erase-queue")
+def erase_queue(blog_id):
+    blog = get_blog(blog_id)
+    from core.models import Queue
+    delete_queue = Queue.delete().where(Queue.blog == blog)
+    return delete_queue.execute()
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/overwrite-theme")
 def overwrite_blog_theme(blog_id):
