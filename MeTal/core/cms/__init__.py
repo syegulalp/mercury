@@ -607,10 +607,7 @@ def build_file(f, blog):
     report.append("Output: " + pathname)
     encoded_page = page_text.encode('utf8')
 
-    print (f.file_path)
-
     split_path = f.file_path.rsplit('/', 1)
-    print (len(split_path))
 
     if len(split_path) > 1:
         path_to_check = blog.path + "/" + split_path[0]
