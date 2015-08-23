@@ -1183,7 +1183,7 @@ def blog_queue(blog_id):
     tags = template_tags(blog_id=blog.id,
             user=user)
 
-    paginator, queue_list = utils.generate_paginator(tags['queue'], request)
+    paginator, queue_list = utils.generate_paginator(tags.queue, request)
 
     tpl = template('queue/queue_ui',
         queue_list=queue_list,
