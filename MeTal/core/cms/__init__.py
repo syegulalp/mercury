@@ -765,7 +765,8 @@ def build_pages_fileinfos(pages):
             path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
             if path_string == '':
                 continue
-            master_path_string = path_string + "." + page.blog.base_extension
+            # master_path_string = path_string + "." + page.blog.base_extension
+            master_path_string = path_string
             add_page_fileinfo(page, t, master_path_string,
                 page.blog.url + "/" + master_path_string,
                 page.blog.path + '/' + master_path_string,

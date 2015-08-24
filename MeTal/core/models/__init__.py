@@ -659,6 +659,10 @@ class Page(BaseModel):
     author = user
 
     @property
+    def filename(self):
+        return self.basename + "." + self.blog.base_extension
+
+    @property
     def status_id(self):
         return page_status.id[self.status]
 

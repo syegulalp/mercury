@@ -1485,9 +1485,7 @@ def template_preview(template_id):
     if template.template_type == template_type.index:
         tags = template_tags(blog=template.blog)
     if template.template_type == template_type.page:
-        tags = template_tags(page=
-            Page.select().where(Page.blog == template.blog).order_by(Page.id.desc()).get()
-            )
+        tags = template_tags(page=template.blog.published_pages()[0])
 
     tpl_output = utils.tpl(template.body,
         **tags.__dict__)
