@@ -416,6 +416,9 @@ def template_edit(template_id):
 def template_edit_save(template_id):
     return ui.template_edit_save(template_id)
 
+@_route(BASE_PATH + '/template/<template_id:int>/preview')
+def template_preview(template_id):
+    return ui.template_preview(template_id)
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
