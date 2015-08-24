@@ -25,13 +25,13 @@
 
     <div class="form-group">
         <div class="btn-group">
-            <button type="submit" name="save" value="4" class="btn btn-sm btn-danger">Delete</button>
+            <button type="button" name="preview" id="preview" class="btn btn-sm btn-info">Preview</button>
         </div>
     </div>
 
     <div class="form-group">
         <div class="btn-group">
-            <button type="button" name="preview" id="preview" class="btn btn-sm btn-info">Preview</button>
+            <button type="submit" name="save" value="4" class="btn btn-sm btn-danger">Delete</button>
         </div>
     </div>
 </div>
