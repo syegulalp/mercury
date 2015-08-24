@@ -1478,6 +1478,22 @@ def template_edit_save(template_id):
 
     return template_edit_output(tags)
 
+def template_preview(template_id):
+
+    template = get_template(template_id)
+
+    if template.template_type == template_type.index:
+        tags = template_tags(blog=template.blog)
+    if template.template_type == template_type.page:
+        tags = template_tags(page=
+            Page.select().where(Page.blog == template.blog).order_by(Page.id.desc()).get()
+            )
+
+    tpl_output = utils.tpl(template.body,
+        **tags.__dict__)
+
+    return tpl_output
+
 def template_edit_output(tags):
 
     from core.models import (publishing_mode,
