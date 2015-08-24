@@ -39,6 +39,9 @@
     </div>
 
 </form>
+<script>var global={base:"{{settings.BASE_URL}}",template:"{{template.id}}",blog:"{{blog.id}}",
+static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}"}
+</script>
 % include('include/footer.tpl')
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.css">
