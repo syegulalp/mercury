@@ -560,6 +560,11 @@ $(window)
 						setTimeout(function() {
 							delayed_resize()
 						}, 50)
+						
+						$('#preview').on('click',function(){
+							window.open(global.base + "/template/" + global.template + "/preview", "preview_"
+										+ global.template);
+						});
 					}
 
 					if (editor != null) {
