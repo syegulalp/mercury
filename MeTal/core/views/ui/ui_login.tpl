@@ -41,33 +41,16 @@ body {
   border-top-right-radius: 0;
 }
 </style>
-
- <div class="container">
- 
-         <div id="messages" class="col-xs-12" xstyle="position: absolute; top:32px; right:8px;">
-        % if status:
-        <div class="alert alert-{{status.type}}" role="alert">{{!status.message}}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        </div>
-        %end
-        </div>
- 
-          <form class="form-signin" method="post">{{!csrf_token}}
+<div class="container">
+    % include('include/header_messages.tpl')
+    <form class="form-signin" method="post">{{!csrf_token}}
         <h2 class="form-signin-heading"><center>{{settings.PRODUCT_NAME}}</center></h2>
         <label for="inputEmail" class="sr-only">Email address</label>
         <input type="email" name="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
-        <!--
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" value="remember-me"> Remember me
-          </label>
-        </div>
-        -->
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-      </form>
-
-    </div>
+    </form>
+</div>
 </body>
 </html>
