@@ -94,7 +94,8 @@ def overwrite_blog_theme(blog_id):
         'templates.json' , "r", encoding='utf-8') as input_file:
         theme_string = input_file.read()
 
-    from core.models import get_default_theme, Struct
+    # from core.models import get_default_theme, Struct
+    from core.models import Struct
     # theme = get_default_theme()
     theme = Struct()
     theme.id = None
@@ -105,7 +106,6 @@ def overwrite_blog_theme(blog_id):
         cms.purge_fileinfos(blog.fileinfos)
         mgmt.erase_theme(blog)
         mgmt.theme_install_to_blog(theme, blog)
-
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
@@ -514,6 +514,10 @@ def blog_publish_process(blog_id):
 @_route(BASE_PATH + "/page/<page_id:int>/preview")
 def page_preview(page_id):
     return ui.page_preview(page_id)
+
+@_route(BASE_PATH + "/page/<page_id:int>/public-preview")
+def page_public_preview(page_id):
+    return ui.page_public_preview(page_id)
 
 '''
 Static routing.
