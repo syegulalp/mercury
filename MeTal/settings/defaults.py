@@ -61,6 +61,8 @@ ITEMS_PER_PAGE = 15
 MAX_BASENAME_LENGTH = 128
 
 DATABASE_TIMEOUT = 600000
+DATABASE_RETRIES = 10
+RETRY_INTERVAL = 1
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
