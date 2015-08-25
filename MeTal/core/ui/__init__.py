@@ -1323,11 +1323,18 @@ def blog_publish_process(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
+    # queue_jobs_waiting should report actual JOBS
+    # queue_control_jobs_waiting should report CONTROL JOBS
+    # both should return a tuple of the actual queue and the queue count
+
+    # get how many control jobs we have
     queue = Queue.select().where(Queue.blog == blog.id,
                 Queue.is_control == True)
 
-    if queue.count() == 0:
+    queue_count = queue.count()
+    if queue_count == 0:
 
+        # get how many regular jobs we have
         queue = Queue.select().where(Queue.blog == blog_id,
                 Queue.is_control == False)
 
@@ -1402,7 +1409,7 @@ def template_edit(template_id):
 
     auth.check_template_lock(blog)
 
-    response.set_header('Frame-Options', '')
+    utils.disable_protection()
 
     tags = template_tags(template_id=template_id,
                         user=user)
@@ -1654,9 +1661,22 @@ def page_preview(page_id):
     tags = template_tags(page=page)
     page_text = cms.generate_page_text(f, tags)
 
-    response.set_header('Frame-Options', '')
+    utils.disable_protection()
 
     return page_text
+
+@transaction
+def page_public_preview(page_id):
+
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+
+    # generate the page text
+    # write it to the preview URL, same as the page w/"_preview" prepended to it
+    # check to make sure that preview URL has no name collisions
+    # return a redirect to the successfully-written URL
+
 
 @transaction
 def page_revisions(page_id):
@@ -1709,7 +1729,6 @@ def page_media_upload_confirm(page_id):
 @transaction
 def page_media_upload(page_id):
 
-    # with db.atomic():
     user = auth.is_logged_in(request)
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
