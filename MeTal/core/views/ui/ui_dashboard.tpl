@@ -3,7 +3,7 @@
 <div class="xcontainer">
 <div class="col-xs-12">
 	<h3>Hello, {{user.name}}</h3><hr/>
-	<div class="col-sm-9" id="recent_pages">
+	<div class="col-sm-9" id="your_recent_pages">
 	    <h4>Recently edited pages:</h4>
 	    <table class='table table-striped table-hover'>
 	    % if recent_pages.count()>0:
@@ -29,6 +29,15 @@
 	    </table>
 	    <hr/>
    </div>
+   <div class="col-sm-3" id="your_actions">
+        <h4>Create a new page on:</h4>
+        <ul>
+        %for blog in your_blogs:
+            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/newpage">{{!blog.as_text}}</a>
+        %end
+        </ul>
+        <hr/>
+   </div>   
    <div class="col-sm-3" id="your_blogs">
         <h4>Blogs you contribute to:</h4>
         <ul>
