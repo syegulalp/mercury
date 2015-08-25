@@ -47,6 +47,7 @@ template_type.page = "Page"
 template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
+template_type.ssi = "Server-side include"
 
 publishing_mode = Struct()
 publishing_mode.immediate = "Immediate"
@@ -1454,8 +1455,7 @@ class Queue(BaseModel):
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
 
-def queue_jobs_waiting(blog=None, site=None):
-    from core.cms import job_type as jt
+def all_queue_jobs(blog=None, site=None):
 
     all_jobs = Queue.select()
 
@@ -1464,12 +1464,28 @@ def queue_jobs_waiting(blog=None, site=None):
     if site is not None:
         all_jobs = all_jobs.select().where(Queue.blog == site)
 
+    return all_jobs
+
+def queue_jobs_waiting(blog=None, site=None):
+    from core.cms import job_type as jt
+
+    all_jobs = all_queue_jobs(blog, site)
+
     publish_jobs = all_jobs.select().where(Queue.is_control == False).count()
     insert_jobs = all_jobs.select(Queue, fn.SUM(Queue.data_integer).alias('total')).where(
         Queue.is_control == True and Queue.job_type == jt.insert).get()
 
     return int(0 if publish_jobs is None else publish_jobs) + int(
         0 if insert_jobs.total is None else insert_jobs.total)
+
+def queue_control_jobs(blog=None, site=None):
+
+    all_jobs = all_queue_jobs(blog, site)
+
+    control_jobs = all_jobs.select().where(Queue.is_control == True).count()
+
+    return control_jobs
+
 
 class Permission(BaseModel):
     user = ForeignKeyField(User, index=True)
@@ -1508,7 +1524,6 @@ class Plugin(BaseModel):
     @property
     def version(self):
         return self._get_plugin_property('__version__', '')
-
     @property
     def _friendly_name(self):
         return self._get_plugin_property('__plugin_name__', '')
