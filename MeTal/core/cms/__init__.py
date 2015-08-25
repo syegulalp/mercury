@@ -548,6 +548,11 @@ def generate_page_text(f, tags):
     '''
     tp = f.template_mapping.template
 
+    '''
+    TODO: try to find a way to cache the template for multi-job runs
+    template = tpl_cached(tp.id), stash that in a dict
+    '''
+
     try:
         return tpl(tp.body,
             **tags.__dict__)
