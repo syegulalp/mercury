@@ -3,7 +3,7 @@ import urllib, re, html
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, BASE_URL_ROOT)
 
-from core.libs.bottle import redirect, template, response
+from core.libs.bottle import redirect, response
 
 import hashlib, base64
 
@@ -206,6 +206,18 @@ def tpl(*args, **ka):
     x = tp.render(ka)
     return x[1:]
 
+tp_cache = {}
+
+def tpl2(template, **ka):
+    try:
+        template_to_render = tp_cache[template.blog.id][template.id]
+    except KeyError:
+        template_to_render = MetalTemplate('\n' + template.body, tags=ka)
+        tp_cache[template.blog.id][template.id] = template_to_render
+    x = template_to_render.render(ka)
+    return x[1:]
+
+
 def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
 
     '''
@@ -251,7 +263,6 @@ def generate_date_mapping(date_value, tags, path_string):
     # path_string = path_string.replace('/', _sep)
 
     return path_string
-
 
 def postpone(function):
     '''
@@ -328,4 +339,4 @@ def raise_request_limit():
 
 def disable_protection():
     response.set_header('Frame-Options', '')
-    response.set_header('Content-Security-Policy', '')
+    # response.set_header('Content-Security-Policy', '')
