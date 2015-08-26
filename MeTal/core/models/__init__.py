@@ -17,8 +17,6 @@ import settings as _settings
 from core import utils as _utils
 
 
-
-
 class Struct(object):
     pass
 
@@ -47,7 +45,6 @@ template_type.page = "Page"
 template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
-template_type.ssi = "Server-side include"
 
 publishing_mode = Struct()
 publishing_mode.immediate = "Immediate"
@@ -55,6 +52,7 @@ publishing_mode.batch_only = "Batch only"
 publishing_mode.manual = "Manual"
 publishing_mode.do_not_publish = "Do not publish"
 publishing_mode.include = "Include"
+publishing_mode.ssi = "Server-side include"
 
 publishing_mode.description = {
         publishing_mode.immediate:{
@@ -72,7 +70,11 @@ publishing_mode.description = {
             'description':'Changes are never published.'},
         publishing_mode.include:{
             'label':'default',
-            'description':'Changes are only published when the include is present in another template.'
+            'description':'Changes are published as includes present in another template.'
+            },
+        publishing_mode.ssi:{
+            'label':'info',
+            'description':'Changes are published to an element to be used as a server-side include.'
             }
     }
 
@@ -80,8 +82,9 @@ publishing_mode.modes = (
     publishing_mode.immediate,
     publishing_mode.batch_only,
     publishing_mode.manual,
-    publishing_mode.do_not_publish,
-    publishing_mode.include
+    publishing_mode.include,
+    publishing_mode.ssi,
+    publishing_mode.do_not_publish
     )
 
 page_status_list = (
@@ -353,7 +356,8 @@ class SiteBase(BaseModel):
     base_index = CharField(null=False, default='index')
     base_extension = CharField(null=False, default='html')
     description = TextField()
-    media_path = TextField(default='/media')
+    media_path = TextField(default='media')
+    ssi_path = TextField(default='_include')
     editor_css = TextField(null=True)
 
 
@@ -451,6 +455,12 @@ class Site(SiteBase, ConnectionBase):
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
+
+    def ssi(self, ssi_name):
+        ssi = self.templates(template_type.include).select().where(
+            Template.title == ssi_name).get()
+        return '<!--#include virtual="/{}" -->'.format(
+            ssi.default_mapping.fileinfos.get().file_path)
 
 
     @property
@@ -592,6 +602,12 @@ class Blog(SiteBase):
             Template.title == name,
             Template.template_type == template_type.archive)
         archive.default_mapping.fileinfos
+
+    @property
+    def ssi_templates(self):
+        ssi_templates = self.templates(template_type.include).select().where(
+            Template.publishing_mode == publishing_mode.ssi)
+        return ssi_templates
 
     @property
     def archive_templates(self):
@@ -1356,7 +1372,8 @@ class Media(BaseModel):
     @property
     def preview_for_listing(self):
         return '''
-<a href="media/{}/edit"><img style="max-height:50px" src="{}"></a>'''.format(
+<a href="{}/media/{}/edit"><img style="max-height:50px" src="{}"></a>'''.format(
+    self.blog.url,
     self.id, self.preview_url)
 
 
