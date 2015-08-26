@@ -17,6 +17,9 @@ try:
 except:
     raise
 
+def db_is_locked():
+    return "database is locked"
+
 def recreate_database():
 
     db.close()

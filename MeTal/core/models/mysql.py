@@ -3,15 +3,19 @@ from core.libs import bottle
 _stderr = bottle._stderr
 from core.models import Page
 
+
+def db_is_locked():
+    return "database is locked"
+
 def make_db_connection():
     _stderr ("Using MySQL database: {}\n".format(settings.DB_ID))
     if settings.RESET:
         recreate_database()
-        
+
 def recreate_database():
     from core.models import init_db
     init_db.recreate_database()
-    
+
 def create_index_table():
     pass
 
@@ -31,7 +35,7 @@ def dataset_connection():
         settings.DB_ADDRESS,
         settings.DB_PORT,
         settings.DB_ID)
-    return dataset_connection 
+    return dataset_connection
 
 def pre_import():
     return '''
@@ -44,15 +48,15 @@ SET FOREIGN_KEY_CHECKS = 1, UNIQUE_CHECKS=1; COMMIT;
 '''
 
 def clear_table(table_name):
-    #return "TRUNCATE TABLE `{}`;".format(table_name); 
-    #return "ALTER TABLE `{}` DISABLE KEYS;".format(table_name, table_name);
-    #return "ALTER TABLE `{}` DISABLE KEYS; TRUNCATE TABLE `{}`; ".format(table_name, table_name);
+    # return "TRUNCATE TABLE `{}`;".format(table_name);
+    # return "ALTER TABLE `{}` DISABLE KEYS;".format(table_name, table_name);
+    # return "ALTER TABLE `{}` DISABLE KEYS; TRUNCATE TABLE `{}`; ".format(table_name, table_name);
     return ""
-    
+
 def set_table(table_name):
     return ""
-    #return "ALTER TABLE `{}` ENABLE KEYS; ".format(table_name);
-    
+    # return "ALTER TABLE `{}` ENABLE KEYS; ".format(table_name);
+
 
 def post_recreate():
     return '''
@@ -61,21 +65,21 @@ ALTER TABLE `page` ADD FULLTEXT INDEX `page_text` (`text`);
 '''
 
 def site_search(search_terms_enc, site):
-    
+
     return (Page.select(Page.id)
         .where(Page.blog.site == site,
             Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
         .order_by(Page.id.desc()).tuples())
-    
-def blog_search(search_terms_enc,blog):
-    
+
+def blog_search(search_terms_enc, blog):
+
     return (Page.select(Page.id)
         .where(Page.blog == blog,
             Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
         .order_by(Page.id.desc()).tuples())
-    
+
 def media_search():
-    pass        
+    pass
 
 
 def db_warnings():
