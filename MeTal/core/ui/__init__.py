@@ -1720,7 +1720,7 @@ def page_media_upload_confirm(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        file_path = page.blog.local_path + page.blog.media_path + _sep + x.filename
+        file_path = page.blog.local_path + _sep + page.blog.media_path + _sep + x.filename
         if _exists(file_path):
             pass
         else:
@@ -1737,7 +1737,7 @@ def page_media_upload(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        media_path = page.blog.local_path + page.blog.media_path
+        media_path = page.blog.local_path + _sep + page.blog.media_path
         file_path = media_path + _sep + x.filename
         if _exists(file_path):
             from core.error import FileExistsError
