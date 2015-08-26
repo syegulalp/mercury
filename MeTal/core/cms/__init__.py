@@ -51,8 +51,10 @@ job_insert_type = Struct()
 
 job_insert_type.page_fileinfo = "page_fileinfos"
 job_insert_type.index_fileinfo = "index_fileinfos"
+job_insert_type.ssi_fileinfo = "ssi_fileinfos"
 job_insert_type.page = "page"
 job_insert_type.index = "index"
+job_insert_type.ssi = "ssi"
 
 
 def build_page(q):
@@ -252,30 +254,43 @@ def queue_page_archive_actions(page):
                           site=page.blog.site,
                           data_integer=fileinfo_mapping.id)
 
+
+def queue_ssi_actions(blog):
+
+    templates = Template.select().where(Template.blog == blog,
+        Template.template_type == template_type.include,
+        Template.publishing_mode == publishing_mode.ssi)
+
+    if templates.count() == 0:
+        return None
+
+    mappings = TemplateMapping.select().where(TemplateMapping.template << templates)
+
+    fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
+
+    for f in fileinfos:
+        push_to_queue(job_type=job_type.include,
+            priority=1,
+            blog=blog,
+            site=blog.site,
+            data_integer=f.id)
+
 def queue_index_actions(blog, include_manual=False):
     '''
     Pushes to the publishing queue all the index pages for a given blog
     that are marked for Immediate publishing.
     '''
-    # print (include_manual)
-    # try:
     templates = Template.select().where(Template.blog == blog,
         Template.template_type == template_type.index,
         Template.publishing_mode != publishing_mode.do_not_publish)
-
-    # print ("I:", templates.count())
 
     if include_manual is False:
         templates = templates.select().where(
             Template.publishing_mode == publishing_mode.immediate)
 
     if templates.count() == 0:
-        # raise Template.DoesNotExist
-        # except Template.DoesNotExist:
         raise Template.DoesNotExist("No valid index templates exist for blog {}.".format(
             blog.for_log))
-
-    # else:
 
     mappings = TemplateMapping.select().where(TemplateMapping.template << templates)
 
@@ -1016,6 +1031,9 @@ def process_queue_insert(queue_control, blog):
 
         result = index_list.count() - index
 
+    if queue_control.data_string == 'ssi_fileinfos':
+        pass
+
     queue_control.is_running = False
     queue_control.save()
 
@@ -1081,6 +1099,9 @@ def build_mapping_xrefs(mapping_list):
         build_archives_fileinfos(mapping.template.blog.pages())
     if 'Index' in map_types:
         build_indexes_fileinfos(mapping.template.blog.index_templates)
+    if 'Include' in map_types:
+        print (mapping.template.blog.ssi_templates.count())
+        build_indexes_fileinfos(mapping.template.blog.ssi_templates)
 
 def purge_fileinfos(fileinfos):
     '''
@@ -1180,7 +1201,7 @@ def register_media(filename, path, user, **ka):
 
         media.blog = page.blog
         media.site = page.blog.site
-        media.url = page.blog.url + page.blog.media_path + "/" + media.filename
+        media.url = page.blog.url + "/" + page.blog.media_path + "/" + media.filename
         media.save()
 
     return media
