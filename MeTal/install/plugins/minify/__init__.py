@@ -10,33 +10,35 @@ __compatibility__ = 0
 def install():
     pass
 
+
 def load():
 
     sidebar = {
-            'add_to':'edit_page',
-            'panel':{
-                'template':'\nThis is a test!',
-                'title':'Test',
-                'label':'test',
-                'icon':'picture'
-                },
+        'add_to': 'edit_page',
+        'panel': {
+            'template': '\nThis is a test!',
+            'title': 'Test',
+            'label': 'test',
+            'icon': 'picture'
+        },
 
-            }
+    }
 
     from .lib import minify
 
     return ({
-            'action':'after',
-            'module':'core.cms',
-            'function':'generate_page_text',
-            'wrap':minify
-        },
-        {
-            'action':'exec',
-            'module':'core.ui_mgr',
-            'function':'register_sidebar',
-            'data':sidebar
+            'action': 'after',
+            'module': 'core.cms',
+            'function': 'generate_page_text',
+            'wrap': minify
+            },
+            {
+            'action': 'exec',
+            'module': 'core.ui_mgr',
+            'function': 'register_sidebar',
+            'kwargs': sidebar
             })
+
 
 def uninstall():
     pass

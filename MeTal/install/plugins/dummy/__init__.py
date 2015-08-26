@@ -6,11 +6,14 @@ __version__ = '0.1'
 __license__ = 'MIT'
 __compatibility__ = 0
 
+
 def install():
     pass
+
 
 def uninstall():
     pass
 
+
 def load():
-    return {}
+    return ({})

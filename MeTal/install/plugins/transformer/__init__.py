@@ -6,18 +6,21 @@ __version__ = '0.1'
 __license__ = 'MIT'
 __compatibility__ = 0
 
+
 def install():
     pass
+
 
 def uninstall():
     pass
 
+
 def load():
-    from .lib import transform 
+    from .lib import transform
 
     return ({
-        'action':'before',
-        'module':'core.cms',
-        'function':'generate_page_text',
-        'wrap':transform
-        },)
+        'action': 'before',
+        'module': 'core.cms',
+        'function': 'generate_page_text',
+        'wrap': transform
+    },)

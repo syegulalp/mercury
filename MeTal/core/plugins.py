@@ -151,7 +151,7 @@ def activate_plugins():
                 module = importlib.import_module(func['module'])
                 func_to_wrap = module.__dict__[func['function']]
                 if action == 'exec':
-                    func_to_wrap(**func['data'])
+                    func_to_wrap(**func['kwargs'])
                 else:
                     func_wrapper = func['wrap']
                     module.__dict__[func['function']] = action(func_wrapper)(func_to_wrap)
