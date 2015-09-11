@@ -162,3 +162,11 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.img-listing-preview {
+	max-height: 100px;
+}
+
+.img-edit-preview {
+	max-height: 400px;
+}
