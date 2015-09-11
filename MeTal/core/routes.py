@@ -5,10 +5,10 @@ import urllib
 from core import (mgmt, ui, auth)
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (
-    Bottle, static_file, request, response, abort, template)
-from core.models import (db, get_blog, get_theme, get_media, FileInfo)
+    Bottle, static_file, request, response, abort, template, redirect)
+from core.models import (db, get_page, get_blog, get_theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
-from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
+from settings import (BASE_URL, BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep)
 
@@ -83,7 +83,52 @@ def erase_queue(blog_id):
     blog = get_blog(blog_id)
     from core.models import Queue
     delete_queue = Queue.delete().where(Queue.blog == blog)
-    return delete_queue.execute()
+    delete_queue.execute()
+    return "Queue for blog {} erased".format(blog.id)
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/delete")
+def delete_blog(blog_id):
+    with db.atomic():
+        blog = get_blog(blog_id)
+        blog.delete_instance(recursive=True)
+    return "Blog {} deleted".format(blog_id)
+
+@_route(BASE_PATH + "/page/<page_id:int>/reparent/<blog_id:int>")
+def reparent_page(page_id, blog_id):
+    with db.atomic():
+        page = get_page(page_id)
+        blog = get_blog(blog_id)
+        page.blog = blog.id
+        page.text += "\n"  # stupid hack, we should have a force-save option
+        # also, have .save options kw, not args
+
+        # Reparent any existing media
+        # Delete any existing categories
+        # Migrate/re-add any existing tags
+        # Remove and regenerate basename, permalink, etc.
+        # Create new fileinfo
+
+        from core.error import PageNotChanged
+        try:
+            page.save(page.user)
+        except PageNotChanged:
+            pass
+    return "OK"
+    # redirect(BASE_URL + '/page/{}/edit'.format(page.id))
+
+@_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
+def refresh_theme(theme_id):
+    '''
+    imports JSON and refreshes the selected theme with it
+    '''
+    with open(APPLICATION_PATH + _sep + 'install' + _sep +
+        'templates.json' , "r", encoding='utf-8') as input_file:
+        theme_string = input_file.read()
+
+    with db.atomic():
+        theme = get_theme(theme_id)
+        theme.json = theme_string
+        theme.save()
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/overwrite-theme")
 def overwrite_blog_theme(blog_id):
@@ -514,6 +559,10 @@ def blog_publish_process(blog_id):
 @_route(BASE_PATH + "/page/<page_id:int>/preview")
 def page_preview(page_id):
     return ui.page_preview(page_id)
+
+@_route(BASE_PATH + "/page/<page_id:int>/delete-preview")
+def delete_page_preview(page_id):
+    return ui.delete_page_preview(page_id)
 
 @_route(BASE_PATH + "/page/<page_id:int>/public-preview")
 def page_public_preview(page_id):
