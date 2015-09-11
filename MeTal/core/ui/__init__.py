@@ -608,18 +608,21 @@ def blog_create(site_id):
 
 def blog_create_save(site_id):
 
-    user = auth.is_logged_in(request)
-    site = get_site(site_id)
-    permission = auth.is_site_admin(user, site)
+    with db.atomic():
+        user = auth.is_logged_in(request)
+        site = get_site(site_id)
+        permission = auth.is_site_admin(user, site)
 
-    new_blog = mgmt.blog_create(
-        site=site,
-        name=request.forms.getunicode('blog_name'),
-        description=request.forms.getunicode('blog_description'),
-        url=request.forms.getunicode('blog_url'),
-        path=request.forms.getunicode('blog_path'),
-        theme=get_default_theme(),
-        )
+        # return (get_default_theme().json)
+
+        new_blog = mgmt.blog_create(
+            site=site,
+            name=request.forms.getunicode('blog_name'),
+            description=request.forms.getunicode('blog_description'),
+            url=request.forms.getunicode('blog_url'),
+            path=request.forms.getunicode('blog_path'),
+            theme=get_default_theme(),
+            )
 
     redirect(BASE_URL + "/blog/" + str(new_blog.id))
 
@@ -1601,6 +1604,9 @@ def page_edit_save(page_id):
     user = auth.is_logged_in(request)
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
+
+    # clean_preview = delete_page_preview(page_id)
+
     tags = cms.save_page(page, user, page.blog)
 
     from core.cms import save_action_list
@@ -1657,13 +1663,50 @@ def page_preview(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
 
-    f = page.default_fileinfo
-    tags = template_tags(page=page)
-    page_text = cms.generate_page_text(f, tags)
+    preview_file = page.preview_file
+    preview_fileinfo = page.default_fileinfo
+    split_path = preview_fileinfo.file_path.rsplit('/', 1)
+
+    preview_fileinfo.file_path = preview_fileinfo.file_path = (
+         split_path[0] + "/" +
+         preview_file
+         )
+
+    cms.build_file(preview_fileinfo, page.blog)
 
     utils.disable_protection()
 
-    return page_text
+    tpl = template('ui/ui_preview',
+        page=page,
+        page_url=preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file)
+
+    return tpl
+
+@transaction
+def delete_page_preview(page_id):
+
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+
+    preview_file = page.preview_file
+    preview_fileinfo = page.default_fileinfo
+    split_path = preview_fileinfo.file_path.rsplit('/', 1)
+
+    preview_fileinfo.file_path = preview_fileinfo.file_path = (
+         split_path[0] + "/" +
+         preview_file
+         )
+
+    import os
+    try:
+        os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
+    except BaseException as e:
+        response.status = 500
+        return str(e)
+
+    return ''
+
 
 @transaction
 def page_public_preview(page_id):
@@ -1840,6 +1883,8 @@ def page_revision_restore(page_id, revision_id):
     referer = BASE_URL + "/blog/" + str(page.blog.id)
 
     from core.cms import save_action_list
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(page.kvs())
 
     tpl = template('edit/edit_page_ui',
         status_badge=status_badge,
@@ -1851,6 +1896,7 @@ def page_revision_restore(page_id, revision_id):
             status_badge=status_badge,
             save_action=save_action,
             save_action_list=save_action_list,
+            kv_ui=kv_ui_data,
             **tags.__dict__
             ),
         **tags.__dict__)
