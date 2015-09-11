@@ -3,13 +3,14 @@ from core.log import logger
 import json
 
 from core.models import (TemplateMapping, Template, System, KeyValue,
-    Permission, Site, Blog, User, Category, Theme, get_theme)
+    Permission, Site, Blog, User, Category, Theme)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
 from core.libs.playhouse.dataset import DataSet
 
 import os, datetime
+from core.models import get_default_theme
 
 def login_verify(email, password):
 
@@ -25,21 +26,46 @@ def login_verify(email, password):
         user.save()
         return user
 
+# move this into the theme schema object,
+# or at least the theme module
+def get_kvs_for_theme(theme):
+    from core.theme import json_dump
+    theme_kvs = []
+
+    kv_list = []
+
+    top_kvs = KeyValue.select().where(
+        KeyValue.object == 'Theme',
+        KeyValue.objectid == theme.id,
+        KeyValue.is_schema == True)
+
+    for n in top_kvs:
+        kv_list.append(n)
+
+    while len(kv_list) > 0:
+        theme_kvs.append(kv_list[0].id)
+        next_kvs = KeyValue.select().where(
+            KeyValue.parent == kv_list[0],
+            KeyValue.is_schema == True)
+        for f in next_kvs:
+            kv_list.append(f)
+        del kv_list[0]
+
+    print (theme_kvs)
+    return theme_kvs
+
 def erase_theme(blog):
+
+    del_kvs = get_kvs_for_theme(blog.theme)
+    kvs_to_delete = KeyValue.delete().where(KeyValue.id << del_kvs)
+    p = kvs_to_delete.execute()
 
     mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << blog.template_mappings())
     m = mappings_to_delete.execute()
     templates_to_delete = Template.delete().where(Template.id << blog.templates())
     n = templates_to_delete.execute()
-    return m, n
+    return p, m, n
 
-
-def theme_delete(theme):
-    pass
-    # remove everything that has a dependency to this theme
-    # TemplateMapping, Template, FileInfo, FileInfoContext
-    # we should write a function to purge a template set from a blog
-    # and invoke that
 
 def theme_create(**new_theme_data):
 
@@ -74,15 +100,7 @@ def theme_apply_to_blog(theme, blog):
 
     from core import cms
     cms.purge_fileinfos(blog.fileinfos)
-
-    mappings_to_remove = TemplateMapping.delete().where(
-        TemplateMapping.template << blog.templates())
-    mappings_to_remove.execute()
-
-    theme_to_remove = Template.delete().where(
-        Template.blog == blog)
-    theme_to_remove.execute()
-
+    erase_theme(blog)
     theme_install_to_blog(theme, blog)
 
 
@@ -145,12 +163,6 @@ def theme_install_to_blog(installed_theme, blog):
 
     cms.purge_blog(blog)
 
-    # for n in blog.pages():
-    # cms.build_pages_fileinfos(blog.pages())
-
-    # for n in blog.index_templates:
-    # cms.build_indexes_fileinfos(blog.index_templates)
-
 
 def site_create(**new_site_data):
 
@@ -177,7 +189,7 @@ def blog_create(**new_blog_data):
     new_blog.url = new_blog_data['url']
     new_blog.path = new_blog_data['path']
     new_blog.local_path = new_blog.path
-    new_blog.theme = new_blog_data['theme']
+
 
     new_blog.save()
 
@@ -188,8 +200,10 @@ def blog_create(**new_blog_data):
 
     new_blog_default_category.save()
 
-    # template installation should be its own function
-    # install whatever the currently set system default templates are
+    new_blog_theme = new_blog_data.get('theme', None)
+    if new_blog_theme is not None:
+        theme_install_to_blog(new_blog_theme, new_blog)
+        new_blog.save()
 
     user = user_from_ka(**new_blog_data)
 
