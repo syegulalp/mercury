@@ -10,7 +10,7 @@ from core.libs.peewee import DeleteQuery
 import json
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
-    Category, PageCategory, FileInfo, Queue, template_tags, get_blog, User, Blog, Site,
+    Category, PageCategory, FileInfo, template_tags, get_blog, User, Blog, Site,
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue, queue_jobs_waiting)
 
 from settings import MAX_BATCH_OPS, BASE_URL
@@ -1128,6 +1128,8 @@ def purge_blog(blog):
     into queueable behaviors, so that these operations don't time out.
 
     '''
+
+    # TODO: create fileinfos for SSIs if any
 
     import time
 
