@@ -14,8 +14,7 @@
         <label for="media_name" class="col-sm-2 control-label">Image</label>
         <div class="col-sm-9">
             <img id="media_name"
-            class="img-responsive"
-            xstyle="max-height:300px;max-width:600px" 
+            class="img-responsive img-edit-preview"
             src="{{media.preview_url}}">
             <p>
         </div>
