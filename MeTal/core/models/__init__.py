@@ -223,10 +223,40 @@ class BaseModel(Model):
 
         return kv_list
 
-    def kvs(self, key=None, context=None):
+    def _kvs(self, key=None, context=None):
+        '''
+        1) first, look at the object parent level for any existing parent keys
+        2) next, look at the object level for any keys that match
+        3) next, go up a level and look for parents that have children on the object level
+        4) repeat until we hit the ceiling
+        5) finally, look for any keys directly on the object
+        '''
 
-        # need context object
-        # e.g., for a page tag that only shows up on certain blogs
+        kvs = []
+
+        src_object = self
+        object_name = src_object.__class__.__name__
+        original_object_name = object_name
+
+        object_parent = src_object.parent
+
+        parent_keys = KeyValue.select().where(
+            KeyValue.object == object_parent.__class__.__name__,
+            KeyValue.parent_id == object_parent.id)
+
+        for n in parent_keys:
+            key_match = KeyValue.select().where(
+                KeyValue.parent_id == n.id)
+            kvs.append([n, key_match])
+        return kvs
+
+    def kvs(self, key=None, context=None):
+        '''
+        Looks for keys assigned to a given object.
+        Goes up the chain to find where the top-level assignment
+        of a given key might be.
+
+        '''
 
         object_name = self.__class__.__name__
         original_object_name = object_name
@@ -249,6 +279,7 @@ class BaseModel(Model):
 
                     kv_key = kv_all.select().where(
                         KeyValue.key == key)
+
                 else:
                     kv_key = kv_all.select()
 
@@ -265,6 +296,10 @@ class BaseModel(Model):
                         break
             try:
                 object_name = parent_obj[object_name]
+                # TODO: follow inheritance path in actual objects, not in KVs,
+                # for when we are doing looksups
+                # e.g., for page, look in page.blog,
+                # check for anything that matches that. and so on.
             except KeyError:
                 raise KeyError('Key {} not found in {} (searched through to {}).'.format(
                     key, original_object_name, object_name)
@@ -373,7 +408,16 @@ class Theme(BaseModel):
     description = TextField()
     json = TextField(null=True)
 
+    @property
+    def parent(self, context):
+        if context.__class__.__name__ == 'Blog':
+            return context.site
+
 class Site(SiteBase, ConnectionBase):
+
+    @property
+    def parent(self, context=None):
+        return System()
 
     @property
     def link_format(self):
@@ -456,6 +500,10 @@ class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
 
+    @property
+    def parent(self, context=None):
+        return self.theme
+
     def ssi(self, ssi_name):
         ssi = self.templates(template_type.include).select().where(
             Template.title == ssi_name).get()
@@ -535,6 +583,14 @@ class Blog(SiteBase):
         published_pages = self.pages().select().where(Page.status == page_status.published)
 
         return published_pages
+
+    def scheduled_pages(self, due=False):
+
+        scheduled_pages = self.pages().select().where(Page.status == page_status.scheduled)
+        if due is True:
+            scheduled_pages = scheduled_pages.select().where(Page.publication_date >= datetime.datetime.now())
+
+        return scheduled_pages
 
     def last_n_pages(self, count=0):
         '''
@@ -675,6 +731,18 @@ class Page(BaseModel):
     currently_edited_by = IntegerField(null=True)
     author = user
 
+    @property
+    def parent(self, context=None):
+        return self.blog
+
+    @property
+    def preview_file(self):
+
+        import zlib
+        split_path = self.default_fileinfo.file_path.rsplit('/', 1)
+        return ('preview-' +
+            str(zlib.crc32(split_path[1].encode('utf-8'), 0xFFFF)) +
+            "." + self.blog.base_extension)
     @property
     def filename(self):
         return self.basename + "." + self.blog.base_extension
@@ -1075,6 +1143,17 @@ class KeyValue(BaseModel):
     is_unique = BooleanField(default=False)
     value_type = CharField(max_length=64)
 
+    @property
+    def key_parent(self):
+        try:
+            schema = self.select().where(KeyValue.key == self.key,
+            KeyValue.object == self.object,
+            KeyValue.objectid == 0,
+            KeyValue.is_schema == True).get()
+        except KeyValue.DoesNotExist:
+            return None
+        return schema
+
     def children(self, field=None, value=None):
         if self.is_schema is False:
             return None
@@ -1123,6 +1202,7 @@ class Tag(BaseModel):
             Page.id << tagged_pages)
 
         return in_pages
+
 
     @property
     def for_listing(self):
@@ -1230,6 +1310,26 @@ class Template(BaseModel):
             TemplateMapping.is_default == True).get()
         return default_mapping
 
+
+class TemplateRevision(Template, RevisionMixin):
+    template_id = IntegerField(null=False)
+    is_backup = BooleanField(default=False)
+    change_note = TextField(null=True)
+    saved_by = IntegerField(null=True)
+
+    @property
+    def saved_by_user(self):
+        saved_by_user = get_user(user_id=self.saved_by)
+        if saved_by_user is None:
+            dead_user = User(name='Deleted user (ID #' + str(self.saved_by) + ')',
+                id=saved_by_user)
+            return dead_user
+        else:
+            return saved_by_user
+
+
+    def save(self, user, current_revision, is_backup=False, change_note=None):
+        pass
 
 class TemplateMapping(BaseModel):
 
@@ -1371,10 +1471,9 @@ class Media(BaseModel):
 
     @property
     def preview_for_listing(self):
-        return '''
-<a href="{}/media/{}/edit"><img style="max-height:50px" src="{}"></a>'''.format(
-    self.blog.url,
-    self.id, self.preview_url)
+        return '''<a href="{}"><img class="img-responsive img-listing-preview" src="{}"></a>'''.format(
+            self.link_format,
+            self.preview_url)
 
 
 class MediaAssociation(BaseModel):
