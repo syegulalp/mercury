@@ -32,7 +32,7 @@
                 </tr>
             </thead>
             % if rowset.count()==0:
-            <tr><td colspan="{{len(cols)+2}}">
+            <tr><td colspan="{{len(cols)+3}}">
                 <center>{{colset['none']}}</center>
             </td></tr>
             % else:
