@@ -916,6 +916,7 @@ def publish_blog(blog_id):
     loop through all pages, publish
     eventually a rewrite of republish_blog below, or just a rebadging
     '''
+    pass
 
 def republish_blog(blog_id):
 
@@ -933,6 +934,8 @@ def republish_blog(blog_id):
         queue_page_actions(p, True)
 
     queue_index_actions(blog, True)
+
+    queue_ssi_actions(blog)
 
     end = time.clock()
 
@@ -1147,6 +1150,11 @@ def purge_blog(blog):
         fileinfocontexts_purged,
         erase - begin
         ))
+
+    includes_to_insert = blog.ssi_templates
+
+    includes_inserted = build_indexes_fileinfos(includes_to_insert)
+    report.append("<hr/>{} server-side include objects created.".format(includes_inserted))
 
     pages_to_insert = blog.pages()
     pages_inserted = build_pages_fileinfos(pages_to_insert)
