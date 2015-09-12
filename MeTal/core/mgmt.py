@@ -253,8 +253,11 @@ def blog_settings_save(request, blog, user):
         if blog_path is not None:
             blog_path = blog_path.rstrip('/')
             blog.path = blog_path
+            blog.local_path = blog_path
 
-        # TODO: validate this path
+        # TODO: validate file path and also figure out
+        # if we're going to use path and local_path for
+        # different functions after all
 
         blog_base_extension = _forms.getunicode('blog_base_extension')
         if blog_base_extension is not None:
