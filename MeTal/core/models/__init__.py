@@ -384,10 +384,10 @@ class User(BaseModel):
 
 class SiteBase(BaseModel):
 
-    name = TextField()
-    url = CharField()
-    path = EnforcedCharField(index=True, unique=True)
-    local_path = EnforcedCharField(index=True, unique=True)
+    name = TextField(null=False)
+    url = CharField(null=False)
+    path = EnforcedCharField(index=True, unique=True, null=False)
+    local_path = EnforcedCharField(index=True, unique=True, null=False)
     base_index = CharField(null=False, default='index')
     base_extension = CharField(null=False, default='html')
     description = TextField()
