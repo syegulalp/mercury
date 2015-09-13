@@ -13,6 +13,13 @@
 <span class="glyphicon glyphicon-{{status.icon}}"></span>
 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 {{!status.message}}
+% if status.message_list is not None:
+<ul>
+% for msg in status.message_list:
+<li>{{msg}}</li>
+% end
+</ul>
+% end
 % if status.confirm is not None:
 <hr/>
 <form id="confirm_form" name="confirm_form" method="post">{{!csrf_token}}
@@ -25,5 +32,5 @@ value="{{status.confirm[1]}}">Yes, I want to do this</button>
 </form>
 % end
 </div>
-%end
+% end
 </div>
