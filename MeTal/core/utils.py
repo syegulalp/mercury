@@ -36,6 +36,11 @@ class Status:
     '''
     Used to create status messages for AJAX UI.
     '''
+    status_types = {'success':'ok-sign',
+        'info':'info-sign',
+        'warning':'exclamation-sign',
+        'danger':'remove-sign'}
+
     def __init__(self, **ka):
 
         self.type = ka['type']
@@ -45,10 +50,8 @@ class Status:
         else:
             self.message = ka['message']
 
-        if self.type == 'warning':
-            self.icon = "warning-sign"
-        else:
-            self.icon = "info-sign"
+        if self.type in self.status_types:
+            self.icon = self.status_types[self.type]
 
         self.confirm = ka.get('confirm', None)
         self.message_list = ka.get('message_list', None)
