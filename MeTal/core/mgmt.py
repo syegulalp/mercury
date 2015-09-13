@@ -1,4 +1,4 @@
-from core.utils import Status, encrypt_password
+from core.utils import Status, encrypt_password, is_blank
 from core.log import logger
 import json
 
@@ -139,6 +139,19 @@ def theme_install_to_blog(installed_theme, blog):
     kv_index = {}
     kx = System()
 
+    # system KVs
+    # replace this and the other with a general loop routine
+    # that takes action based on what the object type is
+    # keep that object type action with the schema itself
+    # perhaps on_install_kv or something
+
+    # ugh, the list is random, isn't it?
+    # start with System, work our way DOWN through the object hierarchy
+    # System - as-is
+    # Theme - set to installed theme ID
+    # Blog - set to installed blog ID
+    # everything else - parent appropriately and preserve
+
     for kv in kvs:
         kv_current = kvs[kv]
         new_kv = kx.add_kv(**kv_current)
@@ -229,31 +242,42 @@ def user_from_ka(**ka):
 
 def blog_settings_save(request, blog, user):
 
+        errors = []
+
         _forms = request.forms
 
         blog_name = _forms.getunicode('blog_name')
 
-        if blog_name is not None:
+        if not is_blank(blog_name):
             blog.name = blog_name
+        else:
+            errors.append('Blog name cannot be blank.')
 
         blog_description = _forms.getunicode('blog_description')
 
-        if blog_description is not None:
+        if not is_blank(blog_description):
             blog.description = blog_description
+        else:
+            errors.append('Blog description cannot be blank.')
 
         blog_url = _forms.getunicode('blog_url')
-
         if blog_url is not None:
-            blog_url = blog_url.rstrip('/')
-            blog.url = blog_url
+            if not is_blank(blog_url):
+                blog_url = blog_url.rstrip('/')
+                blog.url = blog_url
+            else:
+                errors.append('Blog URL cannot be blank.')
 
         # TODO: url validation
 
         blog_path = _forms.getunicode('blog_path')
         if blog_path is not None:
-            blog_path = blog_path.rstrip('/')
-            blog.path = blog_path
-            blog.local_path = blog_path
+            if not is_blank(blog_path):
+                blog_path = blog_path.rstrip('/')
+                blog.path = blog_path
+                blog.local_path = blog_path
+            else:
+                errors.append('Blog path cannot be blank.')
 
         # TODO: validate file path and also figure out
         # if we're going to use path and local_path for
@@ -261,19 +285,36 @@ def blog_settings_save(request, blog, user):
 
         blog_base_extension = _forms.getunicode('blog_base_extension')
         if blog_base_extension is not None:
-            blog_base_extension = blog_base_extension.lstrip('.')
-            blog.base_extension = blog_base_extension
+            if not is_blank(blog_base_extension):
+                blog_base_extension = blog_base_extension.lstrip('.')
+                blog.base_extension = blog_base_extension
+            else:
+                errors.append('Blog base extension cannot be blank.')
 
-        blog.save()
+        if len(errors) > 0:
+            return Status(
+                type='warning',
+                message='Settings for <b>{}</b> are not valid:',
+                vals=(blog.for_log,),
+                message_list=errors)
 
-        status = Status(
-            type='success',
-            message="Settings for <b>{}</b> saved.",
-            vals=(blog.name,))
+        try:
+            blog.save()
+        except Exception as e:
+            status = Status(
+                type='danger',
+                message='Settings for <b>{}</b> not saved:',
+                vals=(blog.for_log,),
+                message_list=(e,))
+        else:
+            status = Status(
+                type='success',
+                message="Settings for <b>{}</b> saved successfully.",
+                vals=(blog.name,))
 
-        logger.info("Settings for blog {} edited by user {}.".format(
-            blog.for_log,
-            user.for_log))
+            logger.info("Settings for blog {} edited by user {}.".format(
+                blog.for_log,
+                user.for_log))
 
         return status
 
