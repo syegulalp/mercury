@@ -415,7 +415,7 @@ def save_page(page, user, blog=None):
                 category=default_blog_category,
                 primary=True)
 
-        msg += ("Page <b>{}</b> saved.")
+        msg += ("Page <b>{}</b> saved successfully.")
 
     if request.forms.getunicode('tag_text') is not None:
         tag_text = json.loads(request.forms.getunicode('tag_text'))
