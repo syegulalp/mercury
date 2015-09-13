@@ -933,7 +933,7 @@ def blog_media_edit_save(blog_id, media_id):
 
         status = utils.Status(
             type='success',
-            message='Changes to media <b>#{} ({})</b> have been saved.',
+            message='Changes to media <b>#{} ({})</b> saved successfully.',
             vals=(media.id, media.friendly_name)
             )
     else:
@@ -1451,7 +1451,7 @@ def template_edit_save(template_id):
         else:
             status = Status(
                 type='warning',
-                message='You are attempting to delete this template. Are you sure you want to do this?',
+                message='You are attempting to delete this template. <b>Are you sure you want to do this?</b>',
                 confirm=('save', '4')
                 )
 
@@ -1461,21 +1461,20 @@ def template_edit_save(template_id):
         except TemplateSaveException as e:
             status = Status(
                 type='danger',
-                message="Error saving template <b>{}</b>: <br>{}",
-                vals=(template.for_log,
-                    e)
-                )
+                message="Error saving template <b>{}</b>:",
+                vals=(template.for_log,),
+                message_list=(e,))
+
         except BaseException as e:
             status = Status(
                 type='warning',
                 message="Problem saving template <b>{}</b>: <br>{}",
-                vals=(template.for_log,
-                    e)
-                )
+                vals=(template.for_log,),
+                message_list=(e,))
         else:
             status = Status(
                 type='success',
-                message="Template <b>{}</b> saved.{}",
+                message="Template <b>{}</b> saved successfully. {}",
                 vals=(template.for_log, message)
                 )
 
