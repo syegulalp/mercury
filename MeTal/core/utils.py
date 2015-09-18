@@ -9,6 +9,20 @@ import hashlib, base64
 
 from core.libs.bottle import _stderr
 
+def verify_path(path):
+    '''
+    Stub function to ensure a given path
+    a) exists
+    b) is writable
+    c) is not on top of a path used by the application
+    '''
+
+    # verify the path exists
+    # verify that it is writable
+    # verify it is not within the application directory
+
+    pass
+
 def is_blank(string):
     if string and string.strip():
         return False
