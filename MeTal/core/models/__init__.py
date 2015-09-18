@@ -1066,7 +1066,6 @@ class PageRevision(Page, RevisionMixin):
         from core.log import logger
         from core.error import PageNotChanged
 
-
         max_revisions = self.blog.max_revisions
 
         previous_revisions = (self.select().where(PageRevision.page_id == self.page_id)
@@ -1266,6 +1265,36 @@ class Template(BaseModel):
             Template.theme == self.theme.id)
         return include.body
 
+    def save(self, user, no_revision=False, backup_only=False, change_note=None):
+        '''
+        Wrapper for the model's .save() action, which also updates the
+        PageRevision table to include a copy of the current revision of
+        the page BEFORE the save is committed.
+        '''
+        from core.log import logger
+
+        revision_save_result = None
+
+        if no_revision == False and self.id is not None:
+            page_revision = TemplateRevision.copy(self)
+            revision_save_result = page_revision.save(user, self, False, change_note)
+
+        page_save_result = Model.save(self) if backup_only is False else None
+
+
+        if revision_save_result is not None:
+            logger.info("Page {} edited by user {}.".format(
+                self.for_log,
+                user.for_log))
+
+        else:
+            logger.info("Page {} edited by user {} but without changes.".format(
+                self.for_log,
+                user.for_log))
+
+
+        return (page_save_result, revision_save_result)
+
     @property
     def includes(self):
         # get most recent fileinfo for page
@@ -1329,7 +1358,53 @@ class TemplateRevision(Template, RevisionMixin):
 
 
     def save(self, user, current_revision, is_backup=False, change_note=None):
-        pass
+
+        from core.log import logger
+        from core.error import PageNotChanged
+
+        max_revisions = self.blog.max_revisions
+
+        previous_revisions = (self.select().where(TemplateRevision.template_id == self.template_id)
+            .order_by(TemplateRevision.modified_date.desc()).limit(max_revisions))
+
+        if previous_revisions.count() > 0:
+
+            last_revision = previous_revisions[0]
+
+            template_changed = False
+
+            for name in last_revision._meta.fields:
+                if name not in ("modified_date", "id", "template_id", "is_backup", "change_note", "saved_by"):
+                    value = getattr(current_revision, name)
+                    new_value = getattr(last_revision, name)
+
+                    if value != new_value:
+                        template_changed = True
+                        break
+
+            if template_changed is False:
+                raise PageNotChanged('Template {} was saved but without changes.'.format(
+                    current_revision.for_log))
+
+
+        if previous_revisions.count() >= max_revisions:
+
+            older_revisions = DeleteQuery(TemplateRevision).where(TemplateRevision.template_id == self.template_id,
+                TemplateRevision.modified_date < previous_revisions[max_revisions - 1].modified_date)
+
+            older_revisions.execute()
+
+        self.is_backup = is_backup
+        self.change_note = change_note
+        self.saved_by = user.id
+
+        results = Model.save(self)
+
+        logger.info("Revision {} for template {} created.".format(
+            date_format(self.modified_date),
+            self.for_log))
+
+        return results
 
 class TemplateMapping(BaseModel):
 
