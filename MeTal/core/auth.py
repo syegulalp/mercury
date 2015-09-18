@@ -58,6 +58,16 @@ def is_logged_in_core(request):
 
     return user_found
 
+def get_users_with_permission(level):
+
+    permissions = Permission.select().where(
+        Permission.permission == level)
+
+    users_with_permissions = User.select().where(
+        User.id << permissions.user)
+
+    return users_with_permissions
+
 def get_permissions(user, level=None, blog=None, site=None):
 
     permissions = Permission.select().where(
