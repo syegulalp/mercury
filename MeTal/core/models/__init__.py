@@ -500,6 +500,27 @@ class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
 
+    def archive_default(self, default_type):
+        archive_default = self.templates().select().where(
+            Template.default_type == default_type).get()
+        return archive_default
+
+    @property
+    def index_archive_default(self):
+        return self.archive_default(archive_type.index)
+    @property
+    def page_archive_default(self):
+        return self.archive_default(archive_type.page)
+    @property
+    def author_archive_default(self):
+        return self.archive_default(archive_type.author)
+    @property
+    def chron_archive_default(self):
+        return self.archive_default(archive_type.archive)
+    @property
+    def category_archive_default(self):
+        return self.archive_default(archive_type.category)
+
     @property
     def parent(self, context=None):
         return self.theme
@@ -1345,6 +1366,8 @@ class TemplateRevision(Template, RevisionMixin):
     is_backup = BooleanField(default=False)
     change_note = TextField(null=True)
     saved_by = IntegerField(null=True)
+
+    revision_fields = {'id':'template_id'}
 
     @property
     def saved_by_user(self):
