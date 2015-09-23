@@ -33,7 +33,7 @@ def save(request, user, cms_template):
     else:
         raise TemplateSaveException("Invalid publishing mode selected.")
 
-    cms_template.save()
+    cms_template.save(user)
 
     mappings = []
 
