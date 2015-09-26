@@ -711,8 +711,10 @@ if DESKTOP_MODE:
 
             y = x.decode('utf8')
             z = re.compile(r' href=["\']' + (blog.url) + '([^"\']*)["\']')
+            z2 = re.compile(r' href=["\'](/[^"\']*)["\']')
             y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS +
-                       DEFAULT_LOCAL_PORT + "\\1\?_=1'", y)
+                       DEFAULT_LOCAL_PORT + "\\1?_={}'".format(blog_id), y)
+            y = re.sub(z2, r" href='\1?_={}'".format(blog_id), y)
             y = y.encode('utf8')
 
             k.headers['Content-Length'] = len(y)
