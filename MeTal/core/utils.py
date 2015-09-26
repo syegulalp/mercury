@@ -9,6 +9,16 @@ import hashlib, base64
 
 from core.libs.bottle import _stderr
 
+def preview_file(filename, extension):
+    import zlib
+    try:
+        split_path = filename.rsplit('/', 1)[1]
+    except IndexError:
+        split_path = filename
+    return ('preview-' +
+        str(zlib.crc32(split_path.encode('utf-8'), 0xFFFF)) +
+        "." + extension)
+
 def verify_path(path):
     '''
     Stub function to ensure a given path

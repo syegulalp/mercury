@@ -758,12 +758,10 @@ class Page(BaseModel):
 
     @property
     def preview_file(self):
+        from core import utils
+        return utils.preview_file(self.default_fileinfo.file_path,
+            self.blog.base_extension)
 
-        import zlib
-        split_path = self.default_fileinfo.file_path.rsplit('/', 1)
-        return ('preview-' +
-            str(zlib.crc32(split_path[1].encode('utf-8'), 0xFFFF)) +
-            "." + self.blog.base_extension)
     @property
     def filename(self):
         return self.basename + "." + self.blog.base_extension
@@ -1281,6 +1279,16 @@ class Template(BaseModel):
     modified_date = DateTimeField(default=datetime.datetime.now)
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
+
+    @property
+    def preview_file(self):
+        from core import utils
+        from settings import _sep
+        default_file = self.default_mapping.fileinfos[0].file_path
+        return utils.preview_file(default_file, self.blog.base_extension)
+
+        # return utils.preview_file2(self.default_mapping.fileinfos[0].file_path,
+        #    self.blog.base_extension)
 
     def include(self, include_name):
         include = Template.get(Template.title == include_name,

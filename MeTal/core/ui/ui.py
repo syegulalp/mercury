@@ -266,9 +266,17 @@ def page_preview(page_id):
 
     utils.disable_protection()
 
+    import settings
+
+    if settings.DESKTOP_MODE:
+        page_url = settings.BASE_URL_ROOT + "/" + preview_fileinfo.file_path + "?_={}".format(
+            page.blog.id)
+    else:
+        page_url = preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file
+
     tpl = template('ui/ui_preview',
         page=page,
-        page_url=preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file)
+        page_url=page_url)
 
     return tpl
 

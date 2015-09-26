@@ -145,6 +145,9 @@ def template_edit_save(template_id):
 
 def template_preview(template_id):
 
+    from settings import _sep
+    import os
+
     template = get_template(template_id)
 
     if template.template_type == template_type.index:
@@ -155,7 +158,35 @@ def template_preview(template_id):
     tpl_output = utils.tpl(template.body,
         **tags.__dict__)
 
-    return tpl_output
+    # the template path generating routine here should be part of the schema
+    # and used to both create previews and delete them
+
+    preview_subpath = template.default_mapping.fileinfos[0].file_path.rsplit('/', 1)
+    if len(preview_subpath) > 1:
+        preview_subpath = preview_subpath[1]
+    else:
+        preview_subpath = ''
+
+    preview_path = (template.blog.path + _sep + preview_subpath)
+
+    preview_file = template.preview_file
+
+    print (preview_path)
+
+    if os.path.isdir(preview_path) is False:
+        os.makedirs(preview_path)
+
+    with open(preview_path + _sep + preview_file, "wb") as output_file:
+        output_file.write(tpl_output.encode('utf8'))
+
+    import settings
+    if settings.DESKTOP_MODE:
+        url = settings.BASE_URL_ROOT + '/' + preview_subpath + '/' + preview_file + '?_={}'.format(
+            template.blog.id)
+    else:
+        url = template.blog.url + '/' + preview_subpath + '/' + preview_file
+
+    redirect (url)
 
 def template_edit_output(tags):
 
