@@ -285,7 +285,7 @@ def step_4_pre():
 
         report.append("Initial blog created successfully.")
 
-        mgmt.theme_install_to_blog(new_theme, new_blog)
+        mgmt.theme_install_to_blog(new_theme, new_blog, new_user)
 
         report.append("Theme installed in new blog successfully.")
 
