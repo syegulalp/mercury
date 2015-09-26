@@ -11,7 +11,7 @@ from core.libs.bottle import (template, request, redirect)
 
 from .ui import template_mapping_index, search_context
 
-def new_template(blog_id, template_type):
+def new_template(blog_id, tpl_type):
     with db.atomic() as txn:
 
         user = auth.is_logged_in(request)
@@ -20,31 +20,32 @@ def new_template(blog_id, template_type):
 
         auth.check_template_lock(blog)
 
-        mappings_index = template_mapping_index.get(template_type, None)
+        mappings_index = template_mapping_index.get(tpl_type, None)
         if mappings_index is None:
             raise Exception('Mapping type not found')
 
         template = Template(
             blog=blog,
             theme=blog.theme,
-            template_type=template_type,
+            template_type=tpl_type,
             publishing_mode=publishing_mode.do_not_publish,
             body='',
             )
-        template.save()
+        template.save(user)
         template.title = 'Untitled Template #{}'.format(template.id)
-        template.save()
+        template.save(user)
 
-        new_template_mapping = TemplateMapping(
-           template=template,
-           # archive_type=1,
-           is_default=True,
-           path_string=utils.create_basename(template.title, blog)
-           )
+        if tpl_type != template_type.media:
 
-        new_template_mapping.save()
+            new_template_mapping = TemplateMapping(
+               template=template,
+               is_default=True,
+               path_string=utils.create_basename(template.title, blog)
+               )
 
+            new_template_mapping.save()
 
+    from settings import BASE_URL
     redirect(BASE_URL + '/template/{}/edit'.format(
         template.id))
 
@@ -96,7 +97,7 @@ def template_edit_save(template_id):
 
     if save_mode == 4:
         if request.forms.getunicode('confirm') == 'Y':
-            return template_delete(template)
+            return template_delete(tpl)
         else:
             status = Status(
                 type='warning',
