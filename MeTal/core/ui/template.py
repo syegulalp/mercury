@@ -9,6 +9,8 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
+from .ui import template_mapping_index, search_context
+
 def new_template(blog_id, template_type):
     with db.atomic() as txn:
 
@@ -86,7 +88,7 @@ def template_edit_save(template_id):
     permission = auth.is_blog_designer(user, blog)
 
     from core.utils import Status
-    from core.error import TemplateSaveException
+    from core.error import TemplateSaveException, PageNotChanged
 
     status = None
 
@@ -111,13 +113,20 @@ def template_edit_save(template_id):
                 message="Error saving template <b>{}</b>:",
                 vals=(template.for_log,),
                 message_list=(e,))
+        except PageNotChanged as e:
+            status = Status(
+                type='success',
+                message="Template <b>{}</b> was unchanged.",
+                vals=(template.for_log,)
+                )
 
         except BaseException as e:
             status = Status(
                 type='warning',
-                message="Problem saving template <b>{}</b>: <br>{}",
+                message="Problem saving template <b>{}</b>: <br>",
                 vals=(template.for_log,),
                 message_list=(e,))
+
         else:
             status = Status(
                 type='success',

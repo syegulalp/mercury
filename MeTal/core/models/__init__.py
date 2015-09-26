@@ -1114,7 +1114,8 @@ class PageRevision(Page, RevisionMixin):
 
         if previous_revisions.count() >= max_revisions:
 
-            older_revisions = DeleteQuery(PageRevision).where(PageRevision.page_id == self.page_id,
+            older_revisions = DeleteQuery(PageRevision).where(
+                PageRevision.page_id == self.page_id,
                 PageRevision.modified_date < previous_revisions[max_revisions - 1].modified_date)
 
             older_revisions.execute()
@@ -1390,6 +1391,7 @@ class TemplateRevision(Template, RevisionMixin):
         previous_revisions = (self.select().where(TemplateRevision.template_id == self.template_id)
             .order_by(TemplateRevision.modified_date.desc()).limit(max_revisions))
 
+        print (previous_revisions.count())
         if previous_revisions.count() > 0:
 
             last_revision = previous_revisions[0]
@@ -1412,10 +1414,12 @@ class TemplateRevision(Template, RevisionMixin):
 
         if previous_revisions.count() >= max_revisions:
 
-            older_revisions = DeleteQuery(TemplateRevision).where(TemplateRevision.template_id == self.template_id,
+            older_revisions = DeleteQuery(TemplateRevision).where(
+                TemplateRevision.template_id == self.template_id,
                 TemplateRevision.modified_date < previous_revisions[max_revisions - 1].modified_date)
 
             older_revisions.execute()
+
 
         self.is_backup = is_backup
         self.change_note = change_note

@@ -4,6 +4,7 @@ from core.log import logger
 from core.cms import build_mapping_xrefs
 from core.error import TemplateSaveException
 
+
 def delete(template):
 
     t0 = FileInfo.delete().where(FileInfo.template_mapping << template.mappings)
@@ -14,6 +15,8 @@ def delete(template):
     t2.execute()
 
 def save(request, user, cms_template):
+
+    import datetime
 
     status = ''
 
@@ -32,6 +35,8 @@ def save(request, user, cms_template):
         cms_template.publishing_mode = mode
     else:
         raise TemplateSaveException("Invalid publishing mode selected.")
+
+    cms_template.modified_date = datetime.datetime.now()
 
     cms_template.save(user)
 
