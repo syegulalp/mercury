@@ -610,6 +610,7 @@ def generate_file(f, blog):
 
     return (page_text, pathname)
 
+import time
 def build_file(f, blog):
     '''
     Builds a single file based on a fileinfo entry f for a given blog.
@@ -619,11 +620,14 @@ def build_file(f, blog):
     nor does it perform any other higher-level security.
 
     This should be the action that is pushed to the queue, and consolidated
-    based on the generated filename. (The conslidation should be part of the queue push function)
+    based on the generated filename. (The consolidation should be part of the queue push function)
     '''
 
     report = []
+    begin = time.clock()
     page_text, pathname = generate_file(f, blog)
+    file = time.clock()
+
     report.append("Output: " + pathname)
     encoded_page = page_text.encode('utf8')
 
@@ -640,9 +644,10 @@ def build_file(f, blog):
     with open(pathname, "wb") as output_file:
         output_file.write(encoded_page)
 
-    logger.info("File '{}' built ({} bytes).".format(
+    logger.info("File '{}' built ({} bytes ({:.4f} secs)).".format(
         f.file_path,
-        len(encoded_page)))
+        len(encoded_page),
+        file - begin))
 
     return report
 
@@ -956,6 +961,8 @@ def process_queue_publish(queue_control, blog):
 
     queue_length = queue.count()
 
+    start_queue = time.clock()
+
     if queue_length > 0:
         logger.info("Queue job #{} @ {} (blog #{}, {} items) started.".format(
             queue_control.id,
@@ -964,7 +971,6 @@ def process_queue_publish(queue_control, blog):
             queue_length))
 
     for q in queue:
-
         try:
             job_type.action[q.job_type](q)
         except BaseException:
@@ -977,20 +983,24 @@ def process_queue_publish(queue_control, blog):
 
     queue_control.data_integer -= queue_length
 
+    end_queue = time.clock()
+    total_time = end_queue - start_queue
     if queue_control.data_integer <= 0:
         queue_control.delete_instance()
-        logger.info("Queue job #{} @ {} (blog #{}) finished.".format(
-            queue_control.id,
-            date_format(queue_control.date_touched),
-            queue_control.blog.id))
-    else:
-        queue_control.is_running = False
-        queue_control.save()
-        logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left.".format(
+        logger.info("Queue job #{} @ {} (blog #{}) finished ({:.4f} secs).".format(
             queue_control.id,
             date_format(queue_control.date_touched),
             queue_control.blog.id,
-            queue_length))
+            total_time))
+    else:
+        queue_control.is_running = False
+        queue_control.save()
+        logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left ({:.4f} secs).".format(
+            queue_control.id,
+            date_format(queue_control.date_touched),
+            queue_control.blog.id,
+            queue_length,
+            total_time))
 
     return queue_control.data_integer
 
@@ -1058,8 +1068,7 @@ def process_queue(blog):
 
         if queue_control.job_type == job_type.control:
             process_queue_publish(queue_control, blog)
-
-        if queue_control.job_type == job_type.insert:
+        elif queue_control.job_type == job_type.insert:
             process_queue_insert(queue_control, blog)
 
     return queue_jobs_waiting(blog=blog)
