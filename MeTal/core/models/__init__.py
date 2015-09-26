@@ -623,7 +623,7 @@ class Blog(SiteBase):
             Page.publication_date.desc())
 
         if count > 0:
-            last_n_pages = last_n_pages.select().limit(count)
+            last_n_pages = last_n_pages.limit(count)
 
         return last_n_pages
 
@@ -1313,12 +1313,12 @@ class Template(BaseModel):
 
 
         if revision_save_result is not None:
-            logger.info("Page {} edited by user {}.".format(
+            logger.info("Template {} edited by user {}.".format(
                 self.for_log,
                 user.for_log))
 
         else:
-            logger.info("Page {} edited by user {} but without changes.".format(
+            logger.info("Template {} edited by user {} but without changes.".format(
                 self.for_log,
                 user.for_log))
 
