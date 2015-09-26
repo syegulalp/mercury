@@ -348,17 +348,54 @@ function sidebar_wireup() {
 	$('[data-toggle="tooltip"]').tooltip({
 		html : true
 	})
-
-	$("#revision_link").on("click", function() {
-		open_modal(global.base + "/page/" + global.page + "/edit/revisions");
-	});
-
-	if ($('#publication_date_picker').datetimepicker != undefined) {
-		$('#publication_date_picker').datetimepicker({
-			format : 'YYYY-MM-DD HH:mm:ss',
-			showTodayButton : true
+	
+	if ('template_body' in window)
+	{
+	
+		$('#preview').on('click',function(){
+			window.open(global.base + "/template/" + global.template + "/preview", "preview_"
+						+ global.template);
 		});
+	
 	}
+	else
+	{
+		$("#revision_link").on("click", function() {
+			open_modal(global.base + "/page/" + global.page + "/edit/revisions");
+		});
+		
+		if ($('#publication_date_picker').datetimepicker != undefined) {
+			$('#publication_date_picker').datetimepicker({
+				format : 'YYYY-MM-DD HH:mm:ss',
+				showTodayButton : true
+			});
+		}		
+
+		$(".uploadarea").on("dragover", drag_enter_event);
+		$(".uploadarea").on("dragleave", drag_leave_event);
+		$(".uploadarea").on("drop", drop_event);
+		
+		
+		init_typeahead('tags');
+		$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
+			// console.log('Selection: ' + suggestion);
+		});
+		
+		$('.typeahead').on('keypress', function(event) {
+			var keyCode = event.which || event.keyCode;
+
+			if (keyCode == 13) {
+				event.preventDefault();
+				add_tag(this);
+				return false;
+			} else {
+				return true;
+			}
+		});
+
+		activate_tags();		
+	}	
+
 
 	$('.unsaved').on("input", function() {
 		window.onbeforeunload = stay;
@@ -379,29 +416,6 @@ function sidebar_wireup() {
 		}
 	});
 
-	$(".uploadarea").on("dragover", drag_enter_event);
-	$(".uploadarea").on("dragleave", drag_leave_event);
-	$(".uploadarea").on("drop", drop_event);
-
-	init_typeahead('tags');
-
-	$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
-		// console.log('Selection: ' + suggestion);
-	});
-
-	$('.typeahead').on('keypress', function(event) {
-		var keyCode = event.which || event.keyCode;
-
-		if (keyCode == 13) {
-			event.preventDefault();
-			add_tag(this);
-			return false;
-		} else {
-			return true;
-		}
-	});
-
-	activate_tags();
 
 }
 
@@ -616,10 +630,7 @@ $(window)
 							delayed_resize()
 						}, 50)
 						
-						$('#preview').on('click',function(){
-							window.open(global.base + "/template/" + global.template + "/preview", "preview_"
-										+ global.template);
-						});
+
 					}
 
 					if (editor != null) {
