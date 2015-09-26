@@ -959,8 +959,8 @@ class Page(BaseModel):
         Returns iterable of all Media types associated with an entry.
         '''
 
-        media_association = MediaAssociation.select(MediaAssociation.id).where(
-            MediaAssociation.page == self.id).tuples()
+        media_association = MediaAssociation.select(MediaAssociation.media).where(
+            MediaAssociation.page == self.id)
 
         media = Media.select().where(Media.id << media_association)
 
