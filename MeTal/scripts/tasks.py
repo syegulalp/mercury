@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# add cmdline options to suppress emailed reports
+
 if __name__ == '__main__':
     if __package__ is None:
         import sys
@@ -7,7 +9,9 @@ if __name__ == '__main__':
         sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
         import settings
 
-print ('{} - Scheduled tasks script.'.format(settings.PRODUCT_NAME))
+product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
+
+print ('{} - Scheduled tasks script.'.format(product_id))
 
 import smtplib, datetime
 from email.mime.text import MIMEText
@@ -26,29 +30,39 @@ scheduled_pages = Page.select().where(
 
 print ('{} pages scheduled'.format(scheduled_pages.count()))
 
-q = []
+scheduled_page_report = []
 for n in scheduled_pages:
-    q.append('{} -- on {}'.format(n.title, n.publication_date))
+    scheduled_page_report.append('{} -- on {}'.format(n.title, n.publication_date))
+    # push pages in question to queue
+    # activate queue runner for all jobs, no timeout by default
+    # do we reset publishing mode for page here, or in actual queue?
 
-product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
+if scheduled_pages.count() > 0:
 
-message_text = '''
+    message_text = '''
 This is a report for the installation of {}.
 
 Pages to be published:
 
 {}
-'''.format(product_id, q)
+'''.format(product_id,
+    scheduled_page_report)
 
-for n in admin_users:
-    msg = MIMEText(message_text)
-    msg['Subject'] = 'Scheduled activity report for {}'.format(product_id)
-    msg['From'] = n.email
-    msg['To'] = n.email
-    s = smtplib.SMTP('localhost')
-    s.send_message(msg)
-    s.quit()
+    for n in admin_users:
+        msg = MIMEText(message_text)
+        msg['Subject'] = 'Scheduled activity report for {}'.format(product_id)
+        msg['From'] = n.email
+        msg['To'] = n.email
+        s = smtplib.SMTP('localhost')
+        s.send_message(msg)
+        s.quit()
 
-print ('Reports emailed.')
+    print ('Reports emailed.')
+
+    # write to event log, too
+
+else:
+
+    print ('No scheduled tasks found to run.')
 
 print ('Scheduled tasks script completed.')

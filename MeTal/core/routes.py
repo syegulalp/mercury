@@ -1,11 +1,8 @@
-import os
-import re
-import urllib
+import os, re, urllib
 
 from core import (mgmt, auth)
 from core.error import (UserNotFound, CSRFTokenNotFound)
-from core.libs.bottle import (
-    Bottle, static_file, request, response, abort, template)
+from core.libs.bottle import (Bottle, static_file, request, response, abort)
 from core.models import (db, get_page, get_blog, get_theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
@@ -325,14 +322,14 @@ def site_blogs(site_id):
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog')
 def site_blog_create(site_id):
-    from core.ui import ui
-    return ui.blog_create(site_id)
+    from core.ui import blog
+    return blog.blog_create(site_id)
 
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-blog', method='POST')
 def site_blog_create_save(site_id):
-    from core.ui import ui
-    return ui.blog_create_save(site_id)
+    from core.ui import blog
+    return blog.blog_create_save(site_id)
 
 
 @_route(BASE_PATH + '/site/<site_id:int>/users')
@@ -367,32 +364,32 @@ def site_edit_user_save(site_id, user_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
 def blog_create_user(blog_id):
-    from core.ui import ui
-    return ui.blog_create_user(blog_id)
+    from core.ui import blog
+    return blog.blog_create_user(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/create-user', method='POST')
 def blog_create_user_save(blog_id):
-    from core.ui import ui
-    return ui.blog_create_user_save(blog_id)
+    from core.ui import blog
+    return blog.blog_create_user_save(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>')
 def blog_user_edit(blog_id, user_id):
-    from core.ui import ui
-    return ui.blog_user_edit(blog_id, user_id)
+    from core.ui import blog
+    return blog.blog_user_edit(blog_id, user_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>', method='POST')
 def blog_user_edit_save(blog_id, user_id):
-    from core.ui import ui
-    return ui.blog_user_edit_save(blog_id, user_id)
+    from core.ui import blog
+    return blog.blog_user_edit_save(blog_id, user_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/users')
 def blog_list_users(blog_id):
-    from core.ui import ui
-    return ui.blog_list_users(blog_id)
+    from core.ui import blog
+    return blog.blog_list_users(blog_id)
 
 # TODO: the default should be whatever editor theme is installed by the
 # current blog theme
@@ -413,20 +410,20 @@ def blog_editor_css(blog_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage')
 def blog_new_page(blog_id):
-    from core.ui import ui
-    return ui.blog_new_page(blog_id)
+    from core.ui import blog
+    return blog.blog_new_page(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage', method='POST')
 def blog_new_page_save(blog_id):
-    from core.ui import ui
-    return ui.blog_new_page_save(blog_id)
+    from core.ui import blog
+    return blog.blog_new_page_save(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>')
 def blog(blog_id, errormsg=None):
-    from core.ui import ui
-    return ui.blog(blog_id, errormsg)
+    from core.ui import blog
+    return blog.blog(blog_id, errormsg)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
@@ -438,67 +435,67 @@ def blog_edit_tag(blog_id, tag_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tags')
 def blog_tags(blog_id):
-    from core.ui import ui
-    return ui.blog_tags(blog_id)
+    from core.ui import blog
+    return blog.blog_tags(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):
-    from core.ui import ui
-    return ui.blog_media(blog_id)
+    from core.ui import blog
+    return blog.blog_media(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit')
 def blog_media_edit(blog_id, media_id):
-    from core.ui import ui
-    return ui.blog_media_edit(blog_id, media_id)
+    from core.ui import blog
+    return blog.blog_media_edit(blog_id, media_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit', method='POST')
 def blog_media_edit_save(blog_id, media_id):
-    from core.ui import ui
-    return ui.blog_media_edit_save(blog_id, media_id)
+    from core.ui import blog
+    return blog.blog_media_edit_save(blog_id, media_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
 def blog_media_delete(blog_id, media_id):
-    from core.ui import ui
-    return ui.blog_media_delete(blog_id, media_id, None)
+    from core.ui import blog
+    return blog.blog_media_delete(blog_id, media_id, None)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete_confirm(blog_id, media_id):
-    from core.ui import ui
-    return ui.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
+    from core.ui import blog
+    return blog.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
-    from core.ui import ui
-    return ui.blog_templates(blog_id)
+    from core.ui import blog
+    return blog.blog_templates(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
 def template_new(blog_id, template_type):
-    from core.ui import ui
-    return ui.new_template(blog_id, template_type)
+    from core.ui import template
+    return template.new_template(blog_id, template_type)
 
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
-    from core.ui import ui
-    return ui.template_edit(template_id)
+    from core.ui import template
+    return template.template_edit(template_id)
 
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
 def template_edit_save(template_id):
-    from core.ui import ui
-    return ui.template_edit_save(template_id)
+    from core.ui import template
+    return template.template_edit_save(template_id)
 
 @_route(BASE_PATH + '/template/<template_id:int>/preview')
 def template_preview(template_id):
-    from core.ui import ui
-    return ui.template_preview(template_id)
+    from core.ui import template
+    return template.template_preview(template_id)
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
@@ -551,14 +548,14 @@ def page_media_edit(page_id, media_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish')
 def blog_republish(blog_id):
-    from core.ui import ui
-    return ui.blog_republish(blog_id)
+    from core.ui import blog
+    return blog.blog_republish(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/purge')
 def blog_purge(blog_id):
-    from core.ui import ui
-    return ui.blog_purge(blog_id)
+    from core.ui import blog
+    return blog.blog_purge(blog_id)
 
 # temporary
 
@@ -572,38 +569,38 @@ def page_delete(page_id):
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
 def blog_queue(blog_id):
-    from core.ui import ui
-    return ui.blog_queue(blog_id)
+    from core.ui import blog
+    return blog.blog_queue(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
 def blog_settings(blog_id,):
-    from core.ui import ui
-    return ui.blog_settings(blog_id)
+    from core.ui import blog
+    return blog.blog_settings(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings", method='POST')
 def blog_settings_save(blog_id):
-    from core.ui import ui
-    return ui.blog_settings_save(blog_id)
+    from core.ui import blog
+    return blog.blog_settings_save(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish")
 def blog_publish(blog_id):
-    from core.ui import ui
-    return ui.blog_publish(blog_id)
+    from core.ui import blog
+    return blog.blog_publish(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/progress/<original_queue_length:int>")
 def blog_publish_progress(blog_id, original_queue_length):
-    from core.ui import ui
-    return ui.blog_publish_progress(blog_id, original_queue_length)
+    from core.ui import blog
+    return blog.blog_publish_progress(blog_id, original_queue_length)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/process")
 def blog_publish_process(blog_id):
-    from core.ui import ui
-    return ui.blog_publish_process(blog_id)
+    from core.ui import blog
+    return blog.blog_publish_process(blog_id)
     # TODO: do we still need this?
 
 
@@ -691,7 +688,8 @@ if DESKTOP_MODE:
             filepath += ("index.html")
 
         if os.path.isfile(root_path + "/" + filesystem_filepath) is False:
-            abort(404, 'File not found')
+
+            abort(404, 'File {} not found'.format(root_path + "/" + filesystem_filepath))
 
         k = static_file(filesystem_filepath, root=root_path)
 
@@ -719,6 +717,7 @@ if DESKTOP_MODE:
 
     def system_site_index():
         from core.models import Site
+        from core.libs.bottle import template
         sites = Site.select()
 
         tpl = '''
@@ -749,6 +748,7 @@ if DESKTOP_MODE:
 # if DEBUG_MODE is False:
 @app.error(500)
 def error_handler(error):
+    from core.libs.bottle import template
     import settings as _settings
     tpl = template('500_error',
                    settings=_settings,
