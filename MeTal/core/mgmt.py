@@ -51,7 +51,6 @@ def get_kvs_for_theme(theme):
             kv_list.append(f)
         del kv_list[0]
 
-    print (theme_kvs)
     return theme_kvs
 
 def erase_theme(blog):

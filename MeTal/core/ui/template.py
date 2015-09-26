@@ -184,8 +184,6 @@ def template_preview(template_id):
 
     preview_file = template.preview_file
 
-    print (preview_path)
-
     if os.path.isdir(preview_path) is False:
         os.makedirs(preview_path)
 

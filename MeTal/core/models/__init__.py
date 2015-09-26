@@ -1399,7 +1399,6 @@ class TemplateRevision(Template, RevisionMixin):
         previous_revisions = (self.select().where(TemplateRevision.template_id == self.template_id)
             .order_by(TemplateRevision.modified_date.desc()).limit(max_revisions))
 
-        print (previous_revisions.count())
         if previous_revisions.count() > 0:
 
             last_revision = previous_revisions[0]

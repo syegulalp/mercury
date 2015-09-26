@@ -19,7 +19,6 @@ def transaction(func):
                 with db.atomic():
                     fn = func(*a, **ka)
             except OperationalError as e:
-                print (DB.db_is_locked())
                 if str(e).startswith(DB.db_is_locked()):
                     n += 1
                     if n >= DATABASE_RETRIES:

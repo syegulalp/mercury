@@ -1103,7 +1103,6 @@ def build_mapping_xrefs(mapping_list):
     if 'Index' in map_types:
         build_indexes_fileinfos(mapping.template.blog.index_templates)
     if 'Include' in map_types:
-        print (mapping.template.blog.ssi_templates.count())
         build_indexes_fileinfos(mapping.template.blog.ssi_templates)
 
 def purge_fileinfos(fileinfos):
