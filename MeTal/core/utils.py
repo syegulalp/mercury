@@ -186,6 +186,9 @@ def breaks(string):
     '''
     Used to break up URLs so that they break along /s
     '''
+    if string is None:
+        return string
+
     string = string.replace('/', '/<wbr>')
     string = string.replace('.', '.<wbr>')
     string = string.replace('-', '-<wbr>')

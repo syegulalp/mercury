@@ -559,8 +559,10 @@ def blog_templates(blog_id):
 
     tags.status = reason
 
+    from core.libs.peewee import JOIN_LEFT_OUTER
+
     template_list = Template.select(Template, TemplateMapping).join(
-        TemplateMapping).where(
+        TemplateMapping, JOIN_LEFT_OUTER).where(
         # (TemplateMapping.is_default == True) &
         (Template.blog == blog)
         ).order_by(Template.title)
@@ -577,6 +579,9 @@ def blog_templates(blog_id):
     template_includes = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.include)
 
+    media_templates = template_list.select(Template, TemplateMapping).where(
+        Template.template_type == template_type.media)
+
 
     tags.list_items = [
         {'title':'Index Templates',
@@ -591,6 +596,9 @@ def blog_templates(blog_id):
         {'title':'Includes',
         'type': template_type.include,
         'data':template_includes},
+        {'title':'Media Templates',
+        'type': template_type.media,
+        'data':media_templates},
         ]
 
     tpl = template('ui/ui_blog_templates',
