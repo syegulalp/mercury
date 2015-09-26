@@ -132,6 +132,8 @@ def overwrite_blog_theme(blog_id):
     '''
     imports JSON and overwrites an existing blog's theme
     '''
+    user = auth.is_logged_in(request)
+
     with open(APPLICATION_PATH + _sep + 'install' + _sep +
         'templates.json' , "r", encoding='utf-8') as input_file:
         theme_string = input_file.read()
@@ -144,19 +146,21 @@ def overwrite_blog_theme(blog_id):
     theme.json = theme_string
     blog = get_blog(blog_id)
     from core import cms
+    from core.auth import get_users_with_permission, role
     with db.atomic():
         cms.purge_fileinfos(blog.fileinfos)
         mgmt.erase_theme(blog)
-        mgmt.theme_install_to_blog(theme, blog)
+        mgmt.theme_install_to_blog(theme, blog, user)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
 def import_theme_to_blog(theme_id, blog_id):
     blog = get_blog(blog_id)
     old_theme = get_theme(theme_id)
-    new_theme = mgmt.theme_install_to_blog(blog)
-    mgmt.theme_install_to_blog(new_theme, blog)
-    mgmt.theme_delete(old_theme)
+    # this needs rewriting.
+    # new_theme = mgmt.theme_install_to_blog(blog)
+    # mgmt.theme_install_to_blog(new_theme, blog)
+    # mgmt.theme_delete(old_theme)
 
     # when replacing a theme:
     # all Theme KV objects should be marked and reparented
@@ -247,10 +251,11 @@ def test_function(blog_id):
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/apply-theme/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
+    user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     theme = get_theme(theme_id)
     with db.atomic():
-        n = mgmt.theme_apply_to_blog(theme, blog)
+        n = mgmt.theme_apply_to_blog(theme, blog, user)
     return n
 
 
