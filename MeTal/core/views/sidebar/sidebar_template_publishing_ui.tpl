@@ -1,6 +1,5 @@
-<div id="save_animation"></div>
-
 <div class="form-group">
+<span class="pull-right" id="save_animation"></span>
     <label for="publishing_mode">Publishing mode:</label>
     <input type="hidden" id="save" name="save" value="0">
     <select class="form-control input-sm unsaved" id="publishing_mode" name="publishing_mode">
@@ -22,7 +21,7 @@
     </div>
     <div class="form-group">
         <div class="btn-group">
-            <button onclick="template_save(2)" type="button" name="save" value="2" class="btn btn-sm btn-success">Save & publish</button>
+            <button onclick="template_save(3)" type="button" name="save" value="3" class="btn btn-sm btn-success">Save & publish</button>
         </div>
     </div>
 

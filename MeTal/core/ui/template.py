@@ -104,7 +104,7 @@ def template_edit_save(template_id):
                 confirm=('save', '4')
                 )
 
-    if save_mode in (1, 2):
+    if save_mode in (1, 2, 3):
         try:
             message = _template.save(request, user, tpl)
         except TemplateSaveException as e:

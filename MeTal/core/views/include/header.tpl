@@ -62,8 +62,9 @@
             <li class="divider"></li>
             % else:
             <li class="disabled"><a href="#">Queue empty</a></li>
-            <li class="divider"></li>
+            <li><a href="#">Disable queue runner</a></li> 
             % end
+            <li class="divider"></li>
             <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/queue">See publishing queue</a></li>
             <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/republish">Republish blog</a></li>
             <li class="divider"></li>

@@ -291,6 +291,7 @@ function form_save(form) {
 }
 
 function template_save(action){
+	console.log(action);
 	editor_update();
 	
 	$('#save').attr('value', action);
@@ -343,12 +344,6 @@ function template_save(action){
 
 function sidebar_wireup() {
 
-	// FIXME: This function isn't properly written for non-page editor sidebars
-
-	$('[data-toggle="tooltip"]').tooltip({
-		html : true
-	})
-	
 	if ('template_body' in window)
 	{
 	
@@ -375,7 +370,6 @@ function sidebar_wireup() {
 		$(".uploadarea").on("dragleave", drag_leave_event);
 		$(".uploadarea").on("drop", drop_event);
 		
-		
 		init_typeahead('tags');
 		$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
 			// console.log('Selection: ' + suggestion);
@@ -394,8 +388,11 @@ function sidebar_wireup() {
 		});
 
 		activate_tags();		
-	}	
-
+	}
+	
+	$('[data-toggle="tooltip"]').tooltip({
+		html : true
+	})
 
 	$('.unsaved').on("input", function() {
 		window.onbeforeunload = stay;

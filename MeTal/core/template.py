@@ -1,8 +1,9 @@
-from core.models import template_tags, FileInfo, Template, TemplateMapping, publishing_mode
+from core.models import FileInfo, Template, TemplateMapping, publishing_mode
 from core.utils import is_blank
 from core.log import logger
 from core.cms import build_mapping_xrefs
 from core.error import TemplateSaveException
+from core.error import PageNotChanged
 
 
 def delete(template):
@@ -38,7 +39,12 @@ def save(request, user, cms_template):
 
     cms_template.modified_date = datetime.datetime.now()
 
-    cms_template.save(user)
+    try:
+        cms_template.save(user)
+    except PageNotChanged as e:
+        status += "(Template unchanged.)"
+    except BaseException as e:
+        raise e
 
     mappings = []
 
@@ -74,11 +80,12 @@ def save(request, user, cms_template):
     build_mapping_xrefs(mappings)
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
-    tags = template_tags(template_id=cms_template.id,
-                            user=user)
+    # tags = template_tags(template_id=cms_template.id, user=user)
 
+    save_action = _forms.getunicode('save')
 
-    if int(_forms.getunicode('save')) == 2:
+    if int(save_action) in (2, 3):
+
         from core import cms
         for f in cms_template.fileinfos_published:
             cms.push_to_queue(job_type=f.template_mapping.template.template_type,
@@ -86,7 +93,7 @@ def save(request, user, cms_template):
                 site=cms_template.blog.site,
                 data_integer=f.id)
 
-        status += " {} files regenerated from template.".format(
+        status += " {} files regenerated from template and sent to publishing queue.".format(
             cms_template.fileinfos_published.count())
 
     logger.info("Template {} edited by user {}.".format(
