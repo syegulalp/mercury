@@ -83,8 +83,8 @@ def template_edit_save(template_id):
     UI for saving a blog template
     '''
     user = auth.is_logged_in(request)
-    template = get_template(template_id)
-    blog = get_blog(template.blog)
+    tpl = get_template(template_id)
+    blog = get_blog(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
     from core.utils import Status
@@ -106,42 +106,55 @@ def template_edit_save(template_id):
 
     if save_mode in (1, 2):
         try:
-            message = _template.save(request, user, template)
+            message = _template.save(request, user, tpl)
         except TemplateSaveException as e:
             status = Status(
                 type='danger',
                 message="Error saving template <b>{}</b>:",
-                vals=(template.for_log,),
+                vals=(tpl.for_log,),
                 message_list=(e,))
         except PageNotChanged as e:
             status = Status(
                 type='success',
                 message="Template <b>{}</b> was unchanged.",
-                vals=(template.for_log,)
+                vals=(tpl.for_log,)
                 )
 
         except BaseException as e:
+            raise e
             status = Status(
                 type='warning',
                 message="Problem saving template <b>{}</b>: <br>",
-                vals=(template.for_log,),
+                vals=(tpl.for_log,),
                 message_list=(e,))
 
         else:
             status = Status(
                 type='success',
                 message="Template <b>{}</b> saved successfully. {}",
-                vals=(template.for_log, message)
+                vals=(tpl.for_log, message)
                 )
 
     tags = template_tags(template_id=template_id,
                         user=user)
 
-    tags.mappings = template_mapping_index[template.template_type]
+    tags.mappings = template_mapping_index[tpl.template_type]
 
     tags.status = status
 
-    return template_edit_output(tags)
+    from core.models import (template_type as template_types)
+
+    tpl = template('edit/edit_template_ajax_response',
+        sidebar=ui_mgr.render_sidebar(
+            panel_set='edit_template',
+            publishing_mode=publishing_mode,
+            types=template_types,
+            **tags.__dict__
+            ),
+        **tags.__dict__)
+
+    return tpl
+
 
 def template_preview(template_id):
 

@@ -25,6 +25,8 @@ def save(request, user, cms_template):
     cms_template.title = _forms.getunicode('template_title')
     cms_template.body = _forms.getunicode('template_body')
 
+    print (cms_template.body)
+
     if is_blank(cms_template.title):
         cms_template.title = "New Template (#{})".format(
             cms_template.id)

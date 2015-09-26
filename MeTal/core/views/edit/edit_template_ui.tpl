@@ -1,5 +1,7 @@
 % include('include/header.tpl')
+% msg_float = True
 % include('include/header_messages.tpl')
+% include('include/modal.tpl')
 <form method="post" id="main_form">{{!csrf_token}}
     <div class="col-sm-9">
         <div class="form-group">

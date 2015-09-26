@@ -290,6 +290,57 @@ function form_save(form) {
 	});
 }
 
+function template_save(action){
+	editor_update();
+	
+	$('#save').attr('value', action);
+	form = $('#main_form');
+	
+	$('#save_animation').html(icon('refresh'));
+
+	save_animation($('#save_animation'));
+	
+	$.post('', form.serialize()).done(function(data, textStatus, xhr) {
+
+		window.onbeforeunload = leave;
+
+		if (xhr.getResponseHeader('X-Redirect')) {
+			window.location = xhr.getResponseHeader('X-Redirect');
+			return 0;
+		}
+
+		$('#messages_float').empty();
+		$('#messages_float').append($(data).filter('#messages'));
+
+		$('#sidebar_inner').empty();
+		$('#sidebar_inner').replaceWith($(data).filter('#sidebar_inner'));
+
+		$('#queue_counter').empty();
+		$('#queue_counter').append($(data).filter('#queue_counter'));
+
+		$('title').empty();
+		$('title').append($(data).filter('title').html());
+
+		sidebar_wireup();
+
+		$('#save_animation').html(icon('ok-sign'));
+
+		dismiss('#alert_message', 2500);
+		dismiss('#response_icon', 2500);
+
+	}).fail(
+			function(xhr, status, error) {
+				server_failure(xhr, status, error,
+						"Sorry, an error occurred when trying to save: ");
+
+				$('#save_animation').html(icon('remove-sign'));
+
+	}).always(function() {
+		reset_animation($('#save_animation'));
+	});	
+	
+}
+
 function sidebar_wireup() {
 
 	// FIXME: This function isn't properly written for non-page editor sidebars
@@ -545,7 +596,7 @@ $(window)
 
 					{
 
-						editor = 1
+						editor = myCodeMirror;
 
 						editor_resize = function() {
 
@@ -556,6 +607,10 @@ $(window)
 													- $(".CodeMirror").offset().top - calc_size()));
 
 						}
+						
+						editor_update = function() {
+							editor.save();
+						}						
 
 						setTimeout(function() {
 							delayed_resize()
