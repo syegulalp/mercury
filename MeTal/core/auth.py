@@ -262,7 +262,7 @@ def publishing_lock(blog, return_queue=False):
         return queue_control
     else:
         raise QueueInProgressException("Publishing job currently running for blog {}".format(
-            queue_control.blog.for_log))
+            blog.for_log))
 
 def check_publishing_lock(blog, action_description, warn_only=False):
     '''
