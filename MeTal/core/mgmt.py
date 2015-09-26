@@ -91,7 +91,7 @@ def theme_install_to_system(theme_data):
 
     return new_theme
 
-def theme_apply_to_blog(theme, blog):
+def theme_apply_to_blog(theme, blog, user):
     '''
     Applies a given theme to a given blog.
     Removes and regenerates fileinfos for the pages on the blog.
@@ -100,10 +100,10 @@ def theme_apply_to_blog(theme, blog):
     from core import cms
     cms.purge_fileinfos(blog.fileinfos)
     erase_theme(blog)
-    theme_install_to_blog(theme, blog)
+    theme_install_to_blog(theme, blog, user)
 
 
-def theme_install_to_blog(installed_theme, blog):
+def theme_install_to_blog(installed_theme, blog, user):
 
     json_obj = json.loads(installed_theme.json)
     templates = json_obj["data"]
@@ -121,7 +121,7 @@ def theme_install_to_blog(installed_theme, blog):
                 setattr(table_obj, name, template[name])
 
         table_obj.blog = blog
-        table_obj.save()
+        table_obj.save(user)
 
         mappings = templates[t]["mapping"]
 
