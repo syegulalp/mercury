@@ -616,11 +616,12 @@ $(window)
 											'height',
 											(window.innerHeight
 													- $(".CodeMirror").offset().top - calc_size()));
-
+							editor.refresh();
 						}
 						
 						editor_update = function() {
 							editor.save();
+							editor.refresh();
 						}						
 
 						setTimeout(function() {
@@ -639,7 +640,7 @@ $(window)
 						var observer = new MutationObserver(function(mutations,
 								observer) {
 							setTimeout(function() {
-								delayed_resize()
+								delayed_resize();
 							}, 50);
 						});
 
