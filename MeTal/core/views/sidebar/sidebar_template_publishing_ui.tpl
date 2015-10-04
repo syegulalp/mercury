@@ -33,7 +33,7 @@
 
     <div class="form-group">
         <div class="btn-group">
-            <button onclick="template_save(4)" type="button" name="save" value="4" class="btn btn-sm btn-danger">Delete</button>
+            <a href="{{settings.BASE_URL}}/template/{{template.id}}/delete"><button type="button" name="save" value="4" class="btn btn-sm btn-danger">Delete</button></a>
         </div>
     </div>
 </div>

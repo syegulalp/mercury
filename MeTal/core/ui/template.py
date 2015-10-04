@@ -74,9 +74,53 @@ def template_edit(template_id):
 
     return template_edit_output(tags)
 
-def template_delete(template):
-    _template.delete(template)
-    return "Deleted"
+def template_delete(template_id):
+
+    user = auth.is_logged_in(request)
+    tpl = get_template(template_id)
+    blog = get_blog(tpl.blog)
+    permission = auth.is_blog_designer(user, blog)
+
+    from core.utils import Status
+    import settings
+
+    tags = template_tags(template_id=tpl.id,
+        user=user)
+
+    if request.forms.getunicode('confirm') == 'Y':
+        _template.delete(tpl)
+
+        status = Status(
+            type='warning',
+            close=False,
+            message='Template {} was successfully deleted.'.format(tpl.for_log),
+            action='Return to template list',
+            url='{}/blog/{}/templates'.format(
+                settings.BASE_URL, blog.id)
+            )
+
+    else:
+
+        status = Status(
+            type='warning',
+            close=False,
+            message='You are attempting to delete template <b>{}</b> from blog <b>{}</b>. <b>Are you sure you want to do this?</b>'.format(
+                tpl.for_display,
+                blog.for_display),
+            deny='{}/template/{}/edit'.format(
+                settings.BASE_URL, tpl.id),
+            confirm={'id':'delete',
+                'name':'confirm',
+                'value':'Y'}
+            )
+
+    tags.status = status
+    tplt = template('listing/report',
+        menu=generate_menu('blog', blog),
+        search_context=(search_context['blog'], blog),
+        **tags.__dict__)
+
+    return tplt
 
 @transaction
 def template_edit_save(template_id):
@@ -95,6 +139,7 @@ def template_edit_save(template_id):
 
     save_mode = int(request.forms.getunicode('save', default="0"))
 
+    '''
     if save_mode == 4:
         if request.forms.getunicode('confirm') == 'Y':
             return template_delete(tpl)
@@ -102,8 +147,11 @@ def template_edit_save(template_id):
             status = Status(
                 type='warning',
                 message='You are attempting to delete this template. <b>Are you sure you want to do this?</b>',
-                confirm=('save', '4')
+                confirm={'id':'delete',
+                    'name':'save',
+                    'value':'4'}
                 )
+    '''
 
     if save_mode in (1, 2, 3):
         try:

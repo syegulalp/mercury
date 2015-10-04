@@ -92,7 +92,10 @@ class Status:
 
         self.confirm = ka.get('confirm', None)
         self.deny = ka.get('deny', None)
+        self.action = ka.get('action', None)
+        self.url = ka.get('url', None)
         self.message_list = ka.get('message_list', None)
+        self.close = ka.get('close', True)
 
 
 def logout_nonce(user):

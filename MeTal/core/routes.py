@@ -502,6 +502,12 @@ def template_preview(template_id):
     from core.ui import template
     return template.template_preview(template_id)
 
+@_route(BASE_PATH + '/template/<template_id:int>/delete')
+@_route(BASE_PATH + '/template/<template_id:int>/delete', method='POST')
+def template_delete(template_id):
+    from core.ui import template
+    return template.template_delete(template_id)
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
     from core.ui import ui

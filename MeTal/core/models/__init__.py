@@ -1281,6 +1281,10 @@ class Template(BaseModel):
     default_type = CharField(max_length=32, default=None, null=True)
 
     @property
+    def link_format(self):
+        return "{}/template/{}/edit".format(BASE_URL, self.id)
+
+    @property
     def preview_file(self):
         from core import utils
         from settings import _sep

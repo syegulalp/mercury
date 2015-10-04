@@ -11,7 +11,9 @@
 % if status:
 <div id="alert_message" class="alert alert-{{status.type}}" role="alert">
 <span class="glyphicon glyphicon-{{status.icon}}"></span>
+% if status.close is True: 
 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+% end
 {{!status.message}}
 % if status.message_list is not None:
 <ul>
@@ -20,6 +22,14 @@
 % end
 </ul>
 % end
+% if status.action is not None:
+<hr/>
+<a href="{{status.url}}">
+<button type="button" class="btn btn-sm btn-success" >
+{{status.action}}
+</button>
+</a>
+% end
 % if status.confirm is not None:
 <hr/>
 <form id="confirm_form" name="confirm_form" method="post">{{!csrf_token}}
@@ -27,11 +37,11 @@
 name="{{status.confirm['name']}}"
 value="{{status.confirm['value']}}">Yes, I want to do this</button>
 <span class="pull-right">
-<button type="button" class="btn btn-sm btn-success" >
 <a href="{{status.deny}}">
+<button type="button" class="btn btn-sm btn-success" >
 No, I don't want to do this
-</a>
 </button>
+</a>
 </span>
 </form>
 % end

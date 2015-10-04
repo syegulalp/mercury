@@ -460,8 +460,6 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
     report = []
 
-
-
     from core.utils import Status
 
     if confirm == "y":
@@ -474,24 +472,25 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         media.delete_instance(recursive=True,
             delete_nullable=True)
 
-        '''
         confirmed = Struct()
         confirmed.message = 'Media {} successfully deleted'.format(
             media.for_log)
         confirmed.url = '{}/blog/{}/media'.format(BASE_URL, blog.id)
-        confirmed.details = 'Return to the media listing'
-        '''
+        confirmed.action = 'Return to the media listing'
+
         tags.status = Status(
             type='success',
-            message=confirmed.message)
+            message=confirmed.message,
+            action=confirmed.action,
+            url=confirmed.url,
+            close=False)
 
     else:
         confirmation = Struct()
 
         confirmation.message = ('''
-        You are about to delete media object <a href="{}">{}</a> from blog <b>{}</b>.
+        You are about to delete media object <b>{}</b> from blog <b>{}</b>.
         '''.format(
-            media.link_format,
             media.for_display,
             blog.for_display))
 
@@ -510,6 +509,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
         tags.status = Status(
             type='warning',
+            close=False,
             message=confirmation.message,
             deny=confirmation.no,
             confirm={'id':'delete',
