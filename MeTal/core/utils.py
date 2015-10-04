@@ -9,18 +9,10 @@ import hashlib, base64
 
 from core.libs.bottle import _stderr
 
-class Confirmation():
-    fields = ('message', 'details', 'yes', 'no')
-
-    def __init__(self, **ka):
-        for n in self.fields:
-            setattr(self, n, ka.get(n, None))
-
-    def validate(self):
-        for n in self.fields:
-            if getattr(self, n, None) is None:
-                raise Exception('Confirmation object missing field {}'.format(n))
-
+def quote_escape(string):
+    string = string.replace("'", "&#34")
+    string = string.replace('"', "&#39")
+    return string
 
 def preview_file(filename, extension):
     import zlib
