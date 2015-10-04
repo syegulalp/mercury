@@ -1293,6 +1293,10 @@ class Template(BaseModel):
 
         # return utils.preview_file2(self.default_mapping.fileinfos[0].file_path,
         #    self.blog.base_extension)
+    @property
+    def preview_path(self):
+        from core.template import preview_path
+        return preview_path(self)
 
     def include(self, include_name):
         include = Template.get(Template.title == include_name,

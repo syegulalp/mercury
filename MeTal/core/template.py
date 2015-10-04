@@ -15,6 +15,25 @@ def delete(template):
     t2 = Template.delete().where(Template.id == template.id)
     t2.execute()
 
+def preview_path(template):
+    from settings import _sep
+
+    file_path = template.default_mapping.fileinfos[0].file_path
+
+    preview_subpath = file_path.rsplit('/', 1)
+    if len(preview_subpath) > 1:
+        preview_subpath = preview_subpath[0]
+    else:
+        preview_subpath = ''
+
+    preview_path = (template.blog.path + _sep + preview_subpath)
+
+    preview_file = template.preview_file
+
+    return {'subpath':preview_subpath,
+        'path':preview_path,
+        'file':preview_file}
+
 def save(request, user, cms_template):
 
     import datetime

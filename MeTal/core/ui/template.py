@@ -178,6 +178,7 @@ def template_edit_save(template_id):
                 message_list=(e,))
 
         else:
+            template_preview_delete(tpl)
             status = Status(
                 type='success',
                 message="Template <b>{}</b> saved successfully. {}",
@@ -204,6 +205,15 @@ def template_edit_save(template_id):
 
     return tpl
 
+def template_preview_delete(tpl):
+
+    from settings import _sep
+    import os
+
+    preview = tpl.preview_path
+
+    os.remove(preview['path'] + _sep + preview['file'])
+
 
 def template_preview(template_id):
 
@@ -220,31 +230,20 @@ def template_preview(template_id):
     tpl_output = utils.tpl(template.body,
         **tags.__dict__)
 
-    # the template path generating routine here should be part of the schema
-    # and used to both create previews and delete them
+    preview = template.preview_path
 
-    preview_subpath = template.default_mapping.fileinfos[0].file_path.rsplit('/', 1)
-    if len(preview_subpath) > 1:
-        preview_subpath = preview_subpath[1]
-    else:
-        preview_subpath = ''
+    if os.path.isdir(preview['path']) is False:
+        os.makedirs(preview['path'])
 
-    preview_path = (template.blog.path + _sep + preview_subpath)
-
-    preview_file = template.preview_file
-
-    if os.path.isdir(preview_path) is False:
-        os.makedirs(preview_path)
-
-    with open(preview_path + _sep + preview_file, "wb") as output_file:
+    with open(preview['path'] + _sep + preview['file'], "wb") as output_file:
         output_file.write(tpl_output.encode('utf8'))
 
     import settings
     if settings.DESKTOP_MODE:
-        url = settings.BASE_URL_ROOT + '/' + preview_subpath + '/' + preview_file + '?_={}'.format(
+        url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
             template.blog.id)
     else:
-        url = template.blog.url + '/' + preview_subpath + '/' + preview_file
+        url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
 
     redirect (url)
 
