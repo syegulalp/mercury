@@ -637,19 +637,22 @@ $(window)
 							editor_resize();
 						});
 
-						var observer = new MutationObserver(function(mutations,
-								observer) {
-							setTimeout(function() {
-								delayed_resize();
-							}, 50);
-						});
-
-						observer.observe(document.querySelector('#editor_div'),
-								{
-									childList : true,
-									subtree : true
-								});
-
+						if ('page_text' in window)
+						{
+							var observer = new MutationObserver(function(mutations,
+									observer) {
+								setTimeout(function() {
+									delayed_resize();
+								}, 50);
+							});
+	
+							observer.observe(document.querySelector('#editor_div'),
+									{
+										childList : true,
+										subtree : true
+									});
+						}
+						
 						window.onbeforeunload = leave;
 
 						sidebar_wireup();
