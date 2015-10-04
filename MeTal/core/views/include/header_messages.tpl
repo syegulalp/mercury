@@ -24,7 +24,7 @@
 <hr/>
 <form id="confirm_form" name="confirm_form" method="post">{{!csrf_token}}
 <button type="submit" class="btn btn-sm btn-danger" id="confirm_{{status.confirm['id']}}"
-name="{{status.confirm['name]}}"
+name="{{status.confirm['name']}}"
 value="{{status.confirm['value']}}">Yes, I want to do this</button>
 <span class="pull-right">
 <button type="button" class="btn btn-sm btn-success" >
