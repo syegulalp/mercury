@@ -205,16 +205,6 @@ def template_edit_save(template_id):
 
     return tpl
 
-def template_preview_delete(tpl):
-
-    from settings import _sep
-    import os
-
-    preview = tpl.preview_path
-
-    os.remove(preview['path'] + _sep + preview['file'])
-
-
 def template_preview(template_id):
 
     from settings import _sep
@@ -246,6 +236,14 @@ def template_preview(template_id):
         url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
 
     redirect (url)
+
+def template_preview_delete(tpl):
+
+    from settings import _sep
+    import os
+
+    preview = tpl.preview_path
+    os.remove(preview['path'] + _sep + preview['file'])
 
 def template_edit_output(tags):
 
