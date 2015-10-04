@@ -116,7 +116,7 @@ def template_delete(template_id):
 
     tags.status = status
     tplt = template('listing/report',
-        menu=generate_menu('blog', blog),
+        menu=generate_menu('blog_delete_template', tpl),
         search_context=(search_context['blog'], blog),
         **tags.__dict__)
 

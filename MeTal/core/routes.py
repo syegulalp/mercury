@@ -463,16 +463,17 @@ def blog_media_edit_save(blog_id, media_id):
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
+@_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete(blog_id, media_id):
     from core.ui import blog
-    return blog.blog_media_delete(blog_id, media_id, None)
+    return blog.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
 
-
+'''
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete_confirm(blog_id, media_id):
     from core.ui import blog
     return blog.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
-
+'''
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):

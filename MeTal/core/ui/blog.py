@@ -456,13 +456,14 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
     permission = auth.is_media_owner(user, media)
 
     tags = template_tags(blog_id=blog.id,
+        media=media,
         user=user)
 
     report = []
 
     from core.utils import Status
 
-    if confirm == "y":
+    if confirm == 'Y':
 
         try:
             _remove(media.path)
@@ -488,9 +489,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
     else:
         confirmation = Struct()
 
-        confirmation.message = ('''
-        You are about to delete media object <b>{}</b> from blog <b>{}</b>.
-        '''.format(
+        confirmation.message = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
             media.for_display,
             blog.for_display))
 
@@ -514,18 +513,13 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
             deny=confirmation.no,
             confirm={'id':'delete',
                 'name':'confirm',
-                'value':'y'}
+                'value':'Y'}
             )
 
-    confirmation = None
-    confirmed = None
-
     tpl = template('listing/report',
-        menu=generate_menu('blog_delete_media', media),
+        menu=generate_menu('blog_delete_media', tags),
         icons=icons,
         report=report,
-        confirmation=confirmation,
-        confirmed=confirmed,
         search_context=(search_context['blog_media'], blog),
         **tags.__dict__)
 

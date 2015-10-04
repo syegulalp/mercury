@@ -118,7 +118,7 @@ menus = {
         'parent': 'site',
         'button_label': lambda x: 'Edit #{}'.format(x.id),
         'path': lambda x: BASE_URL + "/site/{}/users".format(x.site.id),
-        'button': 'Users',
+        'button': lambda x: 'Users',
         'button_title': 'All users on this site',
         'parent_ref': lambda x: x.site,
     },
@@ -157,9 +157,7 @@ menus = {
     'blog_settings': {
         'parent': 'blog',
         'label': 'Blog settings',
-        # 'button_label':lambda x:'Edit #{}'.format(x.id),
         'path': lambda x: "/settings",
-        # 'button': 'Templates',
         'button_title': 'Settings',
         'parent_ref': lambda x: x,
     },
@@ -183,13 +181,28 @@ menus = {
         'path': lambda x: "/templates",
         'parent_ref': _self,
     },
+    'blog_template': {
+        'parent': 'blog',
+        'path': lambda x: BASE_URL + "/blog/{}/templates".format(x.blog.id),
+        'button': lambda x: 'Templates',
+        'button_title': 'All templates in this blog',
+        'parent_ref': lambda x: x.blog,
+    },
     'blog_edit_template': {
         'parent': 'blog',
         'button_label': lambda x: 'Edit #{}'.format(x.id),
         'path': lambda x: BASE_URL + "/blog/{}/templates".format(x.blog.id),
-        'button': 'Templates',
+        'button': lambda x: 'Templates',
         'button_title': 'All templates in this blog',
         'parent_ref': lambda x: x.blog,
+    },
+    'blog_delete_template': {
+        'parent': 'blog_template',
+        'button_label': lambda x: 'Delete',
+        'path': lambda x: BASE_URL + "/template/{}/edit".format(x.id),
+        'button': lambda x: 'Edit #{}'.format(x.id),
+        'button_title': '',
+        'parent_ref': lambda x: x,
     },
     'blog_manage_tags': {
         'parent': 'blog',
@@ -205,21 +218,18 @@ menus = {
         'parent': 'blog',
         'label': 'Blog queue',
         'path': lambda x: "/blog/{}".format(x.id),
-        # 'path':lambda x:BASE_URL + "/blog/{}/queue".format(x.blog.id),
         'parent_ref': lambda x: x
     },
     'blog_purge': {
         'parent': 'blog',
         'label': 'Purge and recreate blog',
         'path': lambda x: "/blog/{}".format(x.id),
-        # 'path':lambda x:BASE_URL + "/blog/{}/queue".format(x.blog.id),
         'parent_ref': lambda x: x
     },
     'blog_republish': {
         'parent': 'blog',
         'label': 'Republish blog',
         'path': lambda x: "/blog/{}".format(x.id),
-        # 'path':lambda x:BASE_URL + "/blog/{}/queue".format(x.blog.id),
         'parent_ref': lambda x: x
     },
     'blog_manage_media': {
@@ -232,7 +242,7 @@ menus = {
         'parent': 'blog',
         'button_label': lambda x: 'Edit #{}'.format(x.id),
         'path': lambda x: BASE_URL + "/blog/{}".format(x.blog.id),
-        'button': 'Pages',
+        'button': lambda x: 'Pages',
         'button_title': 'All pages in this blog',
         'parent_ref': lambda x: x.blog,
     },
@@ -240,26 +250,34 @@ menus = {
         'parent': 'blog_manage_tags',
         'button_label': lambda x: 'Edit #{}'.format(x.id),
         'path': lambda x: BASE_URL + "/blog/{}/tags".format(x.blog.id),
-        'button': 'Tags',
+        'button': lambda x: 'Tags',
         'button_title': 'All tags in this blog',
+        'parent_ref': lambda x: x.blog,
+    },
+    'blog_media': {
+        'parent': 'blog',
+        'path': lambda x: BASE_URL + "/blog/{}/media".format(x.blog.id),
+        'button': lambda x: 'Media',
+        'button_title': 'All media in this blog',
         'parent_ref': lambda x: x.blog,
     },
     'blog_edit_media': {
         'parent': 'blog',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
         'path': lambda x: BASE_URL + "/blog/{}/media".format(x.blog.id),
-        'button': 'Media',
+        'button_label': lambda x: 'Edit #{}'.format(x.id),
+        'button': lambda x: 'Media',
         'button_title': 'All media in this blog',
         'parent_ref': lambda x: x.blog,
     },
     'blog_delete_media': {
-        'parent': 'blog_edit_media',
-        'button_label': lambda x: 'Delete #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/blog/{}/media/{}/delete".format(x.blog.id, x.id),
-        'button': lambda x: 'Media #{}'.format(x.id),
-        'button_title': lambda x: 'Media #{}'.format(x.id),
-        'parent_ref': lambda x: x,
+        'parent': 'blog_media',
+        'button_label': lambda x: 'Delete',
+        'path': lambda x: BASE_URL + "/blog/{}/media/{}/edit".format(x.blog.id, x.media.id),
+        'button': lambda x: 'Edit #{}'.format(x.media.id),
+        'button_title': 'Return to editing media',
+        'parent_ref': lambda x: x.media,
     },
+
     'pages_div': {
         'label': 'Pages',
         'divider': True
@@ -286,7 +304,7 @@ def generate_menu(context, context_object):
     segment = menus[context]
 
     if 'label' in segment:
-        menu = label_string.format(segment['label'])
+        menu = label_string.format(segment['label']) + menu
 
     while True:
 
@@ -296,12 +314,13 @@ def generate_menu(context, context_object):
 
         if 'button' in segment:
 
-            menu = label_string.format(segment['button_label'](context_object))
+            if 'button_label' in segment:
+                menu = label_string.format(segment['button_label'](context_object)) + menu
 
             menu = button_string.format(
                 segment['button_title'],
                 segment['path'](context_object),
-                segment['button']) + menu
+                segment['button'](context_object)) + menu
 
         if 'menu' in segment:
 
