@@ -21,7 +21,6 @@ from settings import (BASE_URL)
 import re, datetime
 from os import remove as _remove
 
-
 @transaction
 def blog(blog_id, errormsg=None):
     '''
@@ -461,6 +460,10 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
     report = []
 
+
+
+    from core.utils import Status
+
     if confirm == "y":
 
         try:
@@ -471,43 +474,58 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         media.delete_instance(recursive=True,
             delete_nullable=True)
 
-        report.append('<h3>Media <b>#{} ({})</b> successfully deleted</h3>'.format(
-            media.id, media.friendly_name))
-        report.append('<a href="{}/blog/{}/media">Return to the media listing</a>'.format(
-            BASE_URL, blog.id))
+        '''
+        confirmed = Struct()
+        confirmed.message = 'Media {} successfully deleted'.format(
+            media.for_log)
+        confirmed.url = '{}/blog/{}/media'.format(BASE_URL, blog.id)
+        confirmed.details = 'Return to the media listing'
+        '''
+        tags.status = Status(
+            type='success',
+            message=confirmed.message)
+
     else:
-        report.append('<h3>You are about to delete media object <a href="{}">{}</a> from blog <b>{}</b></h3>'.format(
+        confirmation = Struct()
+
+        confirmation.message = ('''
+        You are about to delete media object <a href="{}">{}</a> from blog <b>{}</b>.
+        '''.format(
             media.link_format,
             media.for_display,
             blog.for_display))
-        report.append("If you delete this media object, it will no longer be available to the following pages:")
 
-        used_in_tpl = "<ul>{}</ul>"
         used_in = []
 
         for n in media.associated_with:
             used_in.append("<li>{}</li>".format(n.page.for_display))
 
-        report.append(used_in_tpl.format("".join(used_in)))
+        confirmation.details = ('''
+        Note that the following pages use this media object. Deleting the object will remove it from these pages as well:
+        <ul>{}</ul>
+        '''.format(''.join(used_in)))
 
-        ok_button = '''
-<hr/>
-<form method='post'>{}<input type='hidden' name='confirm' value='y'>
-<span class="pull-right">
-<a href="../{}/edit"><button type='button' class='btn btn-primary'>No, cancel</button></a>
-</span>
-<button class='btn btn-danger' action='submit'>Yes, delete this media</button>
-</form>
-'''.format(tags.csrf_token, media.id)
+        confirmation.yes = 'Yes, delete this media'
+        confirmation.no = '../{}/edit'.format(media.id)
 
-        report.append(ok_button)
+        tags.status = Status(
+            type='warning',
+            message=confirmation.message,
+            deny=confirmation.no,
+            confirm={'id':'delete',
+                'name':'confirm',
+                'value':'y'}
+            )
 
-
+    confirmation = None
+    confirmed = None
 
     tpl = template('listing/report',
         menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
+        confirmation=confirmation,
+        confirmed=confirmed,
         search_context=(search_context['blog_media'], blog),
         **tags.__dict__)
 

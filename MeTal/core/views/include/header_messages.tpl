@@ -23,11 +23,15 @@
 % if status.confirm is not None:
 <hr/>
 <form id="confirm_form" name="confirm_form" method="post">{{!csrf_token}}
-<button type="submit" class="btn btn-sm btn-danger" id="confirm_{{status.confirm}}" name="{{status.confirm[0]}}"
-value="{{status.confirm[1]}}">Yes, I want to do this</button>
+<button type="submit" class="btn btn-sm btn-danger" id="confirm_{{status.confirm['id']}}"
+name="{{status.confirm['name]}}"
+value="{{status.confirm['value']}}">Yes, I want to do this</button>
 <span class="pull-right">
-<button type="submit" class="btn btn-sm btn-success" >No, I don't want to do this</button>
-<input type="hidden" name="confirm" value="Y">
+<button type="button" class="btn btn-sm btn-success" >
+<a href="{{status.deny}}">
+No, I don't want to do this
+</a>
+</button>
 </span>
 </form>
 % end

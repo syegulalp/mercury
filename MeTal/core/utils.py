@@ -9,6 +9,19 @@ import hashlib, base64
 
 from core.libs.bottle import _stderr
 
+class Confirmation():
+    fields = ('message', 'details', 'yes', 'no')
+
+    def __init__(self, **ka):
+        for n in self.fields:
+            setattr(self, n, ka.get(n, None))
+
+    def validate(self):
+        for n in self.fields:
+            if getattr(self, n, None) is None:
+                raise Exception('Confirmation object missing field {}'.format(n))
+
+
 def preview_file(filename, extension):
     import zlib
     try:
@@ -78,6 +91,7 @@ class Status:
             self.icon = self.status_types[self.type]
 
         self.confirm = ka.get('confirm', None)
+        self.deny = ka.get('deny', None)
         self.message_list = ka.get('message_list', None)
 
 
