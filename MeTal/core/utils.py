@@ -299,8 +299,6 @@ def generate_date_mapping(date_value, tags, path_string):
     time_string = date_value.strftime(path_string)
     path_string = tpl(time_string, **tags.__dict__)
 
-    # path_string = path_string.replace('/', _sep)
-
     return path_string
 
 def postpone(function):
