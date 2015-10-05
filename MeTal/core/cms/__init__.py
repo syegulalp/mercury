@@ -770,6 +770,20 @@ archive_functions = {
         }
     }
 
+def replace_mapping_tags(string):
+
+    import re
+
+    mapping_tags = (
+        (re.compile('%i'), '{{blog.index_file}}'),
+        (re.compile('%s'), '{{blog.ssi_path}}'),
+        (re.compile('%f'), '{{page.filename}}'),
+    )
+
+    for n in mapping_tags:
+        string = re.sub(n[0], n[1], string)
+    return string
+
 def build_pages_fileinfos(pages):
     '''
     Creates fileinfo entries for the template mappings associated with
@@ -787,10 +801,12 @@ def build_pages_fileinfos(pages):
         tags = template_tags(page_id=page.id)
 
         for t in template_mappings:
-            path_string = generate_date_mapping(page.publication_date.date(), tags, t.path_string)
+
+            path_string = replace_mapping_tags(t.path_string)
+            path_string = generate_date_mapping(page.publication_date.date(), tags, path_string)
             if path_string == '':
                 continue
-            # master_path_string = path_string + "." + page.blog.base_extension
+
             master_path_string = path_string
             add_page_fileinfo(page, t, master_path_string,
                 page.blog.url + "/" + master_path_string,
@@ -805,9 +821,7 @@ def build_archives_fileinfos(pages):
     for the date-based archive entries for each
     '''
 
-
     counter = 0
-
     mapping_list = {}
 
     for page in pages:
@@ -818,14 +832,15 @@ def build_archives_fileinfos(pages):
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
         for m in page.archive_mappings:
+            path_string = replace_mapping_tags(m.path_string)
+            path_string = generate_date_mapping(page.publication_date, tags, path_string)
 
-            path_string = generate_date_mapping(page.publication_date, tags, m.path_string)
             if path_string == '':
                 continue
+
             if path_string in mapping_list:
                 continue
 
-            # tag_context = generate_archive_context_from_page(m.archive_xref, page.blog, page)
             mapping_list[path_string] = ((None, m, path_string,
                                page.blog.url + "/" + path_string,
                                page.blog.path + '/' + path_string,
@@ -879,9 +894,11 @@ def build_indexes_fileinfos(templates):
         tags = template_tags(blog_id=blog.id)
 
         for i in index_mappings:
-            path_string = tpl(tpl_oneline(i.path_string), **tags.__dict__)
+            path_string = replace_mapping_tags(i.path_string)
+            path_string = tpl(tpl_oneline(path_string), **tags.__dict__)
             if path_string == '':
                 continue
+            path_string = replace_mapping_tags(path_string)
             master_path_string = path_string
             add_page_fileinfo(None, i, master_path_string,
                  blog.url + "/" + master_path_string,
@@ -1105,9 +1122,12 @@ def build_mapping_xrefs(mapping_list):
 
         map_types[mapping.template.template_type] = ""
 
+    # TODO: make all these actions queueable
+
     if 'Page' in map_types:
         build_pages_fileinfos(mapping.template.blog.pages())
     if 'Archive' in map_types:
+        # TODO: eventually build only the mappings for the affected template, not all of them
         build_archives_fileinfos(mapping.template.blog.pages())
     if 'Index' in map_types:
         build_indexes_fileinfos(mapping.template.blog.index_templates)
