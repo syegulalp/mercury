@@ -243,7 +243,10 @@ def template_preview_delete(tpl):
     import os
 
     preview = tpl.preview_path
-    os.remove(preview['path'] + _sep + preview['file'])
+    try:
+        os.remove(preview['path'] + _sep + preview['file'])
+    except FileNotFoundError:
+        pass
 
 def template_edit_output(tags):
 
