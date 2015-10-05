@@ -22,23 +22,19 @@ def db_is_locked():
 
 def recreate_database():
 
-    from core.error import FileNotFoundError
-
     db.close()
 
     try:
         os.remove(settings.FULL_SQLITE_DATABASE_PATH)
-    except FileNotFoundError:
-        pass
+    except OSError as e:
+        from core.error import not_found
+        not_found(e)
 
     try:
         os.mkdir(settings.APPLICATION_PATH + settings._sep + settings.DATA_FILE_PATH)
     except OSError as e:
-        import errno
-        if e.errno == errno.EEXIST:
-            pass
-        else:
-            raise e
+        from core.error import file_exists
+        file_exists(e)
 
     init_db.recreate_database()
 

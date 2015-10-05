@@ -240,14 +240,15 @@ def template_preview(template_id):
 def template_preview_delete(tpl):
 
     from settings import _sep
-    from core.error import FileNotFoundError
+
     import os
 
     preview = tpl.preview_path
     try:
         os.remove(preview['path'] + _sep + preview['file'])
-    except FileNotFoundError:
-        pass
+    except OSError as e:
+        from core.error import not_found
+        not_found(e)
 
 def template_edit_output(tags):
 
