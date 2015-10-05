@@ -1461,45 +1461,6 @@ class TemplateMapping(BaseModel):
     archive_xref = CharField(max_length=16, null=True)
     modified_date = DateTimeField(default=datetime.datetime.now)
 
-    '''
-    def _build_xrefs(self):
-
-        from core import cms
-        cms.purge_fileinfos(self.fileinfos)
-
-        import re
-        iterable_tags = (
-            (re.compile('%Y'), 'Y'),
-            (re.compile('%m'), 'M'),
-            (re.compile('%d'), 'D'),
-            (re.compile('\{\{page\.categories\}\}'), 'C'),
-            (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
-            (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A')
-            (re.compile('\{\{page\.author.?[^\}]*\}\}'), 'A')
-            )
-
-        match_pos = []
-
-        for tag, func in iterable_tags:
-            match = tag.search(self.path_string)
-            if match is not None:
-                match_pos.append((func, match.start()))
-
-        sorted_match_list = sorted(match_pos, key=lambda row: row[1])
-
-        context_string = "".join(n for n, m in sorted_match_list)
-
-        self.archive_xref = context_string
-
-        content_type = self.template.template_type
-        if content_type == 'Page':
-            cms.build_pages_fileinfos(self.template.blog.pages())
-        if content_type == 'Archive':
-            cms.build_archives_fileinfos(self.template.blog.pages())
-        if content_type == 'Index':
-            cms.build_indexes_fileinfos(self.template.blog.index_templates())
-    '''
-
     @property
     def fileinfos(self):
         '''
