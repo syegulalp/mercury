@@ -240,12 +240,14 @@ def queue_page_archive_actions(page):
     tags = template_tags(page_id=page.id)
 
     for n in archive_templates:
+        # TODO: this seems inefficient
+        # why not just store a backreference to the mapping in question?
         for m in n.mappings:
 
             file_path = (page.blog.path + '/' +
                          generate_date_mapping(page.publication_date.date(),
                                                tags,
-                                               m.path_string))
+                                               replace_mapping_tags(m.path_string)))
 
             fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
 
@@ -403,6 +405,8 @@ def save_page(page, user, blog=None):
             save_result = page.save(user, False, backup_only, change_note)
         except PageNotChanged:
             save_result = (None, None)
+
+        # clean_preview = delete_page_preview(page_id)
 
         if blog_new_page:
 
