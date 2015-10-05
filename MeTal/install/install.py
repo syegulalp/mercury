@@ -343,6 +343,8 @@ def step_4_pre():
     except BaseException as e:
         raise SetupError(str(e.__class__.__name__) + ": " + str(e))
 
+    from core.error import FileNotFoundError
+
     try:
         os.remove(config_file_name)
     except FileNotFoundError:

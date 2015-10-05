@@ -240,6 +240,7 @@ def template_preview(template_id):
 def template_preview_delete(tpl):
 
     from settings import _sep
+    from core.error import FileNotFoundError
     import os
 
     preview = tpl.preview_path

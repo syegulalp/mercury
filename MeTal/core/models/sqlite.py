@@ -22,6 +22,8 @@ def db_is_locked():
 
 def recreate_database():
 
+    from core.error import FileNotFoundError
+
     db.close()
 
     try:
@@ -54,6 +56,8 @@ def make_db_connection():
 
         # db.close()
         # throws spurious AttributeError when no DB present
+
+        from core.error import FileNotFoundError
 
         try:
             os.remove(settings.FULL_SQLITE_DATABASE_PATH)

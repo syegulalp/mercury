@@ -45,6 +45,15 @@ class TemplateSaveException(LoggedException):
 # for earlier Python 3.x backwards compatibility
 
 try:
+    FileNotFoundError
+except NameError:
+    class FileNotFoundError(LoggedException):
+        pass
+else:
+    class FileNotFoundError(FileExistsError):
+        pass
+
+try:
     FileExistsError
 except NameError:
     class FileExistsError(LoggedException):
