@@ -280,14 +280,11 @@ def step_4_pre():
             description="The description for your first blog.",
             url=new_site.url,
             path=new_site.path,
-            theme=new_theme
+            theme=new_theme,
+            user=new_user
             )
 
-        report.append("Initial blog created successfully.")
-
-        mgmt.theme_install_to_blog(new_theme, new_blog, new_user)
-
-        report.append("Theme installed in new blog successfully.")
+        report.append("Initial blog created successfully with default theme.")
 
         plugindir = (_s.APPLICATION_PATH + _sep + 'data' +
             _sep + 'plugins')
