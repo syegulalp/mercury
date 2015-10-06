@@ -172,7 +172,6 @@ def theme_install_to_blog(installed_theme, blog, user):
         kv_to_change.save()
 
     from core import cms
-
     cms.purge_blog(blog)
 
 
@@ -201,7 +200,7 @@ def blog_create(**new_blog_data):
     new_blog.url = new_blog_data['url']
     new_blog.path = new_blog_data['path']
     new_blog.local_path = new_blog.path
-
+    installing_user = new_blog_data['user']
 
     new_blog.save()
 
@@ -214,7 +213,7 @@ def blog_create(**new_blog_data):
 
     new_blog_theme = new_blog_data.get('theme', None)
     if new_blog_theme is not None:
-        theme_install_to_blog(new_blog_theme, new_blog)
+        theme_install_to_blog(new_blog_theme, new_blog, installing_user)
         new_blog.save()
 
     user = user_from_ka(**new_blog_data)
