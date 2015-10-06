@@ -216,7 +216,7 @@ menus = {
     },
     'blog_queue': {
         'parent': 'blog',
-        'label': 'Blog queue',
+        'label': 'Blog publishing queue',
         'path': lambda x: "/blog/{}".format(x.id),
         'parent_ref': lambda x: x
     },
