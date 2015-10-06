@@ -286,8 +286,8 @@ def main_ui():
 
 @_route(BASE_PATH + '/site/<site_id:int>')
 def site(site_id):
-    from core.ui import ui
-    return ui.site(site_id)
+    from core.ui import site
+    return site.site(site_id)
 
 
 @_route(BASE_PATH + "/system/plugins/register/<plugin_path>")
@@ -511,44 +511,44 @@ def template_delete(template_id):
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
-    from core.ui import ui
-    return ui.page_edit(page_id)
+    from core.ui import page
+    return page.page_edit(page_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit', method='POST')
 def page_edit_save(page_id):
-    from core.ui import ui
-    return ui.page_edit_save(page_id)
+    from core.ui import page
+    return page.page_edit_save(page_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/revisions')
 def page_revisions(page_id):
-    from core.ui import ui
-    return ui.page_revisions(page_id)
+    from core.ui import page
+    return page.page_revisions(page_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>')
 def page_revision_restore(page_id, revision_id):
-    from core.ui import ui
-    return ui.page_revision_restore(page_id, revision_id)
+    from core.ui import page
+    return page.page_revision_restore(page_id, revision_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>', method='POST')
 def page_revision_restore_save(page_id, revision_id):  # @UnusedVariable
-    from core.ui import ui
-    return ui.page_revision_restore_save(page_id)
+    from core.ui import page
+    return page.page_revision_restore_save(page_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/upload', method='POST')
 def page_media_upload(page_id):
-    from core.ui import ui
-    return ui.page_media_upload(page_id)
+    from core.ui import page
+    return page.page_media_upload(page_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/media/<media_id:int>/delete', method='POST')
 def page_media_delete(page_id, media_id):
-    from core.ui import ui
-    return ui.page_media_delete(page_id, media_id)
+    from core.ui import page
+    return page.page_media_delete(page_id, media_id)
 
 '''
 EXAMPLE OF A MODAL FUNCTION
@@ -575,8 +575,8 @@ def blog_purge(blog_id):
 @_route(BASE_PATH + '/page/<page_id:int>/del')
 @_route(BASE_PATH + '/page/<page_id:int>/delete', method='POST')
 def page_delete(page_id):
-    from core.ui import ui
-    return ui.page_delete(page_id)
+    from core.ui import page
+    return page.page_delete(page_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
@@ -618,18 +618,18 @@ def blog_publish_process(blog_id):
 
 @_route(BASE_PATH + "/page/<page_id:int>/preview")
 def page_preview(page_id):
-    from core.ui import ui
-    return ui.page_preview(page_id)
+    from core.ui import page
+    return page.page_preview(page_id)
 
 @_route(BASE_PATH + "/page/<page_id:int>/delete-preview")
 def delete_page_preview(page_id):
-    from core.ui import ui
-    return ui.delete_page_preview(page_id)
+    from core.ui import page
+    return page.delete_page_preview(page_id)
 
 @_route(BASE_PATH + "/page/<page_id:int>/public-preview")
 def page_public_preview(page_id):
-    from core.ui import ui
-    return ui.page_public_preview(page_id)
+    from core.ui import page
+    return page.page_public_preview(page_id)
 
 '''
 Static routing.
@@ -652,16 +652,16 @@ def media_preview(media_id):
 @_route('/preview/<path:path>')
 def preview(path):
 
-    from core.ui import ui
+    from core.ui import page
 
-    page = FileInfo.get(
+    preview_page = FileInfo.get(
         FileInfo.url == path)
 
     # return template mapping if no page found
 
     # prefix urls in preview for virtual filesystem movement
 
-    return ui.page_preview(page.page.id)
+    return page.page_preview(preview_page.page.id)
 
 
 if DESKTOP_MODE:
@@ -775,14 +775,14 @@ def error_handler(error):
 
 @_route(BASE_PATH + '/page/<page_id:int>/get-media-templates/<media_id:int>')
 def page_get_media_templates(page_id, media_id):
-    from core.ui import ui
-    return ui.page_get_media_templates(page_id, media_id)
+    from core.ui import page
+    return page.page_get_media_templates(page_id, media_id)
 
 
 @_route(BASE_PATH + '/page/<page_id:int>/add-media/<media_id:int>/<template_id:int>')
 def page_add_media_with_template(page_id, media_id, template_id):
-    from core.ui import ui
-    return ui.page_add_media_with_template(page_id, media_id, template_id)
+    from core.ui import page
+    return page.page_add_media_with_template(page_id, media_id, template_id)
 
 
 @_route(BASE_PATH + "/api/1/get-tag/<tag_name>")
