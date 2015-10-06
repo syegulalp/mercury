@@ -57,6 +57,14 @@ job_insert_type.index = "index"
 job_insert_type.ssi = "ssi"
 
 
+media_filetypes = Struct()
+media_filetypes.image = "Image"
+media_filetypes.types = {
+    'jpg':media_filetypes.image,
+    'gif':media_filetypes.image,
+    'png':media_filetypes.image,
+    }
+
 def build_page(q):
     '''
     Builds the file for a single blog page, q, based on its fileinfo data.
@@ -1209,15 +1217,6 @@ def purge_blog(blog):
     report.append("Total processing time: {0:.2f} seconds.".format(end - begin))
 
     return report
-
-
-media_filetypes = Struct()
-media_filetypes.image = "Image"
-media_filetypes.types = {
-    'jpg':media_filetypes.image,
-    'gif':media_filetypes.image,
-    'png':media_filetypes.image,
-    }
 
 def register_media(filename, path, user, **ka):
 
