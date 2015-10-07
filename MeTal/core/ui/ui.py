@@ -1,5 +1,4 @@
 from core import (auth)
-# from core.log import logger
 from core.menu import generate_menu
 
 from core.models import (get_blog,
@@ -12,8 +11,6 @@ from core.libs.bottle import (template, request)
 from settings import (BASE_URL)
 
 import json
-# from os.path import exists as _exists
-# from os import makedirs
 
 queue_selections = (
     ('Remove from queue', '1', ''),
