@@ -80,8 +80,6 @@ def page_edit(page_id):
         page.for_log,
         user.for_log))
 
-
-
     return tpl
 
 @transaction
@@ -95,7 +93,7 @@ def page_edit_save(page_id):
 
     tags = cms.save_page(page, user, page.blog)
 
-    clean_preview = delete_page_preview(page_id)
+    delete_page_preview_core(page)
 
     from core.cms import save_action_list
     from core.ui_kv import kv_ui
@@ -186,6 +184,10 @@ def delete_page_preview(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
 
+    delete_page_preview_core(page)
+
+def delete_page_preview_core(page):
+
     preview_file = page.preview_file
     preview_fileinfo = page.default_fileinfo
     split_path = preview_fileinfo.file_path.rsplit('/', 1)
@@ -196,25 +198,15 @@ def delete_page_preview(page_id):
          )
 
     import os
+
     try:
         os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
-    except Exception as e:
+    except OSError as e:
         from core.error import not_found
-        not_found(e)
-
-
-@transaction
-def page_public_preview(page_id):
-
-    user = auth.is_logged_in(request)
-    page = get_page(page_id)
-    permission = auth.is_page_editor(user, page)
-
-    # generate the page text
-    # write it to the preview URL, same as the page w/"_preview" prepended to it
-    # check to make sure that preview URL has no name collisions
-    # return a redirect to the successfully-written URL
-
+        if not_found(e) is False:
+            raise e
+    except Exception as e:
+        raise e
 
 @transaction
 def page_revisions(page_id):

@@ -28,13 +28,19 @@ def recreate_database():
         os.remove(settings.FULL_SQLITE_DATABASE_PATH)
     except OSError as e:
         from core.error import not_found
-        not_found(e)
+        if not_found(e) is False:
+            raise e
+    except Exception as e:
+        raise e
 
     try:
         os.mkdir(settings.APPLICATION_PATH + settings._sep + settings.DATA_FILE_PATH)
     except OSError as e:
         from core.error import file_exists
-        file_exists(e)
+        if file_exists(e) is False:
+            raise e
+    except Exception as e:
+        raise e
 
     init_db.recreate_database()
 

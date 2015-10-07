@@ -344,7 +344,10 @@ def step_4_pre():
         os.remove(config_file_name)
     except OSError as e:
         from core.error import not_found
-        not_found(e)
+        if not_found(e) is False:
+            raise e
+    except Exception as e:
+        raise e
 
     finished = '''
     <p>Installation is complete.

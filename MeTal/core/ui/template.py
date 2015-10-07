@@ -248,7 +248,10 @@ def template_preview_delete(tpl):
         os.remove(preview['path'] + _sep + preview['file'])
     except OSError as e:
         from core.error import not_found
-        not_found(e)
+        if not_found(e) is False:
+            raise e
+    except Exception as e:
+        raise e)
 
 def template_edit_output(tags):
 

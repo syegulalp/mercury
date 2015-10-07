@@ -56,13 +56,13 @@ else:
 def not_found(e):
     import errno
     if e.errno == errno.ENOENT:
-        return e
+        return True
     else:
-        raise e
+        return False
 
 def file_exists(e):
     import errno
     if e.errno == errno.EEXIST:
-        return e
+        return True
     else:
-        raise e
+        return False

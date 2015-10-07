@@ -414,8 +414,6 @@ def save_page(page, user, blog=None):
         except PageNotChanged:
             save_result = (None, None)
 
-        # clean_preview = delete_page_preview(page_id)
-
         if blog_new_page:
 
             default_blog_category = Category.get(
