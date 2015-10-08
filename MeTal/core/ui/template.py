@@ -239,19 +239,21 @@ def template_preview(template_id):
 
 def template_preview_delete(tpl):
 
-    from settings import _sep
+    preview = tpl.preview_path
+    if preview is None:
+        return None
 
+    from settings import _sep
     import os
 
-    preview = tpl.preview_path
     try:
-        os.remove(preview['path'] + _sep + preview['file'])
+        return os.remove(preview['path'] + _sep + preview['file'])
     except OSError as e:
         from core.error import not_found
         if not_found(e) is False:
             raise e
     except Exception as e:
-        raise e)
+        raise e
 
 def template_edit_output(tags):
 
