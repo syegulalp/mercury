@@ -506,19 +506,19 @@ class Blog(SiteBase):
         return archive_default
 
     @property
-    def index_archive_default(self):
+    def index_archive(self):
         return self.archive_default(archive_type.index)
     @property
-    def page_archive_default(self):
+    def page_archive(self):
         return self.archive_default(archive_type.page)
     @property
-    def author_archive_default(self):
+    def author_archive(self):
         return self.archive_default(archive_type.author)
     @property
-    def chron_archive_default(self):
+    def date_archive(self):
         return self.archive_default(archive_type.archive)
     @property
-    def category_archive_default(self):
+    def category_archive(self):
         return self.archive_default(archive_type.category)
 
     @property
@@ -1266,8 +1266,6 @@ class Tag(BaseModel):
         return template
 
 
-
-
 class Template(BaseModel):
     title = TextField(default="Untitled Template", null=False)
     theme = ForeignKeyField(Theme, null=True, index=True)
@@ -1279,6 +1277,12 @@ class Template(BaseModel):
     modified_date = DateTimeField(default=datetime.datetime.now)
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
+
+    @property
+    def default_url(self):
+        if self.default_type is None:
+            return None
+        return self.default_mapping.fileinfos[0].url
 
     @property
     def link_format(self):
