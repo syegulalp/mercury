@@ -200,7 +200,7 @@ def delete_page_preview_core(page):
     import os
 
     try:
-        os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
+        return os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
     except OSError as e:
         from core.error import not_found
         if not_found(e) is False:
