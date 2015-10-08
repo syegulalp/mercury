@@ -16,8 +16,11 @@ def delete(template):
     t2.execute()
 
 def preview_path(template):
-    from settings import _sep
 
+    if template.default_mapping.fileinfos.count() == 0:
+        return None
+
+    from settings import _sep
     file_path = template.default_mapping.fileinfos[0].file_path
 
     preview_subpath = file_path.rsplit('/', 1)
