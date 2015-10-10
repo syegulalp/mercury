@@ -1,5 +1,6 @@
 from core.libs.bottle import (request, template, redirect)
 from core.boot import settings as _s
+from settings import DESKTOP_MODE
 _sep = _s._sep
 import os, random, string
 
@@ -65,6 +66,10 @@ def step_0_pre():
     store_ini('key', 'PASSWORD_KEY', generate_key(32))
     store_ini('key', 'SECRET_KEY', generate_key(32))
 
+    if get_ini('main', 'BASE_URL_ROOT') is None:
+        store_ini('main', 'BASE_URL_ROOT', _s.BASE_URL_ROOT)
+        store_ini('main', 'BASE_URL_PATH', _s.BASE_URL_PATH)
+
     return {}
 
 def step_0_post():
@@ -74,6 +79,7 @@ def step_0_post():
 def step_1_pre():
 
     store_ini('main', 'INSTALL_STEP', '1')
+
 
     email = get_ini("user", "email")
     password = get_ini("user", "password")
@@ -129,10 +135,15 @@ def step_2_pre():
     if domain is None:
         domain = "http://" + request.environ['HTTP_HOST']
 
+    # install_path = _s.APPLICATION_PATH
+    # cms_path = "/" + install_path.rsplit(_sep, 1)[1]
+    if DESKTOP_MODE is True:
+        cms_path = '/~'
+    else:
+        cms_path = request.environ['SCRIPT_NAME'].replace('/' + _s.DEFAULT_SCRIPT, '')
 
     install_path = _s.APPLICATION_PATH
     blog_path = install_path.rsplit(_sep, 1)[0]
-    cms_path = "/" + install_path.rsplit(_sep, 1)[1]
 
     return {'domain':domain,
         'install_path':install_path,
@@ -398,8 +409,8 @@ def button(step, next_action, error=None):
 
     if step > 0:
         previous = '''
-<a href="{}/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
-'''.format(_s.BASE_URL_PATH, step - 1)
+<a href="{}install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
+'''.format(_s.BASE_URL, step - 1)
     else:
         previous = ""
 
@@ -411,8 +422,8 @@ def button(step, next_action, error=None):
     else:
         if error is None:
             next_str = '''
-<a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
-'''.format(_s.BASE_URL_PATH, step + 1)
+<a href="{}install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
+'''.format(_s.BASE_URL, step + 1)
         else:
             next_str = "<button class='btn btn-danger'>Fix the above error and click here to continue</button>"
 
@@ -423,7 +434,7 @@ crumb_element_active = '''
 '''
 
 crumb_element_link = '''
-<li><a href="{}/install/step-{}">{}</a></li>
+<li><a href="{}install/step-{}">{}</a></li>
 '''
 
 step_text = {
@@ -485,20 +496,21 @@ This will be used to identify the administrator on this installation.
         'text':'''
         <p>Next, you'll need to specify the following:
         <ul>
-        <li><label for="input_domain">the domain name for the server where the application's files are,</a>
-        <li><label for="install_path">the path on the server to those files,</a>
+        <li><label for="input_domain">the URL for the application,</a>
+        <li><label for="install_path">the path on the server to the app's files,</a>
         <li><label for="blog_path">and the path on the server to where the files for your first
         blog are to be placed.</a>
         </ul>
         <p>We've made a best guess as to what these might be, so if you're not sure about what to do here,
-        just press Continue. You can always change them later.
+        just press Continue. You can always change these values later.
 <form action="{{form_action}}"  method="post" class="form-horizontal">
 
   <div class="form-group">
     <label for="input_domain" class="col-sm-2 control-label">Domain name</label>
     <div class="col-sm-7">
       <input type="input" class="form-control" id="input_domain" name="input_domain" placeholder="http://www.example.com"
-      value="{{domain}}">
+      value="{{domain}}" aria-describedby="input_domain_help">
+      <span id="input_domain_help" class="help-block">(You should not have to change this)</span>
     </div>
   </div>
 
@@ -506,7 +518,8 @@ This will be used to identify the administrator on this installation.
     <label for="cms_path" class="col-sm-2 control-label">URL path to application</label>
     <div class="col-sm-7">
       <input type="input" class="form-control" id="cms_path" name="cms_path" placeholder="/cms (e.g., for http://www.example.com/cms)"
-      value="{{cms_path}}">
+      value="{{cms_path}}" aria-describedby="cms_path_help">
+      <span id="cms_path_help" class="help-block">(You should also not have to change this)</span>
     </div>
   </div>
 
@@ -514,16 +527,19 @@ This will be used to identify the administrator on this installation.
     <label for="install_path" class="col-sm-2 control-label">Server installation path</label>
     <div class="col-sm-7">
       <input type="input" class="form-control" id="install_path" name="install_path" placeholder="e.g., /home/user/html"
-      value="{{install_path}}">
+      value="{{install_path}}" aria-describedby="install_path_help">
+      <span id="install_path_help" class="help-block">(You should also not have to change this)</span>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="blog_path" class="col-sm-2 control-label">Path on disk for first site/blog</label>
+    <label for="blog_path" class="col-sm-2 control-label">Path on disk for where to create first site/blog</label>
     <div class="col-sm-7">
       <input type="input" class="form-control" id="blog_path" name="blog_path" placeholder="Path"
-      value="{{blog_path}}">
+      value="{{blog_path}}"  aria-describedby="blog_path_help">
+      <span id="blog_path_help" class="help-block">This should be set to wherever your Web server expects to find HTML files for its site. By default this is the parent directory of the one the app is currently running from, but you may need to set this manually in some cases.</span>
     </div>
+
   </div>
 {{!button}}
 </form>'''},
@@ -634,6 +650,11 @@ def crumbs(step):
 
 def step(step):
 
+    if get_ini('main', 'BASE_URL_ROOT') is not None:
+        _s.BASE_URL_ROOT = get_ini('main', 'BASE_URL_ROOT')
+        _s.BASE_URL_PATH = get_ini('main', 'BASE_URL_PATH')
+        _s.BASE_URL = _s.BASE_URL_ROOT + _s.BASE_URL_PATH
+
     error_msg = None
 
     if request.method == "POST":
@@ -645,7 +666,7 @@ def step(step):
             error_msg = e
         else:
             step += 1
-            redirect('{}/install/step-{}'.format(_s.BASE_URL_PATH, step))
+            redirect('{}install/step-{}'.format(_s.BASE_URL, step))
 
     else:
         try:
@@ -665,7 +686,7 @@ def step(step):
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
             button=template_button,
-            form_action='{}/install/step-{}'.format(_s.BASE_URL_PATH, step),
+            form_action='{}install/step-{}'.format(_s.BASE_URL, step),
             **results),
         crumbs=crumbs(step),
         error=error_msg)

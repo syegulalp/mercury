@@ -35,6 +35,7 @@ SQLITE_FILE_NAME = 'my_database.db'
 SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
+NO_SETUP = False
 
 from configparser import ConfigParser
 
@@ -45,6 +46,12 @@ parser.read(config_file)
 
 if len(parser.sections()) == 0:
     NO_SETUP = True
+    try:
+        BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
+        BASE_URL_PATH = os.environ["REQUEST_URI"]
+    except KeyError:
+        pass
+
 else:
     NO_SETUP = False
 
@@ -60,10 +67,6 @@ if INSTALL_STEP is not None:
     NO_SETUP = True
 
 try:
-    # TODO: http or https?
-    # these aren't needed anymore, since they are set in the config file
-    # BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
-    # BASE_URL_PATH = DEFAULT_URL_PATH
     DEFAULT_LOCAL_ADDRESS = os.environ["HTTP_HOST"]
 except KeyError:
     # TODO: what if this throws a false positive

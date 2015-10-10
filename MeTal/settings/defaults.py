@@ -10,7 +10,8 @@ _sep = os.sep
 # another application is using it.
 DEFAULT_LOCAL_ADDRESS = "127.0.0.1"
 DEFAULT_LOCAL_PORT = ":8080"
-DEFAULT_URL_PATH = "/cms"
+DEFAULT_URL_PATH = ""
+DEFAULT_SCRIPT = 'index.cgi'
 
 # Set this to True when you are using the program
 # on your own desktop PC.
