@@ -582,7 +582,10 @@ $(window)
 									}, {
 										title : 'Small',
 										block : 'small'
-									}, ],
+									}, {
+										title : 'Code',
+										inline : 'code'
+									},],
 									toolbar1 : "save | styleselect formatselect | bold italic underline strikethrough removeformat | bullist numlist | outdent indent blockquote hr | link unlink anchor image | visualchars visualblocks nonbreaking template pagebreak | code fullscreen",
 
 									save_enablewhendirty : true,
