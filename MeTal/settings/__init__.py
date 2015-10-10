@@ -61,8 +61,9 @@ if INSTALL_STEP is not None:
 
 try:
     # TODO: http or https?
-    BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
-    BASE_URL_PATH = DEFAULT_URL_PATH
+    # these aren't needed anymore, since they are set in the config file
+    # BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
+    # BASE_URL_PATH = DEFAULT_URL_PATH
     DEFAULT_LOCAL_ADDRESS = os.environ["HTTP_HOST"]
 except KeyError:
     # TODO: what if this throws a false positive
