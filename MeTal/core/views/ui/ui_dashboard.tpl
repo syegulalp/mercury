@@ -42,7 +42,7 @@
         <h4>Blogs you contribute to:</h4>
         <ul>
         %for blog in your_blogs:
-            <li>{{!blog.for_display}} / {{!blog.site.for_display}}
+            <li><a target="_blank" href="{{!blog.url}}"><span class="glyphicon glyphicon-new-window"></span></a> {{!blog.for_display}}<br/><small>{{!blog.site.for_display}}</small>
         %end
         </ul>
         <hr/>
