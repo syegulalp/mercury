@@ -317,6 +317,7 @@ def page_get_media_templates(page_id, media_id):
         Template.blog == page.blog,
         Template.template_type == template_type.media)
 
+    from .ui import media_buttons
     buttons = media_buttons.format(
         'onclick="add_template();"',
         'Apply')
