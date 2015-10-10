@@ -1,3 +1,4 @@
+global.saving = false;
 var editor = null;
 var editor_resize = function() {
 }
@@ -190,6 +191,8 @@ function run_queue(blog_id) {
 }
 
 function page_save(n) {
+	if (global.saving == true) return;
+	global.saving=true;
 	$('#save').attr('value', n);
 	editor_update();
 	editor_resize(tinymce.activeEditor);
@@ -214,6 +217,8 @@ function icon(type) {
 }
 
 function form_save(form) {
+	
+	
 
 	if ($('#save').attr('value') == 4) {
 		if (confirm("You are about to close this page without saving any changes. Is this OK?")) {
@@ -286,7 +291,8 @@ function form_save(form) {
 				$('#save_animation').html(icon('remove-sign'));
 
 			}).always(function() {
-		reset_animation($('#save_animation'));
+				global.saving=false;		
+				reset_animation($('#save_animation'));
 	});
 }
 
@@ -300,7 +306,7 @@ function template_save(action){
 	$('#save_animation').html(icon('refresh'));
 
 	save_animation($('#save_animation'));
-	
+		
 	$.post('', form.serialize()).done(function(data, textStatus, xhr) {
 
 		window.onbeforeunload = leave;
