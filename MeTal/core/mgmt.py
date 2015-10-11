@@ -174,6 +174,8 @@ def theme_install_to_blog(installed_theme, blog, user):
     from core import cms
     cms.purge_blog(blog)
 
+    blog.theme = installed_theme.id
+
 
 def site_create(**new_site_data):
 
