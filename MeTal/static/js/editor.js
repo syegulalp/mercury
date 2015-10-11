@@ -504,6 +504,84 @@ function show_local_preview() {
 			+ global.page);
 }
 
+function show_activity(target,icon){
+	//$(target).removeClass('glyphicon-*').addClass('glyphicon-'+icon);
+	$(target).attr('class','glyphicon glyphicon-'+icon)
+	$(target).show();	
+}
+
+function hide_activity(target){
+	$(target).hide();
+	$(target).attr('class','');
+}
+
+//circle-arrow-up
+//refresh
+
+function remove_kv(id){
+
+	var fd= new FormData();
+	fd.append('csrf', global.csrf)
+	fd.append('kv',id)
+	
+	show_activity('#kv_activity','remove-sign');
+	
+	$.ajax({
+		type : "POST",
+		url : global.base + "/api/1/remove-kv",
+		enctype : "multipart/form-data",
+		processData : false,
+		contentType : false,
+		data : fd,
+	}).done(function(data, textStatus, request) {
+		$('#kv_list').replaceWith($(data).filter('#kv_list'));
+	}).fail(
+			function(xhr, status, error) {
+				server_failure(xhr, status, error,
+						"Sorry, an error occurred when trying to remove KV: ");
+
+	}).always(
+			function() {
+				hide_activity('#kv_activity');
+			});	
+
+}
+
+function add_kv(){
+	var fd = new FormData();
+	fd.append('csrf', global.csrf);
+
+	fd.append('new_key_name',$('#new_key_name').val());
+	fd.append('new_key_value',$('#new_key_value').val());
+	
+	fd.append('object','Page');
+	fd.append('objectid',global.page);
+	
+	show_activity('#kv_activity','circle-arrow-up');
+	
+	$.ajax({
+		type : "POST",
+		url : global.base + "/api/1/add-kv",
+		enctype : "multipart/form-data",
+		processData : false,
+		contentType : false,
+		data : fd,
+	}).done(function(data, textStatus, request) {
+		$('#kv_list').replaceWith($(data).filter('#kv_list'));
+		$('#new_key_name').val('');
+		$('#new_key_value').val('');
+	}).fail(
+			function(xhr, status, error) {
+				server_failure(xhr, status, error,
+						"Sorry, an error occurred when trying to add KV: ");
+
+	}).always(
+			function() {
+				hide_activity('#kv_activity');
+			});
+}
+
+
 $(window)
 		.load(
 				function() {

@@ -1,10 +1,11 @@
+from core.utils import html_escape
+
 blank_item = '''
 <li class="list-group-item">
-<span
-      title="Select {}"
-      class="glyphicon glyphicon-plus-sign media-selector"></span>
-{}<a href="#" title="Remove item"><span class="pull-right glyphicon glyphicon-remove media-remove"></span></a></li>
+{}<a onclick="remove_kv({});" href="#" title="Remove item">
+<span class="pull-right glyphicon glyphicon-remove media-remove"></span></a></li>
 '''
+# <span title="Select {}" class="glyphicon glyphicon-plus-sign media-selector"></span>
 
 media_item = '''
 <li class="list-group-item" data-toggle="tooltip" data-placement="left"
@@ -20,10 +21,19 @@ media_item = '''
 
 def kv_ui(keys):
 
+    if keys is None:
+        return None
+
     kv_ui = []
 
     for n in keys:
 
+        kv_ui.append(blank_item.format(
+                # "text",
+                "<b>{}:</b> <i>{}</i>".format(html_escape(n.key), html_escape(n.value)),
+                n.id))
+
+        '''
         if n.is_schema is True:
             m = n
             # chooser only
@@ -48,6 +58,6 @@ def kv_ui(keys):
                 kv_ui.append(blank_item.format(
                     "user",
                     "{}: {}".format(m.value, user_obj.name)))
-
+        '''
 
     return ''.join(kv_ui)

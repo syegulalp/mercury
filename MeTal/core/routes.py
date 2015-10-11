@@ -784,6 +784,16 @@ def page_add_media_with_template(page_id, media_id, template_id):
     from core.ui import page
     return page.page_add_media_with_template(page_id, media_id, template_id)
 
+@_route(BASE_PATH + "/api/1/add-kv", method='POST')
+def api_add_kv():
+    from core.ui import kv
+    return kv.add_kv()
+
+@_route(BASE_PATH + "/api/1/remove-kv", method='POST')
+def api_remove_kv():
+    from core.ui import kv
+    return kv.remove_kv()
+    # We need to enforce permissions here depending on the object.
 
 @_route(BASE_PATH + "/api/1/get-tag/<tag_name>")
 def api_get_tag(tag_name):
