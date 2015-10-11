@@ -250,7 +250,7 @@ class BaseModel(Model):
             kvs.append([n, key_match])
         return kvs
 
-    def kvs(self, key=None, context=None):
+    def kvs(self, key=None, context=None, no_traverse=False, raise_exception=False):
         '''
         Looks for keys assigned to a given object.
         Goes up the chain to find where the top-level assignment
@@ -266,6 +266,8 @@ class BaseModel(Model):
                 KeyValue.parent << context)
         else:
             kv_context = KeyValue.select()
+
+        kv = None
 
         while True:
 
@@ -294,16 +296,17 @@ class BaseModel(Model):
 
                     if kv.count() != 0:
                         break
+            if no_traverse is True:
+                break
             try:
                 object_name = parent_obj[object_name]
-                # TODO: follow inheritance path in actual objects, not in KVs,
-                # for when we are doing looksups
-                # e.g., for page, look in page.blog,
-                # check for anything that matches that. and so on.
             except KeyError:
-                raise KeyError('Key {} not found in {} (searched through to {}).'.format(
-                    key, original_object_name, object_name)
-                    )
+                break
+
+        if kv is None and raise_exception is True:
+            raise KeyError('Key {} not found in {} (searched through to {}).'.format(
+                key, original_object_name, object_name)
+                )
 
         return kv
 
@@ -751,6 +754,8 @@ class Page(BaseModel):
     tag_text = TextField(null=True)
     currently_edited_by = IntegerField(null=True)
     author = user
+
+    security = 'is_page_editor'
 
     @property
     def parent(self, context=None):
