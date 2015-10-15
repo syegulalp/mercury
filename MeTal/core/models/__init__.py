@@ -764,8 +764,7 @@ class Page(BaseModel):
     @property
     def preview_file(self):
         from core import utils
-        return utils.preview_file(self.default_fileinfo.file_path,
-            self.blog.base_extension)
+        return utils.preview_file(self.id, self.blog.base_extension)
 
     @property
     def filename(self):
@@ -1298,10 +1297,9 @@ class Template(BaseModel):
         from core import utils
         from settings import _sep
         default_file = self.default_mapping.fileinfos[0].file_path
-        return utils.preview_file(default_file, self.blog.base_extension)
+        # return utils.preview_file(default_file, self.blog.base_extension)
+        return utils.preview_file(self.id, self.blog.base_extension)
 
-        # return utils.preview_file2(self.default_mapping.fileinfos[0].file_path,
-        #    self.blog.base_extension)
     @property
     def preview_path(self):
         from core.template import preview_path

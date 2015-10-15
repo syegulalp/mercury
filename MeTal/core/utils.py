@@ -9,12 +9,21 @@ import hashlib, base64
 
 from core.libs.bottle import _stderr
 
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 def quote_escape(string):
     string = string.replace("'", "&#34")
     string = string.replace('"', "&#39")
     return string
 
-def preview_file(filename, extension):
+def preview_file(identifier, extension):
+    file_identifier = "preview-{}".format(identifier)
+    import zlib
+    return ('preview-' +
+        str(zlib.crc32(file_identifier.encode('utf-8'), 0xFFFF)) +
+        "." + extension)
+
+def preview_file_old(filename, extension):
     import zlib
     try:
         split_path = filename.rsplit('/', 1)[1]
@@ -114,15 +123,19 @@ def csrf_tag(csrf):
     '''
     return "<input type='hidden' name='csrf' id='csrf' value='{}'>".format(csrf_hash(csrf))
 
-def date_format(datetime):
+def string_to_date(date_string):
+    import datetime
+    return datetime.datetime.strptime(date_string, DATE_FORMAT)
+
+def date_format(date_time):
     '''
     Formats a datetime value in a consistent way for presentation.
     '%Y-%m-%d %H:%M:%S' is the standard format.
     '''
-    if datetime is None:
+    if date_time is None:
         return ''
     else:
-        return datetime.strftime('%Y-%m-%d %H:%M:%S')
+        return date_time.strftime(DATE_FORMAT)
 
 
 def utf8_escape(input_string):
