@@ -31,7 +31,7 @@ STATIC_PATH = '/static'
 
 # Database path for Sqlite. Leave this as it is
 # unless you want the database in another directory.
-SQLITE_FILE_NAME = 'my_database.db'
+SQLITE_FILE_NAME = 'database.cgi'
 SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
