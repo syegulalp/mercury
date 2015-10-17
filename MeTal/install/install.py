@@ -6,7 +6,7 @@ import os, random, string
 
 from configparser import ConfigParser, DuplicateSectionError
 config_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
-    _sep + "install.ini")
+    _sep + _s.INSTALL_INI_FILE_NAME)
 parser = ConfigParser()
 
 class SetupError(BaseException):
@@ -327,7 +327,7 @@ def step_4_pre():
     # raise
 
     output_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
-        _sep + "config.ini")
+        _sep + _s.INI_FILE_NAME)
 
     config_parser = ConfigParser()
 
