@@ -204,16 +204,18 @@ def trunc(string, length=128):
     string = (string[:length] + ' ...') if len(string) > length else string
     return string
 
+breaks_list = ['/', '.', '-', '_']
+
 def breaks(string):
     '''
-    Used to break up URLs so that they break along /s
+    Used to break up URLs and basenames so they wrap properly
     '''
     if string is None:
         return string
 
-    string = string.replace('/', '/<wbr>')
-    string = string.replace('.', '.<wbr>')
-    string = string.replace('-', '-<wbr>')
+    for n in breaks_list:
+        string = string.replace(n, n + '<wbr>')
+
     return string
 
 def tpl_oneline(string):
