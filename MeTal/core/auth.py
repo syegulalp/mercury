@@ -166,6 +166,7 @@ def is_page_editor(user, page):
         return True
     try:
         is_page_editor = is_blog_editor(user, page.blog)
+        return is_page_editor
     except PermissionsException:
         raise PermissionsException('User {} does not have permission to work with page {}'.format(user.for_log, page.for_log))
 
