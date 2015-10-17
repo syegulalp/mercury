@@ -1,7 +1,5 @@
 from core.models.transaction import transaction
-
-from core.libs.bottle import (template, request)
-from core import auth
+from core.libs.bottle import (template)
 
 def kv_page_response(page_id):
 
@@ -18,6 +16,8 @@ def kv_page_response(page_id):
 
     return tpl
 
+from core.libs.bottle import (request)
+from core import auth
 
 @transaction
 def add_kv():
