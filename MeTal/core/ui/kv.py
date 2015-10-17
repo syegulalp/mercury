@@ -9,6 +9,7 @@ def kv_page_response(page_id):
     from core.models import template_tags
 
     tags = template_tags(page_id=page_id)
+
     kv_ui_data = kv_ui(tags.page.kvs(no_traverse=True))
 
     tpl = template('sidebar/sidebar_page_kv_ui',
@@ -17,7 +18,6 @@ def kv_page_response(page_id):
 
     return tpl
 
-obj_map = {'Page': kv_page_response}
 
 @transaction
 def add_kv():
@@ -25,23 +25,25 @@ def add_kv():
     user = auth.is_logged_in(request)
 
     object = request.forms.getunicode('object')
-    objectid = int(request.forms.getunicode('objectid'))
-
-    # TODO: do security lookup with object type
+    object_id = int(request.forms.getunicode('objectid'))
 
     key = request.forms.getunicode('new_key_name')
     value = request.forms.getunicode('new_key_value')
 
     from core import models
-    object_to_add = models.__dict__[object]()
+    object_to_add_to = models.__dict__[object]
+    object_instance = object_to_add_to.get(
+        object_to_add_to.id == object_id)
 
-    added_kv = object_to_add.add_kv(
+    security = auth.__dict__[object_to_add_to.security](user, object_instance)
+
+    added_kv = object_instance.add_kv(
         object=object,
-        objectid=objectid,
+        objectid=object_id,
         key=key,
         value=value)
 
-    return obj_map[object](objectid)
+    return obj_map[object](object_id)
 
 @transaction
 def remove_kv():
@@ -50,12 +52,17 @@ def remove_kv():
 
     object_id = int(request.forms.getunicode('kv'))
 
-    # TOOD: do security lookup with object type
-
     from core.models import KeyValue
 
     object_type = KeyValue.get(
         KeyValue.id == object_id)
+
+    from core import models
+    object_to_delete_from = models.__dict__[object_type.object]
+    object_instance = object_to_delete_from.get(
+        object_to_delete_from.id == object_id)
+
+    security = auth.__dict__[object_to_delete_from.security](user, object_instance)
 
     kv_delete = KeyValue.delete().where(
         KeyValue.id == object_id)
@@ -63,3 +70,5 @@ def remove_kv():
     kv_deleted = kv_delete.execute()
 
     return obj_map[object_type.object](object_type.objectid)
+
+obj_map = {'Page': kv_page_response}
