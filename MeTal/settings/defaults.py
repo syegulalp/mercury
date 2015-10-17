@@ -1,5 +1,5 @@
 # Application install defaults
-# Do NOT change these settings directly! Use config.ini instead!
+# Do NOT change these settings directly! Use config.cgi instead!
 
 import os
 _environ = os.environ
@@ -44,7 +44,8 @@ RESET = None
 
 INSTALL_STEP = None
 
-INI_FILE_NAME = 'config.ini'
+INI_FILE_NAME = 'config.cgi'
+INSTALL_INI_FILE_NAME = 'install.cgi'
 
 # For MySQL compatibility. Do not change.
 ENFORCED_CHARFIELD_CONSTRAINT = 767
