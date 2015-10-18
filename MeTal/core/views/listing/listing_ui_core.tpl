@@ -40,7 +40,7 @@
                 % rowclass = " class={}".format(colset['rowclass']) if 'rowclass' in colset else ''
                 <tr{{rowclass}}>
                     <td><input type="checkbox" id="check-{{row.id}}" name="check-{{row.id}}">
-                    <td>{{row.id}}</td>
+                    <td><xlabel for="check-{{row.id}}">{{row.id}}</xlabel></td>
                     % for col in cols:
                         % colclass = ' class="{}"'.format(col['colclass']) if 'colclass' in col else ''
                         % if 'format_raw' in col:

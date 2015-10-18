@@ -9,6 +9,12 @@
 
     <form class="form-horizontal" method="post">
     {{!csrf_token}}
+    <div class="col-sm-12">
+    % include('include/nav_tabs.tpl')
+	<br/>
+	</div>
+	% if nav_default=='basic':
+	
         <div class="form-group">
             <label for="blog_name" class="col-sm-2 control-label">Blog name</label>
             <div class="col-sm-9">
@@ -28,7 +34,7 @@
                 <span id="blog_description_help" class="help-block">A short description of your blog, for SEO use.</span>
             </div>
         </div>
-        
+    % elif nav_default=='advanced':
         <div class="form-group">
             <label for="blog_url" class="col-sm-2 control-label">URL</label>
             <div class="col-sm-9">
@@ -93,7 +99,7 @@
                 </span>
             </div>
         </div>
-        
+        % end
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-9">
                 <button type="submit" class="btn btn-primary">Save changes</button>

@@ -698,7 +698,7 @@ def blog_queue(blog_id):
 
 
 @transaction
-def blog_settings(blog_id):
+def blog_settings(blog_id, nav_setting):
 
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
@@ -709,10 +709,12 @@ def blog_settings(blog_id):
     tags = template_tags(blog_id=blog.id,
         user=user)
 
+    tags.nav_default = nav_setting
+
     return blog_settings_output(tags)
 
 @transaction
-def blog_settings_save(blog_id):
+def blog_settings_save(blog_id, nav_setting):
 
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
@@ -723,6 +725,8 @@ def blog_settings_save(blog_id):
     tags = template_tags(blog_id=blog.id,
         user=user)
 
+    tags.nav_default = nav_setting
+
     if status is not None:
         tags.status = status
 
@@ -731,9 +735,13 @@ def blog_settings_save(blog_id):
 def blog_settings_output(tags):
 
     tpl = template('ui/ui_blog_settings',
-        section_title='Basic settings',
+        # section_title='Basic settings',
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_settings', tags.blog),
+        nav_tabs=(
+            ('basic', 'Basic'),
+            ('advanced', 'Advanced')
+            ),
         **tags.__dict__)
 
     return tpl

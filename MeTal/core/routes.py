@@ -586,15 +586,17 @@ def blog_queue(blog_id):
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
-def blog_settings(blog_id,):
+@_route(BASE_PATH + "/blog/<blog_id:int>/settings/<nav_setting>")
+def blog_settings(blog_id, nav_setting='basic'):
     from core.ui import blog
-    return blog.blog_settings(blog_id)
+    return blog.blog_settings(blog_id, nav_setting)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings", method='POST')
-def blog_settings_save(blog_id):
+@_route(BASE_PATH + "/blog/<blog_id:int>/settings/<nav_setting>", method='POST')
+def blog_settings_save(blog_id, nav_setting='basic'):
     from core.ui import blog
-    return blog.blog_settings_save(blog_id)
+    return blog.blog_settings_save(blog_id, nav_setting)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish")
