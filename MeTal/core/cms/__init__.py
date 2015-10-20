@@ -496,16 +496,17 @@ def add_tags_to_page (tag_text, page):
     new_tags = json.loads(request.forms.getunicode('new_tags'))
 
     for n in new_tags:
-        new_tag = Tag(
-            tag=n,
-            blog=page.blog)
-        new_tag.save()
+        if n != '':
+            new_tag = Tag(
+                tag=n,
+                blog=page.blog)
+            new_tag.save()
 
-        add_tag = TagAssociation(
-            tag=new_tag,
-            page=page)
+            add_tag = TagAssociation(
+                tag=new_tag,
+                page=page)
 
-        add_tag.save()
+            add_tag.save()
 
     return tags_to_add, tags_to_delete, new_tags
 

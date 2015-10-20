@@ -3,7 +3,7 @@ from core.log import logger
 import json
 
 from core.models import (TemplateMapping, Template, System, KeyValue,
-    Permission, Site, Blog, User, Category, Theme)
+    Permission, Site, Blog, User, Category, Theme, Tag)
 
 from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
 
@@ -247,18 +247,18 @@ def blog_settings_save(request, blog, user):
         _forms = request.forms
 
         blog_name = _forms.getunicode('blog_name')
-
-        if not is_blank(blog_name):
-            blog.name = blog_name
-        else:
-            errors.append('Blog name cannot be blank.')
+        if blog_name is not None:
+            if not is_blank(blog_name):
+                blog.name = blog_name
+            else:
+                errors.append('Blog name cannot be blank.')
 
         blog_description = _forms.getunicode('blog_description')
-
-        if not is_blank(blog_description):
-            blog.description = blog_description
-        else:
-            errors.append('Blog description cannot be blank.')
+        if blog_description is not None:
+            if not is_blank(blog_description):
+                blog.description = blog_description
+            else:
+                errors.append('Blog description cannot be blank.')
 
         blog_url = _forms.getunicode('blog_url')
         if blog_url is not None:
@@ -290,6 +290,13 @@ def blog_settings_save(request, blog, user):
                 blog.base_extension = blog_base_extension
             else:
                 errors.append('Blog base extension cannot be blank.')
+
+        blog_media_path = _forms.getunicode('blog_media_path')
+        if blog_media_path is not None:
+            if not is_blank(blog_media_path):
+                blog.media_path = blog_media_path
+            else:
+                errors.append('Blog media path cannot be blank.')
 
         if len(errors) > 0:
             return Status(
@@ -475,10 +482,11 @@ def update_user(user, editing_user, **user_data):
 # TODO: move this into the User object schema itself?
 def add_user_permission(user, **permission):
 
-    new_permission = Permission()
-    new_permission.user = user
-    new_permission.permission = permission['permission']
-    new_permission.site = permission['site']
+    new_permission = Permission(
+        user=user,
+        permission=permission['permission'],
+        site=permission['site'],
+        )
 
     try:
         new_permission.blog = permission['blog']
@@ -488,3 +496,4 @@ def add_user_permission(user, **permission):
     new_permission.save()
 
     return new_permission
+

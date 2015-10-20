@@ -8,6 +8,8 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request)
 
+from core import mgmt
+
 from settings import (BASE_URL)
 
 import json
@@ -167,6 +169,17 @@ def get_tag(tag_name):
 
     return tag_list_json
 
+
+def find_tag(tag_name, page):
+    try:
+        tag = Tag.get(Tag.tag == tag_name,
+            Tag.blog == page.blog)
+    except Tag.DoesNotExist:
+        tag = Tag(tag=tag_name,
+            blog=page.blog)
+    return tag
+
+
 @transaction
 def make_tag_for_page(blog_id=None, page_id=None):
 
@@ -186,17 +199,7 @@ def make_tag_for_page(blog_id=None, page_id=None):
     if len(tag_name) < 1:
         return None
 
-    try:
-        tag = Tag.get(Tag.tag == tag_name,
-            Tag.blog == blog)
-    except Tag.DoesNotExist:
-        new_tag = Tag(tag=tag_name,
-            blog=blog)
-        tpl = template(new_tag.new_tag_for_display)
-
-    else:
-        tpl = template(tag.for_display)
+    added_tag = find_tag(tag_name, page)
+    tpl = template(added_tag.for_display)
 
     return tpl
-
-
