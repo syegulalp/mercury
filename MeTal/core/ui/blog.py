@@ -740,7 +740,7 @@ def blog_settings_output(tags):
         menu=generate_menu('blog_settings', tags.blog),
         nav_tabs=(
             ('basic', 'Basic'),
-            ('advanced', 'Advanced')
+            ('dirs', 'Directories')
             ),
         **tags.__dict__)
 

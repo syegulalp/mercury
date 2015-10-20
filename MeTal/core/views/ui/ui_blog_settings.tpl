@@ -34,7 +34,7 @@
                 <span id="blog_description_help" class="help-block">A short description of your blog, for SEO use.</span>
             </div>
         </div>
-    % elif nav_default=='advanced':
+    % elif nav_default=='dirs':
         <div class="form-group">
             <label for="blog_url" class="col-sm-2 control-label">URL</label>
             <div class="col-sm-9">
@@ -99,6 +99,19 @@
                 </span>
             </div>
         </div>
+        
+        <div class="form-group">
+            <label for="blog_media_path" class="col-sm-2 control-label">Media path</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" aria-describedby="blog_media_path_help"
+                value="{{blog.media_path}}"
+                id="blog_media_path" name="blog_media_path">
+                <span id="blog_media_path_help" class="help-block">Path within your blog to where media will be uploaded.<br/>This can be a simple string or any valid expression used for a template mapping (e.g., <code>media/%Y</code>).</span>
+            </div>
+        </div>       
+        
+        
+        
         % end
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-9">
