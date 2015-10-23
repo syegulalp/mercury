@@ -50,8 +50,9 @@
 <script>var global={base:"{{settings.BASE_URL}}",page:"{{page.id}}",blog:"{{blog.id}}",
 static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}",
 blog_media_path:"{{blog.media_path}}",
-max_filesize:{{settings.MAX_FILESIZE}}
-}</script>
+max_filesize:{{settings.MAX_FILESIZE}}}
+global.html_editor_settings={{!html_editor_settings}};
+</script>
 % include('include/footer.tpl')
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/moment.min.js"></script>
