@@ -8,6 +8,7 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep)
+from core.models import get_template
 
 
 app = Bottle()
@@ -399,15 +400,22 @@ def blog_list_users(blog_id):
 # TODO: the default should be whatever editor theme is installed by the
 # current blog theme
 
-
 @_route(BASE_PATH + "/blog/<blog_id:int>/editor-css")
 def blog_editor_css(blog_id):
     blog = get_blog(blog_id)
-    if blog.editor_css is None:
+
+    from core.models import Template, template_type
+    try:
+        editor_css_template = Template.get(
+            Template.blog == blog,
+            Template.title == 'HTML Editor CSS',
+            Template.template_type == template_type.system)
+    except:
         from core import static
         template = static.editor_css
     else:
-        template = blog.editor_css
+        template = editor_css_template.body
+
     response.content_type = "text/css"
     response.add_header('Cache-Control', 'max-age=7200')
     return template
@@ -429,6 +437,11 @@ def blog_new_page_save(blog_id):
 def blog(blog_id, errormsg=None):
     from core.ui import blog
     return blog.blog(blog_id, errormsg)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/categories')
+def blog_categories(blog_id):
+    from core.ui import blog
+    return blog.blog_categories(blog_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
@@ -485,7 +498,6 @@ def blog_templates(blog_id):
 def template_new(blog_id, template_type):
     from core.ui import template
     return template.new_template(blog_id, template_type)
-
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
