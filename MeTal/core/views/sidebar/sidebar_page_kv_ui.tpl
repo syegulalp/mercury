@@ -2,8 +2,8 @@
 % if kv_ui is not None:
 {{!kv_ui}}
 <br/>
-% #else:
-% #<p>[<i>No key-value pairs</i>]</p>
+% else:
+<p>[<i>No key-value pairs</i>]</p>
 % end
 </div>
 <div class="form-group">
