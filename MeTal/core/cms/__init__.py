@@ -473,14 +473,18 @@ def delete_orphaned_tags():
 
     return orphaned_tags
 
-def add_tags_to_page (tag_text, page):
+def add_tags_to_page (tag_text, page, no_delete=False):
     tag_list = Tag.select().where(Tag.id << tag_text)
 
-    tags_to_delete = TagAssociation.delete().where(
-        TagAssociation.page == page,
-        ~ TagAssociation.tag << (tag_list))
+    if no_delete is True:
 
-    tags_to_delete.execute()
+        tags_to_delete = TagAssociation.delete().where(
+            TagAssociation.page == page,
+            ~ TagAssociation.tag << (tag_list))
+
+        tags_to_delete.execute()
+    else:
+        tags_to_delete = None
 
     tags_in_page = page.tags.select(Tag.id).tuples()
 
