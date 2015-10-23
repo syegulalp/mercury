@@ -45,10 +45,8 @@
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu btn-sm" role="menu" aria-labelledby="checked_action_menu">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Republish</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Unpublish</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">[<i>Not implemented yet</i>]</a></li>
       </ul>
-      </span>
+    </span>
     
 </div>
