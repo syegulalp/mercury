@@ -45,6 +45,7 @@ template_type.page = "Page"
 template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
+template_type.system = "System"
 
 publishing_mode = Struct()
 publishing_mode.immediate = "Immediate"
@@ -575,7 +576,10 @@ class Blog(SiteBase):
         '''
         Lists all categories for this blog in their proper hierarchical order.
         '''
-        pass
+        categories = Category.select().where(
+            Category.blog == self)
+
+        return categories
 
 
     @property
@@ -727,6 +731,11 @@ class Category(BaseModel):
     title = TextField()
     parent_category = IntegerField(default=None, null=True, index=True)
     default = BooleanField(default=False)
+
+    @property
+    def link_format(self):
+        return "{}/blog/{}/category/{}".format(
+            BASE_URL, self.blog.id, self.id)
 
     @property
     def next_category(self):
@@ -1019,7 +1028,7 @@ class Page(BaseModel):
     def previous_in_category(self):
         pass
 
-    def save(self, user, no_revision=False, backup_only=False, change_note=None):
+    def save(self, user, no_revision=False, backup_only=False, change_note=None, force_update=False):
 
         '''
         Wrapper for the model's .save() action, which also updates the
@@ -1035,7 +1044,6 @@ class Page(BaseModel):
             revision_save_result = page_revision.save(user, self, False, change_note)
 
         page_save_result = Model.save(self) if backup_only is False else None
-
 
         if revision_save_result is not None:
             logger.info("Page {} edited by user {}.".format(
