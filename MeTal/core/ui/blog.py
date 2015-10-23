@@ -194,7 +194,7 @@ def blog_user_edit(blog_id, user_id, status=None):
     return blog_user_edit_output(tags, edit_user)
 
 
-# TODO: make this universal to createa user for both a blog and a site
+# TODO: make this universal to create a user for both a blog and a site
 # use ka
 @transaction
 def blog_user_edit_save(blog_id, user_id):
@@ -302,10 +302,20 @@ def blog_new_page(blog_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(blog_new_page.kvs())
 
+    try:
+        html_editor_settings = Template.get(
+        Template.blog == blog,
+        Template.title == 'HTML Editor Init',
+        Template.template_type == template_type.system
+        ).body
+    except Template.DoesNotExist:
+        from core.static import html_editor_settings
+
     tpl = template('edit/edit_page_ui',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
         search_context=(search_context['blog'], blog),
+        html_editor_settings=html_editor_settings,
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
@@ -526,6 +536,63 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
     return tpl
 
 @transaction
+def blog_categories(blog_id):
+
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_editor(user, blog)
+
+    blog_category_list = blog.categories
+
+    tags = template_tags(blog_id=blog.id,
+        user=user)
+
+    paginator, rowset = utils.generate_paginator(blog_category_list, request)
+
+    tpl = template('listing/listing_ui',
+        paginator=paginator,
+        search_context=(search_context['blog'], blog),
+        menu=generate_menu('blog_manage_categories', blog),
+        rowset=rowset,
+        colset=colsets['categories'],
+        icons=icons,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
+def edit_category(blog_id, category_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_editor(user, blog)
+
+    # auth.check_category_editing_lock(blog)
+
+    '''
+    try:
+        tag = Tag.get(Tag.id == tag_id)
+    except Tag.DoesNotExist:
+        raise Tag.DoesNotExist("No such tag #{} in blog {}.".format(
+            tag_id,
+            blog.for_log))
+    '''
+
+    if request.method == "POST":
+        pass
+
+
+    tags = template_tags(
+        user=user)
+
+    tpl = template('edit/edit_category_ui',
+        menu=generate_menu('edit_category', tag),
+        search_context=(search_context['blog'], None),
+        tag=tag,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
 def blog_tags(blog_id):
 
     user = auth.is_logged_in(request)
@@ -594,6 +661,9 @@ def blog_templates(blog_id):
     media_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.media)
 
+    system_templates = template_list.select(Template, TemplateMapping).where(
+        Template.template_type == template_type.system)
+
 
     tags.list_items = [
         {'title':'Index Templates',
@@ -611,6 +681,9 @@ def blog_templates(blog_id):
         {'title':'Media Templates',
         'type': template_type.media,
         'data':media_templates},
+        {'title':'System Templates',
+        'type': template_type.system,
+        'data':system_templates},
         ]
 
     tpl = template('ui/ui_blog_templates',
