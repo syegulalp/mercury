@@ -76,11 +76,12 @@ def login_verify_core(email, password):
 
 
 def logout():
+    from core.error import UserNotFound
 
     try:
         user = auth.is_logged_in_core(request)
     except UserNotFound:
-        pass
+        user = None
 
     try:
         nonce = request.query['_']
@@ -95,7 +96,8 @@ def logout():
 
         response.delete_cookie("login", path="/")
 
-        redirect(BASE_URL)
+        # redirect(BASE_URL)
+        return "You have logged out. <a href='{}/login'>Click here to log in again.</a>".format(BASE_URL)
 
     return "No logout nonce. <a href='{}/logout?_={}'>Click here to log out.</a>".format(
         BASE_URL, user.logout_nonce)
