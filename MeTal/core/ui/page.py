@@ -17,11 +17,6 @@ import re, datetime
 from os.path import exists as _exists
 from os import makedirs
 
-page_edit_functions = {
-    'append': lambda x, y:x + y,
-    'prepend':lambda x, y:y + x
-    }
-
 @transaction
 # TODO: page-locking algorithm
 def page_edit(page_id):
@@ -55,18 +50,23 @@ def page_edit(page_id):
         user=user,
         status=status)
 
-    for n in request.query:
-        try:
-            tags.page.text = page_edit_functions[n](tags.page.text, request.query[n])
-        except KeyError: pass
-
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kvs(no_traverse=True))
+
+    try:
+        html_editor_settings = Template.get(
+        Template.blog == page.blog,
+        Template.title == 'HTML Editor Init',
+        Template.template_type == template_type.system
+        ).body
+    except Template.DoesNotExist:
+        from core.static import html_editor_settings
 
     tpl = template('edit/edit_page_ui',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
+        html_editor_settings=html_editor_settings,
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
@@ -93,7 +93,8 @@ def page_edit_save(page_id):
 
     tags = cms.save_page(page, user, page.blog)
 
-    delete_page_preview_core(page)
+    from core.mgmt import delete_page_preview
+    delete_page_preview(page)
 
     from core.cms import save_action_list
     from core.ui_kv import kv_ui
@@ -184,29 +185,9 @@ def delete_page_preview(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
 
-    delete_page_preview_core(page)
+    from core.mgmt import delete_page_preview
+    delete_page_preview(page)
 
-def delete_page_preview_core(page):
-
-    preview_file = page.preview_file
-    preview_fileinfo = page.default_fileinfo
-    split_path = preview_fileinfo.file_path.rsplit('/', 1)
-
-    preview_fileinfo.file_path = preview_fileinfo.file_path = (
-         split_path[0] + "/" +
-         preview_file
-         )
-
-    import os
-
-    try:
-        return os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
-    except OSError as e:
-        from core.error import not_found
-        if not_found(e) is False:
-            raise e
-    except Exception as e:
-        raise e
 
 @transaction
 def page_revisions(page_id):
