@@ -5,7 +5,7 @@ import json
 from core.models import (TemplateMapping, Template, System, KeyValue,
     Permission, Site, Blog, User, Category, Theme, Tag)
 
-from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB)
+from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, BASE_URL, DB, _sep)
 
 from core.libs.playhouse.dataset import DataSet
 
@@ -497,3 +497,24 @@ def add_user_permission(user, **permission):
 
     return new_permission
 
+def delete_page_preview(page):
+
+    preview_file = page.preview_file
+    preview_fileinfo = page.default_fileinfo
+    split_path = preview_fileinfo.file_path.rsplit('/', 1)
+
+    preview_fileinfo.file_path = preview_fileinfo.file_path = (
+         split_path[0] + "/" +
+         preview_file
+         )
+
+    import os
+
+    try:
+        return os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
+    except OSError as e:
+        from core.error import not_found
+        if not_found(e) is False:
+            raise e
+    except Exception as e:
+        raise e
