@@ -3,7 +3,6 @@ from core.models import get_page, page_status
 from core.utils import date_format, html_escape, breaks, utf8_escape
 from settings import BASE_URL
 
-
 _self = lambda x: x
 _id = lambda x: x.id
 _none = lambda *args: 0  # @UnusedVariable
@@ -151,8 +150,9 @@ menus = {
         'label': 'Manage pages',
         'path': lambda x: BASE_URL + '/blog/{}'.format(x.id),
         'menu_title': lambda x: x.name,
-        'menu': ('pages_div', 'manage_pages', 'create_page', 'tags_div', 'blog_manage_tags', 'media_div',
-                 'blog_manage_media', 'design_div', 'blog_manage_templates', 'blog_settings'),
+        'menu': ('pages_div', 'manage_pages', 'create_page', 'categorization_div', 'blog_manage_categories',
+                'blog_manage_tags', 'media_div',
+                'blog_manage_media', 'design_div', 'blog_manage_templates', 'blog_settings'),
     },
     'blog_settings': {
         'parent': 'blog',
@@ -161,17 +161,23 @@ menus = {
         'button_title': 'Settings',
         'parent_ref': lambda x: x,
     },
-    'tags_div': {
-        'label': 'Tags',
+    'categorization_div': {
+        'label': 'Categorization',
         'divider': True
     },
     'design_div': {
         'label': 'Design',
         'divider': True
     },
+    'blog_manage_categories': {
+        'parent': 'blog',
+        'label': 'Categories',
+        'path': lambda x: "/categories",
+        'parent_ref': _self,
+    },
     'blog_manage_tags': {
         'parent': 'blog',
-        'label': 'Manage tags',
+        'label': 'Tags',
         'path': lambda x: "/tags",
         'parent_ref': _self,
     },
@@ -203,12 +209,6 @@ menus = {
         'button': lambda x: 'Edit #{}'.format(x.id),
         'button_title': '',
         'parent_ref': lambda x: x,
-    },
-    'blog_manage_tags': {
-        'parent': 'blog',
-        'label': 'Manage tags',
-        'path': lambda x: "/tags",
-        'parent_ref': _self,
     },
     'media_div': {
         'label': 'Media',
@@ -363,6 +363,15 @@ colsets = {
             {'field': 'in_pages',
              'label': 'Pages',
              'format_raw': lambda x: x.in_pages.count()
+             }
+        ]
+    },
+    'categories': {
+        'none': 'No categories found',
+        'colset': [
+            {'field': 'title',
+             'label': 'Category',
+             'format_raw': lambda x: x.for_listing
              }
         ]
     },
