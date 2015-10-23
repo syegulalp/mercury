@@ -170,3 +170,7 @@ body {
 .img-edit-preview {
 	max-height: 400px;
 }
+
+.dropdown-header {
+    padding: 3px 12px;
+}
