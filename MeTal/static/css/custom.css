@@ -178,3 +178,9 @@ body {
 #list_nav_action {
 	margin: 8px 0px;
 }
+
+@media (max-width: 768px){
+	.pull-conditional {
+		float: none !important;
+	}
+}
