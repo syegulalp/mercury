@@ -394,3 +394,11 @@ def raise_request_limit():
 def disable_protection():
     response.set_header('Frame-Options', '')
     # response.set_header('Content-Security-Policy', '')
+
+def action_button(label, url):
+    action = "<a href='{}'><button type='button' class='btn btn-sm'>{}</button></a>".format(
+        url,
+        label
+        )
+
+    return action
