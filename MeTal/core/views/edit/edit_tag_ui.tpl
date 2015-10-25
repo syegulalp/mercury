@@ -17,9 +17,11 @@
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-9">
             <button type="submit" class="btn btn-primary">Save changes</button>
+            <!--
             <span class='pull-right'>
                 <a href="{{settings.BASE_URL}}/blog/{{tag.blog.id}}/tag/{{tag.id}}/delete"><button type="button" name="delete" class="btn btn-danger">Delete this tag</button></a>
-            </span>            
+            </span>
+            -->            
         </div>
     </div>
 </form>
