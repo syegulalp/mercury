@@ -1218,6 +1218,8 @@ def purge_blog(blog):
     total_objects = pages_to_insert.count() + f_i + blog.index_templates.count()
     report.append("<hr/>Total objects created: {}.".format(total_objects))
     report.append("Total processing time: {0:.2f} seconds.".format(end - begin))
+    report.append("<hr/>It is recommened you <a href='{}'>republish this blog</a>.".format(
+        '{}/blog/{}/republish'.format(BASE_URL, blog.id)))
 
     return report
 

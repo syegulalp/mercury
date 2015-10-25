@@ -2,7 +2,7 @@ from core import (auth)
 from core.menu import generate_menu
 
 from core.models import (get_blog,
-    template_tags, get_page, Page, Tag)
+    template_tags, get_page, Page, Tag, get_category)
 
 from core.models.transaction import transaction
 
@@ -115,8 +115,47 @@ media_buttons = '''
 <button type="button" {} class="btn btn-primary">{}</button>
 '''
 
+@transaction
+def edit_category(blog_id, category_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_admin(user, blog)
 
+    category = get_category(blog=blog, category_id=category_id)
 
+    auth.check_category_editing_lock(blog)
+
+    tags = template_tags(
+        blog=blog,
+        user=user)
+
+    if request.method == "POST":
+        new_category_title = request.forms.getunicode('category_title')
+        old_category_title = category.title
+
+        if new_category_title != old_category_title:
+
+            category.title = new_category_title
+            category.save()
+
+            from urllib.parse import urljoin
+            from core.utils import Status
+
+            tags.status = Status(
+                    type='success',
+                    message="Category <b>{}</b> was renamed to <b>{}</b>. <a href='{}'>Purge and republish this blog</a> to make these changes take effect.",
+                    vals=(old_category_title, new_category_title,
+                        '{}/blog/{}/purge'.format(BASE_URL, blog.id)
+                        )
+                    )
+
+    tpl = template('edit/edit_category_ui',
+        category=category,
+        menu=generate_menu('edit_category', category),
+        search_context=(search_context['sites'], None),
+        **tags.__dict__)
+
+    return tpl
 
 @transaction
 def edit_tag(blog_id, tag_id):

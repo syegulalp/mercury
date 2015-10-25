@@ -1803,9 +1803,21 @@ def get_media(media_id, blog=None):
 
     if blog:
         if media.blog != blog:
-            raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.id))
+            raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.for_log))
 
     return media
+
+def get_category(**kwargs):
+    blog = kwargs.get('blog', None)
+    category_id = kwargs.get('category_id', None)
+    try:
+        category_to_get = Category.get(
+            Category.blog == blog,
+            Category.id == category_id)
+    except Category.DoesNotExist:
+        raise Category.DoesNotExist('Category #{} does not exist in blog {}'.format(category_id, blog.for_log))
+
+    return category_to_get
 
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)

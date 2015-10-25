@@ -45,6 +45,12 @@ def blog(blog_id, errormsg=None):
 
     tags.status = errormsg if errormsg is not None else None
 
+    action = utils.action_button(
+        'Create new page',
+        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
+        )
+
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
@@ -52,6 +58,7 @@ def blog(blog_id, errormsg=None):
         rowset=rowset,
         colset=colsets['blog'],
         icons=icons,
+        action=action,
         **tags.__dict__)
 
     return tpl
@@ -544,8 +551,17 @@ def blog_categories(blog_id):
 
     blog_category_list = blog.categories
 
+    reason = auth.check_category_editing_lock(blog, True)
+
     tags = template_tags(blog_id=blog.id,
         user=user)
+
+    tags.status = reason
+
+    action = utils.action_button(
+        'Add new category',
+        '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)
+        )
 
     paginator, rowset = utils.generate_paginator(blog_category_list, request)
 
@@ -556,6 +572,7 @@ def blog_categories(blog_id):
         rowset=rowset,
         colset=colsets['categories'],
         icons=icons,
+        action=action,
         **tags.__dict__)
 
     return tpl

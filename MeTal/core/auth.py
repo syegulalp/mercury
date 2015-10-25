@@ -300,5 +300,11 @@ def check_tag_editing_lock(blog, warn_only=False):
     '''
     return check_publishing_lock(blog, "Tag editing", warn_only)
 
+def check_category_editing_lock(blog, warn_only=False):
+    '''
+    Checks for a publishing lock for category editing.
+    '''
+    return check_publishing_lock(blog, "Category editing", warn_only)
+
 def check_page_editing_lock(page):
     pass

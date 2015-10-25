@@ -254,6 +254,14 @@ menus = {
         'button_title': 'All tags in this blog',
         'parent_ref': lambda x: x.blog,
     },
+    'edit_category': {
+        'parent': 'blog',
+        'button_label': lambda x: 'Edit #{}'.format(x.id),
+        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.blog.id),
+        'button': lambda x: 'Categories',
+        'button_title': 'All categories in this blog',
+        'parent_ref': lambda x: x.blog,
+    },
     'blog_media': {
         'parent': 'blog',
         'path': lambda x: BASE_URL + "/blog/{}/media".format(x.blog.id),

@@ -443,6 +443,11 @@ def blog_categories(blog_id):
     from core.ui import blog
     return blog.blog_categories(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>', method='POST')
+def blog_edit_category(blog_id, category_id):
+    from core.ui import ui
+    return ui.edit_category(blog_id, category_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
