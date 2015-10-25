@@ -97,9 +97,9 @@ def page_edit_save(page_id):
     delete_page_preview(page)
 
     from core.cms import save_action_list
-    from core.ui_kv import kv_ui
 
-    kv_ui_data = kv_ui(page.kvs())
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(page.kvs(no_traverse=True))
 
     tpl = template('edit/edit_page_ajax_response',
         sidebar=ui_mgr.render_sidebar(
