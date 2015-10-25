@@ -1,7 +1,8 @@
 <div>
 
+
     <span class="pull-right">
-        
+    
         <ul class="pagination pagination-sm" style="display:inline;">
             <li>
 %# eventually use proper URL parameter processing w/a function passed to change page ID & add search query
@@ -36,8 +37,10 @@
             </li>
         </ul>
         
-    </span>
 
+        
+    </span>
+    
 
     <span class="dropdown">
       <button class="btn btn-default dropdown-toggle btn-sm" type="button" id="checked_action_menu" data-toggle="dropdown" aria-expanded="true">
@@ -48,5 +51,18 @@
         <li role="presentation"><a role="menuitem" tabindex="-1" href="#">[<i>Not implemented yet</i>]</a></li>
       </ul>
     </span>
+    
+    <span id="list_nav_action" class="">
+    % try:
+    {{!action}}
+    % except:
+    
+    % end
+    </span>    
+
+
+    
+    
+
     
 </div>
