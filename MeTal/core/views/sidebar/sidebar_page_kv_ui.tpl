@@ -13,7 +13,7 @@
     <label for="new_key_value">Value</label>
     <input class="form-control" id="new_key_value" name="new_key_value" placeholder="Key value">
   </div>
-  <button onclick="add_kv();" type="button" class="btn btn-primary">Add
+  <button onclick="add_kv();" type="button" class="btn btn-sm btn-primary">Add
   <span id="kv_activity" style="display:none" class=""></span>
   </button>
 </div>
