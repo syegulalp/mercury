@@ -170,6 +170,8 @@ def create_basename(input_string, blog):
 
     basename = input_string.replace(' ', '-')
 
+    basename = re.sub(r'<[^>]*>', r'', basename)
+
     try:
         basename = basename.casefold()
     except BaseException:
