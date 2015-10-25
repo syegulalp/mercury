@@ -174,3 +174,7 @@ body {
 .dropdown-header {
     padding: 3px 12px;
 }
+
+#list_nav_action {
+	margin: 8px 0px;
+}
