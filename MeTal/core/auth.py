@@ -1,6 +1,6 @@
 from core.libs.bottle import redirect, request
 from core.models import User, Permission, Struct, MediaAssociation, Queue
-from settings import BASE_URL, SECRET_KEY
+from settings import BASE_URL, SECRET_KEY, MAINTENANCE_MODE
 from core.error import PermissionsException, UserNotFound, QueueInProgressException
 from core.utils import Status
 
@@ -95,6 +95,13 @@ def get_permissions(user, level=None, blog=None, site=None):
 
     if permissions.count() == 0:
         raise PermissionsException('Permission {} not found'.format(level))
+
+    if MAINTENANCE_MODE is True:
+        permissions2 = permissions.select().where(
+            (Permission.permission.bin_and(role.SYS_ADMIN)))
+        if permissions2.count() == 0:
+            from core.error import MaintenanceModeException
+            raise MaintenanceModeException("The site is currently in maintenance mode and cannot be accessed by anyone except the site admins.")
 
     return permissions
 

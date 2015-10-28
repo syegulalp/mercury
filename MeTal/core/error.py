@@ -42,6 +42,9 @@ class DatabaseError(LoggedException):
 class TemplateSaveException(LoggedException):
     pass
 
+class MaintenanceModeException(Exception):
+    pass
+
 # for earlier Python 3.x backwards compatibility
 
 try:

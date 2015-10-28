@@ -42,6 +42,10 @@ LAUNCH_BROWSER = False
 # ? to be phased out and replaced with a command line setting?
 RESET = None
 
+# Set to True to place the system into maintenance mode.
+# This forbids access to anyone who is not a sysadmin.
+MAINTENANCE_MODE = False
+
 INSTALL_STEP = None
 
 INI_FILE_NAME = 'config.cgi'
