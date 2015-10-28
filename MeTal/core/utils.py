@@ -163,25 +163,26 @@ def create_basename(input_string, blog):
     are to be written. By default this is enforced in the database by way of a
     unique column constraint.
     '''
-    from core.models import Page
 
     if not input_string:
         input_string = "page"
 
-    basename = input_string.replace(' ', '-')
-
-    basename = re.sub(r'<[^>]*>', r'', basename)
+    basename = input_string
 
     try:
         basename = basename.casefold()
-    except BaseException:
+    except Exception:
         basename = basename.lower()
 
+    basename = basename.replace(' ', '-')
+    basename = re.sub(r'<[^>]*>', r'', basename)
     basename = re.sub(r'[^a-z0-9\-]', r'', basename)
     basename = re.sub(r'\-\-', r'-', basename)
     basename = urllib.parse.quote_plus(basename)
 
     basename_test = basename
+
+    from core.models import Page
 
     n = 0
 
