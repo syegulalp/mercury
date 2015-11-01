@@ -53,6 +53,14 @@ def get_kvs_for_theme(theme):
 
     return theme_kvs
 
+def erase_queue(blog=None):
+    from core.models import Queue
+    if blog is None:
+        delete_queue = Queue.delete()
+    else:
+        delete_queue = Queue.delete().where(Queue.blog == blog)
+    return delete_queue.execute()
+
 def erase_theme(blog):
 
     del_kvs = get_kvs_for_theme(blog.theme)
