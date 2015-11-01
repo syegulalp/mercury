@@ -35,11 +35,11 @@
 <form id="confirm_form" name="confirm_form" method="post">{{!csrf_token}}
 <button type="submit" class="btn btn-sm btn-danger" id="confirm_{{status.confirm['id']}}"
 name="{{status.confirm['name']}}"
-value="{{status.confirm['value']}}">Yes, I want to do this</button>
+value="{{status.confirm['value']}}">{{!status.confirm['label']}}</button>
 <span class="pull-right">
-<a href="{{status.deny}}">
+<a href="{{status.deny['url']}}">
 <button type="button" class="btn btn-sm btn-success" >
-No, I don't want to do this
+{{!status.deny['label']}}
 </button>
 </a>
 </span>

@@ -730,10 +730,14 @@ class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
     title = TextField()
     parent_category = IntegerField(default=None, null=True, index=True)
-    default = BooleanField(default=False)
+    default = BooleanField(default=False, index=True)
+    sort = IntegerField(default=None, null=True, index=True)
 
     @property
     def link_format(self):
+        if self.id is None:
+            return "{}/blog/{}/categories".format(
+                BASE_URL, self.blog.id)
         return "{}/blog/{}/category/{}".format(
             BASE_URL, self.blog.id, self.id)
 
@@ -744,6 +748,12 @@ class Category(BaseModel):
     @property
     def previous_category(self):
         pass
+
+    @property
+    def parent_c(self):
+        if self.parent_category is None:
+            return Category(blog=self.blog, title='[Top-level]')
+        return Category.get(Category.id == self.parent_category)
 
 class Page(BaseModel):
 

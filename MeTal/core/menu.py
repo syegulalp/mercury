@@ -183,7 +183,7 @@ menus = {
     },
     'blog_manage_templates': {
         'parent': 'blog',
-        'label': 'Manage templates',
+        'label': 'Templates',
         'path': lambda x: "/templates",
         'parent_ref': _self,
     },
@@ -302,6 +302,29 @@ menus = {
         'path': lambda x: "/newpage",
         'parent_ref': _self,
     },
+    'new_category': {
+        'parent': 'blog',
+        'button_label': lambda x: 'Create new category',
+        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.blog.id),
+        'button': lambda x: 'Categories',
+        'button_title': 'All categories in this blog',
+        'parent_ref': lambda x: x.blog,
+    },
+    'blog_categories': {
+        'parent': 'blog',
+        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.id),
+        'button': lambda x: 'Categories',
+        'button_title': 'All categories in this blog',
+        'parent_ref': lambda x: x,
+    },
+    'delete_category': {
+        'parent': 'blog_categories',
+        'button_label': lambda x: 'Delete',
+        'path': lambda x: BASE_URL + "/blog/{}/category/{}".format(x.blog.id, x.id),
+        'button': lambda x: 'Edit #{}'.format(x.id),
+        'button_title': 'Return to editing category',
+        'parent_ref': lambda x: x.blog,
+    },
 }
 
 
@@ -380,6 +403,10 @@ colsets = {
             {'field': 'title',
              'label': 'Category',
              'format_raw': lambda x: x.for_listing
+             },
+             {'field': 'child_of',
+             'label': 'Parent',
+             'format_raw': lambda x: x.parent_c.for_listing
              }
         ]
     },

@@ -66,7 +66,7 @@ def page_edit(page_id):
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
-        html_editor_settings=html_editor_settings,
+        html_editor_settings=template(html_editor_settings),
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,

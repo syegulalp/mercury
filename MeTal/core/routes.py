@@ -1,6 +1,6 @@
 import os, re, urllib
 
-from core import (mgmt, auth)
+from core import auth
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (Bottle, static_file, request, response, abort)
 from core.models import (db, get_page, get_blog, get_theme, get_media, FileInfo)
@@ -8,31 +8,10 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep)
-from core.models import get_template
-
 
 app = Bottle()
 _route = app.route
 _hook = app.hook
-
-# use this pattern for breaking up the router into multiple modules later on?
-'''
-@_route(BASE_PATH + "/t1")
-def t1():
-    return "T1"
-
-@_route(BASE_PATH + "/t1/<path>")
-def t(path):
-    print ("t")
-
-    @_route(BASE_PATH + "/t1/t2")
-    def t2():
-        print ("t2")
-        return "T2"
-
-    return app.router.match(request)[0]()
-'''
-
 
 @_hook('before_request')
 def strip_path():
@@ -79,9 +58,8 @@ def server_static(filepath):
 @_route(BASE_PATH + "/blog/<blog_id:int>/erase-queue")
 def erase_queue(blog_id):
     blog = get_blog(blog_id)
-    from core.models import Queue
-    delete_queue = Queue.delete().where(Queue.blog == blog)
-    delete_queue.execute()
+    from core.mgmt import erase_queue
+    erase_queue(blog)
     return "Queue for blog {} erased".format(blog.id)
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
@@ -146,7 +124,7 @@ def overwrite_blog_theme(blog_id):
     theme.id = None
     theme.json = theme_string
     blog = get_blog(blog_id)
-    from core import cms
+    from core import cms, mgmt
     from core.auth import get_users_with_permission, role
     with db.atomic():
         cms.purge_fileinfos(blog.fileinfos)
@@ -255,6 +233,7 @@ def apply_theme_test(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     theme = get_theme(theme_id)
+    from core import mgmt
     with db.atomic():
         n = mgmt.theme_apply_to_blog(theme, blog, user)
     return n
@@ -311,12 +290,13 @@ def system_log():
 
 @_route(BASE_PATH + '/export')
 def system_export_data():
-
+    from core import mgmt
     return mgmt.export_data()
 
 
 @_route(BASE_PATH + '/import')
 def system_import_data():
+    from core import mgmt
     return mgmt.import_data()
 
 
@@ -443,11 +423,23 @@ def blog_categories(blog_id):
     from core.ui import blog
     return blog.blog_categories(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/newcategory')
+@_route(BASE_PATH + '/blog/<blog_id:int>/newcategory', method='POST')
+def blog_new_category(blog_id):
+    from core.ui import ui
+    return ui.new_category(blog_id)
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>', method='POST')
 def blog_edit_category(blog_id, category_id):
     from core.ui import ui
     return ui.edit_category(blog_id, category_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete')
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete', method='POST')
+def blog_delete_category(blog_id, category_id):
+    from core.ui import ui
+    return ui.delete_category(blog_id, category_id, request.forms.get('confirm'))
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')

@@ -506,7 +506,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
     else:
         confirmation = Struct()
 
-        confirmation.message = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
+        message = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
             media.for_display,
             blog.for_display))
 
@@ -520,17 +520,21 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         <ul>{}</ul>
         '''.format(''.join(used_in)))
 
-        confirmation.yes = 'Yes, delete this media'
-        confirmation.no = '../{}/edit'.format(media.id)
+        confirmation.yes = {
+                'label':'Yes, delete this media',
+                'id':'delete',
+                'name':'confirm',
+                'value':'Y'}
+        confirmation.no = {
+            'label':'No, return to media properties',
+            'url':'../{}/edit'.format(media.id)
+            }
 
         tags.status = Status(
             type='warning',
             close=False,
-            message=confirmation.message,
-            deny=confirmation.no,
-            confirm={'id':'delete',
-                'name':'confirm',
-                'value':'Y'}
+            message=message,
+            confirmation=confirmation
             )
 
     tpl = template('listing/report',
@@ -573,38 +577,6 @@ def blog_categories(blog_id):
         colset=colsets['categories'],
         icons=icons,
         action=action,
-        **tags.__dict__)
-
-    return tpl
-
-@transaction
-def edit_category(blog_id, category_id):
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_editor(user, blog)
-
-    # auth.check_category_editing_lock(blog)
-
-    '''
-    try:
-        tag = Tag.get(Tag.id == tag_id)
-    except Tag.DoesNotExist:
-        raise Tag.DoesNotExist("No such tag #{} in blog {}.".format(
-            tag_id,
-            blog.for_log))
-    '''
-
-    if request.method == "POST":
-        pass
-
-
-    tags = template_tags(
-        user=user)
-
-    tpl = template('edit/edit_category_ui',
-        menu=generate_menu('edit_category', tag),
-        search_context=(search_context['blog'], None),
-        tag=tag,
         **tags.__dict__)
 
     return tpl
