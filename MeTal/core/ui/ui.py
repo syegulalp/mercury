@@ -196,7 +196,7 @@ def delete_category(blog_id, category_id, confirm='N'):
         message = 'Category {} successfully deleted'.format(
             category.for_log)
         url = '{}/blog/{}/categories'.format(BASE_URL, blog.id)
-        action = 'Return to the media listing'
+        action = 'Return to the category listing'
 
         from core.models import PageCategory
         del_cat = PageCategory.delete().where(
