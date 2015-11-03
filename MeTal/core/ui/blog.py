@@ -51,6 +51,10 @@ def blog(blog_id, errormsg=None):
         )
 
 
+    list_actions = [
+        ['Republish', '{}/api/1/republish'],
+        ]
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
@@ -59,6 +63,7 @@ def blog(blog_id, errormsg=None):
         colset=colsets['blog'],
         icons=icons,
         action=action,
+        list_actions=list_actions,
         **tags.__dict__)
 
     return tpl

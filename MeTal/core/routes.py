@@ -799,12 +799,18 @@ def page_add_media_with_template(page_id, media_id, template_id):
 def api_hi():
     return settings.PRODUCT_NAME
 
-@_route(BASE_PATH + "/api/1/add-kv", method='POST')
+# All APIs should be /api/<revision>/action
+# Use verbs and forms for other things to simplify
+# That way we can put it all in its own library easily
+
+# TODO: replace with /kv, use PUT and DELETE verbs
+
+@_route(BASE_PATH + "/api/1/kv", method='POST')
 def api_add_kv():
     from core.ui import kv
     return kv.add_kv()
 
-@_route(BASE_PATH + "/api/1/remove-kv", method='POST')
+@_route(BASE_PATH + "/api/1/kv", method='DELETE')
 def api_remove_kv():
     from core.ui import kv
     return kv.remove_kv()

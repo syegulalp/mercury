@@ -527,8 +527,8 @@ function remove_kv(id){
 	show_activity('#kv_activity','remove-sign');
 	
 	$.ajax({
-		type : "POST",
-		url : global.base + "/api/1/remove-kv",
+		type : "DELETE",
+		url : global.base + "/api/1/kv",
 		enctype : "multipart/form-data",
 		processData : false,
 		contentType : false,
@@ -561,7 +561,7 @@ function add_kv(){
 	
 	$.ajax({
 		type : "POST",
-		url : global.base + "/api/1/add-kv",
+		url : global.base + "/api/1/kv",
 		enctype : "multipart/form-data",
 		processData : false,
 		contentType : false,
