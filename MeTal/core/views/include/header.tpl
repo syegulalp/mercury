@@ -97,7 +97,6 @@
             <li><a href="{{settings.BASE_URL}}/blog/{{b.id}}/newpage">Page ({{b.as_text}})</a></li>
             % end
             % end
-            <li><a href="#">Media</a></li>
             <li><a href="#">Blog</a></li>
             <li><a href="#">Site</a></li>
           </ul>

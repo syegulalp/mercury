@@ -6,7 +6,13 @@
         <span class="caret"></span>
       </button>
       <ul class="dropdown-menu btn-sm" role="menu" aria-labelledby="checked_action_menu">
+      % try:
+      % for n in list_actions:
+      <li role="presentation"><a onclick="submit_to_api();" role="menuitem" tabindex="-1" href="#">{{n[0]}}</a></li>
+      % end
+      % except:
         <li role="presentation"><a role="menuitem" tabindex="-1" href="#">[<i>Not implemented yet</i>]</a></li>
+      % end
       </ul>
     </span>
     

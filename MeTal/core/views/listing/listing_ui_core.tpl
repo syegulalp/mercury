@@ -3,7 +3,7 @@
 <div style="width:100%; padding-bottom:8px;border-bottom: 1px solid rgb(221,221,221)">
 </div>
     <fieldset>
-        <table class="table table-condensed table-striped table-hover" style="margin-bottom:0px">
+        <table id="listing_table" class="table table-condensed table-striped table-hover" style="margin-bottom:0px">
             <colgroup>
             <col width="1%">
             <col width="1%">
