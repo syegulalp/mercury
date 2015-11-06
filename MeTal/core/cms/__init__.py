@@ -625,7 +625,7 @@ def generate_file(f, blog):
 
     return (page_text, pathname)
 
-import time
+
 def build_file(f, blog):
     '''
     Builds a single file based on a fileinfo entry f for a given blog.
@@ -637,6 +637,8 @@ def build_file(f, blog):
     This should be the action that is pushed to the queue, and consolidated
     based on the generated filename. (The consolidation should be part of the queue push function)
     '''
+
+    import time
 
     report = []
     begin = time.clock()
@@ -992,6 +994,8 @@ def process_queue_publish(queue_control, blog):
         Queue.is_control == False).limit(MAX_BATCH_OPS)
 
     queue_length = queue.count()
+
+    import time
 
     start_queue = time.clock()
 
