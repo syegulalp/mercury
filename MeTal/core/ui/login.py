@@ -125,4 +125,6 @@ def main_ui():
         your_blogs=your_blogs,
         **template_tags(user=user).__dict__)
 
+    # return tpl
+    from core import cms
     return tpl

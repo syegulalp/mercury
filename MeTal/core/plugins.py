@@ -160,7 +160,6 @@ def activate_plugins():
             plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
                 "' could not be activated. Its source may be damaged. ({})".format(e))
             continue
-
         _stddebug("Plugin activated: " + added_plugin.__plugin_name__ + "\n")
 
     if len(plugin_errors) > 0:

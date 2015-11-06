@@ -82,6 +82,7 @@ def boot(aux_settings=None):
         from core.routes import app
         settings.DB.make_db_connection()
 
+
         from core import plugins
         try:
             plugins.activate_plugins()

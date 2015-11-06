@@ -837,3 +837,4 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 def api_remove_tag_from_page(tag_id, page_id):
     return ui.remove_tag_from_page(tag_id, page_id)
 '''
+
