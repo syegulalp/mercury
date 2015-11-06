@@ -17,6 +17,18 @@ import re, datetime
 from os.path import exists as _exists
 from os import makedirs
 
+def html_editor_settings(blog):
+    try:
+        html_editor_settings = Template.get(
+            Template.blog == blog,
+            Template.title == 'HTML Editor Init',
+            Template.template_type == template_type.system
+            ).body
+    except Template.DoesNotExist:
+        from core.static import html_editor_settings
+
+    return html_editor_settings
+
 @transaction
 # TODO: page-locking algorithm
 def page_edit(page_id):
@@ -53,20 +65,11 @@ def page_edit(page_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kvs(no_traverse=True))
 
-    try:
-        html_editor_settings = Template.get(
-        Template.blog == page.blog,
-        Template.title == 'HTML Editor Init',
-        Template.template_type == template_type.system
-        ).body
-    except Template.DoesNotExist:
-        from core.static import html_editor_settings
-
     tpl = template('edit/edit_page_ui',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
-        html_editor_settings=template(html_editor_settings),
+        html_editor_settings=html_editor_settings(page.blog),
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
@@ -155,7 +158,7 @@ def page_preview(page_id):
     preview_fileinfo = page.default_fileinfo
     split_path = preview_fileinfo.file_path.rsplit('/', 1)
 
-    preview_fileinfo.file_path = preview_fileinfo.file_path = (
+    preview_fileinfo.file_path = (
          split_path[0] + "/" +
          preview_file
          )
@@ -164,10 +167,10 @@ def page_preview(page_id):
 
     utils.disable_protection()
 
-    import settings
+    from settings import DESKTOP_MODE, BASE_URL_ROOT
 
-    if settings.DESKTOP_MODE:
-        page_url = settings.BASE_URL_ROOT + "/" + preview_fileinfo.file_path + "?_={}".format(
+    if DESKTOP_MODE:
+        page_url = BASE_URL_ROOT + "/" + preview_fileinfo.file_path + "?_={}".format(
             page.blog.id)
     else:
         page_url = preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file
@@ -355,11 +358,14 @@ def page_revision_restore(page_id, revision_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kvs())
 
+    # TODO: save action from this doesn't trigger queue run
+
     tpl = template('edit/edit_page_ui',
         status_badge=status_badge,
         save_action=save_action,
         menu=generate_menu('edit_page', page),
         search_context=(search_context['blog'], page.blog),
+        html_editor_settings=html_editor_settings(page.blog),
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
