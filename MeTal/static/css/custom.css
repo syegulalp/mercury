@@ -184,3 +184,10 @@ body {
 		float: none !important;
 	}
 }
+
+.category-item .glyphicon-star{
+	color: green;
+}
+.category-item .glyphicon-remove-sign {
+	color:red;
+}

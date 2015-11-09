@@ -14,6 +14,7 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue, queue_jobs_waiting)
 
 from settings import MAX_BATCH_OPS, BASE_URL
+from core.models import get_category
 
 save_action_list = Struct()
 
@@ -414,6 +415,8 @@ def save_page(page, user, blog=None):
         except PageNotChanged:
             save_result = (None, None)
 
+        msg += ("Page <b>{}</b> saved successfully.")
+
         if blog_new_page:
 
             default_blog_category = Category.get(
@@ -425,7 +428,57 @@ def save_page(page, user, blog=None):
                 category=default_blog_category,
                 primary=True)
 
-        msg += ("Page <b>{}</b> saved successfully.")
+        else:
+
+            categories = []
+            for n in request.forms.allitems():
+                if n[0][:8] == 'cat-sel-':
+                    try:
+                        category_id = int(n[0][8:])
+                    except ValueError:
+                        category_id = None
+                    else:
+                        categories.append(category_id)
+
+            page_categories = []
+
+            primary = None
+
+            for n in page.categories:
+                print (n.category.id)
+                if n.category.id not in categories:
+                    print ("Not found")
+                    delete_category = PageCategory.delete().where(
+                        PageCategory.id == n.id)
+                    delete_category.execute()
+                else:
+                    page_categories.append(n.category.id)
+                    if n.primary is True:
+                        primary = n
+
+            for n in categories:
+                if n not in page_categories:
+                    new_page_category = PageCategory.create(
+                        page=page,
+                        category=get_category(blog=page.blog, category_id=n),
+                        primary=False)
+
+            if page.categories.count() == 0:
+                default_page_category = PageCategory.create(
+                    page=page,
+                    category=Category.get(
+                        blog=page.blog,
+                        default=True)
+                    )
+                primary = default_page_category
+                msg += (" Default category auto-assigned for page.")
+
+            if primary is None:
+                n = page.categories[0]
+                n.primary = True
+                n.save()
+
+
 
     if request.forms.getunicode('tag_text') is not None:
         tag_text = json.loads(request.forms.getunicode('tag_text'))
