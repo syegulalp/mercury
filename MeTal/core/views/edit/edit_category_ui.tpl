@@ -4,7 +4,12 @@
 <form class="form-horizontal" method="post">
 {{!csrf_token}}
     <div class="form-group">
-        <label for="category_title" class="col-sm-2 control-label">Category name</label>
+        <label for="category_title" class="col-sm-2 control-label">Category name
+    % if category.default is True:
+    </br>
+    <span class="label label-warning">Default blog category</span>
+    % end
+    </label>
         <div class="col-sm-9">
             <input type="text" class="form-control" aria-describedby="category_title_help"
             value="{{category.title}}"
@@ -37,9 +42,17 @@
         </div>
     </div>
 
+    <hr/>
+
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-9">
-            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="submit" name="default" value="Y" class="btn btn-primary">Set this category as default for this blog</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-9">
+            <button type="submit" class="btn btn-success">Save changes</button>
             <span class='pull-right'>
                 <a href="{{settings.BASE_URL}}/blog/{{blog.id}}/category/{{category.id}}/delete"><button type="button" name="delete" class="btn btn-danger">Delete this category</button></a>
             </span>

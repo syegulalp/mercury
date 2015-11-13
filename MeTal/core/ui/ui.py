@@ -198,11 +198,16 @@ def delete_category(blog_id, category_id, confirm='N'):
         url = '{}/blog/{}/categories'.format(BASE_URL, blog.id)
         action = 'Return to the category listing'
 
-        from core.models import PageCategory
-        del_cat = PageCategory.delete().where(
-            PageCategory.category == category.id)
+        from core.models import Category, PageCategory
 
-        del_cat.execute()
+        reparent_categories = Category.update(
+            parent_category=category.parent_category).where(
+                Category.parent_category == category)
+        reparent_categories.execute()
+
+        delete_category = PageCategory.delete().where(
+            PageCategory.category == category.id)
+        delete_category.execute()
 
         category.delete_instance()
 
@@ -309,6 +314,19 @@ def edit_category(blog_id, category_id):
 
             status.append(['Category <b>{}</b> was reparented to <b>{}</b>.',
                 [category.title, new_category.for_log]])
+
+        if request.forms.getunicode('default') == "Y":
+            print ("Y")
+            clear_default_categories = Category.update(
+                default=False).where(
+                    Category.blog == blog,
+                    Category.default == True)
+            clear_default_categories.execute()
+            category.default = True
+            category.save()
+
+            status.append(['Category <b>{}</b> was set to default for blog <b>{}</b>.',
+                [category.title, blog.for_log]])
 
     if len(status) > 0:
         message = ''

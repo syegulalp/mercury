@@ -41,8 +41,19 @@ menus = {
             # 'system_settings',
             'dashboard', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
-            'sites_div', 'all_sites', 'create_site'),
+            'sites_div', 'all_sites', 'create_site',
+            'site_users_div', 'site_manage_users', 'site_create_user'),
     },
+    'site_users_div': {
+        'label':'Users',
+        'divider':True
+    },
+    'site_manage_users':{
+        'label':'Manage users'
+        },
+    'site_create_user':{
+        'label':'Create user'
+        },
     'system_info': {
         'parent': 'system',
         'label': 'System information',
@@ -100,7 +111,7 @@ menus = {
         'label': 'Manage blogs',
         'menu_title': lambda x: x.name,
         'path': lambda x: BASE_URL + "/site/{}".format(x.id),
-        'menu': ('site_users_div', 'site_manage_users', 'site_create_users',
+        'menu': ('site_users_div', 'site_manage_users', 'site_create_user',
                  'blogs_div', 'manage_blogs', 'create_blog')
     },
     'site_users_div': {
@@ -121,9 +132,9 @@ menus = {
         'button_title': 'All users on this site',
         'parent_ref': lambda x: x.site,
     },
-    'site_create_users': {
+    'site_create_user': {
         'parent': 'site',
-        'label': 'Create users',
+        'label': 'Create user',
         'path': lambda x: "/create-user",
         'parent_ref': _self,
     },
@@ -152,7 +163,8 @@ menus = {
         'menu_title': lambda x: x.name,
         'menu': ('pages_div', 'manage_pages', 'create_page', 'categorization_div', 'blog_manage_categories',
                 'blog_manage_tags', 'media_div',
-                'blog_manage_media', 'design_div', 'blog_manage_templates', 'blog_settings'),
+                'blog_manage_media', 'design_div', 'blog_manage_templates', 'blog_settings',
+                'blog_users_div', 'blog_manage_users', 'blog_create_user'),
     },
     'blog_settings': {
         'parent': 'blog',
@@ -174,6 +186,16 @@ menus = {
         'label': 'Categories',
         'path': lambda x: "/categories",
         'parent_ref': _self,
+    },
+    'blog_users_div':{
+        'label':'Users',
+        'divider':True
+    },
+    'blog_manage_users':{
+        'label':'Manage users'
+    },
+    'blog_create_user':{
+        'label':'Create user'
     },
     'blog_manage_tags': {
         'parent': 'blog',
@@ -407,6 +429,10 @@ colsets = {
              {'field': 'child_of',
              'label': 'Parent',
              'format_raw': lambda x: x.parent_c.for_listing
+             },
+             {'field':'default',
+             'label':'Default',
+             'format_raw':lambda x:'<span class="label label-warning">Default blog category</span>' if x.default is True else ''
              }
         ]
     },
