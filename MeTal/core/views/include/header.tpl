@@ -119,7 +119,7 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                 {{user.name}}&nbsp;&nbsp;<span class="caret"></span></a>
                   <ul class="dropdown-menu" role="menu">
-                    <li><a href="{{settings.BASE_URL}}/me/settings">Settings</a></li>
+                    <li><a href="{{settings.BASE_URL}}/me">Settings</a></li>
                     <li><a href="{{settings.BASE_URL}}/logout?_={{user.logout_nonce}}">Log out</a></li>
                   </ul>
             </li>      
