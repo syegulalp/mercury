@@ -170,6 +170,11 @@ def setup(step_id=None):
     from install import install
     return install.step(step_id)
 
+@_route(BASE_PATH + "/me")
+@_route(BASE_PATH + "/me", method='POST')
+def me():
+    from core.ui import user
+    return user.self_edit()
 
 @_route(BASE_PATH + "/system/sites")
 def site_list():
@@ -287,6 +292,10 @@ def system_log():
     from core.ui import system
     return system.system_log()
 
+@_route(BASE_PATH + "/system/user/<user_id:int>")
+def system_user(user_id):
+    from core.ui import user
+    return user.system_user(user_id)
 
 @_route(BASE_PATH + '/export')
 def system_export_data():
