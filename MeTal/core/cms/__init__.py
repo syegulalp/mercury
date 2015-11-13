@@ -1039,6 +1039,8 @@ def republish_blog(blog_id):
 
 def process_queue_publish(queue_control, blog):
 
+    # Queue for building actual pages
+
     queue_control.is_running = True
     queue_control.save()
 
@@ -1095,6 +1097,9 @@ def process_queue_publish(queue_control, blog):
 
 def process_queue_insert(queue_control, blog):
 
+    # Queue for building fileinfo data
+    # e.g., when a blog is rebuilt
+
     queue_control.is_running = True
     queue_control.save()
 
@@ -1144,6 +1149,8 @@ def process_queue_insert(queue_control, blog):
 def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
+    Will eventually be expanded to take blog or site params,
+    and publish accordingly.
     '''
 
     with db.atomic():
