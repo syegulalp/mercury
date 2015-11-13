@@ -23,6 +23,22 @@
                 <span id="user_email_help" class="help-block">The email address associated for this user. (Used to log in)</span>
             </div>
         </div>
+
+        <div class="form-group">
+            <label for="user_password" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-9">
+                <input type="password" class="form-control" aria-describedby="user_password_help"
+                value=""
+                id="user_password" name="user_password">
+                <span id="user_password_help" class="help-block">User's password. (Leave blank unless changing.)</span>
+
+                <input type="password" class="form-control" aria-describedby="user_password_help"
+                value=""
+                id="user_password_confirm" name="user_password_confirm">
+                <span id="user_password_help" class="help-block">Confirm password.</span>                
+                
+            </div>
+        </div>        
         
         
         <div class="form-group">
