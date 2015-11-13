@@ -264,13 +264,15 @@ def blog_list_users(blog_id):
     tags = template_tags(blog_id=blog.id,
         user=user)
 
-    paginator, page_list = utils.generate_paginator(user_list, request)
+    paginator, rowset = utils.generate_paginator(user_list, request)
 
-    tpl = template('user_listing/listing_ui',
+    tpl = template('listing/listing_ui',
         section_title="List blog users",
         search_context=(search_context['sites'], None),
+        menu=generate_menu('blog_list_users', blog),
+        colset=colsets['blog_users'],
         paginator=paginator,
-        page_list=page_list,
+        rowset=rowset,
         user_list=user_list,
         **tags.__dict__)
 
