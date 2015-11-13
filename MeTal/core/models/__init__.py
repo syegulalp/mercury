@@ -560,8 +560,9 @@ class Blog(SiteBase):
     def users(self):
 
         blog_user_list = Permission.select(fn.Distinct(Permission.user)).where(
-            Permission.site << [self.site, 0],
-            Permission.blog << [self.id, 0]).tuples()
+            (Permission.site << [self.site.id, 0]) |
+            (Permission.blog << [self.id, 0])
+            ).tuples()
 
         blog_users = User.select().where(User.id << blog_user_list)
 
