@@ -30,15 +30,20 @@ def login_verify():
     email = _forms.get('email')
     password = _forms.get('password')
 
-    tags, success = login_verify_core(email, password)
+    if login_verify_core(email, password) is True:
 
-    if success:
         if request.query.action:
             utils.safe_redirect(request.query.action)
         else:
             redirect(BASE_URL)
 
     else:
+        tags = template_tags()
+
+        tags.status = utils.Status(
+            type='danger',
+            message="Email or password not found.")
+
         return template('ui/ui_login',
             **tags.__dict__)
 
@@ -49,17 +54,11 @@ def login_verify_core(email, password):
         user = mgmt.login_verify(email, password)
     except User.DoesNotExist:
 
-        tags = template_tags()
-
-        tags.status = utils.Status(
-            type='danger',
-            message="Email or password not found.")
-
         logger.info("User at {} attempted to log in as '{}'. User not found or password not valid.".format(
             request.remote_addr,
             email))
 
-        return tags, False
+        return False
 
     else:
 
@@ -72,7 +71,7 @@ def login_verify_core(email, password):
         user.logout_nonce = utils.url_escape(utils.logout_nonce(user))
         user.save()
 
-        return None, True
+        return True
 
 
 def logout():
