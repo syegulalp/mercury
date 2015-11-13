@@ -8,13 +8,9 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
-from core import mgmt
-
 from settings import (BASE_URL)
 
 import json
-from smtplib import OLDSTYLE_AUTH
-from pickle import NEWTRUE
 
 queue_selections = (
     ('Remove from queue', '1', ''),
@@ -117,7 +113,6 @@ media_buttons = '''
 <button type="button" {} class="btn btn-primary">{}</button>
 '''
 
-# @transaction
 def new_category(blog_id):
 
     from core.models import db
@@ -147,23 +142,21 @@ def new_category(blog_id):
             blog=blog,
             user=user)
 
-    # from core.utils import Status
-    # status = []
-
     if request.method == "POST":
-        category_title = request.forms.getunicode('category_title')
-        try:
-            parent_category = int(request.forms.getunicode('category_parent'))
-        except ValueError:
-            parent_category = None
-
         with db.atomic() as txn:
+            category_title = request.forms.getunicode('category_title')
+            try:
+                parent_category = int(request.forms.getunicode('category_parent'))
+            except ValueError:
+                parent_category = None
 
-            category = Category(blog=blog,
-                title=category_title,
-                parent_category=parent_category
-                )
-            category.save()
+            with db.atomic() as txn:
+
+                category = Category(blog=blog,
+                    title=category_title,
+                    parent_category=parent_category
+                    )
+                category.save()
 
         redirect('{}/blog/{}/category/{}'.format(
             BASE_URL, blog.id, category.id))
@@ -291,9 +284,7 @@ def edit_category(blog_id, category_id):
 
             status.append(
                 ['Category <b>{}</b> was renamed to <b>{}</b>.',
-                [old_category_title, new_category_title]
-                ]
-                )
+                [old_category_title, new_category_title]])
 
         old_parent_category = category.parent_category
         try:

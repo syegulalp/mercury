@@ -260,6 +260,12 @@ menus = {
         'path': lambda x: "/media",
         'parent_ref': _self,
     },
+    'blog_list_users': {
+        'parent': 'blog',
+        'label': 'Users',
+        'path': lambda x: "/users",
+        'parent_ref': _self,
+    },
     'edit_page': {
         'parent': 'blog',
         'button_label': lambda x: 'Edit #{}'.format(x.id),
@@ -509,6 +515,14 @@ colsets = {
              'colwidth': '20%',
              'format_raw': lambda x: breaks(utf8_escape(x.path))},
         )
+    },
+    'blog_users':{
+        'none':'No users found',
+        'colset':({
+            'field':'user_name',
+            'label': 'User',
+            'format_raw': lambda x:x.for_display
+            },)
     },
     'blog': {
         'none': 'No pages found',
