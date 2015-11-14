@@ -94,11 +94,11 @@
       <option value="blog-{{n.id}}">Blog: {{n.for_log}}</option>
       % end
       </select>
-      </span> 
+      </span>
+      </div>
+      
+      % end 
         
-
-        
-        <hr/>            
                     
     </form>
 
