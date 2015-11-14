@@ -42,18 +42,30 @@ menus = {
             'dashboard', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
             'sites_div', 'all_sites', 'create_site',
-            'site_users_div', 'site_manage_users', 'site_create_user'),
+            'system_users_div', 'system_manage_users', 'system_create_user'),
     },
-    'site_users_div': {
+    'system_users_div': {
         'label':'Users',
         'divider':True
     },
-    'site_manage_users':{
-        'label':'Manage users'
+    'system_manage_users':{
+        'label':'Manage users',
+        'path': lambda x:'/system/users',
+        'parent':'system',
+        'parent_ref':_none
         },
-    'site_create_user':{
-        'label':'Create user'
+    'system_create_user':{
+        'label':'Create user',
+        'path':lambda x:'/system/user/new'
         },
+    'system_edit_user': {
+        'parent': 'system',
+        'button_label': lambda x: 'Edit #{}'.format(x.id),
+        'path': lambda x: BASE_URL + "/system/users",
+        'button': lambda x: 'Manage users',
+        'button_title': 'All users in this site',
+        'parent_ref': lambda x: x,
+    },
     'system_info': {
         'parent': 'system',
         'label': 'System information',
@@ -412,6 +424,15 @@ def generate_menu(context, context_object):
 
 
 colsets = {
+    'system_users': {
+        'none': 'No users found',
+        'colset': [
+            {'field': 'name',
+             'label': 'Name',
+             'format_raw': lambda x: x.for_listing
+             },
+        ]
+    },
     'tags': {
         'none': 'No tags found',
         'colset': [

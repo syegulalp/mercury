@@ -167,7 +167,7 @@ def blog_create_user_save(blog_id):
     redirect(BASE_URL + "/blog/" + str(blog.id) + "/user/" + str(new_user.id))
 
 
-
+'''
 # TODO: make this universal to createa user for both a blog and a site
 # use ka
 @transaction
@@ -206,7 +206,7 @@ def blog_user_edit(blog_id, user_id, status=None):
     return blog_user_edit_output(tags, edit_user)
 
 
-# TODO: make this universal to create a user for both a blog and a site
+# TODO: phasing this functions out along with the other blog user edit stuff
 # use ka
 @transaction
 def blog_user_edit_save(blog_id, user_id):
@@ -252,7 +252,7 @@ def blog_user_edit_output(tags, edit_user):
         **tags.__dict__)
 
     return tpl
-
+'''
 @transaction
 def blog_list_users(blog_id):
 
@@ -802,14 +802,14 @@ def blog_settings_save(blog_id, nav_setting):
     return blog_settings_output(tags)
 
 def blog_settings_output(tags):
-
+    path = '/blog/{}/settings/'.format(tags.blog.id)
     tpl = template('ui/ui_blog_settings',
         # section_title='Basic settings',
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_settings', tags.blog),
         nav_tabs=(
-            ('basic', 'Basic'),
-            ('dirs', 'Directories')
+            ('basic', path + 'basic', 'Basic'),
+            ('dirs', path + 'dirs', 'Directories')
             ),
         **tags.__dict__)
 

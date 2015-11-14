@@ -1,12 +1,30 @@
 from core.models.transaction import transaction
 from core.libs.bottle import (request, template)
-from core import auth
-from core.models import (template_tags, get_user, get_site, get_blog)
-from core.menu import generate_menu
+from core import auth, utils
+from core.models import (template_tags, get_user, get_site, get_blog, db)
+from core.menu import generate_menu, colsets
 from .ui import search_context
 
-def system_context():
-    pass
+def system_context(user_to_edit=None, path='basic'):
+    from core.models import User
+    users = User.select()
+    try:
+        root_path = '/system/user/{}'.format(user_to_edit.id)
+    except AttributeError:
+        root_path = ''
+    return {
+        'users':users,
+        'search_context':(search_context['sites'], None),
+        'menu':generate_menu('system_manage_users', None),
+        'title':'List all users',
+        'path':root_path,
+        'nav_default': path,
+        'nav_tabs': (
+            ('basic', root_path + '/basic', 'Basic',),
+            ('permissions', root_path + '/permissions', 'Permissions')
+        ),
+        }
+
 def site_context():
     pass
 def blog_context():
@@ -15,13 +33,89 @@ def self_context():
     pass
 
 @transaction
-def system_user(user_id):
+def system_user(user_id, path):
     # Obtains user edit in system context.
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    user_to_edit = get_user(user_id)
+    user_to_edit = get_user(user_id=user_id)
+    tags = template_tags(user=user)
 
-    return edit_user(user_to_edit, editing_user=user, context=system_context)
+    tags.permissions = auth.get_permissions(user_to_edit)
+
+    return edit_user(user_to_edit,
+        editing_user=user,
+        context=system_context(user_to_edit, path),
+        tags=tags)
+
+@transaction
+def system_user_save(user_id, path):
+
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    user_to_edit = get_user(user_id=user_id)
+
+    status = None
+
+    from core import mgmt
+    from core.libs import peewee
+
+    new_name = request.forms.getunicode('user_name')
+    new_email = request.forms.getunicode('user_email')
+
+    if new_name is not None:
+
+        try:
+            user_to_edit = mgmt.update_user(user_to_edit, user,
+                name=new_name,
+                email=new_email
+                )
+        except peewee.IntegrityError:
+            status = utils.Status(
+                type='danger',
+                message='Error: user <b>{}</b> (#{}) cannot be changed to the same name or email as another user.',
+                vals=(user_to_edit.name, user_to_edit.id)
+                # TODO: use standard form exception?
+                )
+        else:
+            status = utils.Status(
+                type='success',
+                message='Data for user <b>{}</b> (#{}) successfully updated.',
+                vals=(user_to_edit.name, user_to_edit.id)
+                )
+
+    # next, set permissions based on what the available user can do
+    # and what mode we're in
+    # we need to get ceilings for both
+    # max permissions settable by user with given level of permissions
+
+    tags = template_tags(user=get_user(user_id=user.id))
+    tags.status = status
+    tags.permissions = auth.get_permissions(user_to_edit)
+
+    return edit_user(user_to_edit, editing_user=user,
+        context=system_context(user_to_edit, path),
+        tags=tags)
+
+@transaction
+def system_users():
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    context = system_context()
+    tags = template_tags(user=user)
+
+    paginator, rowset = utils.generate_paginator(context['users'], request)
+    path = context['path']
+    tpl = template('listing/listing_ui',
+        section_title=context['title'],
+        search_context=context['search_context'],
+        menu=context['menu'],
+        colset=colsets['system_users'],
+        paginator=paginator,
+        rowset=rowset,
+        **tags.__dict__)
+
+    return tpl
+
 
 @transaction
 def site_user(user_id, site_id):
@@ -51,9 +145,10 @@ def self_edit():
 
 # blog_user_edit et al will eventually be moved into this context
 
-def edit_user(user_to_edit, **ka):
+def edit_user(edit_user, **ka):
     context = ka.get('context')
-    editing_user = ka.get('editing_user', user_to_edit)
+
+    editing_user = ka.get('editing_user', edit_user)
     site = ka.get('site')
     blog = ka.get('blog')
 
@@ -63,32 +158,21 @@ def edit_user(user_to_edit, **ka):
     - any permissions not allowed will be shown but greyed out, with an explanation
     '''
 
-    c_settings = context()
+    # c_settings = context()
 
-
-'''
-@transaction
-def _me():
-    user = auth.is_logged_in(request)
-    tags = template_tags(user=user)
-
-    from core.ui import blog
-    return blog.blog_user_edit(blog_id, user.id)
-
-
-    if request.method == 'POST':
-        new_name = request.forms.getunicode('user_name')
-        if new_name != user.name:
-            user.name = new_name
-            user.save()
+    tags = ka.get('tags')
+    tags.nav_default = context['nav_default']
+    tags.nav_tabs = context['nav_tabs']
 
     tpl = template('edit/edit_user_settings',
-        edit_user=user,
-        menu=generate_menu('all_sites', None),
+
+        edit_user=edit_user,
+        menu=generate_menu('system_edit_user', edit_user),
         search_context=(search_context['sites'], None),
+        context=None,
         **tags.__dict__
         )
 
     return tpl
-    '''
+
 

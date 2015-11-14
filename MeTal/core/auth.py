@@ -28,6 +28,65 @@ bitmask.author_page = bitmask.edit_page + role.AUTHOR
 bitmask.contribute_to_blog = bitmask.author_page + role.CONTRIBUTOR
 bitmask.publish_blog = bitmask.edit_page + bitmask.administrate_blog
 
+def displayable():
+    displayable_permissions = {
+        role.CONTRIBUTOR:('Contributor', bitmask.contribute_to_blog),
+        role.AUTHOR:('Author', bitmask.author_page),
+        role.EDITOR:('Editor', bitmask.edit_page),
+        role.DESIGNER:('Designer', bitmask.design),
+        role.BLOG_ADMIN:('Blog administrator', bitmask.administrate_blog),
+        role.SITE_ADMIN:('Site administrator', bitmask.administrate_site),
+        role.SYS_ADMIN:('System administrator', bitmask.administrate_system)
+        }
+    return displayable_permissions
+
+def displayable_list():
+    displayable_list = [
+        role.CONTRIBUTOR,
+        role.AUTHOR,
+        role.EDITOR,
+        role.DESIGNER,
+        role.BLOG_ADMIN,
+        role.SITE_ADMIN,
+        role.SYS_ADMIN,
+        ]
+    return displayable_list
+
+
+def settable():
+    settable_permissions = {
+        role.CONTRIBUTOR:None,
+        role.AUTHOR:None,
+        role.EDITOR:(role.CONTRIBUTOR,
+            role.AUTHOR,
+            role.EDITOR
+            ),
+        role.DESIGNER:None,
+        role.BLOG_ADMIN:(role.CONTRIBUTOR,
+            role.AUTHOR,
+            role.EDITOR,
+            role.DESIGNER,
+            role.BLOG_ADMIN
+            ),
+        role.SITE_ADMIN:(role.CONTRIBUTOR,
+            role.AUTHOR,
+            role.EDITOR,
+            role.DESIGNER,
+            role.BLOG_ADMIN,
+            role.SITE_ADMIN
+            ),
+        role.SYS_ADMIN:(role.CONTRIBUTOR,
+            role.AUTHOR,
+            role.EDITOR,
+            role.DESIGNER,
+            role.BLOG_ADMIN,
+            role.SITE_ADMIN,
+            role.SYS_ADMIN
+            )
+        }
+
+    return settable_permissions
+
 def is_logged_in(request):
     '''
     Determines if a logged-in user exists, with a redirection wrapper.
