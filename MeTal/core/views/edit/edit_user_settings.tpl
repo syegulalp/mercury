@@ -50,7 +50,7 @@
         
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-9">
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button name="submit_settings" type="submit" class="btn btn-primary">Save changes</button>
             </div>
         </div>        
          
@@ -76,15 +76,15 @@
       </table>
       
       <div>
-      <button class="button button-xs" type="button">Add</button>
-      <select class="input-xs" name="permission_list" id="permission_list">
+      <button name="submit_permissions" id="submit_permissions" class="btn btn-sm" type="submit">Add</button>
+      <select class="input-sm" name="permission_list" id="permission_list">
       % for n in displayable_list():
       <option value="{{n}}">{{disp[n][0]}}</option>
       % end
       </select> permission to this user
       <span id="permission_target"> 
       for
-      <select class="input-xs" name="permission_target_list" id="permission_target_list">
+      <select class="input-sm" name="permission_target_list" id="permission_target_list">
       % for n in sites:
       <option value="site-{{n.id}}">Site: {{n.for_log}}</option>
       % end

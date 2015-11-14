@@ -56,13 +56,13 @@ def system_user_save(user_id, path):
 
     status = None
 
-    from core import mgmt
-    from core.libs import peewee
+    if request.forms.getunicode('submit_settings') is not None:
 
-    new_name = request.forms.getunicode('user_name')
-    new_email = request.forms.getunicode('user_email')
+        from core import mgmt
+        from core.libs import peewee
 
-    if new_name is not None:
+        new_name = request.forms.getunicode('user_name')
+        new_email = request.forms.getunicode('user_email')
 
         try:
             user_to_edit = mgmt.update_user(user_to_edit, user,
@@ -82,6 +82,9 @@ def system_user_save(user_id, path):
                 message='Data for user <b>{}</b> (#{}) successfully updated.',
                 vals=(user_to_edit.name, user_to_edit.id)
                 )
+
+    if request.forms.getunicode('submit_permissions') is not None:
+        pass
 
     # next, set permissions based on what the available user can do
     # and what mode we're in
