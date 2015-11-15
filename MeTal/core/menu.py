@@ -38,11 +38,10 @@ menus = {
         'label': 'Dashboard',
         'menu_title': lambda x: 'Main menu',
         'menu': (
-            # 'system_settings',
             'dashboard', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
             'sites_div', 'all_sites', 'create_site',
-            'system_users_div', 'system_manage_users', 'system_create_user'),
+            'system_users_div', 'system_manage_users', 'system_create_users'),
     },
     'system_users_div': {
         'label':'Users',
@@ -53,11 +52,21 @@ menus = {
         'path': lambda x:'/system/users',
         'parent':'system',
         'parent_ref':_none
-        },
-    'system_create_user':{
-        'label':'Create user',
-        'path':lambda x:'/system/user/new'
-        },
+    },
+    'system_create_users':{
+        'label':'Create users',
+        'path': lambda x:'/system/user/new',
+        'parent':'system',
+        'parent_ref':_none
+    },
+    'system_create_user': {
+        'parent': 'system',
+        'button_label': lambda x: 'Create new user',
+        'path': lambda x: BASE_URL + "/system/users",
+        'button': lambda x: 'Manage users',
+        'button_title': 'All users in this site',
+        'parent_ref': lambda x: x,
+    },
     'system_edit_user': {
         'parent': 'system',
         'button_label': lambda x: 'Edit #{}'.format(x.id),

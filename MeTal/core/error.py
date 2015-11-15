@@ -45,6 +45,9 @@ class TemplateSaveException(LoggedException):
 class MaintenanceModeException(Exception):
     pass
 
+class UserCreationError(Exception):
+    pass
+
 # for earlier Python 3.x backwards compatibility
 
 try:

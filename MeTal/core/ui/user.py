@@ -1,7 +1,7 @@
 from core.models.transaction import transaction
-from core.libs.bottle import (request, template)
+from core.libs.bottle import (request, template, redirect)
 from core import auth, utils
-from core.models import (template_tags, get_user, get_site, get_blog, db)
+from core.models import (template_tags, get_user, get_site, get_blog)
 from core.menu import generate_menu, colsets
 from .ui import search_context
 
@@ -31,6 +31,128 @@ def blog_context():
     pass
 def self_context():
     pass
+
+def system_new_user():
+
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+
+    nav_tabs = None
+    status = None
+
+    from core.models import User
+
+    if request.method == 'POST':
+
+        new_name = request.forms.getunicode('user_name')
+        new_email = request.forms.getunicode('user_email')
+        new_password = request.forms.getunicode('user_password')
+        new_password_confirm = request.forms.getunicode('user_password_confirm')
+
+        from core.error import UserCreationError
+
+        errors = []
+
+        try:
+
+            new_user = User(
+                name=new_name,
+                email=new_email,
+                password=new_password)
+
+            if new_name == '':
+                errors.append('Username cannot be blank.')
+
+                '''
+                status = utils.Status(
+                    type='danger',
+                    message='Error: Username cannot be blank.'
+                    )
+                raise UserCreationError
+                '''
+
+            if new_email == '':
+                errors.append('Email cannot be blank.')
+                '''
+                status = utils.Status(
+                    type='danger',
+                    message='Error: Email cannot be blank.'
+                    )
+                raise UserCreationError
+                '''
+
+            if new_password == '' or new_password_confirm == '':
+                errors.append('Password or confirmation field is blank.')
+                '''
+                status = utils.Status(
+                    type='danger',
+                    message='Error: Password or confirmation field is blank.'
+                    )
+                raise UserCreationError
+                '''
+
+            if len(new_password) < 8:
+                errors.append('Password or confirmation field is blank.')
+                '''
+                status = utils.Status(
+                    type='danger',
+                    message='Error: Password or confirmation field is blank.'
+                    )
+                raise UserCreationError
+                '''
+
+            if new_password != new_password_confirm:
+                errors.append('Passwords do not match.')
+                '''
+                status = utils.Status(
+                    type='danger',
+                    message='Error: Passwords do not match.'
+                    )
+                raise UserCreationError
+                '''
+            if len(errors) > 0:
+                raise UserCreationError
+        except UserCreationError:
+            status = utils.Status(
+                type='danger',
+                message='There were problems creating the new user:',
+                message_list=errors
+                )
+        except Exception:
+            raise
+        else:
+            from core.libs import peewee
+            try:
+                new_user.save()
+            except peewee.IntegrityError as e:
+                status = utils.Status(
+                    type='danger',
+                    message='The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.'
+                    )
+
+            except Exception as e:
+                raise e
+            else:
+                from settings import BASE_URL
+                redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
+
+    else:
+        new_user = User(name='',
+            email='')
+
+    tags = template_tags(user=user)
+    tags.status = status
+
+    tpl = template('edit/edit_user_settings',
+        edit_user=new_user,
+        menu=generate_menu('system_create_user', new_user),
+        search_context=(search_context['sites'], None),
+        nav_tabs=nav_tabs,
+        nav_default='basic',
+        **tags.__dict__
+        )
+
+    return tpl
 
 @transaction
 def system_user(user_id, path):
@@ -115,6 +237,15 @@ def system_user(user_id, path):
             it *might* work as we have it now but we'll need to test
             we might need to order by level to make sure it works
             '''
+    else:
+        if user_to_edit.last_login is None:
+            status = utils.Status(
+                type='success',
+                message='User <b>{}</b> successfully created.'.format(user_to_edit.for_display),
+                )
+            import datetime
+            user_to_edit.last_login = datetime.datetime.now()
+            user_to_edit.save()
 
     tags = template_tags(user=get_user(user_id=user.id))
     tags.status = status

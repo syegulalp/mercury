@@ -8,4 +8,3 @@
 	<li role="presentation"{{!css_class}}><a href="{{!settings.BASE_URL}}{{!n[1]}}">{{!n[2]}}</a></li>
 % end
 </ul>
-	

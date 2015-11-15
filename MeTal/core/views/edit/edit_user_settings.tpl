@@ -5,9 +5,12 @@
     <form class="form-horizontal" method="post">
     {{!csrf_token}}
 
+    
     <div class="col-xs-12">
+    % if nav_tabs is not None:
     % include('include/nav_tabs.tpl')
 	<br/>
+	% end
 
 	</div>
 

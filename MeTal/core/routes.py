@@ -303,6 +303,11 @@ def system_user_save(user_id, path='basic'):
     from core.ui import user
     return user.system_user(user_id, path)
 
+@_route(BASE_PATH + "/system/user/new", method=('GET', 'POST'))
+def system_user_new():
+    from core.ui import user
+    return user.system_new_user()
+
 @_route(BASE_PATH + '/export')
 def system_export_data():
     from core import mgmt
