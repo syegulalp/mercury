@@ -38,62 +38,68 @@ def system_user(user_id, path):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
     user_to_edit = get_user(user_id=user_id)
-    tags = template_tags(user=user)
-
-    tags.permissions = auth.get_permissions(user_to_edit)
-
-    return edit_user(user_to_edit,
-        editing_user=user,
-        context=system_context(user_to_edit, path),
-        tags=tags)
-
-@transaction
-def system_user_save(user_id, path):
-
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
-    user_to_edit = get_user(user_id=user_id)
 
     status = None
 
-    if request.forms.getunicode('submit_settings') is not None:
+    if request.method == 'POST':
 
-        from core import mgmt
-        from core.libs import peewee
+        if request.forms.getunicode('submit_settings') is not None:
 
-        new_name = request.forms.getunicode('user_name')
-        new_email = request.forms.getunicode('user_email')
+            from core import mgmt
+            from core.libs import peewee
 
-        try:
-            user_to_edit = mgmt.update_user(user_to_edit, user,
-                name=new_name,
-                email=new_email
-                )
-        except peewee.IntegrityError:
-            status = utils.Status(
-                type='danger',
-                message='Error: user <b>{}</b> (#{}) cannot be changed to the same name or email as another user.',
-                vals=(user_to_edit.name, user_to_edit.id)
-                # TODO: use standard form exception?
-                )
-        else:
-            status = utils.Status(
-                type='success',
-                message='Data for user <b>{}</b> (#{}) successfully updated.',
-                vals=(user_to_edit.name, user_to_edit.id)
-                )
+            new_name = request.forms.getunicode('user_name')
+            new_email = request.forms.getunicode('user_email')
 
-    if request.forms.getunicode('submit_permissions') is not None:
-        pass
+            try:
+                user_to_edit = mgmt.update_user(user_to_edit, user,
+                    name=new_name,
+                    email=new_email
+                    )
+            except peewee.IntegrityError:
+                status = utils.Status(
+                    type='danger',
+                    message='Error: user <b>{}</b> (#{}) cannot be changed to the same name or email as another user.',
+                    vals=(user_to_edit.name, user_to_edit.id)
+                    # TODO: use standard form exception?
+                    )
+            else:
+                status = utils.Status(
+                    type='success',
+                    message='Data for user <b>{}</b> (#{}) successfully updated.',
+                    vals=(user_to_edit.name, user_to_edit.id)
+                    )
 
-    # next, set permissions based on what the available user can do
-    # and what mode we're in
-    # we need to get ceilings for both
-    # max permissions settable by user with given level of permissions
+        if request.forms.getunicode('submit_permissions') is not None:
+
+            permission_to_add = int(request.forms.getunicode('permission_list'))
+            permission_target = request.forms.getunicode('permission_target_list')
+            target_site = None
+            target_blog = None
+            if permission_to_add != auth.role.SYS_ADMIN:
+                permission_target_item = permission_target[:5]
+                if permission_target_item == 'site-':
+                    target_site = get_site(permission_target[5:])
+                else:
+                    target_blog = get_blog(permission_target[5:])
+
+
+            from core import mgmt
+            mgmt.add_user_permission(user_to_edit,
+                permission=permission_to_add,
+                site=target_site,
+                blog=target_blog)
+
+    '''
+    We have to get:
+    - a list of sites or blogs we have permissions for
+    - the permissions we can assign to same
+    '''
 
     tags = template_tags(user=get_user(user_id=user.id))
     tags.status = status
     tags.permissions = auth.get_permissions(user_to_edit)
+    tags.editor_permissions = auth.get_permissions(user)
 
     return edit_user(user_to_edit, editing_user=user,
         context=system_context(user_to_edit, path),
@@ -154,14 +160,6 @@ def edit_user(edit_user, **ka):
     editing_user = ka.get('editing_user', edit_user)
     site = ka.get('site')
     blog = ka.get('blog')
-
-    '''
-    context contains:
-    - list of all permissions that can be set by the current user for the current context
-    - any permissions not allowed will be shown but greyed out, with an explanation
-    '''
-
-    # c_settings = context()
 
     tags = ka.get('tags')
     tags.nav_default = context['nav_default']

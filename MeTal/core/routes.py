@@ -297,18 +297,11 @@ def system_users():
     from core.ui import user
     return user.system_users()
 
-@_route(BASE_PATH + "/system/user/<user_id:int>")
-@_route(BASE_PATH + "/system/user/<user_id:int>/<path>")
-def system_user(user_id, path='basic'):
-    from core.ui import user
-    return user.system_user(user_id, path)
-
-@_route(BASE_PATH + "/system/user/<user_id:int>", method='POST')
-@_route(BASE_PATH + "/system/user/<user_id:int>/<path>", method='POST')
+@_route(BASE_PATH + "/system/user/<user_id:int>", method=('GET', 'POST'))
+@_route(BASE_PATH + "/system/user/<user_id:int>/<path>", method=('GET', 'POST'))
 def system_user_save(user_id, path='basic'):
     from core.ui import user
-    return user.system_user_save(user_id, path)
-
+    return user.system_user(user_id, path)
 
 @_route(BASE_PATH + '/export')
 def system_export_data():
