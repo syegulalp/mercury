@@ -117,7 +117,7 @@
         
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                {{user.name}}&nbsp;&nbsp;<span class="caret"></span></a>
+                <span style='display:inline-block' class='overflow max-width'><span class='caret'></span> {{user.name}}</span>&nbsp;</a>
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{settings.BASE_URL}}/me">Settings</a></li>
                     <li><a href="{{settings.BASE_URL}}/logout?_={{user.logout_nonce}}">Log out</a></li>

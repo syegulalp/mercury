@@ -90,12 +90,6 @@ def system_user(user_id, path):
                 site=target_site,
                 blog=target_blog)
 
-    '''
-    We have to get:
-    - a list of sites or blogs we have permissions for
-    - the permissions we can assign to same
-    '''
-
     tags = template_tags(user=get_user(user_id=user.id))
     tags.status = status
     tags.permissions = auth.get_permissions(user_to_edit)
