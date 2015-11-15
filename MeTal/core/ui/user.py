@@ -41,6 +41,8 @@ def system_user(user_id, path):
 
     status = None
 
+    from core.error import PermissionsException
+
     if request.method == 'POST':
 
         if request.forms.getunicode('submit_settings') is not None:
@@ -70,6 +72,19 @@ def system_user(user_id, path):
                     vals=(user_to_edit.name, user_to_edit.id)
                     )
 
+        if request.forms.getunicode('delete_permissions') is not None:
+            deletes = request.forms.getall('del')
+            from core import mgmt
+            try:
+                mgmt.remove_user_permissions(user, deletes)
+            except PermissionsException as e:
+                raise e
+            status = utils.Status(
+                type='success',
+                message='Data for user <b>{}</b> (#{}) successfully updated.',
+                vals=(user_to_edit.name, user_to_edit.id)
+                )
+
         if request.forms.getunicode('submit_permissions') is not None:
 
             permission_to_add = int(request.forms.getunicode('permission_list'))
@@ -90,11 +105,24 @@ def system_user(user_id, path):
                 site=target_site,
                 blog=target_blog)
 
+            '''
+            what we should do:
+            - get any existing permission
+            - update it with the proper bitmask
+            then, when listing permissions,
+            go through and compare each bitmask against it
+            the bitmask needs to be all in one entry per site/blog/user object
+            it *might* work as we have it now but we'll need to test
+            we might need to order by level to make sure it works
+            '''
+
     tags = template_tags(user=get_user(user_id=user.id))
     tags.status = status
-    tags.permissions = auth.get_permissions(user_to_edit)
+    try:
+        tags.permissions = auth.get_permissions(user_to_edit)
+    except PermissionsException:
+        tags.permissions = []
     tags.editor_permissions = auth.get_permissions(user)
-
     return edit_user(user_to_edit, editing_user=user,
         context=system_context(user_to_edit, path),
         tags=tags)

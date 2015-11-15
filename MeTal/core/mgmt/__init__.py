@@ -505,6 +505,20 @@ def add_user_permission(user, **permission):
 
     return new_permission
 
+def remove_user_permissions(user, permission_ids):
+    from core import auth
+    remove_permission = Permission.delete().where(
+        Permission.id << permission_ids)
+    done = remove_permission.execute()
+
+    try:
+        no_sysop = auth.get_users_with_permission(auth.role.SYS_ADMIN)
+    except IndexError:
+        from core.error import PermissionsException
+        raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
+
+    return done
+
 def delete_page_preview(page):
 
     preview_file = page.preview_file

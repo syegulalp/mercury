@@ -59,9 +59,10 @@
           % from core.auth import displayable,bitmask, displayable_list, settable
           % disp = displayable()
           <table class="table table-condensed table-striped table-hover">
-          <thead><tr><th>User</th><th>Permission</th><th>Scope</th></tr></thead>
+          <thead><tr><th></th><th>User</th><th>Permission</th><th>Scope</th></tr></thead>
           % for n in permissions:
               <tr>
+              <td><input type="checkbox" id="del" name="del" value="{{!n.id}}"></td>
               <td>{{!n.user.for_display}}</td><td>{{disp[n.permission][0]}}</td>
               <td>
               % if n.permission & bitmask.administrate_system !=0:
@@ -76,7 +77,7 @@
           % end
           </table>
 
-          <div>
+          <div class="form-group">
               <button name="submit_permissions" id="submit_permissions" class="btn btn-sm" type="submit">Add</button>
               <select class="input-sm" name="permission_list" id="permission_list">
                   % for n in settable()[editor_permissions[0].permission]:
@@ -97,6 +98,9 @@
                   </select>
               </span>
           </div>
+            <div class="form-group">
+            <button name="delete_permissions" id="delete_permissions" class="btn btn-sm" type="submit">Delete</button> selected permissions
+            </div>
       </div>
 
       % end

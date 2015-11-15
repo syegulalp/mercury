@@ -123,14 +123,14 @@ def get_users_with_permission(level):
         Permission.permission == level)
 
     users_with_permissions = User.select().where(
-        User.id << permissions.user)
+        User.id << permissions[0].user)
 
     return users_with_permissions
 
 def get_permissions(user, level=None, blog=None, site=None):
 
     permissions = Permission.select().where(
-        Permission.user == user)
+        Permission.user == user).order_by(Permission.permission.desc())
 
     if blog:
         permissions = permissions.select().where(
