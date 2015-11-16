@@ -504,6 +504,7 @@ def xuser_create(**new_user_data):
     return new_user
 '''
 
+'''
 def create_user_blog(**new_user_data):
 
     new_user = user_create(**new_user_data)
@@ -521,7 +522,9 @@ def create_user_blog(**new_user_data):
         new_user.for_log,
         blog.for_log,
         user.for_log))
+'''
 
+'''
 def create_user_site(**new_user_data):
 
     new_user = user_create(**new_user_data)
@@ -537,7 +540,8 @@ def create_user_site(**new_user_data):
         new_user.for_log,
         site.for_log,
         user.for_log))
-
+'''
+'''
 def update_user(user, editing_user, **user_data):
 
     user.name = user_data['name']
@@ -550,7 +554,7 @@ def update_user(user, editing_user, **user_data):
         editing_user.for_log))
 
     return user
-
+'''
 # TODO: move this into the User object schema itself?
 def add_user_permission(user, **permission):
 

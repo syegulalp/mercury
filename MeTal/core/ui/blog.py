@@ -143,7 +143,7 @@ def blog_create_user(blog_id):
     return tpl
 
 
-
+'''
 # TODO: make this universal to createa user for both a blog and a site
 # use ka
 # TODO: add proper transaction support
@@ -165,7 +165,7 @@ def blog_create_user_save(blog_id):
         )
 
     redirect(BASE_URL + "/blog/" + str(blog.id) + "/user/" + str(new_user.id))
-
+'''
 
 '''
 # TODO: make this universal to createa user for both a blog and a site

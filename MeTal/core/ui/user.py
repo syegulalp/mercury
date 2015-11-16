@@ -151,14 +151,17 @@ def system_user(user_id, path):
             from core import mgmt
             from core.libs import peewee
 
-            new_name = request.forms.getunicode('user_name')
-            new_email = request.forms.getunicode('user_email')
+            user_to_edit.name = request.forms.getunicode('user_name')
+            user_to_edit.email = request.forms.getunicode('user_email')
 
             try:
+                user_to_edit.save()
+                '''
                 user_to_edit = mgmt.update_user(user_to_edit, user,
                     name=new_name,
                     email=new_email
                     )
+                '''
             except peewee.IntegrityError:
                 status = utils.Status(
                     type='danger',

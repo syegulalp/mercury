@@ -337,12 +337,11 @@ def site_blog_create_save(site_id):
     from core.ui import blog
     return blog.blog_create_save(site_id)
 
-
+'''
 @_route(BASE_PATH + '/site/<site_id:int>/users')
 def site_list_users(site_id):
     from core.ui import site
     return site.site_list_users(site_id)
-
 
 @_route(BASE_PATH + '/site/<site_id:int>/create-user')
 def site_create_user(site_id):
@@ -366,6 +365,7 @@ def site_edit_user(site_id, user_id):
 def site_edit_user_save(site_id, user_id):
     from core.ui import site
     return site.site_edit_user_save(site_id, user_id)
+
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
@@ -396,6 +396,7 @@ def blog_user_edit_save(blog_id, user_id):
 def blog_list_users(blog_id):
     from core.ui import blog
     return blog.blog_list_users(blog_id)
+'''
 
 # TODO: the default should be whatever editor theme is installed by the
 # current blog theme

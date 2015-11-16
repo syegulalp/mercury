@@ -48,11 +48,11 @@ def site(site_id, errormsg=None):
 
     return tpl
 
+'''
 @transaction
 def site_create_user(site_id):
-    '''
-    Creates a user and gives it certain permissions within the context of a given blog
-    '''
+
+    #Creates a user and gives it certain permissions within the context of a given blog
 
     user = auth.is_logged_in(request)
     site = get_site(site_id)
@@ -72,6 +72,7 @@ def site_create_user(site_id):
         )
 
     return tpl
+
 
 # TODO: add proper transaction support
 def site_create_user_save(site_id):
@@ -193,3 +194,4 @@ def site_list_users(site_id):
         )
 
     return tpl
+'''
