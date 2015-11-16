@@ -252,7 +252,9 @@ function form_save(form) {
 	save_animation($('#save_animation'));
 	
 	global.saving=true;
-
+	global.original_title= document.title;
+	document.title = "[Saving] " + document.title;
+	
 	$.post('', form.serialize()).done(function(data, textStatus, xhr) {
 
 		window.onbeforeunload = leave;
@@ -292,6 +294,7 @@ function form_save(form) {
 			}).always(function() {
 				global.saving=false;		
 				reset_animation($('#save_animation'));
+				document.title=global.original_title;
 	});
 }
 
