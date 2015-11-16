@@ -32,6 +32,7 @@ def blog_context():
 def self_context():
     pass
 
+'''
 # todo: move all this to user stuff in core.mgmt
 def verify_user_changes(user, new_password_confirm):
 
@@ -58,80 +59,81 @@ def verify_user_changes(user, new_password_confirm):
 
     if len(errors) > 0:
         raise UserCreationError(errors)
+'''
 
+@transaction
 def system_new_user():
 
     from core.models import db
-    with db.atomic() as txn:
 
-        user = auth.is_logged_in(request)
-        permission = auth.is_sys_admin(user)
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
 
-        nav_tabs = None
-        status = None
+    nav_tabs = None
+    status = None
 
-        from core.models import User
+    from core.models import User
 
-        if request.method == 'POST':
+    if request.method == 'POST':
 
-            new_name = request.forms.getunicode('user_name')
-            new_email = request.forms.getunicode('user_email')
-            new_password = request.forms.getunicode('user_password')
-            new_password_confirm = request.forms.getunicode('user_password_confirm')
+        new_name = request.forms.getunicode('user_name')
+        new_email = request.forms.getunicode('user_email')
+        new_password = request.forms.getunicode('user_password')
+        new_password_confirm = request.forms.getunicode('user_password_confirm')
 
-            from core.error import UserCreationError
+        from core.error import UserCreationError
 
-            from core.libs import peewee
+        from core.libs import peewee
 
-            new_user = User(
-                name=new_name,
-                email=new_email,
-                password=new_password,
-                password_confirm=new_password_confirm)
+        new_user = User(
+            name=new_name,
+            email=new_email,
+            password=new_password,
+            password_confirm=new_password_confirm)
 
-            try:
-                new_user.save_pwd()
+        try:
+            new_user.save_pwd()
 
-            except UserCreationError as e:
-                status = utils.Status(
-                    type='danger',
-                    message='There were problems creating the new user:',
-                    message_list=e.args[0]
-                    )
+        except UserCreationError as e:
+            status = utils.Status(
+                type='danger',
+                message='There were problems creating the new user:',
+                message_list=e.args[0]
+                )
 
-            except peewee.IntegrityError as e:
-                status = utils.Status(
-                    type='danger',
-                    message='There were problems creating the new user:',
-                    message_list=['The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.']
-                    )
+        except peewee.IntegrityError as e:
+            status = utils.Status(
+                type='danger',
+                message='There were problems creating the new user:',
+                message_list=['The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.']
+                )
 
 
-            except Exception as e:
-                raise e
-            else:
-                db.commit()
-                from settings import BASE_URL
-                redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
-
+        except Exception as e:
+            raise e
         else:
-            new_user = User(name='',
-                email='',
-                password='')
+            db.commit()
+            from settings import BASE_URL
+            return redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
 
-        tags = template_tags(user=user)
-        tags.status = status
+    else:
+        new_user = User(name='',
+            email='',
+            password='')
 
-        tpl = template('edit/edit_user_settings',
-            edit_user=new_user,
-            menu=generate_menu('system_create_user', new_user),
-            search_context=(search_context['sites'], None),
-            nav_tabs=nav_tabs,
-            nav_default='basic',
-            **tags.__dict__
-            )
+    tags = template_tags(user=user)
+    tags.status = status
 
-        return tpl
+    tpl = template('edit/edit_user_settings',
+        edit_user=new_user,
+        menu=generate_menu('system_create_user', new_user),
+        search_context=(search_context['sites'], None),
+        nav_tabs=nav_tabs,
+        nav_default='basic',
+        **tags.__dict__
+        )
+
+    return tpl
 
 @transaction
 def system_user(user_id, path):
