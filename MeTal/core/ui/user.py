@@ -81,26 +81,16 @@ def system_new_user():
 
             from core.error import UserCreationError
 
-            errors = []
+            from core.libs import peewee
 
-            '''
-            from core.mgmt import encrypt_password
             new_user = User(
                 name=new_name,
                 email=new_email,
-                password=new_password)
+                password=new_password,
+                password_confirm=new_password_confirm)
 
             try:
-                verify_user_changes(new_user, new_password_confirm)
-
-            '''
-            from core.mgmt import user_create2
-
-            try:
-                new_user = user_create2(name=new_name,
-                    email=new_email,
-                    password=new_password,
-                    password_confirm=new_password_confirm)
+                new_user.save_pwd()
 
             except UserCreationError as e:
                 status = utils.Status(
@@ -108,24 +98,21 @@ def system_new_user():
                     message='There were problems creating the new user:',
                     message_list=e.args[0]
                     )
-                new_user = e.args[1]
-            else:
-                from core.libs import peewee
-                try:
-                    new_user.password = encrypt_password(new_user.password)
-                    new_user.save()
-                except peewee.IntegrityError as e:
-                    status = utils.Status(
-                        type='danger',
-                        message='The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.'
-                        )
 
-                except Exception as e:
-                    raise e
-                else:
-                    db.commit()
-                    from settings import BASE_URL
-                    redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
+            except peewee.IntegrityError as e:
+                status = utils.Status(
+                    type='danger',
+                    message='There were problems creating the new user:',
+                    message_list=['The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.']
+                    )
+
+
+            except Exception as e:
+                raise e
+            else:
+                db.commit()
+                from settings import BASE_URL
+                redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
 
         else:
             new_user = User(name='',

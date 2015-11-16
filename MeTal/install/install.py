@@ -255,12 +255,13 @@ def step_4_pre():
 
         report.append("Initial site created successfully.")
 
-        new_user = mgmt.user_create(
+        from core.models import User
+        new_user = User(
             name='Administrator',
             email=email,
             encrypted_password=password)
 
-        new_user.save()
+        new_user.save_pwd()
 
         from core.auth import role
 

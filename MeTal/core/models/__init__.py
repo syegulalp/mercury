@@ -328,14 +328,53 @@ class User(BaseModel):
     name = EnforcedCharField(index=True, null=False, unique=True)
     email = EnforcedCharField(index=True, null=False, unique=True)
     password = CharField(null=False)
+    password_confirm = None
     avatar = IntegerField(null=True)  # refers to an asset ID
     last_login = DateTimeField(null=True)
     path_prefix = "/system"
-
     site = None
     blog = None
-
     logout_nonce = CharField(max_length=64, null=True, default=None)
+
+    def save_mod(self, **ka):
+        # Save modification to user data other than last_login
+        errors = []
+        if self.name == '' or self.name is None:
+            errors.append('Username cannot be blank.')
+
+        if len(self.name) < 3:
+            errors.append('Username cannot be less than three characters.')
+
+        if self.email == '' or self.email is None:
+            errors.append('Email cannot be blank.')
+
+        if len(self.password) < 8:
+            errors.append('Password cannot be less than 8 characters.')
+
+        if len(errors) > 0:
+            from core.error import UserCreationError
+            raise UserCreationError(errors)
+
+        return BaseModel.save(self, **ka)
+
+    def save_pwd(self, **ka):
+        # Save modification to password
+        errors = []
+
+        if self.password == '' or self.password_confirm == '':
+            errors.append('Password or confirmation field is blank.')
+
+        if self.password != self.password_confirm:
+            errors.append('Passwords do not match.')
+
+        if len(errors) > 0:
+            from core.error import UserCreationError
+            raise UserCreationError(errors)
+
+        from core.utils import encrypt_password
+        self.password = encrypt_password(self.password)
+
+        return self.save(**ka)
 
     def from_site(self, site):
         self.site = site
@@ -357,16 +396,6 @@ class User(BaseModel):
         if permissions[0].permission & role.SYS_ADMIN:
             all_blogs = Blog.select()
             return all_blogs
-
-        '''
-        permissions = Permission.select(
-            Permission.blog).where(
-            Permission.user == self,
-            Permission.blog >0,
-            Permission.permission.bin_and(bitmask))
-        '''
-        # for n in permissions:
-            # print (n.permission, n.blog.id, n.site.id)
 
         blogs = Blog.select().where(
             Blog.id << permissions.select(Permission.blog).tuples())

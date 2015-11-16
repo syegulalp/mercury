@@ -422,6 +422,7 @@ def import_data():
     from core.routes import app
     app.reset()
 
+'''
 def check_user_properties(user, new_password_confirm):
 
     errors = []
@@ -450,7 +451,7 @@ def check_user_properties(user, new_password_confirm):
 
     return user
 
-def user_create2(**new_user_data):
+def user_create(**new_user_data):
 
     new_user = User()
 
@@ -458,13 +459,14 @@ def user_create2(**new_user_data):
     new_user.email = new_user_data.get('email')
 
     if 'password' in new_user_data:
-        new_user.password = encrypt_password(new_user_data['password'])
+        new_user.password = new_user_data['password']
+        new_password_confirm = new_user_data.get('password_confirm', new_user.password)
     elif 'encrypted_password' in new_user_data:
         new_user.password = new_user_data['encrypted_password']
+        new_password_confirm = new_user.password
     else:
         new_user.password = encrypt_password('Temporary password')
-
-    new_password_confirm = new_user_data.get('password_confirm', new_user.password)
+        new_password_confirm = new_user.password
 
     from core.error import UserCreationError
 
@@ -473,9 +475,17 @@ def user_create2(**new_user_data):
     except UserCreationError as e:
         raise e
 
-    return new_user.save()
+    if not 'encrypted_password' in new_user_data:
+        new_user.password = encrypt_password(new_user.password)
 
-def user_create(**new_user_data):
+    from core.libs import peewee
+    try:
+        new_user.save()
+    except peewee.IntegrityError:
+        raise peewee.IntegrityError(new_user)
+
+
+def xuser_create(**new_user_data):
 
     new_user = User()
 
@@ -492,6 +502,7 @@ def user_create(**new_user_data):
     new_user.save()
 
     return new_user
+'''
 
 def create_user_blog(**new_user_data):
 
