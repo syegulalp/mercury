@@ -4,6 +4,7 @@
 <hr/>
 <p>{{error.exception}}</p>
 % if settings.DEBUG_MODE:
+<hr/><h4>Error details:</h4>
 <p>{{error}}</p>
 % if error.traceback:
 <hr/><h4>Traceback:</h4>
