@@ -422,6 +422,59 @@ def import_data():
     from core.routes import app
     app.reset()
 
+def check_user_properties(user, new_password_confirm):
+
+    errors = []
+
+    if user.name == '':
+        errors.append('Username cannot be blank.')
+
+    if len(user.name) < 3:
+        errors.append('Username cannot be less than three characters.')
+
+    if user.email == '':
+        errors.append('Email cannot be blank.')
+
+    if len(user.password) < 8:
+        errors.append('Password cannot be less than 8 characters.')
+
+    if user.password == '' or new_password_confirm == '':
+        errors.append('Password or confirmation field is blank.')
+
+    if user.password != new_password_confirm:
+        errors.append('Passwords do not match.')
+
+    if len(errors) > 0:
+        from core.error import UserCreationError
+        raise UserCreationError(errors, user)
+
+    return user
+
+def user_create2(**new_user_data):
+
+    new_user = User()
+
+    new_user.name = new_user_data.get('name')
+    new_user.email = new_user_data.get('email')
+
+    if 'password' in new_user_data:
+        new_user.password = encrypt_password(new_user_data['password'])
+    elif 'encrypted_password' in new_user_data:
+        new_user.password = new_user_data['encrypted_password']
+    else:
+        new_user.password = encrypt_password('Temporary password')
+
+    new_password_confirm = new_user_data.get('password_confirm', new_user.password)
+
+    from core.error import UserCreationError
+
+    try:
+        new_user = check_user_properties(new_user, new_password_confirm)
+    except UserCreationError as e:
+        raise e
+
+    return new_user.save()
+
 def user_create(**new_user_data):
 
     new_user = User()

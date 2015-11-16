@@ -32,127 +32,119 @@ def blog_context():
 def self_context():
     pass
 
+# todo: move all this to user stuff in core.mgmt
+def verify_user_changes(user, new_password_confirm):
+
+    from core.error import UserCreationError
+    errors = []
+
+    if user.name == '':
+        errors.append('Username cannot be blank.')
+
+    if len(user.name) < 3:
+        errors.append('Username cannot be less than three characters.')
+
+    if user.email == '':
+        errors.append('Email cannot be blank.')
+
+    if user.password == '' or new_password_confirm == '':
+        errors.append('Password or confirmation field is blank.')
+
+    if len(user.password) < 8:
+        errors.append('Password cannot be less than 8 characters.')
+
+    if user.password != new_password_confirm:
+        errors.append('Passwords do not match.')
+
+    if len(errors) > 0:
+        raise UserCreationError(errors)
+
 def system_new_user():
 
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
+    from core.models import db
+    with db.atomic() as txn:
 
-    nav_tabs = None
-    status = None
+        user = auth.is_logged_in(request)
+        permission = auth.is_sys_admin(user)
 
-    from core.models import User
+        nav_tabs = None
+        status = None
 
-    if request.method == 'POST':
+        from core.models import User
 
-        new_name = request.forms.getunicode('user_name')
-        new_email = request.forms.getunicode('user_email')
-        new_password = request.forms.getunicode('user_password')
-        new_password_confirm = request.forms.getunicode('user_password_confirm')
+        if request.method == 'POST':
 
-        from core.error import UserCreationError
+            new_name = request.forms.getunicode('user_name')
+            new_email = request.forms.getunicode('user_email')
+            new_password = request.forms.getunicode('user_password')
+            new_password_confirm = request.forms.getunicode('user_password_confirm')
 
-        errors = []
+            from core.error import UserCreationError
 
-        try:
+            errors = []
 
+            '''
+            from core.mgmt import encrypt_password
             new_user = User(
                 name=new_name,
                 email=new_email,
                 password=new_password)
 
-            if new_name == '':
-                errors.append('Username cannot be blank.')
-
-                '''
-                status = utils.Status(
-                    type='danger',
-                    message='Error: Username cannot be blank.'
-                    )
-                raise UserCreationError
-                '''
-
-            if new_email == '':
-                errors.append('Email cannot be blank.')
-                '''
-                status = utils.Status(
-                    type='danger',
-                    message='Error: Email cannot be blank.'
-                    )
-                raise UserCreationError
-                '''
-
-            if new_password == '' or new_password_confirm == '':
-                errors.append('Password or confirmation field is blank.')
-                '''
-                status = utils.Status(
-                    type='danger',
-                    message='Error: Password or confirmation field is blank.'
-                    )
-                raise UserCreationError
-                '''
-
-            if len(new_password) < 8:
-                errors.append('Password or confirmation field is blank.')
-                '''
-                status = utils.Status(
-                    type='danger',
-                    message='Error: Password or confirmation field is blank.'
-                    )
-                raise UserCreationError
-                '''
-
-            if new_password != new_password_confirm:
-                errors.append('Passwords do not match.')
-                '''
-                status = utils.Status(
-                    type='danger',
-                    message='Error: Passwords do not match.'
-                    )
-                raise UserCreationError
-                '''
-            if len(errors) > 0:
-                raise UserCreationError
-        except UserCreationError:
-            status = utils.Status(
-                type='danger',
-                message='There were problems creating the new user:',
-                message_list=errors
-                )
-        except Exception:
-            raise
-        else:
-            from core.libs import peewee
             try:
-                new_user.save()
-            except peewee.IntegrityError as e:
+                verify_user_changes(new_user, new_password_confirm)
+
+            '''
+            from core.mgmt import user_create2
+
+            try:
+                new_user = user_create2(name=new_name,
+                    email=new_email,
+                    password=new_password,
+                    password_confirm=new_password_confirm)
+
+            except UserCreationError as e:
                 status = utils.Status(
                     type='danger',
-                    message='The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.'
+                    message='There were problems creating the new user:',
+                    message_list=e.args[0]
                     )
-
-            except Exception as e:
-                raise e
+                new_user = e.args[1]
             else:
-                from settings import BASE_URL
-                redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
+                from core.libs import peewee
+                try:
+                    new_user.password = encrypt_password(new_user.password)
+                    new_user.save()
+                except peewee.IntegrityError as e:
+                    status = utils.Status(
+                        type='danger',
+                        message='The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.'
+                        )
 
-    else:
-        new_user = User(name='',
-            email='')
+                except Exception as e:
+                    raise e
+                else:
+                    db.commit()
+                    from settings import BASE_URL
+                    redirect(BASE_URL + '/system/user/{}'.format(new_user.id))
 
-    tags = template_tags(user=user)
-    tags.status = status
+        else:
+            new_user = User(name='',
+                email='',
+                password='')
 
-    tpl = template('edit/edit_user_settings',
-        edit_user=new_user,
-        menu=generate_menu('system_create_user', new_user),
-        search_context=(search_context['sites'], None),
-        nav_tabs=nav_tabs,
-        nav_default='basic',
-        **tags.__dict__
-        )
+        tags = template_tags(user=user)
+        tags.status = status
 
-    return tpl
+        tpl = template('edit/edit_user_settings',
+            edit_user=new_user,
+            menu=generate_menu('system_create_user', new_user),
+            search_context=(search_context['sites'], None),
+            nav_tabs=nav_tabs,
+            nav_default='basic',
+            **tags.__dict__
+            )
+
+        return tpl
 
 @transaction
 def system_user(user_id, path):
@@ -195,6 +187,7 @@ def system_user(user_id, path):
                     )
 
         if request.forms.getunicode('delete_permissions') is not None:
+
             deletes = request.forms.getall('del')
             from core import mgmt
             try:
@@ -241,7 +234,8 @@ def system_user(user_id, path):
         if user_to_edit.last_login is None:
             status = utils.Status(
                 type='success',
-                message='User <b>{}</b> successfully created.'.format(user_to_edit.for_display),
+                message='User <b>{}</b> successfully created.'.format(
+                    user_to_edit.for_display),
                 )
             import datetime
             user_to_edit.last_login = datetime.datetime.now()
