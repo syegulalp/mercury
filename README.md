@@ -18,9 +18,9 @@ Pure Python (3.2+) CMS and blogging solution
 * Publishing from external files rather than in-DB data
 * Command-line functionality
 * L10N
-* Python 2.x backwards compatibility
+* ~~Python 2.x backwards compatibility~~ (Sorry, we're going to be 3.2+ from now on.)
 
 ... more to come ...
 
 This project is still very raw; it won't work yet if you try to deploy it. It's being
-committed publicly to show that progress is taking place on it. 
+committed publicly to show that progress is taking place on it. We are, however, getting close to providing an alpha-test version that can be manually installed.
