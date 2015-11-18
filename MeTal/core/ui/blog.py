@@ -95,25 +95,25 @@ def blog_create(site_id):
 
     return tpl
 
+@transaction
 def blog_create_save(site_id):
 
-    with db.atomic():
-        user = auth.is_logged_in(request)
-        site = get_site(site_id)
-        permission = auth.is_site_admin(user, site)
+    user = auth.is_logged_in(request)
+    site = get_site(site_id)
+    permission = auth.is_site_admin(user, site)
 
-        # return (get_default_theme().json)
+    # return (get_default_theme().json)
 
-        new_blog = mgmt.blog_create(
-            site=site,
-            name=request.forms.getunicode('blog_name'),
-            description=request.forms.getunicode('blog_description'),
-            url=request.forms.getunicode('blog_url'),
-            path=request.forms.getunicode('blog_path'),
-            theme=get_default_theme(),
-            )
+    new_blog = mgmt.blog_create(
+        site=site,
+        name=request.forms.getunicode('blog_name'),
+        description=request.forms.getunicode('blog_description'),
+        url=request.forms.getunicode('blog_url'),
+        path=request.forms.getunicode('blog_path'),
+        theme=get_default_theme(),
+        )
 
-    redirect(BASE_URL + "/blog/" + str(new_blog.id))
+    return redirect(BASE_URL + "/blog/" + str(new_blog.id))
 
 # TODO: make this universal to create a user for both a blog and a site
 # use ka
