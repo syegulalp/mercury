@@ -61,6 +61,8 @@ def erase_queue(blog=None):
         delete_queue = Queue.delete().where(Queue.blog == blog)
     return delete_queue.execute()
 
+# move to blog.erase_theme()
+
 def erase_theme(blog):
 
     del_kvs = get_kvs_for_theme(blog.theme)
@@ -74,30 +76,24 @@ def erase_theme(blog):
     return p, m, n
 
 
-def theme_create(**new_theme_data):
-
-    new_theme = Theme()
-
-    new_theme.title = new_theme_data['title']
-    new_theme.description = new_theme_data['description']
-    new_theme.json = new_theme_data['json']
-
-    new_theme.save()
-
-    return new_theme
+# since we return a theme instance anyway,
+# why not Theme.install_to_system?
 
 def theme_install_to_system(theme_data):
 
     json_raw = theme_data.decode('utf-8')
     json_obj = json.loads(json_raw)
 
-    new_theme = theme_create(
+    new_theme = Theme(
         title=json_obj["title"],
         description=json_obj["description"],
         json=json_raw
         )
 
-    return new_theme
+    return new_theme.save()
+
+# move to theme or blog?
+# or make into blog.apply_theme?
 
 def theme_apply_to_blog(theme, blog, user):
     '''
@@ -110,6 +106,7 @@ def theme_apply_to_blog(theme, blog, user):
     erase_theme(blog)
     theme_install_to_blog(theme, blog, user)
 
+# same as above - blog.install_theme?
 
 def theme_install_to_blog(installed_theme, blog, user):
 
@@ -184,6 +181,7 @@ def theme_install_to_blog(installed_theme, blog, user):
 
     blog.theme = installed_theme.id
 
+# to be handled by Site.save()
 
 def site_create(**new_site_data):
 
@@ -199,6 +197,7 @@ def site_create(**new_site_data):
 
     return new_site
 
+# to be handled by Blog.save_new(default_user,default_theme)
 
 def blog_create(**new_blog_data):
 
@@ -247,6 +246,7 @@ def user_from_ka(**ka):
     '''
     return user
 
+# to be handled by blog.save_()
 
 def blog_settings_save(request, blog, user):
 
@@ -332,6 +332,7 @@ def blog_settings_save(request, blog, user):
                 user.for_log))
 
         return status
+
 
 def export_data():
 
@@ -555,7 +556,8 @@ def update_user(user, editing_user, **user_data):
 
     return user
 '''
-# TODO: move this into the User object schema itself?
+# move to User.add_permission()
+
 def add_user_permission(user, **permission):
 
     new_permission = Permission(
@@ -573,6 +575,8 @@ def add_user_permission(user, **permission):
 
     return new_permission
 
+# move to User.remove_permission()
+
 def remove_user_permissions(user, permission_ids):
     from core import auth
     remove_permission = Permission.delete().where(
@@ -586,6 +590,8 @@ def remove_user_permissions(user, permission_ids):
         raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
 
     return done
+
+# move to Page.delete_preview()
 
 def delete_page_preview(page):
 
