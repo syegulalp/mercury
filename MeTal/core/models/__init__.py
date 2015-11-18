@@ -461,8 +461,6 @@ class Site(SiteBase, ConnectionBase):
     def blogs(self):
         return Blog.select().where(Blog.site == self)
 
-
-
     def pages(self, page_list=None):
 
         blogs = Blog.select(Blog.id).where(
@@ -1777,9 +1775,38 @@ class Plugin(BaseModel):
     def _friendly_name(self):
         return self._get_plugin_property('__plugin_name__', '')
 
-# TODO: make a template, entry revisions class that extends those base classes
-# Templates includes things like varied templates for posts
+class PluginData(BaseModel):
 
+    plugin = ForeignKeyField(Plugin, index=True, null=False)
+    key = TextField(null=False)
+    text_value = TextField(null=True)
+    int_value = IntegerField(null=True)
+    blog = ForeignKeyField(Blog, null=True)
+    site = ForeignKeyField(Site, null=True)
+    parent = IntegerField(null=True)
+
+    @property
+    def plugin(self, plugin_name):
+        return self.select().where(
+            PluginData.plugin == Plugin.get().where(
+                Plugin.name == plugin_name))
+    @property
+    def children(self):
+        return self.select().where(
+            PluginData.parent == self.id)
+
+    @property
+    def parent(self):
+        return self.select().where(
+            PluginData.id == self.parent)
+
+    @property
+    def remove_settings(self, plugin):
+        settings_to_remove = self.delete().where(
+            self.plugin == plugin)
+        return settings_to_remove.execute()
+
+# Move to User
 def get_user(**ka):
 
     if 'user_id' in ka:
@@ -1956,4 +1983,3 @@ class TemplateTags(object):
 
 def template_tags(**ka):
     return TemplateTags(**ka)
-

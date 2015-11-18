@@ -8,7 +8,21 @@ __compatibility__ = 0
 
 
 def install():
-    pass
+
+    settings = (
+        {
+            'key':'remove_newlines',
+            'int_value':1,
+            'site':0
+        },
+        {
+            'key':'remove_tabs',
+            'int_value':1,
+            'site':0
+        }
+        )
+
+    return {'settings':settings}
 
 
 def load():
@@ -16,7 +30,7 @@ def load():
     sidebar = {
         'add_to': 'edit_page',
         'panel': {
-            'template': '\nThis is a test!',
+            'template': 'This is a test!\n',
             'title': 'Test',
             'label': 'test',
             'icon': 'picture'
