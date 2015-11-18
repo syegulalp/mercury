@@ -12,9 +12,9 @@ DBError, error_text = DB.db_warnings()
 def transaction(func):
     @wraps(func)
     def wrapper(*a, **ka):
-        db.connect()
         n = 0
         while n < DATABASE_RETRIES:
+            db.connect()
             try:
                 with db.atomic():
                     fn = func(*a, **ka)
@@ -24,6 +24,7 @@ def transaction(func):
                     if n >= DATABASE_RETRIES:
                         raise e
                     else:
+                        db.close()
                         sleep(RETRY_INTERVAL)
                         continue
                 else:
