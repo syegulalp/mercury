@@ -31,6 +31,11 @@ icons = {
     'Scheduled': ('time', '#5bc0de', 'Scheduled for publication')
 }
 
+# rework so that:
+# text_label is the label at the end
+# parent for that is the button
+# that way we can reference the same thing w/multiple labels
+
 menus = {
     'system': {
         'parent': None,

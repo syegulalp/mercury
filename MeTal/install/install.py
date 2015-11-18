@@ -135,8 +135,6 @@ def step_2_pre():
     if domain is None:
         domain = "http://" + request.environ['HTTP_HOST']
 
-    # install_path = _s.APPLICATION_PATH
-    # cms_path = "/" + install_path.rsplit(_sep, 1)[1]
     if DESKTOP_MODE is True:
         cms_path = '/~'
     else:
@@ -410,7 +408,7 @@ def button(step, next_action, error=None):
 
     if step > 0:
         previous = '''
-<a href="{}install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
+<a href="{}/install/step-{}"><button type="button" class="btn">&lt;&lt; Go back</button></a>
 '''.format(_s.BASE_URL, step - 1)
     else:
         previous = ""
@@ -418,12 +416,12 @@ def button(step, next_action, error=None):
     if next_action is not None:
 
         next_str = '''
-<button action="submit" class="btn">Continue &gt;&gt;</button>
+<button type="submit" class="btn">Continue &gt;&gt;</button>
 '''
     else:
         if error is None:
             next_str = '''
-<a href="{}install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
+<a href="{}/install/step-{}"><button class="btn">Continue &gt;&gt;</button></a>
 '''.format(_s.BASE_URL, step + 1)
         else:
             next_str = "<button class='btn btn-danger'>Fix the above error and click here to continue</button>"
@@ -435,7 +433,7 @@ crumb_element_active = '''
 '''
 
 crumb_element_link = '''
-<li><a href="{}install/step-{}">{}</a></li>
+<li><a href="{}/install/step-{}">{}</a></li>
 '''
 
 step_text = {
@@ -667,7 +665,7 @@ def step(step):
             error_msg = e
         else:
             step += 1
-            redirect('{}install/step-{}'.format(_s.BASE_URL, step))
+            redirect('{}/install/step-{}'.format(_s.BASE_URL, step))
 
     else:
         try:
@@ -687,7 +685,7 @@ def step(step):
         title=step_text[step]['title'],
         text=template(step_text[step]['text'],
             button=template_button,
-            form_action='{}install/step-{}'.format(_s.BASE_URL, step),
+            form_action='{}/install/step-{}'.format(_s.BASE_URL, step),
             **results),
         crumbs=crumbs(step),
         error=error_msg)

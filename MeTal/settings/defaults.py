@@ -1,5 +1,6 @@
 # Application install defaults
-# Do NOT change these settings directly! Use config.cgi instead!
+# Do NOT change these settings directly when running the application!
+# Place installation-specific settings in /data/config.cgi instead!
 
 import os
 _environ = os.environ
@@ -18,11 +19,11 @@ DEFAULT_SCRIPT = 'index.cgi'
 DESKTOP_MODE = False
 
 # The encryption key for your logins.
-# Change this after installation!
+# This temporary key is only used during the setup process.
 SECRET_KEY = "change_this_key_please"
 
 # Key used for saving passwords in the db.
-# DO NOT CHANGE THIS AFTER YOU HAVE CREATED YOUR USER ACCOUNTS!
+# This temporary key is only used during the setup process.
 PASSWORD_KEY = "also_change_this_key_please"
 
 # Set this to True if you are running MeTal as an WSGI application,
