@@ -28,6 +28,10 @@ def login_verify(email, password):
 
 # move this into the theme schema object,
 # or at least the theme module
+
+# for deleting kvs automatically with their attendant object,
+# we should have overload the delete function in the model
+
 def get_kvs_for_theme(theme):
     from core.theme import json_dump
     theme_kvs = []
@@ -52,6 +56,8 @@ def get_kvs_for_theme(theme):
         del kv_list[0]
 
     return theme_kvs
+
+# move to Queue.erase?
 
 def erase_queue(blog=None):
     from core.models import Queue
@@ -90,7 +96,8 @@ def theme_install_to_system(theme_data):
         json=json_raw
         )
 
-    return new_theme.save()
+    new_theme.save()
+    return new_theme
 
 # move to theme or blog?
 # or make into blog.apply_theme?
@@ -221,6 +228,7 @@ def blog_create(**new_blog_data):
     new_blog_default_category.save()
 
     new_blog_theme = new_blog_data.get('theme', None)
+
     if new_blog_theme is not None:
         theme_install_to_blog(new_blog_theme, new_blog, installing_user)
         new_blog.save()
