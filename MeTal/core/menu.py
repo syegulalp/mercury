@@ -616,12 +616,12 @@ colsets = {
              'colclass': 'overflow',
              'format': lambda x: x.primary_category.title
              },
-            {'field': 'publication_date',
+            {'field': 'publication_date_tz',
              'label': 'Publish date',
              'colwidth': '1%',
              'xlabel_style': 'width:1%',
              'colclass': 'overflow',
-             'format': lambda x: date_format(x.publication_date)
+             'format': lambda x: date_format(x.publication_date_tz)
              },
         )
     }
