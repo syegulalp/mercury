@@ -230,7 +230,7 @@ def system_user(user_id, path):
                     user_to_edit.for_display),
                 )
             import datetime
-            user_to_edit.last_login = datetime.datetime.now()
+            user_to_edit.last_login = datetime.datetime.utcnow()
             user_to_edit.save()
 
     tags = template_tags(user=get_user(user_id=user.id))

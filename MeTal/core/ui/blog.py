@@ -310,7 +310,7 @@ def blog_new_page(blog_id):
 
     blog_new_page.blog = blog_id
     blog_new_page.user = user
-    blog_new_page.publication_date = datetime.datetime.now()
+    blog_new_page.publication_date = datetime.datetime.utcnow()
     blog_new_page.basename = ''
 
     from core.cms import save_action_list
@@ -431,7 +431,7 @@ def blog_media_edit_save(blog_id, media_id):
         media.friendly_name = friendly_name
 
     if changes is True:
-        media.modified_date = datetime.datetime.now()
+        media.modified_date = datetime.datetime.utcnow()
         media.save()
 
         status = utils.Status(

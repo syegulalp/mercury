@@ -127,7 +127,7 @@ def push_to_queue(**ka):
             FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
 
 
-    queue_job.date_touched = datetime.datetime.now()
+    queue_job.date_touched = datetime.datetime.utcnow()
     queue_job.save()
 
 def push_insert_to_queue(blog):
@@ -340,15 +340,15 @@ def save_page(page, user, blog=None):
             page.blog)
         original_page_basename = page.basename
 
-        page.publication_date = datetime.datetime.now()
-        page.created_date = datetime.datetime.now()
+        page.publication_date = datetime.datetime.utcnow()
+        page.created_date = datetime.datetime.utcnow()
 
     else:
 
         original_page_status = page.status
         original_page_basename = page.basename
 
-        page.modified_date = datetime.datetime.now()
+        page.modified_date = datetime.datetime.utcnow()
 
         if request.forms.getunicode('basename') is not None:
             if request.forms.getunicode('basename') != "":
@@ -594,7 +594,7 @@ def add_page_fileinfo(page, template_mapping, file_path,
         existing_fileinfo.file_path = file_path
         existing_fileinfo.sitewide_file_path = sitewide_file_path
         existing_fileinfo.url = url
-        existing_fileinfo.modified_date = datetime.datetime.now()
+        existing_fileinfo.modified_date = datetime.datetime.utcnow()
         existing_fileinfo.mapping_sort = mapping_sort
         existing_fileinfo.save()
 

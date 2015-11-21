@@ -22,7 +22,7 @@ def login_verify(email, password):
         raise User.DoesNotExist
 
     else:
-        user.last_login = datetime.datetime.now()
+        user.last_login = datetime.datetime.utcnow()
         user.save()
         return user
 

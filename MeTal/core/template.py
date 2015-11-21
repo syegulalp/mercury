@@ -59,7 +59,7 @@ def save(request, user, cms_template):
     else:
         raise TemplateSaveException("Invalid publishing mode selected.")
 
-    cms_template.modified_date = datetime.datetime.now()
+    cms_template.modified_date = datetime.datetime.utcnow()
 
     try:
         cms_template.save(user)

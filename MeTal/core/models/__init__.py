@@ -319,7 +319,7 @@ class BaseModel(Model):
             return None
 
 class Log(BaseModel):
-    date = DateTimeField(default=datetime.datetime.now, index=True)
+    date = DateTimeField(default=datetime.datetime.utcnow, index=True)
     level = IntegerField()
     message = TextField()
 
@@ -551,6 +551,7 @@ class Site(SiteBase, ConnectionBase):
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
+    timezone = TextField(null=True, default='UTC')
 
     def archive_default(self, default_type):
         archive_default = self.templates().select().where(
@@ -666,7 +667,8 @@ class Blog(SiteBase):
 
         scheduled_pages = self.pages().select().where(Page.status == page_status.scheduled)
         if due is True:
-            scheduled_pages = scheduled_pages.select().where(Page.publication_date >= datetime.datetime.now())
+            scheduled_pages = scheduled_pages.select().where(
+                Page.publication_date >= datetime.datetime.utcnow())
 
         return scheduled_pages
 
@@ -816,7 +818,7 @@ class Page(BaseModel):
     text = TextField()
     excerpt = TextField(null=True)
     blog = ForeignKeyField(Blog, null=False, index=True)
-    created_date = DateTimeField(default=datetime.datetime.now)
+    created_date = DateTimeField(default=datetime.datetime.utcnow)
     modified_date = DateTimeField(null=True)
     publication_date = DateTimeField(null=True, index=True)
     status = CharField(max_length=32, index=True, default=page_status.unpublished)
@@ -825,6 +827,25 @@ class Page(BaseModel):
     author = user
 
     security = 'is_page_editor'
+
+    def _date_mod(self, field):
+        from core.libs import pytz
+        tz = 'UTC' if self.blog.timezone is None else self.blog.timezone
+        timezone = pytz.timezone(tz)
+        return timezone.localize(field)
+
+    @property
+    def created_date_tz(self):
+        return self._date_mod(self.created_date)
+
+    @property
+    def modified_date_tz(self):
+        return self._date_mod(self.modified_date)
+
+    @property
+    def published_date_tz(self):
+        return self._date_mod(self.published_date)
+
 
     @property
     def parent(self, context=None):
@@ -1346,7 +1367,7 @@ class Template(BaseModel):
     body = TextField(null=True)
     publishing_mode = CharField(max_length=32, index=True, null=False)
     external_path = TextField(null=True)  # used for linking in an external file
-    modified_date = DateTimeField(default=datetime.datetime.now)
+    modified_date = DateTimeField(default=datetime.datetime.utcnow)
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
 
@@ -1534,7 +1555,7 @@ class TemplateMapping(BaseModel):
     # 3 = Date-Based
     # TODO: I believe this was deprecated a long time ago
     archive_xref = CharField(max_length=16, null=True)
-    modified_date = DateTimeField(default=datetime.datetime.now)
+    modified_date = DateTimeField(default=datetime.datetime.utcnow)
 
     @property
     def fileinfos(self):
@@ -1582,8 +1603,8 @@ class Media(BaseModel):
 
     url = EnforcedCharField(unique=True, null=True)
     type = CharField(max_length=32, index=True)
-    created_date = DateTimeField(default=datetime.datetime.now)
-    modified_date = DateTimeField(default=datetime.datetime.now)
+    created_date = DateTimeField(default=datetime.datetime.utcnow)
+    modified_date = DateTimeField(default=datetime.datetime.utcnow)
     friendly_name = TextField(null=True)
     tag_text = TextField(null=True)
     user = ForeignKeyField(User, null=False)
@@ -1649,7 +1670,7 @@ class FileInfo(BaseModel):
     file_path = EnforcedCharField(null=False)
     sitewide_file_path = EnforcedCharField(index=True, null=False, unique=True)
     url = EnforcedCharField(null=False, index=True, unique=True)
-    modified_date = DateTimeField(default=datetime.datetime.now)
+    modified_date = DateTimeField(default=datetime.datetime.utcnow)
     mapping_sort = EnforcedCharField(null=True, default=None, index=True)
 
     @property
@@ -1720,7 +1741,7 @@ class Queue(BaseModel):
     priority = IntegerField(default=9, index=True)
     data_string = TextField(null=True)
     data_integer = IntegerField(null=True, index=True)
-    date_touched = DateTimeField(default=datetime.datetime.now)
+    date_touched = DateTimeField(default=datetime.datetime.utcnow)
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
 

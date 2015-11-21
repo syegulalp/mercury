@@ -55,7 +55,7 @@ def page_edit(page_id):
             type='info',
             message="Page <b>{}</b> created.",
             vals=(page.title,))
-        page.modified_date = datetime.datetime.now()
+        page.modified_date = datetime.datetime.utcnow()
         page.save(user)
 
     tags = template_tags(page_id=page_id,

@@ -13,7 +13,7 @@ OLSON_VERSION = '2015g'
 VERSION = '2015.7'  # Switching to pip compatible version numbering.
 __version__ = VERSION
 
-OLSEN_VERSION = OLSON_VERSION # Old releases had this misspelling
+OLSEN_VERSION = OLSON_VERSION  # Old releases had this misspelling
 
 __all__ = [
     'timezone', 'utc', 'country_timezones', 'country_names',
@@ -30,19 +30,19 @@ try:
 except ImportError:
     resource_stream = None
 
-from pytz.exceptions import AmbiguousTimeError
-from pytz.exceptions import InvalidTimeError
-from pytz.exceptions import NonExistentTimeError
-from pytz.exceptions import UnknownTimeZoneError
-from pytz.lazy import LazyDict, LazyList, LazySet
-from pytz.tzinfo import unpickler
-from pytz.tzfile import build_tzinfo, _byte_string
+from .exceptions import AmbiguousTimeError
+from .exceptions import InvalidTimeError
+from .exceptions import NonExistentTimeError
+from .exceptions import UnknownTimeZoneError
+from .lazy import LazyDict, LazyList, LazySet
+from .tzinfo import unpickler
+from .tzfile import build_tzinfo, _byte_string
 
 
 try:
     unicode
 
-except NameError: # Python 3.x
+except NameError:  # Python 3.x
 
     # Python 3.x doesn't have unicode(), making writing code
     # for Python 2.3 and Python 3.x a pain.
@@ -57,10 +57,10 @@ except NameError: # Python 3.x
             ...
         UnicodeEncodeError: ...
         """
-        s.encode('US-ASCII') # Raise an exception if not ASCII
-        return s # But return the original string - not a byte string.
+        s.encode('US-ASCII')  # Raise an exception if not ASCII
+        return s  # But return the original string - not a byte string.
 
-else: # Python 2.x
+else:  # Python 2.x
 
     def ascii(s):
         r"""
@@ -110,7 +110,7 @@ def resource_exists(name):
 # module, as well as the Zope3 i18n package. Perhaps we should just provide
 # the POT file and translations, and leave it up to callers to make use
 # of them.
-# 
+#
 # t = gettext.translation(
 #         'pytz', os.path.join(os.path.dirname(__file__), 'locales'),
 #         fallback=True
@@ -123,7 +123,7 @@ def resource_exists(name):
 _tzinfo_cache = {}
 
 def timezone(zone):
-    r''' Return a datetime.tzinfo implementation for the given timezone 
+    r''' Return a datetime.tzinfo implementation for the given timezone
 
     >>> from datetime import datetime, timedelta
     >>> utc = timezone('UTC')
@@ -247,7 +247,7 @@ UTC = utc = UTC()  # UTC is a singleton
 def _UTC():
     """Factory function for utc unpickling.
 
-    Makes sure that unpickling a utc instance always returns the same 
+    Makes sure that unpickling a utc instance always returns the same
     module global.
 
     These examples belong in the UTC class above, but it is obscured; or in
@@ -373,7 +373,7 @@ country_names = _CountryNameDict()
 
 class _FixedOffset(datetime.tzinfo):
 
-    zone = None # to match the standard pytz API
+    zone = None  # to match the standard pytz API
 
     def __init__(self, minutes):
         if abs(minutes) >= 1440:
@@ -385,7 +385,7 @@ class _FixedOffset(datetime.tzinfo):
         return self._offset
 
     def __reduce__(self):
-        return FixedOffset, (self._minutes, )
+        return FixedOffset, (self._minutes,)
 
     def dst(self, dt):
         return ZERO
@@ -409,7 +409,7 @@ class _FixedOffset(datetime.tzinfo):
         return dt.replace(tzinfo=self)
 
 
-def FixedOffset(offset, _tzinfos = {}):
+def FixedOffset(offset, _tzinfos={}):
     """return a fixed-offset timezone based off a number of minutes.
 
         >>> one = FixedOffset(-330)
@@ -1073,7 +1073,7 @@ all_timezones = \
  'Zulu']
 all_timezones = LazyList(
         tz for tz in all_timezones if resource_exists(tz))
-        
+
 all_timezones_set = LazySet(all_timezones)
 common_timezones = \
 ['Africa/Abidjan',
@@ -1510,5 +1510,5 @@ common_timezones = \
  'UTC']
 common_timezones = LazyList(
             tz for tz in common_timezones if tz in all_timezones)
-        
+
 common_timezones_set = LazySet(common_timezones)

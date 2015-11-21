@@ -25,7 +25,7 @@ print ('Looking for scheduled tasks...')
 from core.models import Page, page_status
 
 scheduled_pages = Page.select().where(
-    Page.publication_date <= datetime.datetime.now(),
+    Page.publication_date <= datetime.datetime.utcnow(),
     Page.status == page_status.scheduled)
 
 print ('{} pages scheduled'.format(scheduled_pages.count()))

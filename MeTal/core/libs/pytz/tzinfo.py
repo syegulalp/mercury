@@ -7,8 +7,8 @@ try:
 except NameError:
     from sets import Set as set
 
-import pytz
-from pytz.exceptions import AmbiguousTimeError, NonExistentTimeError
+# import pytz
+from .exceptions import AmbiguousTimeError, NonExistentTimeError
 
 __all__ = []
 
@@ -154,14 +154,14 @@ class DstTzInfo(BaseTzInfo):
     timezone definition.
     '''
     # Overridden in subclass
-    _utc_transition_times = None # Sorted list of DST transition times in UTC
-    _transition_info = None # [(utcoffset, dstoffset, tzname)] corresponding
+    _utc_transition_times = None  # Sorted list of DST transition times in UTC
+    _transition_info = None  # [(utcoffset, dstoffset, tzname)] corresponding
                             # to _utc_transition_times entries
     zone = None
 
     # Set in __init__
     _tzinfos = None
-    _dst = None # DST offset
+    _dst = None  # DST offset
 
     def __init__(self, _inf=None, _tzinfos=None):
         if _inf:
@@ -372,7 +372,7 @@ class DstTzInfo(BaseTzInfo):
         # Choose the earliest (by UTC) applicable timezone if is_dst=True
         # Choose the latest (by UTC) applicable timezone if is_dst=False
         # i.e., behave like end-of-DST transition
-        dates = {} # utc -> local
+        dates = {}  # utc -> local
         for local_dt in filtered_possible_loc_dt:
             utc_time = local_dt.replace(tzinfo=None) - local_dt.tzinfo._utcoffset
             assert utc_time not in dates
