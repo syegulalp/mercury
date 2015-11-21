@@ -1,5 +1,5 @@
 # MeTal
-Pure Python (3.2+) CMS and blogging solution
+Pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
 ## Features
 * Open source (MIT license)
