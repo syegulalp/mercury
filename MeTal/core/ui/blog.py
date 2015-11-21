@@ -50,6 +50,8 @@ def blog(blog_id, errormsg=None):
         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
         )
 
+    # theme_actions = blog.theme_actions().menus()
+
 
     list_actions = [
         ['Republish', '{}/api/1/republish'],
@@ -287,7 +289,7 @@ def blog_new_page(blog_id):
     '''
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
-    permission = auth.is_blog_author(user, blog)
+    permission = auth.is_blog_member(user, blog)
 
     tags = template_tags(
         blog_id=blog.id,
