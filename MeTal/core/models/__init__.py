@@ -14,10 +14,6 @@ from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
 from functools import wraps
 
 import settings as _settings
-from core import utils as _utils
-
-from core.libs import pytz
-utc = pytz.timezone('UTC')
 
 class Struct(object):
     pass
@@ -831,8 +827,10 @@ class Page(BaseModel):
     security = 'is_page_editor'
 
     def _date_mod(self, field):
+        from core.libs import pytz
+        utc = pytz.timezone('UTC')
         tz = 'UTC' if self.blog.timezone is None else self.blog.timezone
-        timezone = pytz.timezone(tz)
+        timezone = self.pytz.timezone(tz)
         converted = field.replace(tzinfo=utc)
         return converted.astimezone(timezone)
 
@@ -847,7 +845,6 @@ class Page(BaseModel):
     @property
     def publication_date_tz(self):
         return self._date_mod(self.publication_date)
-
 
     @property
     def parent(self, context=None):
@@ -1966,16 +1963,18 @@ def default_template_mapping(page):
     return time_string
 
 
-tags_init = ("blog", "page", "authors", "site", "user",
-    "template", "archive")
-
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
     # Also used for building many other things.
 
+    tags_init = ("blog", "page", "authors", "site", "user",
+        "template", "archive")
+
     def __init__(self, **ka):
 
-        for key in tags_init:
+        from core import utils as _utils
+
+        for key in self.tags_init:
             setattr(self, key, None)
 
         self.search_query, self.search_terms = '', ''
