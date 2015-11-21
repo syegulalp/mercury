@@ -329,6 +329,7 @@ class User(BaseModel):
     email = EnforcedCharField(index=True, null=False, unique=True)
     password = CharField(null=False)
     password_confirm = None
+    encrypted_password = None
     avatar = IntegerField(null=True)  # refers to an asset ID
     last_login = DateTimeField(null=True)
     path_prefix = "/system"
@@ -361,20 +362,25 @@ class User(BaseModel):
         # Save modification to password
         errors = []
 
-        if self.password == '' or self.password_confirm == '':
-            errors.append('Password or confirmation field is blank.')
+        if self.encrypted_password is None:
 
-        if self.password != self.password_confirm:
-            errors.append('Passwords do not match.')
+            if self.password is None or self.password == '' or self.password_confirm == '':
+                errors.append('Password or confirmation field is blank.')
 
-        if len(errors) > 0:
-            from core.error import UserCreationError
-            raise UserCreationError(errors)
+            if self.password != self.password_confirm:
+                errors.append('Passwords do not match.')
 
-        from core.utils import encrypt_password
-        self.password = encrypt_password(self.password)
+            if len(errors) > 0:
+                from core.error import UserCreationError
+                raise UserCreationError(errors)
 
-        return self.save(**ka)
+            from core.utils import encrypt_password
+            self.password = encrypt_password(self.password)
+
+        else:
+            self.password = self.encrypted_password
+
+        return self.save_mod(**ka)
 
     def from_site(self, site):
         self.site = site
@@ -397,8 +403,11 @@ class User(BaseModel):
             all_blogs = Blog.select()
             return all_blogs
 
+        sites = self.sites(bitmask.contribute_to_blog).select(Permission.site).tuples()
+
         blogs = Blog.select().where(
-            Blog.id << permissions.select(Permission.blog).tuples())
+            Blog.id << permissions.select(Permission.blog).tuples() |
+            Blog.site << sites)
 
         return blogs
 
@@ -428,6 +437,9 @@ class SiteBase(BaseModel):
     ssi_path = TextField(default='_include')
     editor_css = TextField(null=True)
 
+    @property
+    def max_revisions(self):
+        return _settings.MAX_PAGE_REVISIONS
 
 class ConnectionBase(BaseModel):
 
@@ -445,6 +457,15 @@ class Theme(BaseModel):
     def parent(self, context):
         if context.__class__.__name__ == 'Blog':
             return context.site
+
+    def actions(self, blog=None):
+        pass
+
+    '''
+    returns the theme's module for things like action hooks
+    .menus()
+
+    '''
 
 class Site(SiteBase, ConnectionBase):
 
@@ -537,6 +558,9 @@ class Blog(SiteBase):
         return archive_default
 
     @property
+    def theme_actions(self):
+        return self.theme.actions(self)
+    @property
     def index_archive(self):
         return self.archive_default(archive_type.index)
     @property
@@ -595,9 +619,7 @@ class Blog(SiteBase):
 
         return blog_users
 
-    @property
-    def max_revisions(self):
-        return int(self.kv('MaxPageRevisions').value)
+
 
     @property
     def categories(self):
@@ -1726,20 +1748,16 @@ def queue_jobs_waiting(blog=None, site=None):
         0 if insert_jobs.total is None else insert_jobs.total)
 
 def queue_control_jobs(blog=None, site=None):
-
     all_jobs = all_queue_jobs(blog, site)
-
     control_jobs = all_jobs.select().where(Queue.is_control == True).count()
-
     return control_jobs
-
 
 class Permission(BaseModel):
     user = ForeignKeyField(User, index=True)
     permission = IntegerField(null=False)
     blog = ForeignKeyField(Blog, index=True, null=True)
     site = ForeignKeyField(Site, index=True, null=True)
-    # sitewide settings ignore blog/site settings
+    # for sitewide, use site = 0, blog = None
 
 class Plugin(BaseModel):
 
@@ -1775,36 +1793,63 @@ class Plugin(BaseModel):
     def _friendly_name(self):
         return self._get_plugin_property('__plugin_name__', '')
 
-class PluginData(BaseModel):
+class AuxData(BaseModel):
 
-    plugin = ForeignKeyField(Plugin, index=True, null=False)
     key = TextField(null=False)
     text_value = TextField(null=True)
     int_value = IntegerField(null=True)
-    blog = ForeignKeyField(Blog, null=True)
-    site = ForeignKeyField(Site, null=True)
     parent = IntegerField(null=True)
 
     @property
-    def plugin(self, plugin_name):
-        return self.select().where(
-            PluginData.plugin == Plugin.get().where(
-                Plugin.name == plugin_name))
-    @property
     def children(self):
         return self.select().where(
-            PluginData.parent == self.id)
+            self.parent == self.id)
 
     @property
     def parent(self):
         return self.select().where(
-            PluginData.id == self.parent)
+            self.id == self.parent)
+
+class PluginData(AuxData):
+
+    plugin = ForeignKeyField(Plugin, index=True, null=False)
+    blog = ForeignKeyField(Blog, null=True)
+    site = ForeignKeyField(Site, null=True)
+    user = ForeignKeyField(User, null=True)
 
     @property
     def remove_settings(self, plugin):
         settings_to_remove = self.delete().where(
             self.plugin == plugin)
         return settings_to_remove.execute()
+
+    @property
+    def plugin(self, plugin_name):
+        return self.select().where(
+            PluginData.plugin == Plugin.get().where(
+                Plugin.name == plugin_name))
+
+class ThemeData(AuxData):
+
+    blog = ForeignKeyField(Blog, null=True)
+    theme = ForeignKeyField(Theme, index=True, null=False)
+
+    # both theme and blog must match a given blog for the settings to be applied
+    # this way you can switch themes on a blog and keep the data from the old theme
+
+    @property
+    def remove_settings(self, blog):
+        settings_to_remove = self.delete().where(
+            self.blog == blog)
+        return settings_to_remove.execute()
+
+
+    @property
+    def theme(self, theme_title):
+        return self.select().where(
+            ThemeData.theme == Theme.get().where(
+                Theme.title == theme_title))
+
 
 # Move to User
 def get_user(**ka):
@@ -1824,7 +1869,7 @@ def get_page(page_id):
         page = Page.get(Page.id == page_id)
 
     except Page.DoesNotExist as e:
-        raise Page.DoesNotExist('Page {} does not exist'.format(page_id), e)
+        raise Page.DoesNotExist('Page #{} does not exist'.format(page_id), e)
 
     return page
 
@@ -1833,7 +1878,7 @@ def get_template(template_id):
     try:
         template = Template.get(Template.id == template_id)
     except Template.DoesNotExist as e:
-        raise Template.DoesNotExist('Template {} does not exist'.format(template_id), e)
+        raise Template.DoesNotExist('Template #{} does not exist'.format(template_id), e)
 
     return template
 
@@ -1841,15 +1886,15 @@ def get_theme(theme_id):
     try:
         theme = Theme.get(Theme.id == theme_id)
     except Theme.DoesNotExist as e:
-        raise Theme.DoesNotExist('Theme {} does not exist.'.format(theme_id), e)
+        raise Theme.DoesNotExist('Theme #{} does not exist.'.format(theme_id), e)
     return theme
 
-def get_blog(blog_id):
+def get_blog(blog_id, **ka):
 
     try:
         blog = Blog.get(Blog.id == blog_id)
     except Blog.DoesNotExist as e:
-        raise Blog.DoesNotExist('Blog {} does not exist'.format(blog_id), e)
+        raise Blog.DoesNotExist('Blog #{} does not exist'.format(blog_id), e)
 
     return blog
 
