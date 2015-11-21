@@ -16,6 +16,8 @@ from functools import wraps
 import settings as _settings
 from core import utils as _utils
 
+from core.libs import pytz
+utc = pytz.timezone('UTC')
 
 class Struct(object):
     pass
@@ -829,10 +831,10 @@ class Page(BaseModel):
     security = 'is_page_editor'
 
     def _date_mod(self, field):
-        from core.libs import pytz
         tz = 'UTC' if self.blog.timezone is None else self.blog.timezone
         timezone = pytz.timezone(tz)
-        return timezone.localize(field)
+        converted = field.replace(tzinfo=utc)
+        return converted.astimezone(timezone)
 
     @property
     def created_date_tz(self):
@@ -843,8 +845,8 @@ class Page(BaseModel):
         return self._date_mod(self.modified_date)
 
     @property
-    def published_date_tz(self):
-        return self._date_mod(self.published_date)
+    def publication_date_tz(self):
+        return self._date_mod(self.publication_date)
 
 
     @property
