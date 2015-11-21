@@ -12,8 +12,8 @@ from core.libs.bottle import _stderr
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 def quote_escape(string):
-    string = string.replace("'", "&#34")
-    string = string.replace('"', "&#39")
+    string = string.replace("'", "&#39")
+    string = string.replace('"', "&#34")
     return string
 
 def preview_file(identifier, extension):
