@@ -6,9 +6,7 @@ from core.libs import bottle
 from core.error import PluginImportError
 from core.models import Plugin, db
 
-# _stderr = bottle._stderr
 from core.utils import _stddebug_
-from _ast import Add
 _stddebug = _stddebug_()
 
 '''
@@ -68,7 +66,7 @@ def unregister_plugin(plugin):
     # remove plugin itself
     # don't reboot, that's for the handler
 
-def register_plugin(path_to_plugin, enable_on_install=False):
+def register_plugin(path_to_plugin, **ka):
 
     if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
 
@@ -89,28 +87,35 @@ def register_plugin(path_to_plugin, enable_on_install=False):
                     friendly_name=added_plugin.__plugin_name__,
                     path=path_to_plugin,
                     priority=1,
-                    enabled=enable_on_install)
+                    enabled=ka.get('enable', False)
+                    )
 
                 new_plugin.save()
 
                 plugin_data = added_plugin.install()
 
-                plugin_settings = plugin_data.get(['settings'])
+                try:
+                    plugin_settings = plugin_data.get(['settings'])
+                except (AttributeError, TypeError):
+                    pass
+                except Exception as e:
+                    raise e
+                else:
 
-                from core.models import PluginData
-                for n in plugin_settings:
-                    # TODO: instead: iter through __dict__
-                    # if dict item not in field list, don't add
-                    settings_data = PluginData(
-                        plugin=new_plugin,
-                        key=n.get('key'),
-                        text_value=n.get('text_value'),
-                        int_value=n.get('int_value'),
-                        blog=n.get('blog'),
-                        site=n.get('site'),
-                        parent=n.get('parent')
-                        )
-                    settings_data.save()
+                    from core.models import PluginData
+                    for n in plugin_settings:
+                        # TODO: instead: iter through __dict__
+                        # if dict item not in field list, don't add
+                        settings_data = PluginData(
+                            plugin=new_plugin,
+                            key=n.get('key'),
+                            text_value=n.get('text_value'),
+                            int_value=n.get('int_value'),
+                            blog=n.get('blog'),
+                            site=n.get('site'),
+                            parent=n.get('parent')
+                            )
+                        settings_data.save()
 
                 _stddebug ("Plugin registered: " + added_plugin.__plugin_name__ + "\n")
 
