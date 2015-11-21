@@ -8,10 +8,12 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep)
+from core.models import get_user
 
 app = Bottle()
 _route = app.route
 _hook = app.hook
+
 
 @_hook('before_request')
 def strip_path():
@@ -44,6 +46,22 @@ def csrf_protection():
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
+
+@_route(BASE_PATH + '/reboot', method="POST")
+def reboot():
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+
+    if user.logout_nonce != request.forms.getunicode('token'):
+        from core.error import PermissionsException
+        raise PermissionsException('Nonce not provided for reboot action')
+
+    from core.libs.bottle import template
+    import settings as _s
+    t = template('reboot.tpl',
+        settings=_s,
+        redirect_to=request.forms.getunicode('redirect_to'))
+    return t
 
 
 @_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
@@ -195,6 +213,8 @@ def plugin_settings(plugin_id):
 
 @_route(BASE_PATH + "/system/info")
 def site_info():
+    user = auth.is_logged_in(request)
+    admin = auth.is_sys_admin(user)
     from core.ui import system
     return system.system_info()
 
