@@ -251,6 +251,13 @@ def system_users():
     context = system_context()
     tags = template_tags(user=user)
 
+    import settings
+
+    action = utils.action_button(
+        'Create new user',
+        '{}/system/user/new'.format(settings.BASE_URL)
+        )
+
     paginator, rowset = utils.generate_paginator(context['users'], request)
     path = context['path']
     tpl = template('listing/listing_ui',
@@ -258,6 +265,7 @@ def system_users():
         search_context=context['search_context'],
         menu=context['menu'],
         colset=colsets['system_users'],
+        action=action,
         paginator=paginator,
         rowset=rowset,
         **tags.__dict__)
