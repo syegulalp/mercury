@@ -226,8 +226,11 @@ def step_4_pre():
 
     with db.atomic():
 
+        '''
         from core.models import System
         system_ref = System()
+
+        # TODO: allow overrides through KVs for individual setting
 
         system_ref.add_kv(
             object='System',
@@ -237,6 +240,7 @@ def step_4_pre():
             is_schema=True,
             is_unique=True)
 
+
         system_ref.add_kv(
             object='System',
             objectid=0,
@@ -244,6 +248,7 @@ def step_4_pre():
             value=3600,
             is_schema=True,
             is_unique=True)
+        '''
 
         new_site = mgmt.site_create(
             name="Your first site",
@@ -282,7 +287,10 @@ def step_4_pre():
 
         new_theme = mgmt.theme_install_to_system(json_text)
 
-        report.append("Theme created and installed successfully to system.")
+        report.append("Default theme created and installed successfully to system.")
+
+        # TODO: copy all themes first, then install them all
+        # default theme should be for the sake of installing the first blog
 
         new_blog = mgmt.blog_create(
             site=new_site,
@@ -310,20 +318,30 @@ def step_4_pre():
         shutil.copytree(install_directory + _sep + 'plugins',
             plugindir)
 
+        report.append("Default plugins copied successfully to data directory.")
+
+        themedir = (_s.APPLICATION_PATH + _sep + 'data' +
+            _sep + 'themes')
+
+        if (os.path.isdir(themedir)):
+            shutil.rmtree(themedir)
+
+        shutil.copytree(install_directory + _sep + 'themes',
+            themedir)
+
+        report.append("Default templates copied successfully to data directory.")
+
         from core import plugins
 
         for x in os.listdir(plugindir):
             if (os.path.isdir(plugindir + _sep + x) is True and
                 x != '__pycache__'):
-                plugins.register_plugin(x)
-
-        # TODO: export installed theme to data directory in /themes
-        # that should be part of the theme installation process itself.
+                new_plugin = plugins.register_plugin(x, enable=True)
+                report.append("New plugin '{}' installed successfully.".format(
+                    new_plugin.name))
 
 
     db.close()
-
-    # raise
 
     output_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
         _sep + _s.INI_FILE_NAME)
