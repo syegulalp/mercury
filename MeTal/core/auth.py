@@ -197,22 +197,32 @@ def is_site_member(user, site):
 def is_blog_member(user, blog):
     '''Determines if the given user has member privileges on a given blog.'''
     try:
-        is_blog_member = get_permissions(user, None, blog)
-        return is_blog_member
-
+        return get_permissions(user, None, blog)
     except PermissionsException:
-        raise PermissionsException('User {} does not have permission to work with blog {}'.format(
-            user.for_log, blog.for_log))
+        pass
+
+    try:
+        return is_site_member(user, blog.site)
+    except PermissionsException:
+        pass
+
+    raise PermissionsException('User {} does not have permission to work with blog {}'.format(
+        user.for_log, blog.for_log))
 
 def is_blog_author(user, blog):
     '''Determines if the given user has author privileges on a given blog.'''
     try:
-        is_blog_author = get_permissions(user, bitmask.author_page, blog)
-        return is_blog_author
-
+        return get_permissions(user, bitmask.author_page, blog)
     except PermissionsException:
-        raise PermissionsException('User {} does not have permission to author pages on blog {}'.format(
-            user.for_log, blog.for_log))
+        pass
+    try:
+        return get_permissions(user, bitmask.author_page, None, blog.site)
+    except PermissionsException:
+        pass
+
+    raise PermissionsException('User {} does not have permission to author pages on blog {}'.format(
+        user.for_log, blog.for_log))
+
 
 def is_blog_editor(user, blog):
     '''Determines if the given user has editor privileges on a given blog.'''
