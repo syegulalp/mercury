@@ -18,7 +18,7 @@
 		    %for page in recent_pages:
 		    <tr>
 		    <td>{{!page.for_display}}</td>
-		    <td>{{utils.date_format(page.modified_date)}}</td>
+		    <td>{{utils.date_format(page.modified_date_tz)}}</td>
 		    <td>{{!page.blog.for_display}}</td>
 		    <td>{{!page.blog.site.for_display}}</td>
 		    </tr>

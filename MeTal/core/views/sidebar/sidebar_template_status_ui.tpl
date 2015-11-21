@@ -3,7 +3,7 @@
 
     <label for="modified_date">Last saved:</label>
     <p id="modified_date">
-        {{utils.date_format(template.modified_date)}}
+        {{utils.date_format(template.modified_date_tz)}}
     </p>
 
     <label for="template_type">Template type:</label>

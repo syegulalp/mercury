@@ -15,7 +15,7 @@
     <label for="publication_date">Publication date:</label>
     <div class='input-group input-group-sm date' id='publication_date_picker'>
        <input type="datetime" class="form-control unsaved entersubmit" id="publication_date" placeholder=""
-          name="publication_date" value="{{utils.date_format(page.publication_date)}}" />
+          name="publication_date" value="{{utils.date_format(page.publication_date_tz)}}" />
        <span class="input-group-addon">
            <span class="glyphicon glyphicon-calendar"></span>
        </span>
