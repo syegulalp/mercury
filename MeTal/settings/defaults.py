@@ -55,17 +55,25 @@ INSTALL_INI_FILE_NAME = 'install.cgi'
 # For MySQL compatibility. Do not change.
 ENFORCED_CHARFIELD_CONSTRAINT = 767
 
-# TODO: move these?
+# Number of days to keep log data
 DAYS_TO_KEEP_LOGS = 30
+
+# Maximum size, in bytes, of files that can be uploaded through the Web interface.
 MAX_FILESIZE = 300000
+
 # Number of operations to be performed from the queue in a single batch.
 # You can set this to a higher value on systems where you aren't worried
 # about batch operations timing out, but the default should suffice.
 MAX_BATCH_OPS = 50
+
 # Number of items listed on a page in a listing view.
 ITEMS_PER_PAGE = 15
+
 # Maximum length of basenames for pages.
 MAX_BASENAME_LENGTH = 128
+
+# Maximum number of revisions for pages
+MAX_PAGE_REVISIONS = 20
 
 DATABASE_TIMEOUT = 600000
 DATABASE_RETRIES = 10
