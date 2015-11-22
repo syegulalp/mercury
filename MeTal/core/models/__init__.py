@@ -805,7 +805,29 @@ class Category(BaseModel):
             return Category(blog=self.blog, title='[Top-level]')
         return Category.get(Category.id == self.parent_category)
 
-class Page(BaseModel):
+class DateMod():
+
+    def _date_from_utc(self, timezone, field):
+        if field is None:
+            return None
+        from core.libs import pytz
+        utc = pytz.timezone('UTC')
+        tz = 'UTC' if timezone is None else timezone
+        new_tz = pytz.timezone(tz)
+        localized = utc.localize(field)
+        return localized.astimezone(new_tz)
+
+    def _date_to_utc(self, timezone, field):
+        if field is None:
+            return None
+        from core.libs import pytz
+        utc = pytz.timezone('UTC')
+        tz = 'UTC' if timezone is None else timezone
+        new_tz = pytz.timezone(tz)
+        localized = new_tz.localize(field)
+        return localized.astimezone(utc)
+
+class Page(BaseModel, DateMod):
 
     title = TextField()
     type = IntegerField(default=0, index=True)  # 0 = regular blog post; 1 = standalone page
@@ -826,25 +848,17 @@ class Page(BaseModel):
 
     security = 'is_page_editor'
 
-    def _date_mod(self, field):
-        from core.libs import pytz
-        utc = pytz.timezone('UTC')
-        tz = 'UTC' if self.blog.timezone is None else self.blog.timezone
-        timezone = pytz.timezone(tz)
-        converted = field.replace(tzinfo=utc)
-        return converted.astimezone(timezone)
-
     @property
     def created_date_tz(self):
-        return self._date_mod(self.created_date)
+        return self._date_from_utc(self.blog.timezone, self.created_date)
 
     @property
     def modified_date_tz(self):
-        return self._date_mod(self.modified_date)
+        return self._date_from_utc(self.blog.timezone, self.modified_date)
 
     @property
     def publication_date_tz(self):
-        return self._date_mod(self.publication_date)
+        return self._date_from_utc(self.blog.timezone, self.publication_date)
 
     @property
     def parent(self, context=None):
@@ -1592,7 +1606,7 @@ class TemplateMapping(BaseModel):
 
 ##########################
 
-class Media(BaseModel):
+class Media(BaseModel, DateMod):
     filename = CharField(null=False)
     path = EnforcedCharField(unique=True)
     local_path = EnforcedCharField(unique=True, null=True)  # deprecated?
@@ -1609,6 +1623,14 @@ class Media(BaseModel):
     user = ForeignKeyField(User, null=False)
     blog = ForeignKeyField(Blog, null=True)
     site = ForeignKeyField(Site, null=True)
+
+    @property
+    def created_date_tz(self):
+        return self._date_from_utc(self.blog.timezone, self.created_date)
+
+    @property
+    def modified_date_tz(self):
+        return self._date_from_utc(self.blog.timezone, self.modified_date)
 
     @property
     def name(self):

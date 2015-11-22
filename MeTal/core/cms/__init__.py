@@ -371,7 +371,15 @@ def save_page(page, user, blog=None):
     page.title = request.forms.getunicode('page_title')
     page.text = request.forms.getunicode('page_text')
     page.status = page_status.modes[int(request.forms.get('publication_status'))]
-    page.publication_date = datetime.datetime.strptime(request.forms.get('publication_date'), '%Y-%m-%d %H:%M:%S')
+
+    from core.utils import DATE_FORMAT
+    page.publication_date = datetime.datetime.strptime(
+        request.forms.get('publication_date'), DATE_FORMAT)
+
+    new_time = page._date_to_utc(
+        page.blog.timezone, page.publication_date).replace(tzinfo=None)
+    page.publication_date = new_time
+
     page.tag_text = request.forms.getunicode('page_tag_text')
     page.excerpt = request.forms.getunicode('page_excerpt')
 
