@@ -254,7 +254,7 @@ def queue_page_archive_actions(page):
         for m in n.mappings:
 
             file_path = (page.blog.path + '/' +
-                         generate_date_mapping(page.publication_date.date(),
+                         generate_date_mapping(page.publication_date_tz.date(),
                                                tags,
                                                replace_mapping_tags(m.path_string)))
 
@@ -786,11 +786,11 @@ def category_context(fileinfo, original_page, tag_context, date_counter):
 def year_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
-        year_context = [original_page.publication_date.year]
+        year_context = [original_page.publication_date_tz.year]
     else:
         year_context = [fileinfo.year]
 
-    tag_context_next = tag_context.select().where(Page.publication_date.year << year_context)
+    tag_context_next = tag_context.select().where(Page.publication_date_tz.year << year_context)
 
     date_counter["year"] = True
 
@@ -802,11 +802,11 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
         raise ArchiveMappingFormatException("An archive mapping was encountered that had a month value before a year value.", Exception)
 
     if fileinfo is None:
-        month_context = [original_page.publication_date.month]
+        month_context = [original_page.publication_date_tz.month]
     else:
         month_context = [fileinfo.month]
 
-    tag_context_next = tag_context.select().where(Page.publication_date.month << month_context)
+    tag_context_next = tag_context.select().where(Page.publication_date_tz.month << month_context)
     date_counter["month"] = True
 
     return tag_context_next, date_counter
@@ -832,12 +832,12 @@ archive_functions = {
         'format':lambda x:'{}'.format(x)
         },
     "Y":{
-        "mapping":lambda x:x.publication_date.year,
+        "mapping":lambda x:x.publication_date_tz.year,
         "context":year_context,
         'format':lambda x:'{}'.format(x)
         },
     "M":{
-        "mapping":lambda x:x.publication_date.month,
+        "mapping":lambda x:x.publication_date_tz.month,
         "context":month_context,
         'format':lambda x:'{:02d}'.format(x)
         },
@@ -881,7 +881,7 @@ def build_pages_fileinfos(pages):
         for t in template_mappings:
 
             path_string = replace_mapping_tags(t.path_string)
-            path_string = generate_date_mapping(page.publication_date.date(), tags, path_string)
+            path_string = generate_date_mapping(page.publication_date_tz.date(), tags, path_string)
             if path_string == '':
                 continue
 
@@ -889,7 +889,7 @@ def build_pages_fileinfos(pages):
             add_page_fileinfo(page, t, master_path_string,
                 page.blog.url + "/" + master_path_string,
                 page.blog.path + '/' + master_path_string,
-                str(page.publication_date))
+                str(page.publication_date_tz))
 
     return n
 
@@ -911,7 +911,7 @@ def build_archives_fileinfos(pages):
 
         for m in page.archive_mappings:
             path_string = replace_mapping_tags(m.path_string)
-            path_string = generate_date_mapping(page.publication_date, tags, path_string)
+            path_string = generate_date_mapping(page.publication_date_tz, tags, path_string)
 
             if path_string == '':
                 continue
