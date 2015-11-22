@@ -27,7 +27,7 @@
                 <td><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/edit"><img style="max-height:50px" src="{{media.preview_url}}"></a></td>
                 <td><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/edit">{{media.friendly_name}}</a></td>
                 <td>{{media.user.name}}</td>
-                <td>{{media.created_date}}</td>
+                <td>{{media.created_date_tz}}</td>
                 
             </tr>
         % end
