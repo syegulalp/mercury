@@ -1981,7 +1981,7 @@ def default_template_mapping(page):
     the one associated with its permalink.'''
     templates = Template.select().where(Template.template_type == template_type.page)
     t = TemplateMapping.get(TemplateMapping.is_default == True, TemplateMapping.template << templates)
-    time_string = page.publication_date.date().strftime(t.path_string)
+    time_string = page.publication_date_tz.date().strftime(t.path_string)
     return time_string
 
 
