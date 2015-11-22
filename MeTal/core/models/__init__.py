@@ -830,7 +830,7 @@ class Page(BaseModel):
         from core.libs import pytz
         utc = pytz.timezone('UTC')
         tz = 'UTC' if self.blog.timezone is None else self.blog.timezone
-        timezone = self.pytz.timezone(tz)
+        timezone = pytz.timezone(tz)
         converted = field.replace(tzinfo=utc)
         return converted.astimezone(timezone)
 
