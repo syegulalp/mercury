@@ -786,11 +786,12 @@ def category_context(fileinfo, original_page, tag_context, date_counter):
 def year_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
-        year_context = [original_page.publication_date_tz.year]
+        year_context = [original_page.publication_date.year]
     else:
         year_context = [fileinfo.year]
 
-    tag_context_next = tag_context.select().where(Page.publication_date_tz.year << year_context)
+    tag_context_next = tag_context.select().where(
+        Page.publication_date.year << year_context)
 
     date_counter["year"] = True
 
@@ -802,11 +803,13 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
         raise ArchiveMappingFormatException("An archive mapping was encountered that had a month value before a year value.", Exception)
 
     if fileinfo is None:
-        month_context = [original_page.publication_date_tz.month]
+        month_context = [original_page.publication_date.month]
     else:
         month_context = [fileinfo.month]
 
-    tag_context_next = tag_context.select().where(Page.publication_date_tz.month << month_context)
+    tag_context_next = tag_context.select().where(
+        Page.publication_date.month << month_context)
+
     date_counter["month"] = True
 
     return tag_context_next, date_counter
