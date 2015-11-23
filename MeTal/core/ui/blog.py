@@ -804,10 +804,13 @@ def blog_settings_save(blog_id, nav_setting):
     return blog_settings_output(tags)
 
 def blog_settings_output(tags):
+    from core.libs import pytz
+    timezones = pytz.all_timezones
     path = '/blog/{}/settings/'.format(tags.blog.id)
     tpl = template('ui/ui_blog_settings',
         # section_title='Basic settings',
         search_context=(search_context['blog'], tags.blog),
+        timezones=timezones,
         menu=generate_menu('blog_settings', tags.blog),
         nav_tabs=(
             ('basic', path + 'basic', 'Basic'),

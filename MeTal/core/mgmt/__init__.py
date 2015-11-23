@@ -314,6 +314,16 @@ def blog_settings_save(request, blog, user):
             else:
                 errors.append('Blog media path cannot be blank.')
 
+        blog_timezone = _forms.getunicode('blog_timezone')
+        if blog_timezone is not None:
+            if not is_blank(blog_timezone):
+                from core.libs import pytz
+                try:
+                    blog.timezone = pytz.all_timezones[int(blog_timezone)]
+                except:
+                    errors.append('You must choose a valid timezone.')
+
+
         if len(errors) > 0:
             return Status(
                 type='warning',
@@ -332,8 +342,8 @@ def blog_settings_save(request, blog, user):
         else:
             status = Status(
                 type='success',
-                message="Settings for <b>{}</b> saved successfully.",
-                vals=(blog.name,))
+                message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/republish'>republish this blog</a>.",
+                vals=(blog.name, BASE_URL, blog.id))
 
             logger.info("Settings for blog {} edited by user {}.".format(
                 blog.for_log,
