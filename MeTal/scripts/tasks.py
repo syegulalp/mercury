@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
 product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
 
-print ('{} - Scheduled tasks script.'.format(product_id))
+print ('{}\nScheduled tasks script.'.format(product_id))
 
 import smtplib, datetime
 from email.mime.text import MIMEText
@@ -25,8 +25,8 @@ print ('Looking for scheduled tasks...')
 from core.models import Page, page_status
 
 scheduled_pages = Page.select().where(
-    Page.publication_date <= datetime.datetime.utcnow(),
-    Page.status == page_status.scheduled)
+    Page.status == page_status.scheduled,
+    Page.publication_date <= datetime.datetime.utcnow())
 
 print ('{} pages scheduled'.format(scheduled_pages.count()))
 
