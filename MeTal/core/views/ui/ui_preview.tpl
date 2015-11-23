@@ -5,6 +5,8 @@ html, body {
 #preview_header {
 	min-height:32px;
 	padding:8px;
+	background-color:black;
+	border-bottom: 1px white solid;
 }
 #preview_body {
 	margin: 0px;
