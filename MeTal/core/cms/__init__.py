@@ -786,7 +786,7 @@ def category_context(fileinfo, original_page, tag_context, date_counter):
 def year_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
-        year_context = [original_page.publication_date.year]
+        year_context = [original_page.publication_date_tz.year]
     else:
         year_context = [fileinfo.year]
 
@@ -803,7 +803,7 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
         raise ArchiveMappingFormatException("An archive mapping was encountered that had a month value before a year value.", Exception)
 
     if fileinfo is None:
-        month_context = [original_page.publication_date.month]
+        month_context = [original_page.publication_date_tz.month]
     else:
         month_context = [fileinfo.month]
 
@@ -871,9 +871,8 @@ def build_pages_fileinfos(pages):
     an iterable list of Page objects.
     '''
 
-    n = 0
-    for page in pages:
-        n += 1
+    for n, page in enumerate(pages):
+
         template_mappings = page.template_mappings
 
         if template_mappings.count() == 0:
@@ -894,7 +893,7 @@ def build_pages_fileinfos(pages):
                 page.blog.path + '/' + master_path_string,
                 str(page.publication_date_tz))
 
-    return n
+    return n + 1
 
 def build_archives_fileinfos(pages):
     '''
@@ -927,8 +926,7 @@ def build_archives_fileinfos(pages):
                                page.blog.path + '/' + path_string,
                                ), (page))
 
-    for n in mapping_list:
-        counter += 1
+    for counter, n in enumerate(mapping_list):
         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
         archive_context = []
         m = mapping_list[n][0][1]
@@ -946,8 +944,7 @@ def build_archives_fileinfos(pages):
         new_fileinfo.mapping_sort = archive_context
         new_fileinfo.save()
 
-    # @return mapping_list
-    return counter
+    return counter + 1
 
 def build_indexes_fileinfos(templates):
 
@@ -962,10 +959,7 @@ def build_indexes_fileinfos(templates):
     This will port the code currently found in build_blog_fileinfo, much as the above function did.
 
     '''
-    n = 0
-
-    for template in templates:
-        n += 1
+    for n, template in enumerate(templates):
 
         index_mappings = TemplateMapping.select().where(
             TemplateMapping.template == template)
@@ -985,7 +979,7 @@ def build_indexes_fileinfos(templates):
                  blog.url + "/" + master_path_string,
                  blog.path + '/' + master_path_string)
 
-    return n
+    return n + 1
 
 
 def publish_page(page_id):
