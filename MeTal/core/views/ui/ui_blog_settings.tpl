@@ -39,14 +39,12 @@
             <label for="blog_timezone" class="col-sm-2 control-label">Blog timezone</label>
             <div class="col-sm-9">
             	<select id="blog_timezone" name="blog_timezone" class="form-control" aria-describedby="blog_timezone_help">
-            	% m=0
-            	% for n in timezones:
+            	% for m,n in enumerate(timezones):
             	% selected=''
             	% if n==blog.timezone:
             	% selected=' selected'
             	% end
             	<option value="{{m}}"{{selected}}>{{!n}}</option>
-            	% m+=1
             	% end
             	</select>
                 <span id="blog_timezone_help" class="help-block">Timezone for your blog. Default is UTC.</span>

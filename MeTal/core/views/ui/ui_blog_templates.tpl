@@ -3,9 +3,7 @@
 % include('include/header_messages.tpl')
 <div class="col-sm-9">
 
-    % n=0
-    % for template_type in list_items:
-    % n+=1
+    % for n,template_type in enumerate(list_items):
     <h4>{{template_type['title']}} <a href="{{settings.BASE_URL}}/blog/{{blog.id}}/newtemplate/{{template_type['type']}}"><span title="Create new {{template_type['title'][:-1]}}" class="glyphicon glyphicon-plus-sign"></span></a></h4>
     <table class="table table-condensed table-bordered table-hover" id="templ-{{n}}">
         <thead>
