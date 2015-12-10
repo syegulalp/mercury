@@ -443,8 +443,11 @@ colsets = {
         'colset':[
             {'field':'name',
                 'label':'Name',
-                'format_raw':lambda x:x.for_display if x.enabled is True else '<i>{}{}{}</i>'.format(
+                'format_raw':lambda x:(
+                    x.for_display if x.enabled is True
+                    else '<i>{}{}{}</i>'.format(
                     PLUGIN_FILE_PATH, _sep, x.path)
+                    )
             },
             {'field':'description',
                 'label':'Description',
@@ -454,8 +457,10 @@ colsets = {
                 'label':'Status',
                 'format_raw':lambda x: (
                     '<a href="{}/system/plugins/{}/disable"><span class="label label-success">Enabled</span></a>'.format(
-                        BASE_URL, x.id) if x.enabled else '<a href="{}/system/plugins/{}/enable"><span class="label label-default">Disabled</span></a>'.format(
-                        BASE_URL, x.id))
+                        BASE_URL, x.id) if x.enabled
+                        else '<a href="{}/system/plugins/{}/enable"><span class="label label-default">Disabled</span></a>'.format(
+                        BASE_URL, x.id)
+                        )
                 }
             ]
         },
