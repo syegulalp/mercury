@@ -1810,6 +1810,27 @@ class Plugin(BaseModel):
     enabled = BooleanField(null=False, default=False)
 
     @property
+    def n_t(self):
+        return self.friendly_name
+
+
+    @property
+    def link_format(self):
+        return '{}/system/plugins/{}'.format(BASE_URL, self.id)
+
+    '''
+    @property
+    def for_display(self):
+
+        #Returns a version of the object title formatted for display in a header or other object,
+        #which will be auto-escaped.
+
+        return "{} (#{})".format(
+            self.for_listing,
+            self.id)
+    '''
+
+    @property
     def _plugin_list(self):
         from core.plugins import plugin_list
         return plugin_list

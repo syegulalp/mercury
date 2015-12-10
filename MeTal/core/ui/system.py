@@ -121,7 +121,7 @@ def system_log():
     return tpl
 
 @transaction
-def system_plugins():
+def old_system_plugins():
 
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
@@ -135,6 +135,49 @@ def system_plugins():
         menu=generate_menu('system_plugins', None),
         search_context=(search_context['sites'], None),
         plugins=plugins,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
+def system_plugins(errormsg=None):
+    '''
+    UI for listing contents of a given blog
+    '''
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+
+    tags = template_tags(
+        user=user)
+
+
+    plugins = Plugin.select()
+
+    paginator, rowset = utils.generate_paginator(plugins, request)
+
+    tags.status = errormsg if errormsg is not None else None
+
+    '''
+    action = utils.action_button(
+        'Create new page',
+        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
+        )
+
+    '''
+
+    list_actions = [
+        ['Uninstall', '{}/api/1/uninstall-plugin'],
+        ]
+
+    tpl = template('listing/listing_ui',
+        paginator=paginator,
+        search_context=(search_context['sites'], None),
+        menu=generate_menu('system_plugins', None),
+        rowset=rowset,
+        colset=colsets['plugins'],
+        # icons=icons,
+        # action=action,
+        list_actions=list_actions,
         **tags.__dict__)
 
     return tpl

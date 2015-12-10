@@ -1,7 +1,7 @@
 from core import cms
 from core.models import get_page, page_status
 from core.utils import date_format, html_escape, breaks, utf8_escape
-from settings import BASE_URL
+from settings import BASE_URL, PLUGIN_FILE_PATH, _sep
 
 _self = lambda x: x
 _id = lambda x: x.id
@@ -438,6 +438,27 @@ def generate_menu(context, context_object):
 
 
 colsets = {
+    'plugins': {
+        'none':'No plugins found',
+        'colset':[
+            {'field':'name',
+                'label':'Name',
+                'format_raw':lambda x:x.for_display if x.enabled is True else '<i>{}{}{}</i>'.format(
+                    PLUGIN_FILE_PATH, _sep, x.path)
+            },
+            {'field':'description',
+                'label':'Description',
+                'format_raw':lambda x:x.description
+                },
+            {'field':'status',
+                'label':'Status',
+                'format_raw':lambda x: (
+                    '<a href="{}/system/plugins/{}/disable"><span class="label label-success">Enabled</span></a>'.format(
+                        BASE_URL, x.id) if x.enabled else '<a href="{}/system/plugins/{}/enable"><span class="label label-default">Disabled</span></a>'.format(
+                        BASE_URL, x.id))
+                }
+            ]
+        },
     'system_users': {
         'none': 'No users found',
         'colset': [
