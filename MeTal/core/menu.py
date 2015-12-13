@@ -16,14 +16,16 @@ segment_string = """
 </ul></span></li>"""
 
 submenu_string = '''
-<li{}><a href="{}">{}</a></li>
+<li><a href="{}">{}</a></li>
+'''
+
+divider_string = '''
+<li role="presentation" class="dropdown-header">{}</li>
 '''
 
 label_string = ' <li class="active">{}</li>'
 
 button_string = ' <li><span class="btn-group"><a title="{}" type="button" class="btn btn-default btn-xs" href="{}">{}</a></span></li>'
-
-divider_string = ' role="presentation" class="dropdown-header '
 
 icons = {
     'Unpublished': ('pencil', 'orange', 'Unpublished'),
@@ -31,418 +33,291 @@ icons = {
     'Scheduled': ('time', '#5bc0de', 'Scheduled for publication')
 }
 
-# rework so that:
-# text_label is the label at the end
-# parent for that is the button
-# that way we can reference the same thing w/multiple labels
-
 menus = {
-    'system': {
+    'system_menu': {
+        'type':'menu',
+        'text': lambda x: 'Main menu',
         'parent': None,
-        'path': lambda x: BASE_URL,
-        'label': 'Dashboard',
-        'menu_title': lambda x: 'Main menu',
+        'path': lambda x: BASE_URL,  # Path we go to when we click the main button.
         'menu': (
-            'dashboard', 'system_queue', 'system_log', 'system_plugins',
+            'dashboard_label', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
-            'sites_div', 'all_sites', 'create_site',
-            'system_users_div', 'system_manage_users', 'system_create_users'),
+            'sites_div', 'manage_sites', 'create_site',
+            'users_div', 'system_manage_users', 'system_create_user')
     },
-    'system_users_div': {
-        'label':'Users',
-        'divider':True
-    },
-    'system_manage_users':{
-        'label':'Manage users',
-        'path': lambda x:'/system/users',
-        'parent':'system',
-        'parent_ref':_none
-    },
-    'system_create_users':{
-        'label':'Create users',
-        'path': lambda x:'/system/user/new',
-        'parent':'system',
-        'parent_ref':_none
-    },
-    'system_create_user': {
-        'parent': 'system',
-        'button_label': lambda x: 'Create new user',
-        'path': lambda x: BASE_URL + "/system/users",
-        'button': lambda x: 'Manage users',
-        'button_title': 'All users in this site',
-        'parent_ref': lambda x: x,
-    },
-    'system_edit_user': {
-        'parent': 'system',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/system/users",
-        'button': lambda x: 'Manage users',
-        'button_title': 'All users in this site',
-        'parent_ref': lambda x: x,
-    },
-    'system_info': {
-        'parent': 'system',
-        'label': 'System information',
-        'path': lambda x: '/system/info',
-        'parent_ref': _none,
-    },
-    'sites_div': {
-        'label': 'Sites',
-        'divider': True
-    },
-    'create_site': {
-        'parent': 'system',
-        'label': 'Create site',
-        'path': lambda x: '/system/create-site',
-        'parent_ref': _none,
-    },
-    'dashboard': {
-        'parent': None,
-        'path': lambda x: '',
-        'label': 'Dashboard',
-        'paernt_ref': _none},
-    'all_sites': {
-        'parent': 'system',
-        'label': 'Manage sites',
-        'path': lambda x: '/system/sites',
-        'parent_ref': _none,
-    },
-    'system_settings': {
-        'parent': 'system',
-        'label': 'System settings',
-        'path': lambda x: '/system/settings',
-        'parent_ref': _none,
-    },
-    'system_log': {
-        'parent': 'system',
-        'label': 'Activity log',
-        'path': lambda x: '/system/log',
-        'parent_ref': _none,
+    'dashboard_label':{
+        'type':'label',
+        'text':lambda x:'Dashboard',
+        'path': lambda x: BASE_URL
     },
     'system_queue': {
-        'parent': 'system',
-        'label': 'Publishing queue',
-        'path': lambda x: "/system/queue",
-        'parent_ref': _none,
-    },
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/queue',
+        'text': lambda x: 'System publishing queue',
+
+        'parent':'system_menu'},
+    'system_log': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/log',
+        'text': lambda x: 'System activity log',
+
+        'parent':'system_menu'},
     'system_plugins': {
-        'parent': 'system',
-        'label': 'Plugins',
-        'path': lambda x: "/system/plugins",
-        'parent_ref': _none,
-    },
-    'system_plugin': {
-        'parent': 'system',
-        'button_label': lambda x: 'Plugin {}'.format(x.for_log),
-        'path': lambda x: BASE_URL + "/system/plugins",
-        'button': lambda x: 'Plugins',
-        'button_title': 'All plugins in this installation',
-        'parent_ref': lambda x: x,
-    },
-    'site': {
-        'parent': 'system',
-        'parent_ref': _none,
-        'label': 'Manage blogs',
-        'menu_title': lambda x: x.name,
-        'path': lambda x: BASE_URL + "/site/{}".format(x.id),
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/plugins',
+        'text': lambda x: 'Plugins',
+
+        'parent':'system_menu'},
+    'system_info': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/info',
+        'text': lambda x: 'System information',
+
+        'parent':'system_menu'},
+    'sites_div': {
+        'type': 'divider',
+        'text': lambda x: 'Sites',
+        },
+    'manage_sites': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/sites',
+        'text': lambda x: 'Manage sites',
+
+        'parent':'system_menu'},
+    'create_site': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/site/new',
+        'text': lambda x: 'Create site',
+
+        'parent':'system_menu'},
+    'users_div': {
+        'type': 'divider',
+        'text': lambda x: 'Users',
+        },
+    'system_manage_users': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/users',
+        'text': lambda x: 'Manage users',
+
+        'parent':'system_menu'},
+    'system_create_user': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/user/new',
+        'text': lambda x: 'Create user',
+
+        'parent':'system_menu'
+        },
+    'site_menu': {
+        'type':'menu',
+        'text': lambda x: '{}'.format(x.name),
+        'path': lambda x: BASE_URL + '/system/sites/',
+        'parent': 'system_menu',
+        'parent_path': lambda x: x.site,
+        'parent_context': lambda x:None,
         'menu': ('site_users_div', 'site_manage_users', 'site_create_user',
-                 'blogs_div', 'manage_blogs', 'create_blog')
-    },
+                 'blogs_div', 'site_manage_blogs', 'site_create_blogs')
+        },
     'site_users_div': {
-        'label': 'Users',
-        'divider': True
-    },
+        'type': 'divider',
+        'text': lambda x: 'Users',
+        },
     'site_manage_users': {
-        'parent': 'site',
-        'label': 'Manage users',
-        'path': lambda x: "/users",
-        'parent_ref': _self,
-    },
-    'site_manage_user': {
-        'parent': 'site',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/site/{}/users".format(x.site.id),
-        'button': lambda x: 'Users',
-        'button_title': 'All users on this site',
-        'parent_ref': lambda x: x.site,
-    },
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/site/{}/users'.format(x.id),
+        'text': lambda x: 'Manage users',
+        'parent':'blog_menu',
+
+        'parent':'system_menu'},
     'site_create_user': {
-        'parent': 'site',
-        'label': 'Create user',
-        'path': lambda x: "/create-user",
-        'parent_ref': _self,
-    },
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/site/{}/user/new'.format(x.id),
+        'text': lambda x: 'Create user',
+        'parent':'blog_menu',
+
+        'parent':'system_menu'
+        },
     'blogs_div': {
-        'label': 'Blogs',
-        'divider': True
-    },
-    'manage_blogs': {
-        'parent': 'site',
-        'label': 'Manage blogs',
-        'path': lambda x: "/blogs",
-        'parent_ref': _self,
-    },
-    'create_blog': {
-        'parent': 'site',
-        'label': 'Create blog',
-        'path': lambda x: "/create-blog",
-        'parent_ref': _self,
-    },
+        'type': 'divider',
+        'text': lambda x: 'Blogs',
+        },
+    'site_manage_blogs': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/site/{}'.format(x.id),
+        'text': lambda x: 'Manage blogs',
+        'parent':'blog_menu',
 
-    'blog': {
-        'parent': 'site',
-        'parent_ref': lambda x: x.site,
-        'label': 'Manage pages',
+        'parent':'system_menu'},
+    'site_create_blogs': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/site/{}/blog/new'.format(x.id),
+        'text': lambda x: 'Create blog',
+        'parent':'blog_menu',
+
+        'parent':'system_menu'
+        },
+    'blog_menu': {
+        'type':'menu',
+        'text': lambda x: '{}'.format(x.name),
         'path': lambda x: BASE_URL + '/blog/{}'.format(x.id),
-        'menu_title': lambda x: x.name,
-        'menu': ('pages_div', 'manage_pages', 'create_page', 'categorization_div', 'blog_manage_categories',
+        'parent': 'site_menu',
+        'parent_context': lambda x: x.site,
+        'menu': ('pages_div', 'manage_pages', 'create_page', 'categorization_div',
+            'blog_manage_categories',
                 'blog_manage_tags', 'media_div',
-                'blog_manage_media', 'design_div', 'blog_manage_templates', 'blog_settings',
-                'blog_users_div', 'blog_manage_users', 'blog_create_user'),
-    },
-    'blog_settings': {
-        'parent': 'blog',
-        'label': 'Blog settings',
-        'path': lambda x: "/settings",
-        'button_title': 'Settings',
-        'parent_ref': lambda x: x,
-    },
-    'categorization_div': {
-        'label': 'Categorization',
-        'divider': True
-    },
-    'design_div': {
-        'label': 'Design',
-        'divider': True
-    },
-    'blog_manage_categories': {
-        'parent': 'blog',
-        'label': 'Categories',
-        'path': lambda x: "/categories",
-        'parent_ref': _self,
-    },
-    'blog_users_div':{
-        'label':'Users',
-        'divider':True
-    },
-    'blog_manage_users':{
-        'label':'Manage users'
-    },
-    'blog_create_user':{
-        'label':'Create user'
-    },
-    'blog_manage_tags': {
-        'parent': 'blog',
-        'label': 'Tags',
-        'path': lambda x: "/tags",
-        'parent_ref': _self,
-    },
-    'blog_manage_templates': {
-        'parent': 'blog',
-        'label': 'Templates',
-        'path': lambda x: "/templates",
-        'parent_ref': _self,
-    },
-    'blog_template': {
-        'parent': 'blog',
-        'path': lambda x: BASE_URL + "/blog/{}/templates".format(x.blog.id),
-        'button': lambda x: 'Templates',
-        'button_title': 'All templates in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_edit_template': {
-        'parent': 'blog',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/blog/{}/templates".format(x.blog.id),
-        'button': lambda x: 'Templates',
-        'button_title': 'All templates in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_delete_template': {
-        'parent': 'blog_template',
-        'button_label': lambda x: 'Delete',
-        'path': lambda x: BASE_URL + "/template/{}/edit".format(x.id),
-        'button': lambda x: 'Edit #{}'.format(x.id),
-        'button_title': '',
-        'parent_ref': lambda x: x,
-    },
-    'media_div': {
-        'label': 'Media',
-        'divider': True
-    },
-    'blog_queue': {
-        'parent': 'blog',
-        'label': 'Blog publishing queue',
-        'path': lambda x: "/blog/{}".format(x.id),
-        'parent_ref': lambda x: x
-    },
-    'blog_purge': {
-        'parent': 'blog',
-        'label': 'Purge and recreate blog',
-        'path': lambda x: "/blog/{}".format(x.id),
-        'parent_ref': lambda x: x
-    },
-    'blog_republish': {
-        'parent': 'blog',
-        'label': 'Republish blog',
-        'path': lambda x: "/blog/{}".format(x.id),
-        'parent_ref': lambda x: x
-    },
-    'blog_manage_media': {
-        'parent': 'blog',
-        'label': 'Manage media',
-        'path': lambda x: "/media",
-        'parent_ref': _self,
-    },
-    'blog_list_users': {
-        'parent': 'blog',
-        'label': 'Users',
-        'path': lambda x: "/users",
-        'parent_ref': _self,
-    },
-    'edit_page': {
-        'parent': 'blog',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/blog/{}".format(x.blog.id),
-        'button': lambda x: 'Pages',
-        'button_title': 'All pages in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'edit_tag': {
-        'parent': 'blog_manage_tags',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/blog/{}/tags".format(x.blog.id),
-        'button': lambda x: 'Tags',
-        'button_title': 'All tags in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'edit_category': {
-        'parent': 'blog',
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.blog.id),
-        'button': lambda x: 'Categories',
-        'button_title': 'All categories in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_media': {
-        'parent': 'blog',
-        'path': lambda x: BASE_URL + "/blog/{}/media".format(x.blog.id),
-        'button': lambda x: 'Media',
-        'button_title': 'All media in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_edit_media': {
-        'parent': 'blog',
-        'path': lambda x: BASE_URL + "/blog/{}/media".format(x.blog.id),
-        'button_label': lambda x: 'Edit #{}'.format(x.id),
-        'button': lambda x: 'Media',
-        'button_title': 'All media in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_delete_media': {
-        'parent': 'blog_media',
-        'button_label': lambda x: 'Delete',
-        'path': lambda x: BASE_URL + "/blog/{}/media/{}/edit".format(x.blog.id, x.media.id),
-        'button': lambda x: 'Edit #{}'.format(x.media.id),
-        'button_title': 'Return to editing media',
-        'parent_ref': lambda x: x.media,
-    },
-
+                'blog_manage_media', 'design_div', 'blog_manage_templates',
+                'blog_manage_themes', 'blog_settings',
+                 'blog_users_div', 'blog_manage_users', 'blog_create_user')
+                 },
     'pages_div': {
-        'label': 'Pages',
-        'divider': True
-    },
+        'type': 'divider',
+        'text': lambda x:'Pages',
+        },
     'manage_pages': {
-        'parent': 'blog',
-        'label': 'Manage pages',
-        'path': lambda x: "",
-        'parent_ref': _self,
+        'type': 'button',
+        'text': lambda x:'Manage pages',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}'.format(x.id),
+        },
+    'edit_page':{
+        'type':'label',
+        'text': lambda x:'Edit page #{}'.format(x.id),
+        'parent':'manage_pages',
+        'parent_context':lambda x:x.blog
     },
-    'create_page': {
-        'parent': 'blog',
-        'label': 'Create page',
-        'path': lambda x: "/newpage",
-        'parent_ref': _self,
-    },
-    'new_category': {
-        'parent': 'blog',
-        'button_label': lambda x: 'Create new category',
-        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.blog.id),
-        'button': lambda x: 'Categories',
-        'button_title': 'All categories in this blog',
-        'parent_ref': lambda x: x.blog,
-    },
-    'blog_categories': {
-        'parent': 'blog',
-        'path': lambda x: BASE_URL + "/blog/{}/categories".format(x.id),
-        'button': lambda x: 'Categories',
-        'button_title': 'All categories in this blog',
-        'parent_ref': lambda x: x,
-    },
-    'delete_category': {
-        'parent': 'blog_categories',
-        'button_label': lambda x: 'Delete',
-        'path': lambda x: BASE_URL + "/blog/{}/category/{}".format(x.blog.id, x.id),
-        'button': lambda x: 'Edit #{}'.format(x.id),
-        'button_title': 'Return to editing category',
-        'parent_ref': lambda x: x.blog,
-    },
+        # 'path': lambda x: BASE_URL + '/blog/{}/newpage'.format(x.id),
+    'create_page':{
+        'type':'label',
+        'text': lambda x:'Create page',
+        'parent':'blog_menu',
+        'path': lambda x: BASE_URL + '/blog/{}/newpage'.format(x.id),
+        'parent_context':lambda x:x
+        },
+    'categorization_div':{
+        'type':'divider',
+        'text':lambda x:'Categorization'},
+    'blog_manage_categories':{
+        'type':'label',
+        'parent':'blog_menu',
+        'path': lambda x: BASE_URL + '/blog/{}/categories'.format(x.id),
+        'text':lambda x:'Categories',
+        'parent_context':lambda x:x
+        },
+
+    'blog_manage_tags':{
+        'type':'label',
+        'parent':'blog_menu',
+        'path': lambda x: BASE_URL + '/blog/{}/tags'.format(x.id),
+        'parent_context':lambda x:x,
+        'text':lambda x:'Tags'},
+    'media_div':{
+        'type':'divider',
+        'text':lambda x:'Media'},
+    'blog_manage_media':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/media'.format(x.id),
+        'text':lambda x:'Manage media'},
+    'design_div':{
+        'type':'divider',
+        'parent':'blog_menu',
+        'text':lambda x:'Design'},
+    'blog_manage_templates':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/templates'.format(x.id),
+        'text':lambda x:'Templates'},
+    'blog_manage_themes':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/themes'.format(x.id),
+        'text':lambda x:'Themes'
+        },
+    'blog_settings':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/settings'.format(x.id),
+        'text':lambda x:'Blog settings'
+        },
+    'blog_users_div':{
+        'type':'divider',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'text':lambda x:'Users'},
+    'blog_manage_users':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/users'.format(x.id),
+        'text':lambda x:'Manage users'
+        },
+    'blog_create_user':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/user/new'.format(x.id),
+        'text':lambda x:'Create user'
+        },
 }
 
 
+
 def generate_menu(context, context_object):
-
-    menu = ""
-
+    menu = []
     segment = menus[context]
 
-    if 'label' in segment:
-        menu = label_string.format(segment['label']) + menu
-
     while True:
-
-        submenu = []
-
-        parent_path = segment['path'](context_object)
-
-        if 'button' in segment:
-
-            if 'button_label' in segment:
-                menu = label_string.format(segment['button_label'](context_object)) + menu
-
-            menu = button_string.format(
-                segment['button_title'],
-                segment['path'](context_object),
-                segment['button'](context_object)) + menu
-
-        if 'menu' in segment:
-
+        type = segment['type']
+        if type == 'menu':
+            _ = []
             for l in segment['menu']:
                 g = menus[l]
 
-                path = parent_path + \
-                    g['path'](context_object) if 'path' in g else '#'
-                divider = divider_string if 'divider' in g else ''
+                if g['type'] == 'divider':
+                    str = divider_string.format(g['text'](context_object))
+                elif g['type'] == 'button':
+                    str = str = submenu_string.format(g['path'](context_object),
+                        g['text'](context_object))
+                elif g['type'] == 'label':
+                    str = submenu_string.format(g['path'](context_object),
+                        g['text'](context_object))
 
-                submenu.append(submenu_string.format(
-                    divider, path,
-                    g['label']))
+                _.append(str)
 
-            menu = segment_string.format(
-                segment['menu_title'](context_object),
-                parent_path,
-                segment['menu_title'](context_object),
-                ''.join(submenu)
-            ) + menu
+            m2 = segment_string.format(
+                segment['text'](context_object),
+                segment['path'](context_object),
+                segment['text'](context_object),
+                ''.join(_))
+
+            menu.insert(0, m2)
+
+        elif type == 'label':
+            menu.insert(0, label_string.format(segment['text'](context_object)))
+        elif type == 'button':
+            menu.insert(0, button_string.format(
+
+                segment['text'](context_object),
+                segment['path'](context_object),
+                segment['text'](context_object),
+
+                ))
 
         if segment['parent'] is None:
             break
 
-        new_context = segment['parent_ref'](context_object)
+        try:
+            new_context = segment['parent_context'](context_object)
+        except:
+            new_context = None
         context_object = new_context
         segment = menus[segment['parent']]
 
-    return menu
+    return ''.join(menu)
 
 
 colsets = {
@@ -484,6 +359,15 @@ colsets = {
              'label': 'Name',
              'format_raw': lambda x: x.for_listing
              },
+        ]
+    },
+    'themes': {
+        'none': 'No themes found',
+        'colset': [
+            {'field': 'title',
+             'label': 'Title',
+             'format_raw': lambda x: x.for_listing
+             }
         ]
     },
     'tags': {

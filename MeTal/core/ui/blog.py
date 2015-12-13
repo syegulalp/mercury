@@ -7,7 +7,7 @@ from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
-    template_tags, Page, Blog, Queue, Template,
+    template_tags, Page, Blog, Queue, Template, Theme,
     TemplateMapping, get_user, Media, db, queue_jobs_waiting,
     Tag, template_type, publishing_mode, get_default_theme)
 
@@ -60,7 +60,7 @@ def blog(blog_id, errormsg=None):
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog', blog),
+        menu=generate_menu('blog_menu', blog),
         rowset=rowset,
         colset=colsets['blog'],
         icons=icons,
@@ -693,6 +693,35 @@ def blog_templates(blog_id):
         ** tags.__dict__)
 
     return tpl
+
+@transaction
+def blog_select_themes(blog_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_designer(user, blog)
+    reason = auth.check_template_lock(blog, True)
+
+    themes = Theme.select().order_by(Theme.id)
+
+    tags = template_tags(blog_id=blog.id,
+        user=user)
+    tags.status = reason
+
+    paginator, rowset = utils.generate_paginator(themes, request)
+
+    tpl = template('listing/listing_ui',
+        paginator=paginator,
+        search_context=(search_context['blog'], blog),
+        menu=generate_menu('blog_manage_themes', blog),
+        rowset=rowset,
+        colset=colsets['themes'],
+        icons=icons,
+        **tags.__dict__)
+
+    return tpl
+
+    # get list of all themes in system
+    # present in listing framework
 
 @transaction
 def blog_republish(blog_id):

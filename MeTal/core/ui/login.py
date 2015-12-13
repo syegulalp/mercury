@@ -119,7 +119,7 @@ def main_ui():
 
     tpl = template('ui/ui_dashboard',
         search_context=(search_context['sites'], None),
-        menu=generate_menu('system', None),
+        menu=generate_menu('system_menu', None),
         recent_pages=recent_pages,
         your_blogs=your_blogs,
         **template_tags(user=user).__dict__)

@@ -452,6 +452,11 @@ class Theme(BaseModel):
     json = TextField(null=True)
 
     @property
+    def link_format(self):
+        return "{}/system/themes/{}".format(
+            BASE_URL, self.id)
+
+    @property
     def parent(self, context):
         if context.__class__.__name__ == 'Blog':
             return context.site

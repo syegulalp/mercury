@@ -403,6 +403,14 @@ def blog_templates(blog_id):
     from core.ui import blog
     return blog.blog_templates(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/themes')
+def blog_themes(blog_id):
+    '''
+    Route for listing all templates in a blog
+    '''
+    from core.ui import blog
+    return blog.blog_select_themes(blog_id)
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
 def template_new(blog_id, template_type):
     '''

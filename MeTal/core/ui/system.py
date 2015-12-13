@@ -40,7 +40,7 @@ def system_info():
     # List all plugins
 
     tpl = template('ui/ui_system_info',
-        menu=generate_menu('all_sites', None),
+        menu=generate_menu('system_info', None),
         search_context=(search_context['sites'], None),
         environ_list=sorted(environ_list),
         settings_list=sorted(settings_list),
@@ -71,7 +71,7 @@ def system_sites(errormsg=None):
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['sites'], None),
-        menu=generate_menu('all_sites', None),
+        menu=generate_menu('manage_sites', None),
         rowset=rowset,
         colset=colsets['all_sites'],
         **tags.__dict__)
