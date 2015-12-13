@@ -452,7 +452,12 @@ colsets = {
             {'field':'description',
                 'label':'Description',
                 'format_raw':lambda x:x.description
-                },
+            },
+            {'field':'path',
+                'label':'Path to plugin',
+                'format':lambda x:'{}{}{}'.format(
+                    PLUGIN_FILE_PATH, _sep, x.path)
+            },
             {'field':'status',
                 'label':'Status',
                 'format_raw':lambda x: (
