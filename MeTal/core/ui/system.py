@@ -152,10 +152,18 @@ def register_plugin(plugin_path):
 def plugin_settings(plugin_id, errormsg=None):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    plugins = Plugin.select().where(Plugin.id == plugin_id)
+    plugin = Plugin.get(Plugin.id == plugin_id)
 
-    # return template for plugin internal settings
-    # right now just a placeholder
+    tags = template_tags(
+        user=user)
+
+    tpl = template('system/plugin',
+        plugin=plugin,
+        search_context=(search_context['sites'], None),
+        menu=generate_menu('system_plugin', plugin),
+        **tags.__dict__)
+
+    return tpl
 
 @transaction
 def system_plugins(errormsg=None):

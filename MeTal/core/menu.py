@@ -131,6 +131,14 @@ menus = {
         'path': lambda x: "/system/plugins",
         'parent_ref': _none,
     },
+    'system_plugin': {
+        'parent': 'system',
+        'button_label': lambda x: 'Plugin {}'.format(x.for_log),
+        'path': lambda x: BASE_URL + "/system/plugins",
+        'button': lambda x: 'Plugins',
+        'button_title': 'All plugins in this installation',
+        'parent_ref': lambda x: x,
+    },
     'site': {
         'parent': 'system',
         'parent_ref': _none,
