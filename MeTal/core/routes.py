@@ -109,13 +109,17 @@ def plugin_settings(plugin_id):
     '''
     Route for editing the settings of a given plugin
     '''
-    pass
+    from core.ui import system
+    return system.plugin_settings(plugin_id)
 
 
 @_route(BASE_PATH + "/system/plugins/register/<plugin_path>")
 def register_plugin(plugin_path):
-    from core.ui import ui
-    return ui.register_plugin(plugin_path)
+    '''
+    Route for registering a plugin with the system
+    '''
+    from core.ui import system
+    return system.register_plugin(plugin_path)
 
 @_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
@@ -760,11 +764,9 @@ APIs
 def api_hi():
     return settings.PRODUCT_NAME
 
-# All APIs should be /api/<revision>/action
-# Use verbs and forms for other things to simplify
-# That way we can put it all in its own library easily
-
-# TODO: replace with /kv, use PUT and DELETE verbs
+# We're going to scrap the /api convention, it adds nothing
+# just use regular application routes
+# If we need versioning
 
 @_route(BASE_PATH + "/api/1/kv", method='POST')
 def api_add_kv():
@@ -776,6 +778,11 @@ def api_remove_kv():
     from core.ui import kv
     return kv.remove_kv()
     # We need to enforce permissions here depending on the object.
+
+# TODO: this routine does not confine its tag to the scope of a blog!
+# the URL parameters do this, but that's not how we should do it
+# rewrite as:
+# @_route(BASE_PATH + "/blog<>/get-tag/<tag_name>")
 
 @_route(BASE_PATH + "/api/1/get-tag/<tag_name>")
 def api_get_tag(tag_name):
@@ -792,11 +799,6 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
     from core.ui import ui
     return ui.make_tag_for_page(blog_id, page_id)
 
-'''
-@_route(BASE_PATH+"/api/1/remove-tag-from-page/<page_id:int>/<tag_id:int>", method='POST')
-def api_remove_tag_from_page(tag_id, page_id):
-    return ui.remove_tag_from_page(tag_id, page_id)
-'''
 
 ### Everything after this is experimental/provisional #############################
 
