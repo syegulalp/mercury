@@ -140,30 +140,36 @@ def old_system_plugins():
     return tpl
 
 @transaction
+def register_plugin(plugin_path):
+    from core.plugins import register_plugin, PluginImportError
+    try:
+        new_plugin = register_plugin(plugin_path)
+    except PluginImportError as e:
+        return (str(e))
+    return ("Plugin " + new_plugin.friendly_name + " registered.")
+
+@transaction
+def plugin_settings(plugin_id, errormsg=None):
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    plugins = Plugin.select().where(Plugin.id == plugin_id)
+
+    # return template for plugin internal settings
+    # right now just a placeholder
+
+@transaction
 def system_plugins(errormsg=None):
-    '''
-    UI for listing contents of a given blog
-    '''
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
     tags = template_tags(
         user=user)
 
-
     plugins = Plugin.select()
 
     paginator, rowset = utils.generate_paginator(plugins, request)
 
     tags.status = errormsg if errormsg is not None else None
-
-    '''
-    action = utils.action_button(
-        'Create new page',
-        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
-        )
-
-    '''
 
     list_actions = [
         ['Uninstall', '{}/api/1/uninstall-plugin'],
@@ -175,9 +181,7 @@ def system_plugins(errormsg=None):
         menu=generate_menu('system_plugins', None),
         rowset=rowset,
         colset=colsets['plugins'],
-        # icons=icons,
-        # action=action,
-        list_actions=list_actions,
+        # list_actions=list_actions,
         **tags.__dict__)
 
     return tpl

@@ -97,17 +97,6 @@ save_action = (
     )
 
 
-
-@transaction
-def register_plugin(plugin_path):
-    from core.plugins import register_plugin, PluginImportError
-    try:
-        new_plugin = register_plugin(plugin_path)
-    except PluginImportError as e:
-        return (str(e))
-    return ("Plugin " + new_plugin.friendly_name + " registered.")
-
-
 media_buttons = '''
 <button type="button" id="modal_close_button" class="btn btn-default" data-dismiss="modal">Close</button>
 <button type="button" {} class="btn btn-primary">{}</button>
