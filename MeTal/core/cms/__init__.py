@@ -392,7 +392,7 @@ def save_page(page, user, blog=None):
     # Unpublish (and exit)
     # Delete (and unpublish) (and exit)
 
-    msg = ""
+    msg = []
 
     # UNPUBLISH
     if (
@@ -423,7 +423,7 @@ def save_page(page, user, blog=None):
         except PageNotChanged:
             save_result = (None, None)
 
-        msg += ("Page <b>{}</b> saved successfully.")
+        msg.append("Page <b>{}</b> saved successfully.")
 
         if blog_new_page:
 
@@ -479,7 +479,7 @@ def save_page(page, user, blog=None):
                         default=True)
                     )
                 primary = default_page_category
-                msg += (" Default category auto-assigned for page.")
+                msg.append(" Default category auto-assigned for page.")
 
             if primary is None:
                 n = page.categories[0]
@@ -506,16 +506,16 @@ def save_page(page, user, blog=None):
         queue_page_actions(page)
         queue_index_actions(page.blog)
 
-        msg += (" Live page updated.")
+        msg.append(" Live page updated.")
 
     if (save_action & (save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE)) and (save_result[1]) is None:
-        msg += (" (Page unchanged.)")
+        msg.append(" (Page unchanged.)")
 
     tags = template_tags(page_id=page.id, user=user)
 
     status = Status(
         type='success',
-        message=msg,
+        message=' / '.join(msg),
         vals=(page.title,)
         )
 
