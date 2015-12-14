@@ -40,11 +40,16 @@ menus = {
         'parent': None,
         'path': lambda x: BASE_URL,  # Path we go to when we click the main button.
         'menu': (
+            'system_div',
             'dashboard_label', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
             'sites_div', 'manage_sites', 'create_site',
             'users_div', 'system_manage_users', 'system_create_user')
     },
+    'system_div': {
+        'type': 'divider',
+        'text': lambda x: 'System',
+        },
     'dashboard_label':{
         'type':'label',
         'text':lambda x:'Dashboard',
@@ -54,7 +59,6 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/queue',
         'text': lambda x: 'System publishing queue',
-
         'parent':'system_menu'},
     'system_log': {
         'type': 'label',
