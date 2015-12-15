@@ -887,36 +887,20 @@ def overwrite_blog_theme(blog_id):
         mgmt.theme_install_to_blog(theme, blog, user)
 
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
-def import_theme_to_blog(theme_id, blog_id):
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/save")
+def save_theme_to_system(blog_id):
     blog = get_blog(blog_id)
-    old_theme = get_theme(theme_id)
-    # this needs rewriting.
-    # new_theme = mgmt.theme_install_to_blog(blog)
-    # mgmt.theme_install_to_blog(new_theme, blog)
-    # mgmt.theme_delete(old_theme)
-
-    # when replacing a theme:
-    # all Theme KV objects should be marked and reparented
-    # perhaps we should specify the Theme head KV with a name
-    # so that way we can match the name against the theme itself, too
-    # have an option to force-delete
-
-    # should we create an entirely new instance?
-    # how do we distinguish between multiple instances of the same theme?
-
-    # load in new theme from json in file somewhere, or maybe via a POST
-    # register new theme with site
-    # apply new theme to blog
-
-    # rebuild all fileinfos = purge function
 
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/export-theme")
-def export_theme(blog_id):
-    from core import theme
-    return theme.export_theme_for_blog(blog_id)
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/load")
+def load_theme_to_blog(theme_id, blog_id):
+    from core.ui import blog
+    blog.blog_load_theme(theme_id, blog_id)
 
+@_route(BASE_PATH + "/system/theme/<theme_id:int>/delete")
+def delete_theme_from_system(theme_id):
+    pass
+    # you can only do this from the system menu
 
 # Unfinished reboot handler
 
@@ -1019,7 +1003,36 @@ def blog_user_edit_save(blog_id, user_id):
 def blog_list_users(blog_id):
     from core.ui import blog
     return blog.blog_list_users(blog_id)
-'''
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
+def import_theme_to_blog(theme_id, blog_id):
+    blog = get_blog(blog_id)
+    old_theme = get_theme(theme_id)
+    # this needs rewriting.
+    # new_theme = mgmt.theme_install_to_blog(blog)
+    # mgmt.theme_install_to_blog(new_theme, blog)
+    # mgmt.theme_delete(old_theme)
+
+    # when replacing a theme:
+    # all Theme KV objects should be marked and reparented
+    # perhaps we should specify the Theme head KV with a name
+    # so that way we can match the name against the theme itself, too
+    # have an option to force-delete
+
+    # should we create an entirely new instance?
+    # how do we distinguish between multiple instances of the same theme?
+
+    # load in new theme from json in file somewhere, or maybe via a POST
+    # register new theme with site
+    # apply new theme to blog
+
+    # rebuild all fileinfos = purge function
+
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/export-theme")
+def export_theme(blog_id):
+    from core import theme
+    return theme.export_theme_for_blog(blog_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/apply-theme/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
@@ -1030,4 +1043,8 @@ def apply_theme_test(blog_id, theme_id):
     with db.atomic():
         n = mgmt.theme_apply_to_blog(theme, blog, user)
     return n
+
+'''
+
+
 
