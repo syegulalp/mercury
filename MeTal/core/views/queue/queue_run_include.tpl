@@ -14,7 +14,7 @@
       </div>
     </div>
     % if percentage_complete>=100:
-    <p>Publishing job finished.
+    <p>Publishing job finished. You may now navigate away from this window.
     % else:
     <p>Working ...
     % end

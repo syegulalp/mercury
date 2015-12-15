@@ -1022,8 +1022,8 @@ def republish_blog(blog_id):
     blog = get_blog(blog_id)
 
     data = []
-    data.extend(["<h3>Rebuilding {}:</h3><hr>".format(
-        blog.name)])
+    data.extend(["<h3>Queuing <b>{}</b> for republishing</h3><hr>".format(
+        blog.for_log)])
 
     begin = time.clock()
 
@@ -1249,7 +1249,7 @@ def purge_blog(blog):
     import time
 
     report = []
-    report.append("Purging and recreating blog <b>{}</b>.".format(blog.name))
+    report.append("<h3>Purging/Recreating <b>{}</b></h3>".format(blog.for_log))
 
     begin = time.clock()
 
@@ -1257,7 +1257,7 @@ def purge_blog(blog):
 
     erase = time.clock()
 
-    report.append("<hr/>{} fileinfo objects (and {} fileinfo context objects) erased. {}".format(
+    report.append("<hr/>{0} fileinfo objects (and {1} fileinfo context objects) erased in {2:.2f} seconds.".format(
         fileinfos_purged,
         fileinfocontexts_purged,
         erase - begin
@@ -1266,27 +1266,35 @@ def purge_blog(blog):
     includes_to_insert = blog.ssi_templates
 
     includes_inserted = build_indexes_fileinfos(includes_to_insert)
-    report.append("<hr/>{} server-side include objects created.".format(includes_inserted))
+
+    ssi_time = time.clock()
+
+    report.append("<hr/>{0} server-side include objects created in {1:.2f} seconds.".format(
+        includes_inserted, ssi_time - erase))
 
     pages_to_insert = blog.pages()
     pages_inserted = build_pages_fileinfos(pages_to_insert)
 
     rebuild = time.clock()
 
-    report.append("<hr/>{} page objects created. {}".format(pages_inserted,
+    report.append("<hr/>{0} page objects created in {1:.2f} seconds,".format(pages_inserted,
         rebuild - erase))
 
     f_i = build_archives_fileinfos(pages_to_insert)
-    report.append("{} archive objects created.".format(f_i))
+    arch_obj = time.clock()
+    report.append("{0} archive objects created in {1:.2f} seconds.".format(f_i,
+        arch_obj - rebuild))
 
     index_objects = build_indexes_fileinfos(blog.index_templates)
-    report.append("{} index objects created.".format(index_objects))
+    index_obj = time.clock()
+    report.append("{0} index objects created in {1:.2f} seconds.".format(index_objects,
+        index_obj - arch_obj))
 
     end = time.clock()
 
     total_objects = pages_to_insert.count() + f_i + blog.index_templates.count()
-    report.append("<hr/>Total objects created: {}.".format(total_objects))
-    report.append("Total processing time: {0:.2f} seconds.".format(end - begin))
+    report.append("<hr/>Total objects created: <b>{}</b>.".format(total_objects))
+    report.append("Total processing time: <b>{0:.2f}</b> seconds.".format(end - begin))
     report.append("<hr/>It is recommended that you <a href='{}'>republish this blog</a>.".format(
         '{}/blog/{}/republish'.format(BASE_URL, blog.id)))
 
