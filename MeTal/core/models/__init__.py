@@ -1377,7 +1377,7 @@ class Tag(BaseModel):
         return template
 
 
-class Template(BaseModel):
+class Template(BaseModel, DateMod):
     title = TextField(default="Untitled Template", null=False)
     theme = ForeignKeyField(Theme, null=True, index=True)
     template_type = CharField(max_length=32, index=True, null=False)
@@ -1388,6 +1388,10 @@ class Template(BaseModel):
     modified_date = DateTimeField(default=datetime.datetime.utcnow)
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
+
+    @property
+    def modified_date_tz(self):
+        return self._date_from_utc(self.blog.timezone, self.modified_date)
 
     @property
     def default_url(self):
