@@ -323,7 +323,7 @@ def edit_category(blog_id, category_id):
     tpl = template('edit/edit_category_ui',
         category=category,
         category_list=category_list,
-        menu=generate_menu('edit_category', category),
+        menu=generate_menu('blog_edit_category', category),
         search_context=(search_context['sites'], None),
         **tags.__dict__)
 
@@ -357,7 +357,7 @@ def edit_tag(blog_id, tag_id):
         user=user)
 
     tpl = template('edit/edit_tag_ui',
-        menu=generate_menu('edit_tag', tag),
+        menu=generate_menu('blog_edit_tag', tag),
         search_context=(search_context['sites'], None),
         tag=tag,
         **tags.__dict__)

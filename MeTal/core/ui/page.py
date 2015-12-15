@@ -258,7 +258,6 @@ def page_media_upload(page_id):
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
-            # with db.atomic():
             cms.register_media(x.filename, file_path, user, page=page)
             if not _exists(media_path):
                 makedirs(media_path)

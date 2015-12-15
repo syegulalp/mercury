@@ -201,38 +201,61 @@ menus = {
         'type':'divider',
         'text':lambda x:'Categorization'},
     'blog_manage_categories':{
-        'type':'label',
+        'type':'button',
         'parent':'blog_menu',
         'path': lambda x: BASE_URL + '/blog/{}/categories'.format(x.id),
         'text':lambda x:'Categories',
         'parent_context':lambda x:x
         },
-
-    'blog_manage_tags':{
+    'blog_edit_category':{
         'type':'label',
+        'parent':'blog_manage_categories',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Edit category #{}'.format(x.id)},
+    'blog_manage_tags':{
+        'type':'button',
         'parent':'blog_menu',
         'path': lambda x: BASE_URL + '/blog/{}/tags'.format(x.id),
         'parent_context':lambda x:x,
         'text':lambda x:'Tags'},
+    'blog_edit_tag':{
+        'type':'label',
+        'parent':'blog_manage_tags',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Edit tag #{}'.format(x.id)},
     'media_div':{
         'type':'divider',
         'text':lambda x:'Media'},
     'blog_manage_media':{
-        'type':'label',
+        'type':'button',
         'parent':'blog_menu',
         'parent_context':lambda x:x,
         'path': lambda x: BASE_URL + '/blog/{}/media'.format(x.id),
         'text':lambda x:'Manage media'},
+    'blog_edit_media':{
+        'type':'label',
+        'parent':'blog_manage_media',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/media'.format(x.id),
+        'text':lambda x:'Edit media #{}'.format(x.id)},
     'design_div':{
         'type':'divider',
         'parent':'blog_menu',
         'text':lambda x:'Design'},
     'blog_manage_templates':{
-        'type':'label',
+        'type':'button',
         'parent':'blog_menu',
         'parent_context':lambda x:x,
         'path': lambda x: BASE_URL + '/blog/{}/templates'.format(x.id),
         'text':lambda x:'Templates'},
+    'blog_edit_template':{
+        'type':'label',
+        'parent':'blog_manage_templates',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/template/{}/edit'.format(x.id),
+        'text':lambda x:'Edit template #{}'.format(x.id)},
     'blog_manage_themes':{
         'type':'label',
         'parent':'blog_menu',
@@ -258,6 +281,27 @@ menus = {
         'parent_context':lambda x:x,
         'path': lambda x: BASE_URL + '/blog/{}/users'.format(x.id),
         'text':lambda x:'Manage users'
+        },
+    'blog_republish':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/republish'.format(x.id),
+        'text':lambda x:'Republish blog'
+        },
+    'blog_purge':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/purge'.format(x.id),
+        'text':lambda x:'Purge blog'
+        },
+    'blog_queue':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/publish'.format(x.id),
+        'text':lambda x:'Blog publishing queue'
         },
     'blog_create_user':{
         'type':'label',
@@ -476,6 +520,11 @@ colsets = {
              'label': 'Path',
              'colwidth': '20%',
              'format_raw': lambda x: breaks(utf8_escape(x.path))},
+             {'field': 'url',
+             'label': 'URL',
+             'colwidth': '20%',
+             'format_raw': lambda x: '<a target="_blank" href="{}">{}</a>'.format(x.url, breaks(utf8_escape(x.url)))}
+             ,
         )
     },
     'blog_users':{

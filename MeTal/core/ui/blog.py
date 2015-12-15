@@ -7,18 +7,17 @@ from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
-    template_tags, Page, Blog, Queue, Template, Theme,
-    TemplateMapping, get_user, Media, db, queue_jobs_waiting,
+    template_tags, Page, Blog, Queue, Template, Theme, get_theme,
+    TemplateMapping, Media, db, queue_jobs_waiting,
     Tag, template_type, publishing_mode, get_default_theme)
 
 from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, response, redirect)
-from core.libs import peewee
 
 from settings import (BASE_URL)
 
-import re, datetime
+import datetime
 from os import remove as _remove
 
 @transaction
@@ -709,6 +708,11 @@ def blog_select_themes(blog_id):
 
     paginator, rowset = utils.generate_paginator(themes, request)
 
+    action = utils.action_button(
+        'Save current blog theme',
+        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
+        )
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
@@ -716,6 +720,7 @@ def blog_select_themes(blog_id):
         rowset=rowset,
         colset=colsets['themes'],
         icons=icons,
+        action=action,
         **tags.__dict__)
 
     return tpl
@@ -969,3 +974,20 @@ def blog_publish_process(blog_id):
             queue_count=queue_count)
 
     return tpl
+
+@transaction
+def blog_load_theme(blog_id, theme_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    theme = get_theme(theme_id)
+
+    with db.atomic():
+        n = mgmt.theme_apply_to_blog(theme, blog, user)
+        # queue to republish as per changes to blog settings
+    return n
+
+    # should push to queue be included in apply_to_blog?
+    # we need to do it here in any event
+
