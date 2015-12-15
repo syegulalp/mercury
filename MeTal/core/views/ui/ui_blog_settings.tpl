@@ -123,7 +123,7 @@
                 <input type="text" class="form-control" aria-describedby="blog_media_path_help"
                 value="{{blog.media_path}}"
                 id="blog_media_path" name="blog_media_path">
-                <span id="blog_media_path_help" class="help-block">Path within your blog to where media will be uploaded.<br/>This can be a simple string or any valid expression used for a template mapping (e.g., <code>media/%Y</code>).</span>
+                <span id="blog_media_path_help" class="help-block">Path within your blog to where media will be uploaded.<br/>This can be a simple string or any valid expression used for a template mapping (e.g., <code>media/%Y</code>).<br><b>Do not use a leading slash.</b> (e.g., <b>media</b>, not <b>/media</b>)</span>
             </div>
         </div>       
         
