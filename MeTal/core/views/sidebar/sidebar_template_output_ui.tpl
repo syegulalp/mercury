@@ -1,4 +1,4 @@
-<div class="form-group">
+<div id="output_group" class="form-group">
     % if template.template_type == types.index:
     % for n in template.default_mapping.fileinfos:
     <p id="output_{{n.id}}">

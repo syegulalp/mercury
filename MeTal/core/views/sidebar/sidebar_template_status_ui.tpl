@@ -1,4 +1,4 @@
-<div class="form-group">
+<div id="template_status_group" class="form-group">
     <p>Publishing mode: <span class="label label-{{publishing_mode.description[template.publishing_mode]['label']}}">{{template.publishing_mode}}</span></p>
 
     <label for="modified_date">Last saved:</label>

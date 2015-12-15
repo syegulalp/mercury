@@ -6,7 +6,7 @@
 <p>[<i>No key-value pairs</i>]</p>
 % end
 </div>
-<div class="form-group">
+<div id="kv_group" class="form-group">
     <label for="new_key_name">Key</label>
     <input class="form-control" id="new_key_name" name="new_key_name" placeholder="Key name">
   <div class="form-group">

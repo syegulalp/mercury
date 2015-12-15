@@ -27,7 +27,7 @@
 % if category.default is True:
 %   primary_i = " "+primary_icon.format('Default category for blog')
 % end 
-<div class="">
+<div id="category_group" class="form-group">
 <input name="cat-sel-{{category.id}}" id="cat-sel-{{category.id}}" type="checkbox"{{checked}}{{!primary}}>
 <label for="cat-sel-{{category.id}}">{{category.title}}{{!primary_i}}</label>
 </div>

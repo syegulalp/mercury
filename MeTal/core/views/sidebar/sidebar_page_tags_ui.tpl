@@ -1,5 +1,5 @@
 % include('sidebar/sidebar_page_taglist_ui.tpl')
-<div class="form-group has-feedback">
+<div id="tags_group" class="form-group has-feedback">
     <input type="text" class="form-control input-sm enteradd typeahead"
     id="tag_input" placeholder="Type tags here" name="tag_input" value="" data-cip-id="tag_input">
     <span id="tag_activity" style="display:none" class="glyphicon glyphicon-refresh form-control-feedback"></span>

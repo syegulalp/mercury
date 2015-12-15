@@ -1,4 +1,4 @@
-<div class="form-group">
+<div id="publication_status_group" class="form-group">
     <label for="publication_status">Publication status:</label>
     <select class="form-control input-sm unsaved" id="publication_status" name="publication_status">
     % for status in status_modes.statuses:
@@ -11,7 +11,7 @@
     </select>
 </div>
 
-<div class="form-group">
+<div id="publication_date_group" class="form-group">
     <label for="publication_date">Publication date:</label>
     <div class='input-group input-group-sm date' id='publication_date_picker'>
        <input type="datetime" class="form-control unsaved entersubmit" id="publication_date" placeholder=""
@@ -22,7 +22,7 @@
    </div>
 </div>
 
-<div class="form-group">
+<div id="basename_group" class="form-group">
     <label for="basename">Basename:</label>
     <div class="input-group">
         <input title="Click icon to unlock basename" type="text" class="form-control input-sm unsaved entersubmit" id="basename" disabled="disabled"
@@ -33,7 +33,7 @@
     </div>
 </div>
 
-<div class="form-group">
+<div id="permalink_group" class="form-group">
     <label for="permalink">Permalink:</label>
     <p id="permalink">
         % if page.id is None:
@@ -54,13 +54,13 @@
     </p>
 </div>
 
-<div class="form-group">
+<div id="change_note_group" class="form-group">
     <label for="change_note">Change note: <small>(optional)</small></label>
     <input type="text" class="form-control input-sm unsaved entersubmit" id="change_note" placeholder=""
         name="change_note" value="" />
 </div>
 
-<div class="form-group" style="line-height: 2.5em;">
+<div id="page_save_group" class="form-group" style="line-height: 2.5em;">
     <input type="hidden" id="save" name="save" value="{{page.status_id}}">
     <div class="btn-group">
         <button onclick="page_save({{save_action[page.status_id][0]}})" type="button" accesskey="s"
@@ -88,7 +88,7 @@
         </ul>
     </div>
     % if page.id is not None:
-    <div class="btn-group">
+    <div id="preview_group" class="btn-group">
         <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary">Preview</button>
         <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
         <span class="caret"></span>

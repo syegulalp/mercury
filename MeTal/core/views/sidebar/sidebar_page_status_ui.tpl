@@ -1,4 +1,4 @@
-<div class="form-group">
+<div id="status_group" class="form-group">
 
     <p><span class="label label-{{status_badge[page.status_id]}}">{{page.status}}</span></p>
 

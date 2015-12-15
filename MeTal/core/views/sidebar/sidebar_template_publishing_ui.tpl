@@ -1,4 +1,4 @@
-<div class="form-group">
+<div id="template_publishing_group" class="form-group">
 <span class="pull-right" id="save_animation"></span>
     <label for="publishing_mode">Publishing mode:</label>
     <input type="hidden" id="save" name="save" value="0">
@@ -13,7 +13,7 @@
     </select>
 </div>
 
-<div class="hide-overflow">
+<div id="template_save_group" class="hide-overflow">
     <div class="form-group">
         <div class="btn-group">
             <button onclick="template_save(1)" type="button" name="save" value="1" class="btn btn-sm btn-warning">Save</button>
