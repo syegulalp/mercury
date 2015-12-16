@@ -256,6 +256,12 @@ menus = {
         'parent_context':lambda x:x.blog,
         'path': lambda x: BASE_URL + '/template/{}/edit'.format(x.id),
         'text':lambda x:'Edit template #{}'.format(x.id)},
+    'blog_delete_template':{
+        'type':'label',
+        'parent':'blog_manage_templates',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/template/{}/delete'.format(x.id),
+        'text':lambda x:'Delete template #{}'.format(x.id)},
     'blog_manage_themes':{
         'type':'label',
         'parent':'blog_menu',
@@ -308,6 +314,13 @@ menus = {
         'parent':'blog_menu',
         'parent_context':lambda x:x,
         'path': lambda x: BASE_URL + '/blog/{}/user/new'.format(x.id),
+        'text':lambda x:'Create user'
+        },
+    'blog_apply_theme':{
+        'type':'label',
+        'parent':'blog_manage_themes',
+        'parent_context':lambda x:x[0],
+        'path': lambda x: BASE_URL + '/blog/{}/theme/{}/apply'.format(x[0].id),
         'text':lambda x:'Create user'
         },
 }
