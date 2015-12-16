@@ -87,7 +87,7 @@ def template_delete(template_id):
     tags = template_tags(template_id=tpl.id,
         user=user)
 
-    if request.forms.getunicode('confirm') == 'Y':
+    if request.forms.getunicode('confirm') == user.logout_nonce:
         _template.delete(tpl)
 
         status = Status(
@@ -107,11 +107,14 @@ def template_delete(template_id):
             message='You are attempting to delete template <b>{}</b> from blog <b>{}</b>. <b>Are you sure you want to do this?</b>'.format(
                 tpl.for_display,
                 blog.for_display),
-            deny='{}/template/{}/edit'.format(
+            deny={'url':'{}/template/{}/edit'.format(
                 settings.BASE_URL, tpl.id),
+                'label':'No, I don\'t want to delete this template'
+                },
             confirm={'id':'delete',
                 'name':'confirm',
-                'value':'Y'}
+                'label':'Yes, I want to delete this template',
+                'value':user.logout_nonce}
             )
 
     tags.status = status
@@ -138,20 +141,6 @@ def template_edit_save(template_id):
     status = None
 
     save_mode = int(request.forms.getunicode('save', default="0"))
-
-    '''
-    if save_mode == 4:
-        if request.forms.getunicode('confirm') == 'Y':
-            return template_delete(tpl)
-        else:
-            status = Status(
-                type='warning',
-                message='You are attempting to delete this template. <b>Are you sure you want to do this?</b>',
-                confirm={'id':'delete',
-                    'name':'save',
-                    'value':'4'}
-                )
-    '''
 
     if save_mode in (1, 2, 3):
         try:
@@ -257,8 +246,7 @@ def template_preview_delete(tpl):
 
 def template_edit_output(tags):
 
-    from core.models import (publishing_mode,
-        template_type as template_types)
+    from core.models import template_type as template_types
 
     tpl = template('edit/edit_template_ui',
         icons=icons,

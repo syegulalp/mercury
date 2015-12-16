@@ -892,10 +892,10 @@ def save_theme_to_system(blog_id):
     blog = get_blog(blog_id)
 
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/load")
-def load_theme_to_blog(theme_id, blog_id):
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/apply", method=('GET', 'POST'))
+def apply_theme_to_blog(theme_id, blog_id):
     from core.ui import blog
-    blog.blog_load_theme(theme_id, blog_id)
+    return blog.blog_apply_theme(theme_id, blog_id)
 
 @_route(BASE_PATH + "/system/theme/<theme_id:int>/delete")
 def delete_theme_from_system(theme_id):
