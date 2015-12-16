@@ -887,15 +887,16 @@ def overwrite_blog_theme(blog_id):
         mgmt.theme_install_to_blog(theme, blog, user)
 
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/theme/save")
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/save", method=('GET', 'POST'))
 def save_theme_to_system(blog_id):
-    blog = get_blog(blog_id)
+    from core.ui import blog
+    return blog.blog_save_theme(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/apply", method=('GET', 'POST'))
-def apply_theme_to_blog(theme_id, blog_id):
+def apply_theme_to_blog(blog_id, theme_id):
     from core.ui import blog
-    return blog.blog_apply_theme(theme_id, blog_id)
+    return blog.blog_apply_theme(blog_id, theme_id)
 
 @_route(BASE_PATH + "/system/theme/<theme_id:int>/delete")
 def delete_theme_from_system(theme_id):

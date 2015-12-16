@@ -713,6 +713,9 @@ def blog_select_themes(blog_id):
         '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
         )
 
+    for n in rowset:
+        n.blog = blog
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['blog'], blog),
@@ -725,8 +728,6 @@ def blog_select_themes(blog_id):
 
     return tpl
 
-    # get list of all themes in system
-    # present in listing framework
 
 @transaction
 def blog_republish(blog_id):
@@ -969,6 +970,42 @@ def blog_publish_process(blog_id):
     return tpl
 
 @transaction
+def blog_save_theme(blog_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    tags = template_tags(blog=blog,
+            user=user)
+
+    from core.utils import Status
+
+    if request.method == 'POST':
+        save_tpl = 'listing/report'
+        status = Status(
+            type='success',
+            close=False,
+            message='''
+Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
+'''.format('', blog.for_display, ''),
+            action='Return to theme list',
+            url='{}/blog/{}/themes'.format(
+                BASE_URL, blog.id)
+            )
+    else:
+        save_tpl = 'edit/edit_theme_save'
+        status = None
+
+    tags.status = status
+    tpl = template(save_tpl,
+        menu=generate_menu('blog_save_theme', blog),
+        search_context=(search_context['blog'], blog),
+        theme_name=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
 def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
@@ -992,8 +1029,10 @@ def blog_apply_theme(blog_id, theme_id):
         status = Status(
             type='success',
             close=False,
-            message='Theme {} was successfully applied to blog {}.'.format(
-                theme.for_display, blog.for_display),
+            message='''
+Theme <b>{}</b> was successfully applied to blog <b>{}</b>.</p>
+It is recommended that you <a href="{}">republish this blog.</a>
+'''.format(theme.for_display, blog.for_display, ''),
             action='Return to theme list',
             url='{}/blog/{}/themes'.format(
                 BASE_URL, blog.id)

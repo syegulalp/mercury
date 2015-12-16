@@ -263,7 +263,7 @@ menus = {
         'path': lambda x: BASE_URL + '/template/{}/delete'.format(x.id),
         'text':lambda x:'Delete template #{}'.format(x.id)},
     'blog_manage_themes':{
-        'type':'label',
+        'type':'button',
         'parent':'blog_menu',
         'parent_context':lambda x:x,
         'path': lambda x: BASE_URL + '/blog/{}/themes'.format(x.id),
@@ -321,7 +321,14 @@ menus = {
         'parent':'blog_manage_themes',
         'parent_context':lambda x:x[0],
         'path': lambda x: BASE_URL + '/blog/{}/theme/{}/apply'.format(x[0].id),
-        'text':lambda x:'Create user'
+        'text':lambda x:'Apply theme'
+        },
+    'blog_save_theme':{
+        'type':'label',
+        'parent':'blog_manage_themes',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/theme/save'.format(x.id),
+        'text':lambda x:'Save this blog\'s theme'
         },
 }
 
@@ -428,6 +435,11 @@ colsets = {
             {'field': 'title',
              'label': 'Title',
              'format_raw': lambda x: x.for_listing
+             },
+            {'field': '',
+             'label': '',
+             'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Apply theme</span></a>'.format(
+                 BASE_URL + '/blog/{}/theme/{}/apply'.format(x.blog.id, x.id),)
              }
         ]
     },

@@ -1571,11 +1571,6 @@ class TemplateMapping(BaseModel):
     template = ForeignKeyField(Template, null=False, index=True)
     is_default = BooleanField(default=False, null=True)
     path_string = TextField()
-    # archive_type = IntegerField()
-    # 1 = Index
-    # 2 = Page
-    # 3 = Date-Based
-    # TODO: I believe this was deprecated a long time ago
     archive_xref = CharField(max_length=16, null=True)
     modified_date = DateTimeField(default=datetime.datetime.utcnow)
 
