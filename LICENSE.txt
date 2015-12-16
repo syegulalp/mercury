@@ -27,9 +27,9 @@ Licenses for software in this project
     CodeMirror
     Copyright (C) 2015 by Marijn Haverbeke <marijnh@gmail.com> and others
     License: MIT
-
-	pytz
-	Copyright (c) 2003-2009 Stuart Bishop <stuart@stuartbishop.net>
+    
+    pytz
+    Copyright (c) 2003-2009 Stuart Bishop <stuart@stuartbishop.net>
     License: MIT
     
     CKEditor
