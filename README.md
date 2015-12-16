@@ -1,5 +1,4 @@
-![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
-# MeTal
+# MeTal ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
 Pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
 ## Features
