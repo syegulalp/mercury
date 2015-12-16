@@ -8,7 +8,7 @@ from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
     template_tags, Page, Blog, Queue, Template, Theme, get_theme,
-    TemplateMapping, Media, db, queue_jobs_waiting,
+    TemplateMapping, Media, queue_jobs_waiting,
     Tag, template_type, publishing_mode, get_default_theme)
 
 from core.models.transaction import transaction
@@ -779,13 +779,6 @@ def blog_queue(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    '''
-    queue = Queue.select().where(Queue.blog == blog_id).order_by(Queue.site.asc(), Queue.blog.asc(),
-        Queue.job_type.asc(),
-        Queue.date_touched.desc())
-    '''
-    # queue = queue_jobs_waiting(blog=blog)
-
     tags = template_tags(blog_id=blog.id,
             user=user)
 
@@ -976,18 +969,62 @@ def blog_publish_process(blog_id):
     return tpl
 
 @transaction
-def blog_load_theme(blog_id, theme_id):
+def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     theme = get_theme(theme_id)
 
-    with db.atomic():
-        n = mgmt.theme_apply_to_blog(theme, blog, user)
-        # queue to republish as per changes to blog settings
-    return n
+    tags = template_tags(blog=blog,
+            user=user)
 
-    # should push to queue be included in apply_to_blog?
-    # we need to do it here in any event
+    from core.utils import Status
+
+    if request.forms.getunicode('confirm') == user.logout_nonce:
+
+        '''with db.atomic():
+            n = mgmt.theme_apply_to_blog(theme, blog, user)
+            # queue to republish as per changes to blog settings
+        return n
+        '''
+
+        status = Status(
+            type='success',
+            close=False,
+            message='Theme {} was successfully applied to blog {}.'.format(
+                theme.for_display, blog.for_display),
+            action='Return to theme list',
+            url='{}/blog/{}/themes'.format(
+                BASE_URL, blog.id)
+            )
+
+    else:
+
+        status = Status(
+            type='warning',
+            close=False,
+            message='''
+You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
+<p>This will OVERWRITE AND REMOVE ALL EXISTING TEMPLATES on this blog!</p>
+<p><b>Are you sure you want to do this?</b></p>
+'''.format(theme.for_display, blog.for_display),
+            url='{}/blog/{}/themes'.format(
+                BASE_URL, blog.id),
+            confirm={'id':'delete',
+                'name':'confirm',
+                'label':'Yes, I want to apply this theme',
+                'value':user.logout_nonce},
+            deny={'label':'No, don\'t apply this theme',
+                'url':'{}/blog/{}/themes'.format(
+                BASE_URL, blog.id)}
+            )
+
+    tags.status = status
+    tpl = template('listing/report',
+        menu=generate_menu('blog_apply_theme', [blog, theme]),
+        search_context=(search_context['blog'], blog),
+        **tags.__dict__)
+
+    return tpl
 
