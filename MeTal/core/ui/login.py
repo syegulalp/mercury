@@ -111,9 +111,14 @@ def main_ui():
     '''
     user = auth.is_logged_in(request)
 
+    try:
+        from settings import MAX_RECENT_PAGES
+    except Exception:
+        MAX_RECENT_PAGES = 10
+
     recent_pages = Page.select().where(
         Page.user == user).order_by(
-        Page.modified_date.desc()).limit(10)
+        Page.modified_date.desc()).limit(MAX_RECENT_PAGES)
 
     your_blogs = user.blogs()
 
