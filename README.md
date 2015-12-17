@@ -1,6 +1,8 @@
 # MeTal ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
 Pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
+<a href="http://metal.genjipress.com/media/metal-screenshot.png" target="_blank"><img src="http://metal.genjipress.com/media/metal-screenshot.png" style="margin: auto;width:80%"></a>
+
 ## Features
 * Open source (MIT license)
 * Pure Python; no binaries or external dependencies save for the Python interpreter
