@@ -86,12 +86,18 @@ def blog_create(site_id):
         user=user)
 
     tags.blog = new_blog
+    from core.libs import pytz
+
+    themes = Theme.select()
 
     tpl = template('ui/ui_blog_settings',
         section_title="Create new blog",
         search_context=(search_context['sites'], None),
-        menu=generate_menu('create_blog', site),
-        **tags.__dict__
+        menu=generate_menu('site_create_blog', site),
+        nav_default='all',
+        timezones=pytz.all_timezones,
+        themes=themes,
+        ** tags.__dict__
         )
 
     return tpl
@@ -103,18 +109,59 @@ def blog_create_save(site_id):
     site = get_site(site_id)
     permission = auth.is_site_admin(user, site)
 
-    # return (get_default_theme().json)
+    new_blog = Blog(
+            site=site,
+            name=request.forms.getunicode('blog_name'),
+            description=request.forms.getunicode('blog_description'),
+            url=request.forms.getunicode('blog_url'),
+            path=request.forms.getunicode('blog_path'),
+            set_timezone=request.forms.getunicode('blog_timezone'),
+            theme=get_default_theme(),
+            )
 
-    new_blog = mgmt.blog_create(
-        site=site,
-        name=request.forms.getunicode('blog_name'),
-        description=request.forms.getunicode('blog_description'),
-        url=request.forms.getunicode('blog_url'),
-        path=request.forms.getunicode('blog_path'),
-        theme=get_default_theme(),
-        )
+    try:
+        new_blog.validate()
+    except Exception as e:
+        status = utils.Status(
+            type='danger',
+            message='The blog could not be created due to the following problems:',
+            message_list=e.args[0])
+        from core.libs import pytz
+        tags = template_tags(site=site,
+            user=user)
+        tags.status = status
+        tags.blog = new_blog
+        themes = Theme.select()
+        tpl = template('ui/ui_blog_settings',
+            section_title="Create new blog",
+            search_context=(search_context['sites'], None),
+            menu=generate_menu('site_create_blog', site),
+            nav_default='all',
+            themes=themes,
+            timezones=pytz.all_timezones,
+            ** tags.__dict__
+            )
+        return tpl
+    else:
+        new_blog.setup(user, new_blog.theme)
+        tags = template_tags(user=user, site=site,
+            blog=new_blog)
+        status = utils.Status(
+            type='success',
+            message='''
+Blog <b>{}</b> was successfully created. You can <a href="{}/blog/{}/newpage">start posting</a> immediately.
+'''.format(
+                new_blog.for_display,
+                BASE_URL, new_blog.id)
+            )
+        tags.status = status
+        tpl = template('listing/report',
+            search_context=(search_context['sites'], None),
+            menu=generate_menu('site_create_blog', site),
+            ** tags.__dict__
+            )
 
-    return redirect(BASE_URL + "/blog/" + str(new_blog.id))
+        return tpl
 
 # TODO: make this universal to create a user for both a blog and a site
 # use ka
@@ -819,7 +866,45 @@ def blog_settings_save(blog_id, nav_setting):
     blog = get_blog(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    status = mgmt.blog_settings_save(request, blog, user)
+    _get = request.forms.getunicode
+
+    blog.name = _get('blog_name', blog.name)
+    blog.description = _get('blog_description', blog.description)
+    blog.set_timezone = _get('blog_timezone')
+
+    blog.url = _get('blog_url', blog.url)
+    blog.path = _get('blog_path', blog.path)
+    blog.base_extension = _get('blog_base_extension', blog.base_extension)
+    blog.media_path = _get('blog_media_path', blog.media_path)
+
+    from core.utils import Status
+
+    try:
+        blog.validate()
+    except Exception as e:
+        return Status(
+            type='warning',
+            message='Settings for <b>{}</b> are not valid:',
+            vals=(blog.for_log,),
+            message_list=(e,))
+
+    try:
+        blog.save()
+    except Exception as e:
+        status = Status(
+            type='danger',
+            message='Settings for <b>{}</b> not saved:',
+            vals=(blog.for_log,),
+            message_list=(e,))
+    else:
+        status = Status(
+            type='success',
+            message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/republish'>republish this blog</a>.",
+            vals=(blog.name, BASE_URL, blog.id))
+
+        logger.info("Settings for blog {} edited by user {}.".format(
+            blog.for_log,
+            user.for_log))
 
     tags = template_tags(blog_id=blog.id,
         user=user)
@@ -981,6 +1066,10 @@ def blog_save_theme(blog_id):
     from core.utils import Status
 
     if request.method == 'POST':
+
+        from core import theme
+
+
         save_tpl = 'listing/report'
         status = Status(
             type='success',
@@ -993,6 +1082,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
                 BASE_URL, blog.id)
             )
     else:
+
         save_tpl = 'edit/edit_theme_save'
         status = None
 
@@ -1001,7 +1091,10 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
         menu=generate_menu('blog_save_theme', blog),
         search_context=(search_context['blog'], blog),
         theme_name=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
-        **tags.__dict__)
+        theme_description=blog.theme.description
+        ** tags.__dict__)
+
+    # TODO: also get theme description
 
     return tpl
 

@@ -2,18 +2,22 @@
 % include('include/header_messages.tpl')
 % if blog.id is not None:
 % disabled = "disabled='disabled'"
+% input_group = ' input-group'
 % else:
 % disabled = ""
+% input_group = ''
 % end
 <div class="col-xs-12">
 
     <form class="form-horizontal" method="post">
     {{!csrf_token}}
+    % if nav_default!='all':
     <div class="col-sm-12">
     % include('include/nav_tabs.tpl')
 	<br/>
 	</div>
-	% if nav_default=='basic':
+	% end
+	% if nav_default in ('basic','all'):
 	
         <div class="form-group">
             <label for="blog_name" class="col-sm-2 control-label">Blog name</label>
@@ -50,20 +54,21 @@
                 <span id="blog_timezone_help" class="help-block">Timezone for your blog. Default is UTC.</span>
             </div>
         </div>  
-        
-    % elif nav_default=='dirs':
+    % end
+    % if nav_default in ('dirs','all'):
         <div class="form-group">
             <label for="blog_url" class="col-sm-2 control-label">URL</label>
             <div class="col-sm-9">
-                <div class="input-group">
+                <div class="{{input_group}}">
                     <input title="Click the icon at the right to unlock this field" type="url" class="form-control" {{disabled}}
                     value="{{blog.url}}" aria-describedby="blog_url_help"
                     id="blog_url" name="blog_url">
+                    % if blog.id is not None:
                     <span class="input-group-btn">
                         <button title="Edit URL" onclick="$('#blog_url').prop('disabled', false);" class="btn" type="button">
                         <span class="glyphicon glyphicon-edit"></span></button>
                     </span>
-                    
+                    % end
                 </div>
                 <span id="blog_url_help" class="help-block">The URL others will use to access your blog, without trailing slashes.<br>
                 % if blog.id is not None:
@@ -77,15 +82,16 @@
         <div class="form-group">
             <label for="blog_path" class="col-sm-2 control-label">Filepath</label>
             <div class="col-sm-9">
-                <div class="input-group">
+                <div class="{{input_group}}">
                     <input title="Click the icon at the right to unlock this field" type="text" class="form-control" {{disabled}}
                     value="{{blog.path}}" aria-describedby="blog_path_help"
-                    
                     id="blog_path" name="blog_path" placeholder="">
+                    % if blog.id is not None:
                     <span class="input-group-btn">
-                        <button title="Edit URL" onclick="$('#blog_path').prop('disabled', false);" class="btn" type="button">
+                        <button title="Edit path" onclick="$('#blog_path').prop('disabled', false);" class="btn" type="button">
                         <span class="glyphicon glyphicon-edit"></span></button>
                     </span>
+                    % end
                 </div>
                 <span id="blog_path_help" class="help-block">The filepath to where the blog's files will be published.<br>
                 % if blog.id is not None:
@@ -98,16 +104,17 @@
         <div class="form-group">
             <label for="blog_base_extension" class="col-sm-2 control-label">Extension</label>
             <div class="col-sm-9">
-                <div class="input-group">
+                <div class="{{input_group}}">
                     <input title="Click the icon at the right to unlock this field" type="text" class="form-control" {{disabled}}
                     value="{{blog.base_extension}}" aria-describedby="blog_base_extension_help"
-                    
                     id="blog_base_extension" name="blog_base_extension"
                     placeholder="Default file extension used for generated blog files (usually 'html').">
+                    % if blog.id is not None:
                     <span class="input-group-btn">
-                        <button title="Edit URL" onclick="$('#blog_base_extension').prop('disabled', false);" class="btn" type="button">
+                        <button title="Edit extension" onclick="$('#blog_base_extension').prop('disabled', false);" class="btn" type="button">
                         <span class="glyphicon glyphicon-edit"></span></button>
                     </span>
+                    % end
                 </div>
                 <span id="blog_base_extension_help" class="help-block">The file extension used for files in your blog, without a leading dot.<br>
                 % if blog.id is not None:
@@ -126,8 +133,6 @@
                 <span id="blog_media_path_help" class="help-block">Path within your blog to where media will be uploaded.<br/>This can be a simple string or any valid expression used for a template mapping (e.g., <code>media/%Y</code>).<br><b>Do not use a leading slash.</b> (e.g., <b>media</b>, not <b>/media</b>)</span>
             </div>
         </div>       
-        
-         
         
         % end
         <div class="form-group">

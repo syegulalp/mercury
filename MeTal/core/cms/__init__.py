@@ -893,7 +893,10 @@ def build_pages_fileinfos(pages):
                 page.blog.path + '/' + master_path_string,
                 str(page.publication_date_tz))
 
-    return n + 1
+    try:
+        return n + 1
+    except Exception:
+        return 0
 
 def build_archives_fileinfos(pages):
     '''
@@ -944,7 +947,10 @@ def build_archives_fileinfos(pages):
         new_fileinfo.mapping_sort = archive_context
         new_fileinfo.save()
 
-    return counter + 1
+    try:
+        return counter + 1
+    except Exception:
+        return 0
 
 def build_indexes_fileinfos(templates):
 
@@ -979,7 +985,10 @@ def build_indexes_fileinfos(templates):
                  blog.url + "/" + master_path_string,
                  blog.path + '/' + master_path_string)
 
-    return n + 1
+    try:
+        return n + 1
+    except Exception:
+        return 0
 
 
 def publish_page(page_id):

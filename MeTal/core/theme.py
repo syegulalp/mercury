@@ -14,11 +14,17 @@ def json_dump(obj):
             separators=(', ', ': '),
             indent=1))
 
-def export_theme_for_blog(blog_id):
+def save_theme_for_blog(blog_id, theme_name):
+    pass
+    # run export_theme
+    # basename the theme name for a directory
+    # create the directory
+    # write the json to it
+
+def export_theme_for_blog(blog_id, theme_name, theme_description):
 
     from core.models import KeyValue, get_blog
 
-    # theme_to_export = Template.select().where(Template.blog == blog_id)
     blog = get_blog(blog_id)
     theme_to_export = blog.templates()
 
@@ -31,13 +37,15 @@ def export_theme_for_blog(blog_id):
         theme["data"][n.id] = {}
         theme["data"][n.id]["template"] = json_dump(n)
 
-        # mappings_to_export = TemplateMapping.select().where(TemplateMapping.template == n)
         mappings_to_export = n.mappings
 
         theme["data"][n.id]["mapping"] = {}
 
         for m in mappings_to_export:
             theme["data"][n.id]["mapping"][m.id] = json_dump(m)
+
+    # We may not use the rest of this because of the way
+    # KVs are being scaled back
 
     theme["kv"] = {}
 

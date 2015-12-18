@@ -289,10 +289,9 @@ def step_4_pre():
 
         report.append("Default theme created and installed successfully to system.")
 
-        # TODO: copy all themes first, then install them all
-        # default theme should be for the sake of installing the first blog
+        from core.models import Blog
 
-        new_blog = mgmt.blog_create(
+        new_blog = Blog(
             site=new_site,
             name="Your first blog",
             description="The description for your first blog.",
@@ -301,6 +300,8 @@ def step_4_pre():
             theme=new_theme,
             user=new_user
             )
+
+        new_blog.setup()
 
         report.append("Initial blog created successfully with default theme.")
 

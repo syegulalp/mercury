@@ -99,16 +99,20 @@ menus = {
         'text': lambda x: 'Users',
         },
     'system_manage_users': {
-        'type': 'label',
+        'type': 'button',
         'path': lambda x: BASE_URL + '/system/users',
         'text': lambda x: 'Manage users',
-
         'parent':'system_menu'},
+    'system_edit_user': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/user/{}'.format(x),
+        'text': lambda x: 'Edit user #{}'.format(x.id),
+        'parent_context':lambda x:None,
+        'parent':'system_manage_users'},
     'system_create_user': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/user/new',
         'text': lambda x: 'Create user',
-
         'parent':'system_menu'
         },
     'site_menu': {
@@ -119,7 +123,7 @@ menus = {
         'parent_path': lambda x: x.site,
         'parent_context': lambda x:None,
         'menu': ('site_users_div', 'site_manage_users', 'site_create_user',
-                 'blogs_div', 'site_manage_blogs', 'site_create_blogs')
+                 'blogs_div', 'site_manage_blogs', 'site_create_blog')
         },
     'site_users_div': {
         'type': 'divider',
@@ -129,16 +133,13 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/site/{}/users'.format(x.id),
         'text': lambda x: 'Manage users',
-        'parent':'blog_menu',
-
-        'parent':'system_menu'},
+        'parent':'site_menu'
+        },
     'site_create_user': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/site/{}/user/new'.format(x.id),
         'text': lambda x: 'Create user',
-        'parent':'blog_menu',
-
-        'parent':'system_menu'
+        'parent':'site_menu'
         },
     'blogs_div': {
         'type': 'divider',
@@ -148,16 +149,15 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/site/{}'.format(x.id),
         'text': lambda x: 'Manage blogs',
-        'parent':'blog_menu',
-
-        'parent':'system_menu'},
-    'site_create_blogs': {
+        'parent_context': lambda x: x,
+        'parent':'site_menu'
+        },
+    'site_create_blog': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/site/{}/blog/new'.format(x.id),
         'text': lambda x: 'Create blog',
-        'parent':'blog_menu',
-
-        'parent':'system_menu'
+        'parent_context': lambda x: x,
+        'parent':'site_menu',
         },
     'blog_menu': {
         'type':'menu',

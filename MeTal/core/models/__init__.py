@@ -555,6 +555,7 @@ class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
     timezone = TextField(null=True, default='UTC')
+    set_timezone = None
 
     def archive_default(self, default_type):
         archive_default = self.templates().select().where(
@@ -780,6 +781,70 @@ class Blog(SiteBase):
 
         return fileinfos_for_blog
 
+    def setup(self, user, theme=None):
+
+        self.save()
+
+        new_blog_default_category = Category(
+            blog=self,
+            title="Uncategorized",
+            default=True)
+
+        new_blog_default_category.save()
+
+        if theme is not None:
+            from core.mgmt import theme_install_to_blog
+            theme_install_to_blog(theme, self, user)
+            self.save()
+
+        from core.log import logger
+        logger.info("Blog {} created on site {} by user {}.".format(
+            self.for_log,
+            self.site.for_log,
+            user.for_log))
+
+
+        return self
+
+    def validate(self):
+        errors = []
+        from core.utils import is_blank
+
+        if is_blank(self.name):
+            errors.append('Blog name cannot be blank.')
+
+        if is_blank(self.description):
+            errors.append('Blog description cannot be blank.')
+
+        if not is_blank(self.url):
+            self.url = self.url.rstrip('/')
+        else:
+            errors.append('Blog URL cannot be blank.')
+
+        if not is_blank(self.path):
+            self.path = self.path.rstrip('/')
+            self.local_path = self.path
+        else:
+            errors.append('Blog path cannot be blank.')
+
+        if not is_blank(self.base_extension):
+            self.base_extension = self.base_extension.lstrip('.')
+        else:
+            errors.append('Blog base extension cannot be blank.')
+
+        if is_blank(self.media_path):
+            errors.append('Blog media path cannot be blank.')
+
+        if not is_blank(self.set_timezone):
+            from core.libs import pytz
+            try:
+                self.timezone = pytz.all_timezones[int(self.set_timezone)]
+            except Exception:
+                errors.append('You must choose a valid timezone.')
+        if len(errors) > 0:
+            raise Exception(errors)
+        else:
+            return self
 
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
@@ -795,6 +860,7 @@ class Category(BaseModel):
                 BASE_URL, self.blog.id)
         return "{}/blog/{}/category/{}".format(
             BASE_URL, self.blog.id, self.id)
+
 
     @property
     def next_category(self):
@@ -2068,11 +2134,13 @@ class TemplateTags(object):
         if 'blog_id' in ka:
             self.blog = get_blog(ka['blog_id'])
             ka['site_id'] = self.blog.site.id
-
-        self.blog = ka.get('blog', self.blog)
+        else:
+            self.blog = ka.get('blog', self.blog)
 
         if 'site_id' in ka:
             self.site = get_site(ka['site_id'])
+        else:
+            self.site = ka.get('site', self.site)
 
         if self.blog:
             self.queue = Queue.select().where(Queue.blog == self.blog)

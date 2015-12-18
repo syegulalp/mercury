@@ -246,7 +246,7 @@ def site_blogs(site_id):
     from core.ui import site
     return site.site(site_id)
 
-@_route(BASE_PATH + '/site/<site_id:int>/create-blog')
+@_route(BASE_PATH + '/site/<site_id:int>/blog/new')
 def site_blog_create(site_id):
     '''
     Route for creating a blog in a given site
@@ -254,7 +254,7 @@ def site_blog_create(site_id):
     from core.ui import blog
     return blog.blog_create(site_id)
 
-@_route(BASE_PATH + '/site/<site_id:int>/create-blog', method='POST')
+@_route(BASE_PATH + '/site/<site_id:int>/blog/new', method='POST')
 def site_blog_create_save(site_id):
     '''
     Route for saving a created blog
