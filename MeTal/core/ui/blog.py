@@ -109,6 +109,8 @@ def blog_create_save(site_id):
     site = get_site(site_id)
     permission = auth.is_site_admin(user, site)
 
+    errors = []
+
     new_blog = Blog(
             site=site,
             name=request.forms.getunicode('blog_name'),
@@ -122,10 +124,31 @@ def blog_create_save(site_id):
     try:
         new_blog.validate()
     except Exception as e:
+        errors.extend(e.args[0])
+
+    if len(errors) == 0:
+        from core.libs.peewee import IntegrityError
+        try:
+            new_blog.setup(user, new_blog.theme)
+        except IntegrityError as e:
+            import re
+            _ = re.compile('UNIQUE constraint failed: (.*)$')
+            m = _.match(str(e))
+            error = {'blog.local_path':'''
+    The file path you have chosen for this blog is the same as another blog in this system.
+    File paths must be unique.
+    ''', 'blog.url':'''
+    The URL you have chosen for this blog is the same as another blog in this system.
+    URLs for blogs must be unique.
+    '''}[m.group(1)]
+            errors.append(error)
+
+    if len(errors) > 0:
+
         status = utils.Status(
             type='danger',
             message='The blog could not be created due to the following problems:',
-            message_list=e.args[0])
+            message_list=errors)
         from core.libs import pytz
         tags = template_tags(site=site,
             user=user)
@@ -142,8 +165,9 @@ def blog_create_save(site_id):
             ** tags.__dict__
             )
         return tpl
+
     else:
-        new_blog.setup(user, new_blog.theme)
+        # new_blog.setup(user, new_blog.theme)
         tags = template_tags(user=user, site=site,
             blog=new_blog)
         status = utils.Status(
@@ -192,7 +216,8 @@ def blog_create_user(blog_id):
 
 
 '''
-# TODO: make this universal to createa user for both a blog and a site
+# TODO: make this universal to
+ createa user for both a blog and a site
 # use ka
 # TODO: add proper transaction support
 def blog_create_user_save(blog_id):

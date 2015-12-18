@@ -425,7 +425,7 @@ class User(BaseModel):
 class SiteBase(BaseModel):
 
     name = TextField(null=False)
-    url = CharField(null=False)
+    url = CharField(null=False, index=True, unique=True)
     path = EnforcedCharField(index=True, unique=True, null=False)
     local_path = EnforcedCharField(index=True, unique=True, null=False)
     base_index = CharField(null=False, default='index')

@@ -187,6 +187,7 @@ def theme_install_to_blog(installed_theme, blog, user):
     cms.purge_blog(blog)
 
     blog.theme = installed_theme.id
+    blog.save()
 
 # to be handled by Site.save()
 

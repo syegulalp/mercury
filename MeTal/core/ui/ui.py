@@ -296,7 +296,6 @@ def edit_category(blog_id, category_id):
                 [category.title, new_category.for_log]])
 
         if request.forms.getunicode('default') == "Y":
-            print ("Y")
             clear_default_categories = Category.update(
                 default=False).where(
                     Category.blog == blog,

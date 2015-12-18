@@ -453,9 +453,7 @@ def save_page(page, user, blog=None):
             primary = None
 
             for n in page.categories:
-                print (n.category.id)
                 if n.category.id not in categories:
-                    print ("Not found")
                     delete_category = PageCategory.delete().where(
                         PageCategory.id == n.id)
                     delete_category.execute()
@@ -588,6 +586,7 @@ def add_page_fileinfo(page, template_mapping, file_path,
             )
 
     except FileInfo.DoesNotExist:
+
         new_fileinfo = FileInfo.create(page=page,
             template_mapping=template_mapping,
             file_path=file_path,
@@ -972,6 +971,7 @@ def build_indexes_fileinfos(templates):
 
         blog = index_mappings[0].template.blog
 
+
         tags = template_tags(blog_id=blog.id)
 
         for i in index_mappings:
@@ -1273,13 +1273,13 @@ def purge_blog(blog):
         ))
 
     includes_to_insert = blog.ssi_templates
-
     includes_inserted = build_indexes_fileinfos(includes_to_insert)
 
     ssi_time = time.clock()
 
     report.append("<hr/>{0} server-side include objects created in {1:.2f} seconds.".format(
         includes_inserted, ssi_time - erase))
+
 
     pages_to_insert = blog.pages()
     pages_inserted = build_pages_fileinfos(pages_to_insert)
@@ -1306,6 +1306,7 @@ def purge_blog(blog):
     report.append("Total processing time: <b>{0:.2f}</b> seconds.".format(end - begin))
     report.append("<hr/>It is recommended that you <a href='{}'>republish this blog</a>.".format(
         '{}/blog/{}/republish'.format(BASE_URL, blog.id)))
+
 
     return report
 
