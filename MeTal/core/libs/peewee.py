@@ -1,4 +1,4 @@
-#@PydevCodeAnalysisIgnore
+# @PydevCodeAnalysisIgnore
 
 # May you do good and not evil
 # May you find forgiveness for yourself and forgive others
@@ -3037,8 +3037,11 @@ class SqliteDatabase(Database):
 
         # Determine which indexes have a unique constraint.
         unique_indexes = set()
+        print ("Table", table)
         cursor = self.execute_sql('PRAGMA index_list("%s")' % table)
-        for _, name, is_unique in cursor.fetchall():
+        for row in cursor.fetchall():
+            name = row[1]
+            is_unique = int(row[2]) == 1
             if is_unique:
                 unique_indexes.add(name)
 
