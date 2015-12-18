@@ -5,7 +5,7 @@ Pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
 ## Features
 * Open source (MIT license)
-* Pure Python; no binaries or external dependencies save for the Python interpreter
+* Pure Python; no binaries or external dependencies save for the Python interpreter (and whatever libraries it uses internally)
 * Static HTML publishing
 * Dynamic page and site previews
 * Plugin system
