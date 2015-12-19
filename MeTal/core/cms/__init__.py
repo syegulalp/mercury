@@ -514,7 +514,7 @@ def save_page(page, user, blog=None):
     status = Status(
         type='success',
         message=' / '.join(msg),
-        vals=(page.title,)
+        vals=(page.for_log,)
         )
 
     tags.status = status
