@@ -226,30 +226,6 @@ def step_4_pre():
 
     with db.atomic():
 
-        '''
-        from core.models import System
-        system_ref = System()
-
-        # TODO: allow overrides through KVs for individual setting
-
-        system_ref.add_kv(
-            object='System',
-            objectid=0,
-            key='MaxPageRevisions',
-            value=20,
-            is_schema=True,
-            is_unique=True)
-
-
-        system_ref.add_kv(
-            object='System',
-            objectid=0,
-            key='AutomaticallyReleaseLocksAfter',
-            value=3600,
-            is_schema=True,
-            is_unique=True)
-        '''
-
         new_site = mgmt.site_create(
             name="Your first site",
             description="The description for your first site.",
@@ -297,11 +273,11 @@ def step_4_pre():
             description="The description for your first blog.",
             url=new_site.url,
             path=new_site.path,
-            theme=new_theme,
-            user=new_user
+            local_path=new_site.path,
+            theme=new_theme
             )
 
-        new_blog.setup()
+        new_blog.setup(new_user)
 
         report.append("Initial blog created successfully with default theme.")
 

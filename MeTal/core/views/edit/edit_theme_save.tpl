@@ -4,12 +4,12 @@
 <form class="form-horizontal" method="post">
 {{!csrf_token}}
     <div class="form-group">
-        <label for="theme_name" class="col-sm-2 control-label">Theme name</label>
+        <label for="theme_title" class="col-sm-2 control-label">Theme name</label>
         <div class="col-sm-9">
-            <input type="text" class="form-control" aria-describedby="theme_name_help"
-            value="{{theme_name}}"
-            id="theme_name" name="theme_name">
-            <span id="theme_name_help" class="help-block">Pick a name to save this theme as.</span>
+            <input type="text" class="form-control" aria-describedby="theme_title_help"
+            value="{{theme_title}}"
+            id="theme_title" name="theme_title">
+            <span id="theme_title_help" class="help-block">Pick a name to save this theme as.</span>
         </div>
     </div>
 

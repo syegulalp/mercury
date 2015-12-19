@@ -337,6 +337,7 @@ class User(BaseModel):
 
     def save_mod(self, **ka):
         # Save modification to user data other than last_login
+        # TODO: make this into a confirmation function a la what we did with blog settings
         errors = []
         if self.name == '' or self.name is None:
             errors.append('Username cannot be blank.')
@@ -357,7 +358,7 @@ class User(BaseModel):
         return BaseModel.save(self, **ka)
 
     def save_pwd(self, **ka):
-        # Save modification to password
+        # Save modification to password and verify user data
         errors = []
 
         if self.encrypted_password is None:
@@ -453,7 +454,7 @@ class Theme(BaseModel):
 
     @property
     def link_format(self):
-        return "{}/system/themes/{}".format(
+        return "{}/system/theme/{}".format(
             BASE_URL, self.id)
 
     @property
@@ -805,6 +806,31 @@ class Blog(SiteBase):
 
 
         return self
+
+    def export_theme(self):
+
+        theme_to_export = self.templates()
+
+        from core.utils import json_dump
+
+        theme = {}
+        theme["title"] = theme_to_export[0].theme.title
+        theme["description"] = theme_to_export[0].theme.description
+        theme["data"] = {}
+
+        for n in theme_to_export:
+            theme["data"][n.id] = {}
+            theme["data"][n.id]["template"] = json_dump(n)
+
+            mappings_to_export = n.mappings
+
+            theme["data"][n.id]["mapping"] = {}
+
+            for m in mappings_to_export:
+                theme["data"][n.id]["mapping"][m.id] = json_dump(m)
+
+        return theme
+
 
     def validate(self):
         errors = []

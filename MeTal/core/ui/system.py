@@ -193,3 +193,9 @@ def system_plugins(errormsg=None):
         **tags.__dict__)
 
     return tpl
+
+@transaction
+def system_delete_theme(blog_id):
+    pass
+    # verify input
+    # make sure this theme isn't attached to an existing blog

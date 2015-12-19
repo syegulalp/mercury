@@ -7,6 +7,7 @@ def default(obj):
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
 
+# move to utils
 def json_dump(obj):
 
     return json.loads(json.dumps(model_to_dict(obj, recurse=False),
@@ -21,6 +22,8 @@ def save_theme_for_blog(blog_id, theme_name):
     # create the directory
     # write the json to it
 
+
+# TODO: deprecated
 def export_theme_for_blog(blog_id, theme_name, theme_description):
 
     from core.models import KeyValue, get_blog

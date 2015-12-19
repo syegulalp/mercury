@@ -11,6 +11,33 @@ from core.libs.bottle import _stderr
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+def default(obj):
+    import datetime
+
+    if isinstance(obj, datetime.datetime):
+        return datetime.datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
+
+def json_dump(obj):
+    import json
+    from core.libs.playhouse.shortcuts import model_to_dict
+
+    return json.loads(json.dumps(model_to_dict(obj, recurse=False),
+            default=default,
+            separators=(', ', ': '),
+            indent=1))
+
+def field_error(e):
+    _ = re.compile('UNIQUE constraint failed: (.*)$')
+    m = _.match(str(e))
+    error = {'blog.local_path':'''
+The file path for this blog is the same as another blog in this system.
+File paths must be unique.
+''', 'blog.url':'''
+The URL for this blog is the same as another blog in this system.
+URLs for blogs must be unique.
+'''}[m.group(1)]
+    return error
+
 def quote_escape(string):
     string = string.replace("'", "&#39")
     string = string.replace('"', "&#34")
@@ -160,6 +187,19 @@ def html_escape(input_string):
     '''
     return html.escape(str(input_string))
 
+def create_basename_core(basename):
+    try:
+        basename = basename.casefold()
+    except Exception:
+        basename = basename.lower()
+
+    basename = basename.replace(' ', '-')
+    basename = re.sub(r'<[^>]*>', r'', basename)
+    basename = re.sub(r'[^a-z0-9\-]', r'', basename)
+    basename = re.sub(r'\-\-', r'-', basename)
+    basename = urllib.parse.quote_plus(basename)
+
+    return basename
 
 def create_basename(input_string, blog):
     '''
@@ -176,19 +216,7 @@ def create_basename(input_string, blog):
         input_string = "page"
 
     basename = input_string
-
-    try:
-        basename = basename.casefold()
-    except Exception:
-        basename = basename.lower()
-
-    basename = basename.replace(' ', '-')
-    basename = re.sub(r'<[^>]*>', r'', basename)
-    basename = re.sub(r'[^a-z0-9\-]', r'', basename)
-    basename = re.sub(r'\-\-', r'-', basename)
-    basename = urllib.parse.quote_plus(basename)
-
-    basename_test = basename
+    basename_test = create_basename_core(basename)
 
     from core.models import Page
 

@@ -131,17 +131,8 @@ def blog_create_save(site_id):
         try:
             new_blog.setup(user, new_blog.theme)
         except IntegrityError as e:
-            import re
-            _ = re.compile('UNIQUE constraint failed: (.*)$')
-            m = _.match(str(e))
-            error = {'blog.local_path':'''
-    The file path you have chosen for this blog is the same as another blog in this system.
-    File paths must be unique.
-    ''', 'blog.url':'''
-    The URL you have chosen for this blog is the same as another blog in this system.
-    URLs for blogs must be unique.
-    '''}[m.group(1)]
-            errors.append(error)
+            from core.utils import field_error
+            errors.append(field_error(e))
 
     if len(errors) > 0:
 
@@ -215,117 +206,6 @@ def blog_create_user(blog_id):
     return tpl
 
 
-'''
-# TODO: make this universal to
- createa user for both a blog and a site
-# use ka
-# TODO: add proper transaction support
-def blog_create_user_save(blog_id):
-
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_admin(user, blog)
-
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-
-    new_user = mgmt.create_user_blog(
-        name=request.forms.getunicode('user_name'),
-        email=request.forms.getunicode('user_email'),
-        permission=127,
-        blog=blog,
-        site=blog.site
-        )
-
-    redirect(BASE_URL + "/blog/" + str(blog.id) + "/user/" + str(new_user.id))
-'''
-
-'''
-# TODO: make this universal to createa user for both a blog and a site
-# use ka
-@transaction
-def blog_user_edit(blog_id, user_id, status=None):
-
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_admin(user, blog)
-    edit_user = get_user(user_id=user_id)
-
-    # TODO: add back in referer handler for new menus?
-    referer = request.headers.get('Referer')
-
-    if (referer is None
-        or edit_user.last_login is None
-        or re.match(re.escape("/blog/" + str(blog.id) + "/users"), referer) is None):
-
-        referer = BASE_URL + "/blog/" + str(blog.id) + "/users"
-
-    if edit_user.last_login is None:
-
-        status = utils.Status(
-            type='success',
-            message='User <b>{}</b> (#{}) successfully created.',
-            vals=(edit_user.name, edit_user.id)
-            )
-
-        edit_user.last_login = datetime.datetime.now()
-
-        edit_user.save()
-
-    tags = template_tags(blog_id=blog.id,
-        user=user,
-        status=status)
-
-    return blog_user_edit_output(tags, edit_user)
-
-
-# TODO: phasing this functions out along with the other blog user edit stuff
-# use ka
-@transaction
-def blog_user_edit_save(blog_id, user_id):
-
-    user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
-    permission = auth.is_blog_admin(user, blog)
-    edit_user = get_user(user_id=user_id)
-
-    # TODO: move to its own function
-
-    try:
-        mgmt.update_user(edit_user,
-            name=request.forms.getunicode('user_name'),
-            email=request.forms.getunicode('user_email')
-            )
-    except peewee.IntegrityError:
-        status = utils.Status(
-            type='danger',
-            message='Error: user <b>{}</b> (#{}) cannot be changed to the same name or email as another user.',
-            vals=(edit_user.name, edit_user.id)
-            # TODO: use standard form exception?
-            )
-    else:
-        status = utils.Status(
-            type='success',
-            message='Data for user <b>{}</b> (#{}) successfully updated.',
-            vals=(edit_user.name, edit_user.id)
-            )
-
-    tags = template_tags(blog_id=blog.id,
-        user=user,
-        status=status)
-
-    return blog_user_edit_output(tags, edit_user)
-
-def blog_user_edit_output(tags, edit_user):
-
-    tpl = template('edit/edit_user_settings',
-        section_title="Edit blog user #" + str(edit_user.id),
-        search_context=(search_context['sites'], None),
-        edit_user=edit_user,
-        **tags.__dict__)
-
-    return tpl
-'''
 @transaction
 def blog_list_users(blog_id):
 
@@ -507,15 +387,15 @@ def blog_media_edit_save(blog_id, media_id):
 
         status = utils.Status(
             type='success',
-            message='Changes to media <b>#{} ({})</b> saved successfully.',
-            vals=(media.id, media.friendly_name)
+            message='Changes to media <b>{}</b> saved successfully.'.format(
+                media.for_display)
             )
     else:
 
         status = utils.Status(
             type='warning',
-            message='No discernible changes submitted for media <b>#{} ({})</b>.',
-            vals=(media.id, media.friendly_name)
+            message='No discernible changes submitted for media <b>{}</b>.'.format(
+                media.id, media.for_display)
             )
 
     logger.info("Media {} edited by user {}.".format(
@@ -903,29 +783,29 @@ def blog_settings_save(blog_id, nav_setting):
     blog.media_path = _get('blog_media_path', blog.media_path)
 
     from core.utils import Status
+    from core.libs.peewee import IntegrityError
+    errors = []
 
     try:
         blog.validate()
-    except Exception as e:
-        return Status(
-            type='warning',
-            message='Settings for <b>{}</b> are not valid:',
-            vals=(blog.for_log,),
-            message_list=(e,))
-
-    try:
         blog.save()
+    except IntegrityError as e:
+        from core.utils import field_error
+        errors.append(field_error(e))
     except Exception as e:
+        errors.extend(e.args[0])
+
+    if len(errors) > 0:
+
         status = Status(
             type='danger',
-            message='Settings for <b>{}</b> not saved:',
-            vals=(blog.for_log,),
-            message_list=(e,))
+            message='Blog settings could not be saved due to the following problems:',
+            message_list=errors)
     else:
         status = Status(
             type='success',
-            message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/republish'>republish this blog</a>.",
-            vals=(blog.name, BASE_URL, blog.id))
+            message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/republish'>republish this blog</a>.".format(
+                blog.for_display, BASE_URL, blog.id))
 
         logger.info("Settings for blog {} edited by user {}.".format(
             blog.for_log,
@@ -1079,6 +959,7 @@ def blog_publish_process(blog_id):
 
     return tpl
 
+
 @transaction
 def blog_save_theme(blog_id):
     user = auth.is_logged_in(request)
@@ -1088,11 +969,44 @@ def blog_save_theme(blog_id):
     tags = template_tags(blog=blog,
             user=user)
 
-    from core.utils import Status
+    from core.utils import Status, create_basename_core
 
     if request.method == 'POST':
 
-        from core import theme
+        # need to validate theme data, too
+
+        # eventually move all this into its own module somewhere
+
+        theme = Theme(
+            title=request.forms.getunicode('theme_title'),
+            description=request.forms.getunicode('theme_description'),
+            json=blog.export_theme())
+
+        theme.save()
+
+        from settings import THEME_FILE_PATH, _sep
+        import os, json
+
+        directory_name = create_basename_core(theme.title)
+        dirs = [x[0] for x in os.walk(THEME_FILE_PATH)]
+        dir_name_ext = 0
+        dir_name_full = directory_name
+        while 1:
+            if dir_name_full in dirs:
+                print('Duplicate directory found')
+                dir_name_ext += 1
+                dir_name_full = directory_name + "-" + str(dir_name_ext)
+                continue
+            else:
+                print('No dupe found found')
+                break
+
+        with open(THEME_FILE_PATH + _sep + dir_name_full + _sep +
+            "templates.json", "w", encoding='utf-8') as output_file:
+            output_file.write(json.dumps(theme,
+            indent=1,
+            sort_keys=True,
+            allow_nan=True))
 
 
         save_tpl = 'listing/report'
@@ -1115,12 +1029,11 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
     tpl = template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
         search_context=(search_context['blog'], blog),
-        theme_name=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
-        theme_description=blog.theme.description
+        theme_title=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
+        theme_description=blog.theme.description,
         ** tags.__dict__)
 
     # TODO: also get theme description
-
     return tpl
 
 @transaction
