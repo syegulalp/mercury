@@ -16,7 +16,7 @@ segment_string = """
 </ul></span></li>"""
 
 submenu_string = '''
-<li><a href="{}">{}</a></li>
+<li><a title="{}" href="{}">{}</a></li>
 '''
 
 divider_string = '''
@@ -53,18 +53,20 @@ menus = {
     'dashboard_label':{
         'type':'label',
         'text':lambda x:'Dashboard',
+        'hover':'Overview of your posts and other activity',
         'path': lambda x: BASE_URL
     },
     'system_queue': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/queue',
         'text': lambda x: 'System publishing queue',
+        'hover':'Systemwide view of all posts queued for publishing',
         'parent':'system_menu'},
     'system_log': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/log',
         'text': lambda x: 'System activity log',
-
+        'hover':'Details about publishing activity, user behaviors, etc.',
         'parent':'system_menu'},
     'system_plugins': {
         'type': 'label',
@@ -76,7 +78,7 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/info',
         'text': lambda x: 'System information',
-
+        'hover':'Information about this application',
         'parent':'system_menu'},
     'sites_div': {
         'type': 'divider',
@@ -86,13 +88,13 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/sites',
         'text': lambda x: 'Manage sites',
-
+        'hover':'List all available sites and make changes to them',
         'parent':'system_menu'},
     'create_site': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/site/new',
         'text': lambda x: 'Create site',
-
+        'hover':'Create a new, empty site in this installation',
         'parent':'system_menu'},
     'users_div': {
         'type': 'divider',
@@ -102,17 +104,20 @@ menus = {
         'type': 'button',
         'path': lambda x: BASE_URL + '/system/users',
         'text': lambda x: 'Manage users',
+        'hover':'List all users for this application',
         'parent':'system_menu'},
     'system_edit_user': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/user/{}'.format(x),
         'text': lambda x: 'Edit user #{}'.format(x.id),
         'parent_context':lambda x:None,
+        'hover':'Edit a specific user\'s data',
         'parent':'system_manage_users'},
     'system_create_user': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/user/new',
         'text': lambda x: 'Create user',
+        'hover':'Create a new user and assign site or blog permissions',
         'parent':'system_menu'
         },
     'site_menu': {
@@ -348,10 +353,14 @@ def generate_menu(context, context_object):
                 if g['type'] == 'divider':
                     str = divider_string.format(g['text'](context_object))
                 elif g['type'] == 'button':
-                    str = str = submenu_string.format(g['path'](context_object),
+                    str = str = submenu_string.format(
+                        g.get('hover', ''),
+                        g['path'](context_object),
                         g['text'](context_object))
                 elif g['type'] == 'label':
-                    str = submenu_string.format(g['path'](context_object),
+                    str = submenu_string.format(
+                        g.get('hover', ''),
+                        g['path'](context_object),
                         g['text'](context_object))
 
                 _.append(str)
