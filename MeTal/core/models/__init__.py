@@ -820,14 +820,14 @@ class Blog(SiteBase):
 
         for n in theme_to_export:
             theme["data"][n.id] = {}
-            theme["data"][n.id]["template"] = json_dump(n)
+            theme["data"][n.id]["template"] = json_dump2(n)
 
             mappings_to_export = n.mappings
 
             theme["data"][n.id]["mapping"] = {}
 
             for m in mappings_to_export:
-                theme["data"][n.id]["mapping"][m.id] = json_dump(m)
+                theme["data"][n.id]["mapping"][m.id] = json_dump2(m)
 
         return theme
 

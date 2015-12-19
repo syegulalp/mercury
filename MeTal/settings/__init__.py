@@ -21,13 +21,13 @@ PRODUCT_NAME = "MeTal " + __version__
 DATA_FILE_PATH = _sep + 'data'
 EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
 PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + 'plugins'
-THEME_FILE_PATH = DATA_FILE_PATH + _sep + 'themes'
 
 # Top-level path to the application.
 # Automatically calculated; does not need to be changed.
 
 PLUGIN_PATH = APPLICATION_PATH + PLUGIN_FILE_PATH
 STATIC_FILE_PATH = APPLICATION_PATH + _sep + 'static'
+THEME_FILE_PATH = APPLICATION_PATH + DATA_FILE_PATH + _sep + 'themes'
 STATIC_PATH = '/static'
 
 # Database path for Sqlite. Leave this as it is

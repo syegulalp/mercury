@@ -998,12 +998,14 @@ def blog_save_theme(blog_id):
                 dir_name_full = directory_name + "-" + str(dir_name_ext)
                 continue
             else:
-                print('No dupe found found')
+                print('No dupe found')
+                #
                 break
-
-        with open(THEME_FILE_PATH + _sep + dir_name_full + _sep +
+        dir_name_final = THEME_FILE_PATH + _sep + dir_name_full
+        os.makedirs(dir_name_final)
+        with open(dir_name_final + _sep +
             "templates.json", "w", encoding='utf-8') as output_file:
-            output_file.write(json.dumps(theme,
+            output_file.write(json.dumps(theme.json,
             indent=1,
             sort_keys=True,
             allow_nan=True))
@@ -1051,11 +1053,7 @@ def blog_apply_theme(blog_id, theme_id):
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
-        '''with db.atomic():
-            n = mgmt.theme_apply_to_blog(theme, blog, user)
-            # queue to republish as per changes to blog settings
-        return n
-        '''
+        mgmt.theme_apply_to_blog(theme, blog, user)
 
         status = Status(
             type='success',

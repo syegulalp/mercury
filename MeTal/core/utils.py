@@ -17,6 +17,15 @@ def default(obj):
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
 
+def json_dump2(obj):
+    import json
+    from core.libs.playhouse.shortcuts import model_to_dict
+
+    return json.dumps(model_to_dict(obj, recurse=False),
+            default=default,
+            separators=(', ', ': '),
+            indent=1)
+
 def json_dump(obj):
     import json
     from core.libs.playhouse.shortcuts import model_to_dict
