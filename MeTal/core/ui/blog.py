@@ -1053,7 +1053,9 @@ def blog_apply_theme(blog_id, theme_id):
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
-        mgmt.theme_apply_to_blog(theme, blog, user)
+        from core.models import db
+        with db.transaction() as txn:
+            mgmt.theme_apply_to_blog(theme, blog, user)
 
         status = Status(
             type='success',
@@ -1061,10 +1063,8 @@ def blog_apply_theme(blog_id, theme_id):
             message='''
 Theme <b>{}</b> was successfully applied to blog <b>{}</b>.</p>
 It is recommended that you <a href="{}">republish this blog.</a>
-'''.format(theme.for_display, blog.for_display, ''),
-            action='Return to theme list',
-            url='{}/blog/{}/themes'.format(
-                BASE_URL, blog.id)
+'''.format(theme.for_display, blog.for_display, '{}/blog/{}/republish'.format(
+                BASE_URL, blog.id))
             )
 
     else:

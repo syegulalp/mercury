@@ -812,6 +812,7 @@ class Blog(SiteBase):
         theme_to_export = self.templates()
 
         from core.utils import json_dump
+        import json
 
         theme = {}
         theme["title"] = theme_to_export[0].theme.title
@@ -820,16 +821,19 @@ class Blog(SiteBase):
 
         for n in theme_to_export:
             theme["data"][n.id] = {}
-            theme["data"][n.id]["template"] = json_dump2(n)
+            theme["data"][n.id]["template"] = json_dump(n)
 
             mappings_to_export = n.mappings
 
             theme["data"][n.id]["mapping"] = {}
 
             for m in mappings_to_export:
-                theme["data"][n.id]["mapping"][m.id] = json_dump2(m)
+                theme["data"][n.id]["mapping"][m.id] = json_dump(m)
 
-        return theme
+        return json.dumps(theme,
+            indent=1,
+            sort_keys=True,
+            allow_nan=True)
 
 
     def validate(self):

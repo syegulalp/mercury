@@ -119,7 +119,7 @@ def theme_install_to_blog(installed_theme, blog, user):
 
     json_obj = json.loads(installed_theme.json)
     templates = json_obj["data"]
-    kvs = json_obj["kv"]
+    # kvs = json_obj["kv"]
 
     # theme_ids = {}
 
@@ -147,8 +147,8 @@ def theme_install_to_blog(installed_theme, blog, user):
             mapping_obj.template = table_obj.id
             mapping_obj.save()
 
-    kv_index = {}
-    kx = System()
+    # kv_index = {}
+    # kx = System()
 
     # system KVs
     # replace this and the other with a general loop routine
@@ -162,7 +162,7 @@ def theme_install_to_blog(installed_theme, blog, user):
     # Theme - set to installed theme ID
     # Blog - set to installed blog ID
     # everything else - parent appropriately and preserve
-
+    '''
     for kv in kvs:
         kv_current = kvs[kv]
         new_kv = kx.add_kv(**kv_current)
@@ -182,6 +182,7 @@ def theme_install_to_blog(installed_theme, blog, user):
 
         kv_to_change.parent = kv_index[parent]
         kv_to_change.save()
+    '''
 
     from core import cms
     cms.purge_blog(blog)
