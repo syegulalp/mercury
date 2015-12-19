@@ -62,13 +62,13 @@
 
 <div id="page_save_group" class="form-group" style="line-height: 2.5em;">
     <input type="hidden" id="save" name="save" value="{{page.status_id}}">
-    <div class="btn-group">
+    <div class="btn-group btn-block">
         <button onclick="page_save({{save_action[page.status_id][0]}})" type="button" accesskey="s"
-            id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}}">
+            id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}} col-xs-10">
             {{save_action[page.status_id][1]}}
             <div id="save_animation"></div>
             </button>
-        <button type="button" class="btn btn-sm btn-{{status_badge[page.status_id]}} dropdown-toggle"
+        <button type="button" class="btn btn-sm btn-{{status_badge[page.status_id]}} dropdown-toggle col-xs-2"
         data-toggle="dropdown" aria-expanded="false">
         <span class="caret"></span>
         <span class="sr-only">Toggle Dropdown</span>
@@ -88,9 +88,9 @@
         </ul>
     </div>
     % if page.id is not None:
-    <div id="preview_group" class="btn-group">
-        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary">Preview</button>
-        <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+    <div id="preview_group" class="btn-group btn-block">
+        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-10">Preview</button>
+        <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary dropdown-toggle col-xs-2" data-toggle="dropdown" aria-expanded="false">
         <span class="caret"></span>
         <span class="sr-only">Toggle Dropdown</span>
         </button>
