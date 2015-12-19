@@ -148,30 +148,27 @@ def template_edit_save(template_id):
         except TemplateSaveException as e:
             status = Status(
                 type='danger',
-                message="Error saving template <b>{}</b>:",
-                vals=(tpl.for_log,),
+                message="Error saving template <b>{}</b>:".format(tpl.for_display),
                 message_list=(e,))
         except PageNotChanged as e:
             status = Status(
                 type='success',
-                message="Template <b>{}</b> was unchanged.",
-                vals=(tpl.for_log,)
+                message="Template <b>{}</b> was unchanged.".format(tpl.for_display)
                 )
 
         except BaseException as e:
             raise e
             status = Status(
                 type='warning',
-                message="Problem saving template <b>{}</b>: <br>",
-                vals=(tpl.for_log,),
+                message="Problem saving template <b>{}</b>: <br>".format(tpl.for_display),
                 message_list=(e,))
 
         else:
             template_preview_delete(tpl)
             status = Status(
                 type='success',
-                message="Template <b>{}</b> saved successfully. {}",
-                vals=(tpl.for_log, message)
+                message="Template <b>{}</b> saved successfully. {}".format(tpl.for_display,
+                    message)  # TODO: move messages into message lister
                 )
 
     tags = template_tags(template_id=template_id,

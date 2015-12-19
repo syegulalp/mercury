@@ -85,6 +85,8 @@ def system_new_user():
 
         from core.libs import peewee
 
+        # TODO: make this into a confirmation function a la what we did with blog settings
+
         new_user = User(
             name=new_name,
             email=new_email,
@@ -100,7 +102,7 @@ def system_new_user():
                 message='There were problems creating the new user:',
                 message_list=e.args[0]
                 )
-
+        # TODO: replace with integrity error utility
         except peewee.IntegrityError as e:
             status = utils.Status(
                 type='danger',
@@ -158,25 +160,21 @@ def system_user(user_id, path):
 
             try:
                 user_to_edit.save()
-                '''
-                user_to_edit = mgmt.update_user(user_to_edit, user,
-                    name=new_name,
-                    email=new_email
-                    )
-                '''
+
             except peewee.IntegrityError:
                 status = utils.Status(
                     type='danger',
-                    message='Error: user <b>{}</b> (#{}) cannot be changed to the same name or email as another user.',
-                    vals=(user_to_edit.name, user_to_edit.id)
-                    # TODO: use standard form exception?
+                    message='Error: user <b>{}</b>  cannot be changed to the same name or email as another user.'.format(
+                        user_to_edit.for_display)
                     )
             else:
                 status = utils.Status(
                     type='success',
-                    message='Data for user <b>{}</b> (#{}) successfully updated.',
-                    vals=(user_to_edit.name, user_to_edit.id)
+                    message='Data for user <b>{}</b>successfully updated.'.format(
+                        user_to_edit.for_display)
                     )
+
+        # TODO: all actions could be consolidated w/o multiple status lines
 
         if request.forms.getunicode('delete_permissions') is not None:
 
@@ -188,8 +186,7 @@ def system_user(user_id, path):
                 raise e
             status = utils.Status(
                 type='success',
-                message='Data for user <b>{}</b> (#{}) successfully updated.',
-                vals=(user_to_edit.name, user_to_edit.id)
+                message='Data for user <b>{}</b> successfully updated.'.format(user_to_edit.for_display)
                 )
 
         if request.forms.getunicode('submit_permissions') is not None:

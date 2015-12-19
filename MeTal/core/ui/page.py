@@ -53,8 +53,7 @@ def page_edit(page_id):
     if page.modified_date is None:
         status = utils.Status(
             type='info',
-            message="Page <b>{}</b> created.",
-            vals=(page.title,))
+            message="Page <b>{}</b> created.".format(page.for_log))
         page.modified_date = datetime.datetime.utcnow()
         page.save(user)
 
@@ -136,8 +135,7 @@ def page_delete(page_id):
 
     status = utils.Status(
         type='success',
-        message='Page <b>{}</b> (#{}) has been deleted from the database.',
-        vals=(page.title, page.id)
+        message='Page <b>{}</b> has been deleted from the database.'.format(page.for_log)
         )
 
     logger.info("Page {} deleted by user {}.".format(
@@ -340,8 +338,8 @@ def page_revision_restore(page_id, revision_id):
 
     status = utils.Status(
         type='success',
-        message='Page <b>{}</b> (#{}) has been restored from backup dated {}.',
-        vals=(page.title, page.id, page_revision.modified_date)
+        message='Page <b>{}</b>has been restored from backup dated {}.'.format(page.for_display,
+            page_revision.modified_date)
         )
 
     tags = template_tags(page_id=page_id,
