@@ -104,7 +104,7 @@ def system_plugins():
     return system.system_plugins()
 
 
-@_route(BASE_PATH + "/system/plugins/<plugin_id:int>")
+@_route(BASE_PATH + "/system/plugin/<plugin_id:int>")
 def plugin_settings(plugin_id):
     '''
     Route for editing the settings of a given plugin
@@ -113,7 +113,7 @@ def plugin_settings(plugin_id):
     return system.plugin_settings(plugin_id)
 
 
-@_route(BASE_PATH + "/system/plugins/register/<plugin_path>")
+@_route(BASE_PATH + "/system/plugin/register/<plugin_path>")
 def register_plugin(plugin_path):
     '''
     Route for registering a plugin with the system
@@ -121,7 +121,7 @@ def register_plugin(plugin_path):
     from core.ui import system
     return system.register_plugin(plugin_path)
 
-@_route(BASE_PATH + "/system/plugins/<plugin_id:int>/enable")
+@_route(BASE_PATH + "/system/plugin/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
     '''
     Route to enable a plugin
@@ -131,7 +131,7 @@ def enable_plugin(plugin_id):
     enable_plugin(plugin_id)
 
 
-@_route(BASE_PATH + "/system/plugins/<plugin_id:int>/disable")
+@_route(BASE_PATH + "/system/plugin/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
     '''
     Route to disable a plugin
@@ -152,6 +152,11 @@ def system_queue():
 def system_themes():
     from core.ui import system
     return system.system_list_themes()
+
+@_route(BASE_PATH + "/system/theme/<theme_id:int>")
+def system_theme_data(theme_id):
+    from core.ui import system
+    return system.system_theme_data(theme_id)
 
 @_route(BASE_PATH + "/system/log")
 def system_log():

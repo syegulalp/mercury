@@ -160,7 +160,7 @@ def plugin_settings(plugin_id, errormsg=None):
     tpl = template('system/plugin',
         plugin=plugin,
         search_context=(search_context['sites'], None),
-        menu=generate_menu('system_plugin', plugin),
+        menu=generate_menu('system_plugin_data', plugin),
         **tags.__dict__)
 
     return tpl
@@ -194,6 +194,29 @@ def system_plugins(errormsg=None):
     return tpl
 
 @transaction
+def system_theme_data(theme_id):
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    from core.models import Theme
+    theme = Theme.get(Theme.id == theme_id)
+
+    tags = template_tags(user=user)
+
+    report = ['Theme title: {}'.format(theme.title),
+        'Theme description: {}'.format(theme.description),
+        'Theme directory: {}'.format(theme.json),
+        '<hr>'
+        ]
+
+    tpl = template('listing/report',
+        search_context=(search_context['sites'], None),
+        menu=generate_menu('system_theme_data', theme),
+        report=report,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
 def system_list_themes():
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
@@ -202,7 +225,6 @@ def system_list_themes():
     themes = Theme.select().order_by(Theme.id)
 
     tags = template_tags(user=user)
-
 
     paginator, rowset = utils.generate_paginator(themes, request)
 

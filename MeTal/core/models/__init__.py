@@ -1958,7 +1958,7 @@ class Plugin(BaseModel):
 
     @property
     def link_format(self):
-        return '{}/system/plugins/{}'.format(BASE_URL, self.id)
+        return '{}/system/plugin/{}'.format(BASE_URL, self.id)
 
     '''
     @property

@@ -82,8 +82,26 @@ def erase_theme(blog):
     return p, m, n
 
 
-# since we return a theme instance anyway,
-# why not Theme.install_to_system?
+def theme_install_to_system2(theme_directory):
+    pass
+    # open the theme directory
+    # get the __manifest__
+    # save the details to a new theme entry
+
+def theme_apply_to_blog2():
+    pass
+    # this should actually be in the Theme schema
+    # apply_ and install_ are being merged, since
+    # I don't think there are any circumstances where
+    # they are used separately anyway
+    # erase theme - purge fileinfos from existing blog
+    # cycle through each file in the directory
+    # read it and create the appropriate template
+    # purge_blog to create fileinfos
+    # we should do this in stages with the UI, so that
+    # there's opportunity for feedback and progress tracking
+    # but that's a future to-do
+
 
 def theme_install_to_system(theme_data):
 

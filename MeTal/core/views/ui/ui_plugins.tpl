@@ -19,7 +19,7 @@
 			<td><label for="check-{{plugin.id}}">{{plugin.id}}</label></td>
 			<td>
 			% if plugin.enabled:
-			<b><a href="{{settings.BASE_URL}}/system/plugins/{{plugin.id}}">{{plugin.friendly_name}}</a>
+			<b><a href="{{settings.BASE_URL}}/system/plugin/{{plugin.id}}">{{plugin.friendly_name}}</a>
             (v. {{plugin.version}})</b>
             % else:
             <i>{{settings.PLUGIN_FILE_PATH}}{{settings._sep}}{{plugin.path}}</i>
@@ -29,9 +29,9 @@
 			<td>{{settings.PLUGIN_FILE_PATH}}{{settings._sep}}{{plugin.path}}</td>
 			<td>
 			% if plugin.enabled:
-			<a href="{{settings.BASE_URL}}/system/plugins/{{plugin.id}}/disable"><span class="label label-success">Enabled</span></a>
+			<a href="{{settings.BASE_URL}}/system/plugin/{{plugin.id}}/disable"><span class="label label-success">Enabled</span></a>
 			% else:
-			<a href="{{settings.BASE_URL}}/system/plugins/{{plugin.id}}/enable"><span class="label label-default">Disabled</span></a>
+			<a href="{{settings.BASE_URL}}/system/plugin/{{plugin.id}}/enable"><span class="label label-default">Disabled</span></a>
 			% end
 		</tr>
 	% end

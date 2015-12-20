@@ -74,15 +74,28 @@ menus = {
         'hover':'Details about publishing activity, user behaviors, etc.',
         'parent':'system_menu'},
     'system_plugins': {
-        'type': 'label',
+        'type': 'button',
         'path': lambda x: BASE_URL + '/system/plugins',
         'text': lambda x: 'Plugins',
+        'parent':'system_menu'
+        },
+    'system_plugin_data': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/plugin/{}'.format(x.id),
+        'text': lambda x: 'Plugin #{}'.format(x.id),
+        'parent':'system_plugins'
         },
     'system_manage_themes': {
         'type': 'button',
         'path': lambda x: BASE_URL + '/system/themes',
         'text': lambda x: 'Themes',
         'parent':'system_menu'
+        },
+    'system_theme_data': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/theme/{}'.format(x.id),
+        'text': lambda x: 'Theme #{}'.format(x.id),
+        'parent':'system_manage_themes'
         },
     'system_delete_theme': {
         'type': 'label',
@@ -437,9 +450,9 @@ colsets = {
             {'field':'status',
                 'label':'Status',
                 'format_raw':lambda x: (
-                    '<a href="{}/system/plugins/{}/disable"><span class="label label-success">Enabled</span></a>'.format(
+                    '<a href="{}/system/plugin/{}/disable"><span class="label label-success">Enabled</span></a>'.format(
                         BASE_URL, x.id) if x.enabled
-                        else '<a href="{}/system/plugins/{}/enable"><span class="label label-default">Disabled</span></a>'.format(
+                        else '<a href="{}/system/plugin/{}/enable"><span class="label label-default">Disabled</span></a>'.format(
                         BASE_URL, x.id)
                         )
                 }
