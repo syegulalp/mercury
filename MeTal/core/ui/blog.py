@@ -965,6 +965,7 @@ def blog_save_theme(blog_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
+    reason = auth.check_template_lock(blog, True)
 
     tags = template_tags(blog=blog,
             user=user)
@@ -973,17 +974,43 @@ def blog_save_theme(blog_id):
 
     if request.method == 'POST':
 
-        # need to validate theme data, too
-
-        # eventually move all this into its own module somewhere
-
         theme = Theme(
             title=request.forms.getunicode('theme_title'),
             description=request.forms.getunicode('theme_description'),
-            json=blog.export_theme())
+            json='')
+
+        export = blog.export_theme2(theme.title, theme.description)
+
+        from settings import THEME_FILE_PATH, _sep
+        import os
+
+        directory_name = create_basename_core(theme.title)
+        dirs = [x[0] for x in os.walk(THEME_FILE_PATH)]
+        dir_name_ext = 0
+        dir_name_full = directory_name
+        while 1:
+            if dir_name_full in dirs:
+                print('Duplicate directory found')
+                dir_name_ext += 1
+                dir_name_full = directory_name + "-" + str(dir_name_ext)
+                continue
+            else:
+                print('No dupe found')
+                #
+                break
+        dir_name_final = THEME_FILE_PATH + _sep + dir_name_full
+        os.makedirs(dir_name_final)
+
+        theme.json = dir_name_full
 
         theme.save()
 
+        for n in export:
+            with open(dir_name_final + _sep +
+                n, "w", encoding='utf-8') as output_file:
+                output_file.write(export[n])
+
+        '''
         from settings import THEME_FILE_PATH, _sep
         import os, json
 
@@ -1010,6 +1037,7 @@ def blog_save_theme(blog_id):
             sort_keys=True,
             allow_nan=True))
 
+        '''
 
         save_tpl = 'listing/report'
         status = Status(
@@ -1043,6 +1071,7 @@ def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
+    reason = auth.check_template_lock(blog, True)
 
     theme = get_theme(theme_id)
 

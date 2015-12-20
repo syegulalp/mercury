@@ -189,13 +189,94 @@ def system_plugins(errormsg=None):
         menu=generate_menu('system_plugins', None),
         rowset=rowset,
         colset=colsets['plugins'],
-        # list_actions=list_actions,
         **tags.__dict__)
 
     return tpl
 
 @transaction
-def system_delete_theme(blog_id):
-    pass
-    # verify input
-    # make sure this theme isn't attached to an existing blog
+def system_list_themes():
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    # reason = auth.check_template_lock(blog, True)
+    from core.models import Theme
+    themes = Theme.select().order_by(Theme.id)
+
+    tags = template_tags(user=user)
+
+
+    paginator, rowset = utils.generate_paginator(themes, request)
+
+    tpl = template('listing/listing_ui',
+        paginator=paginator,
+        search_context=(search_context['sites'], None),
+        menu=generate_menu('system_manage_themes', None),
+        rowset=rowset,
+        colset=colsets['themes_site'],
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
+def system_delete_theme(theme_id):
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+
+    # TODO: attach an installing user to the theme
+    # allow that user to delete
+
+    tags = template_tags(user=user)
+    from core.models import Theme
+    from settings import BASE_URL
+    from core.utils import Status
+
+    theme = Theme.get(Theme.id == theme_id)
+
+    if request.forms.getunicode('confirm') == user.logout_nonce:
+
+        import os
+        from settings import THEME_FILE_PATH, _sep
+        import shutil
+        shutil.rmtree(THEME_FILE_PATH + _sep + theme.json)
+
+        theme.delete_instance()
+
+        status = Status(
+            type='success',
+            close=False,
+            message='''
+Theme <b>{}</b> was successfully deleted from the system.</p>
+'''.format(theme.for_log),
+            action='Return to theme list',
+            url='{}/system/themes'.format(
+                BASE_URL)
+)
+
+    else:
+
+
+
+        status = Status(
+            type='warning',
+            close=False,
+            message='''
+You are about to remove theme <b>{}</b>.</p>
+<p><b>Are you sure you want to do this?</b></p>
+'''.format(theme.for_display),
+            url='{}/system/theme/{}/delete'.format(
+                BASE_URL, theme.id),
+            confirm={'id':'delete',
+                'name':'confirm',
+                'label':'Yes, I want to delete this theme',
+                'value':user.logout_nonce},
+            deny={'label':'No, don\'t delete this theme',
+                'url':'{}/system/themes'.format(
+                BASE_URL)}
+            )
+
+    tags.status = status
+    tpl = template('listing/report',
+        menu=generate_menu('system_delete_theme', theme),
+        search_context=(search_context['sites'], None),
+        **tags.__dict__)
+
+    return tpl

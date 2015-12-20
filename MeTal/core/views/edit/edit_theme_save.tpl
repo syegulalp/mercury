@@ -14,7 +14,7 @@
     </div>
 
     <div class="form-group">
-        <label for="theme_description" class="col-sm-2 control-label">Theme name</label>
+        <label for="theme_description" class="col-sm-2 control-label">Theme description</label>
         <div class="col-sm-9">
             <input type="text" class="form-control" aria-describedby="theme_description_help"
             value="{{theme_description}}"

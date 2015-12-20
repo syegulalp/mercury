@@ -451,6 +451,7 @@ class Theme(BaseModel):
     title = TextField()
     description = TextField()
     json = TextField(null=True)
+    # path = TextField()
 
     @property
     def link_format(self):
@@ -806,6 +807,47 @@ class Blog(SiteBase):
 
 
         return self
+
+    def export_theme2(self, title, description):
+
+        theme_to_export = self.templates()
+
+        from core.utils import json_dump, create_basename_core
+        import json
+
+        theme = {}
+
+        theme_manifest = {}
+        theme_manifest["title"] = title  # theme_to_export[0].theme.title
+        theme_manifest["description"] = description  # theme_to_export[0].theme.description
+
+        theme['__manifest__.json'] = json.dumps(theme_manifest,
+            indent=1,
+            sort_keys=True,
+            allow_nan=True)
+
+        for n in theme_to_export:
+            template = {}
+            template['template'] = json_dump(n)
+
+            mappings_to_export = n.mappings
+
+            template['mappings'] = {}
+
+            for m in mappings_to_export:
+                template['mappings'][m.id] = json_dump(m)
+
+            filename = "{}-{}.json".format(
+                create_basename_core(n.title),
+                str(n.id))
+
+            theme[filename] = json.dumps(template,
+                indent=1,
+                sort_keys=True,
+                allow_nan=True)
+
+        return theme
+
 
     def export_theme(self):
 

@@ -148,6 +148,11 @@ def system_queue():
     from core.ui import system
     return system.system_queue()
 
+@_route(BASE_PATH + "/system/themes")
+def system_themes():
+    from core.ui import system
+    return system.system_list_themes()
+
 @_route(BASE_PATH + "/system/log")
 def system_log():
     '''
@@ -898,9 +903,10 @@ def apply_theme_to_blog(blog_id, theme_id):
     from core.ui import blog
     return blog.blog_apply_theme(blog_id, theme_id)
 
-@_route(BASE_PATH + "/system/theme/<theme_id:int>/delete")
+@_route(BASE_PATH + "/system/theme/<theme_id:int>/delete", method=('GET', 'POST'))
 def delete_theme_from_system(theme_id):
-    pass
+    from core.ui import system
+    return system.system_delete_theme(theme_id)
     # you can only do this from the system menu
 
 # Unfinished reboot handler

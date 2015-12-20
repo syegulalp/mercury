@@ -43,12 +43,17 @@ menus = {
             'system_div',
             'dashboard_label', 'system_queue', 'system_log', 'system_plugins',
             'system_info',
+            'themes_div', 'system_manage_themes',
             'sites_div', 'manage_sites', 'create_site',
             'users_div', 'system_manage_users', 'system_create_user')
     },
     'system_div': {
         'type': 'divider',
         'text': lambda x: 'System',
+        },
+    'themes_div': {
+        'type': 'divider',
+        'text': lambda x: 'Theming',
         },
     'dashboard_label':{
         'type':'label',
@@ -72,8 +77,19 @@ menus = {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/plugins',
         'text': lambda x: 'Plugins',
-
-        'parent':'system_menu'},
+        },
+    'system_manage_themes': {
+        'type': 'button',
+        'path': lambda x: BASE_URL + '/system/themes',
+        'text': lambda x: 'Themes',
+        'parent':'system_menu'
+        },
+    'system_delete_theme': {
+        'type': 'label',
+        'path': lambda x: BASE_URL + '/system/theme/{}/delete'.format(x.id),
+        'text': lambda x: 'Delete theme',
+        'parent':'system_manage_themes'
+        },
     'system_info': {
         'type': 'label',
         'path': lambda x: BASE_URL + '/system/info',
@@ -449,6 +465,20 @@ colsets = {
              'label': '',
              'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Apply theme</span></a>'.format(
                  BASE_URL + '/blog/{}/theme/{}/apply'.format(x.blog.id, x.id),)
+             }
+        ]
+    },
+    'themes_site': {
+        'none': 'No themes found',
+        'colset': [
+            {'field': 'title',
+             'label': 'Title',
+             'format_raw': lambda x: x.for_listing
+             },
+             {'field': '',
+             'label': '',
+             'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Delete theme</span></a>'.format(
+                 '{}/system/theme/{}/delete'.format(BASE_URL, x.id),)
              }
         ]
     },
