@@ -14,8 +14,8 @@ from .ui import search_context
 
 @transaction
 def system_info():
-
     user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
 
     tags = template_tags(
         user=user)
@@ -50,8 +50,8 @@ def system_info():
 
 @transaction
 def system_sites(errormsg=None):
-
     user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
 
     try:
         sites_searched, search = site_search_results(request)
@@ -81,7 +81,6 @@ def system_sites(errormsg=None):
 
 @transaction
 def system_queue():
-
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
     queue = Queue.select().order_by(Queue.site.asc(), Queue.blog.asc(), Queue.job_type.asc(),
@@ -122,7 +121,6 @@ def system_log():
 
 @transaction
 def old_system_plugins():
-
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
@@ -179,10 +177,6 @@ def system_plugins(errormsg=None):
 
     tags.status = errormsg if errormsg is not None else None
 
-    list_actions = [
-        ['Uninstall', '{}/api/1/uninstall-plugin'],
-        ]
-
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context['sites'], None),
@@ -197,8 +191,8 @@ def system_plugins(errormsg=None):
 def system_theme_data(theme_id):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    from core.models import Theme
-    theme = Theme.get(Theme.id == theme_id)
+    from core.models import get_theme
+    theme = get_theme(theme_id)
 
     tags = template_tags(user=user)
 
@@ -220,7 +214,6 @@ def system_theme_data(theme_id):
 def system_list_themes():
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    # reason = auth.check_template_lock(blog, True)
     from core.models import Theme
     themes = Theme.select().order_by(Theme.id)
 
@@ -247,15 +240,14 @@ def system_delete_theme(theme_id):
     # allow that user to delete
 
     tags = template_tags(user=user)
-    from core.models import Theme
+    from core.models import get_theme
     from settings import BASE_URL
     from core.utils import Status
 
-    theme = Theme.get(Theme.id == theme_id)
+    theme = get_theme(theme_id)
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
-        import os
         from settings import THEME_FILE_PATH, _sep
         import shutil
         shutil.rmtree(THEME_FILE_PATH + _sep + theme.json)
@@ -274,8 +266,6 @@ Theme <b>{}</b> was successfully deleted from the system.</p>
 )
 
     else:
-
-
 
         status = Status(
             type='warning',
