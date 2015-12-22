@@ -13,14 +13,13 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 def default(obj):
     import datetime
-
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
 
 def json_dump(obj):
     import json
     from core.libs.playhouse.shortcuts import model_to_dict
-
+    # we have to do this as a way to keep dates from choking
     return json.loads(json.dumps(model_to_dict(obj, recurse=False),
             default=default,
             separators=(', ', ': '),
