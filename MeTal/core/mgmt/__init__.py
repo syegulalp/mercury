@@ -88,20 +88,45 @@ def theme_install_to_system2(theme_directory):
     # get the __manifest__
     # save the details to a new theme entry
 
-def theme_apply_to_blog2():
-    pass
-    # this should actually be in the Theme schema
-    # apply_ and install_ are being merged, since
-    # I don't think there are any circumstances where
-    # they are used separately anyway
-    # erase theme - purge fileinfos from existing blog
-    # cycle through each file in the directory
-    # read it and create the appropriate template
-    # purge_blog to create fileinfos
-    # we should do this in stages with the UI, so that
-    # there's opportunity for feedback and progress tracking
-    # but that's a future to-do
+def theme_apply_to_blog2(theme, blog , user):
 
+    from core import cms
+    cms.purge_fileinfos(blog.fileinfos)
+    erase_theme(blog)
+    from settings import THEME_FILE_PATH
+
+    theme_dir = THEME_FILE_PATH + _sep + theme.json
+
+    for subdir, dirs, files in os.walk(theme_dir):
+        for n in files:
+            if n == '__manifest__.json':
+                continue
+            with open(theme_dir + _sep + n, 'r') as f:
+                template = json.loads(f.read())
+
+                tpl_data = template['template']
+                tpl_data['body'] = '\n'.join(tpl_data['body'])
+                mapping_data = template['mappings']
+
+                table_obj = Template()
+
+                for name in table_obj._meta.fields:
+                    if name not in ('id', 'blog'):
+                        setattr(table_obj, name, tpl_data[name])
+
+                table_obj.blog = blog
+                table_obj.save(user)
+
+                for mapping in mapping_data:
+                    mapping_obj = TemplateMapping()
+                    for name in mapping_obj._meta.fields:
+                        if name not in ('id', 'template'):
+                            setattr(mapping_obj, name, mapping_data[mapping][name])
+
+                    mapping_obj.template = table_obj.id
+                    mapping_obj.save()
+
+    return
 
 def theme_install_to_system(theme_data):
 
