@@ -338,7 +338,7 @@ def page_revision_restore(page_id, revision_id):
 
     status = utils.Status(
         type='success',
-        message='Page <b>{}</b>has been restored from backup dated {}.'.format(page.for_display,
+        message='Page <b>{}</b> has been restored from backup dated {}.'.format(page.for_log,
             page_revision.modified_date)
         )
 
