@@ -812,7 +812,7 @@ class Blog(SiteBase):
 
         theme_to_export = self.templates()
 
-        from core.utils import json_dump, create_basename_core
+        from core.utils import json_dump, create_basename_core, default
         import json
 
         theme = {}
@@ -828,7 +828,11 @@ class Blog(SiteBase):
 
         for n in theme_to_export:
             template = {}
-            template['template'] = json_dump(n)
+            j_d = json_dump(n)
+            j_d['body'] = j_d['body'].replace('\\r', '')
+            j_d['body'] = j_d['body'].split('\n')
+
+            template['template'] = j_d
 
             mappings_to_export = n.mappings
 
