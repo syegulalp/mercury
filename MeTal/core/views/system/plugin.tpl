@@ -4,6 +4,7 @@
 % include('include/header_messages.tpl')
 
 [Placeholder page for plugin settings. Not active yet.]
+<hr>
 
 </div>
 % include('include/footer.tpl')
