@@ -58,6 +58,7 @@ def get_kvs_for_theme(theme):
     return theme_kvs
 
 # move to Queue.erase?
+# more like blog_ and perhapse site_
 
 def erase_queue(blog=None):
     from core.models import Queue
@@ -67,6 +68,7 @@ def erase_queue(blog=None):
         delete_queue = Queue.delete().where(Queue.blog == blog)
     return delete_queue.execute()
 
+'''
 # move to blog.erase_theme()
 
 def erase_theme(blog):
@@ -80,7 +82,7 @@ def erase_theme(blog):
     templates_to_delete = Template.delete().where(Template.id << blog.templates())
     n = templates_to_delete.execute()
     return p, m, n
-
+'''
 
 def theme_install_to_system2(theme_directory):
     pass
@@ -88,11 +90,11 @@ def theme_install_to_system2(theme_directory):
     # get the __manifest__
     # save the details to a new theme entry
 
-def theme_apply_to_blog2(theme, blog , user):
+def theme_apply_to_blog(theme, blog , user):
 
     from core import cms
     cms.purge_fileinfos(blog.fileinfos)
-    erase_theme(blog)
+    blog.erase_theme()
     from settings import THEME_FILE_PATH
 
     theme_dir = THEME_FILE_PATH + _sep + theme.json
@@ -101,11 +103,14 @@ def theme_apply_to_blog2(theme, blog , user):
         for n in files:
             if n == '__manifest__.json':
                 continue
+            if n[-4:] == '.tpl':
+                continue
             with open(theme_dir + _sep + n, 'r') as f:
                 template = json.loads(f.read())
-
                 tpl_data = template['template']
-                tpl_data['body'] = '\n'.join(tpl_data['body'])
+                with open(theme_dir + _sep + n[:-5] + '.tpl', 'r') as b:
+                    tpl_data['body'] = b.read()
+
                 mapping_data = template['mappings']
 
                 table_obj = Template()
@@ -115,6 +120,7 @@ def theme_apply_to_blog2(theme, blog , user):
                         setattr(table_obj, name, tpl_data[name])
 
                 table_obj.blog = blog
+                table_obj.theme = theme
                 table_obj.save(user)
 
                 for mapping in mapping_data:
@@ -145,7 +151,7 @@ def theme_install_to_system(theme_data):
 # move to theme or blog?
 # or make into blog.apply_theme?
 
-def theme_apply_to_blog(theme, blog, user):
+def _theme_apply_to_blog(theme, blog, user):
     '''
     Applies a given theme to a given blog.
     Removes and regenerates fileinfos for the pages on the blog.
@@ -156,15 +162,10 @@ def theme_apply_to_blog(theme, blog, user):
     erase_theme(blog)
     theme_install_to_blog(theme, blog, user)
 
-# same as above - blog.install_theme?
-
 def theme_install_to_blog(installed_theme, blog, user):
 
     json_obj = json.loads(installed_theme.json)
     templates = json_obj["data"]
-    # kvs = json_obj["kv"]
-
-    # theme_ids = {}
 
     for t in templates:
 
@@ -255,13 +256,12 @@ def export_data():
 
     yield ("<p>" + n)
 
-    # db = DataSet('sqlite:///' + DATABASE_PATH)
     db = DataSet(DB.dataset_connection())
 
     if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
             os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
 
-    with db.transaction():
+    with db.transaction() as txn:
 
         for table_name in db.tables:
 

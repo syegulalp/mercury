@@ -784,6 +784,9 @@ class Blog(SiteBase):
         return fileinfos_for_blog
 
     def setup(self, user, theme=None):
+        '''
+        Prepares a newly-created blog with a default category.
+        '''
 
         self.save()
 
@@ -805,10 +808,13 @@ class Blog(SiteBase):
             self.site.for_log,
             user.for_log))
 
-
         return self
 
-    def export_theme2(self, title, description):
+    def export_theme(self, title, description):
+        '''
+        Returns a dictionary object containing a dump of the blog's theme.
+        Used mainly for saving a blog theme.
+        '''
 
         theme_to_export = self.templates()
 
@@ -826,13 +832,22 @@ class Blog(SiteBase):
             sort_keys=True,
             allow_nan=True)
 
-        for n in theme_to_export:
+        for index, n in enumerate(theme_to_export):
+
             template = {}
             j_d = json_dump(n)
-            j_d['body'] = j_d['body'].replace('\\r', '')
-            j_d['body'] = j_d['body'].split('\n')
+
+            filename = "{}-{}".format(
+                create_basename_core(n.title),
+                str(index))
+
+            body = j_d['body']
+            body = body.replace('\r\n', '\n')
+
+            theme[filename + '.tpl'] = body
 
             template['template'] = j_d
+            del template['template']['body']
 
             mappings_to_export = n.mappings
 
@@ -841,48 +856,31 @@ class Blog(SiteBase):
             for m in mappings_to_export:
                 template['mappings'][m.id] = json_dump(m)
 
-            filename = "{}-{}.json".format(
-                create_basename_core(n.title),
-                str(n.id))
-
-            theme[filename] = json.dumps(template,
+            theme[filename + '.json'] = json.dumps(template,
                 indent=1,
                 sort_keys=True,
                 allow_nan=True)
-
         return theme
 
+    def erase_theme(self):
+        '''
+        Erases a blog's theme in preparation for installing a new one.
+        '''
+        # leave these in, we'll need them later
+        # del_kvs = get_kvs_for_theme(self.theme)
+        # kvs_to_delete = KeyValue.delete().where(KeyValue.id << del_kvs)
+        # p = kvs_to_delete.execute()
 
-    def export_theme(self):
-
-        theme_to_export = self.templates()
-
-        from core.utils import json_dump
-        import json
-
-        theme = {}
-        theme["title"] = theme_to_export[0].theme.title
-        theme["description"] = theme_to_export[0].theme.description
-        theme["data"] = {}
-
-        for n in theme_to_export:
-            theme["data"][n.id] = {}
-            theme["data"][n.id]["template"] = json_dump(n)
-
-            mappings_to_export = n.mappings
-
-            theme["data"][n.id]["mapping"] = {}
-
-            for m in mappings_to_export:
-                theme["data"][n.id]["mapping"][m.id] = json_dump(m)
-
-        return json.dumps(theme,
-            indent=1,
-            sort_keys=True,
-            allow_nan=True)
-
+        mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << self.template_mappings())
+        m = mappings_to_delete.execute()
+        templates_to_delete = Template.delete().where(Template.id << self.templates())
+        n = templates_to_delete.execute()
+        return m, n  # , p
 
     def validate(self):
+        '''
+        Validates a blog's settings before saving.
+        '''
         errors = []
         from core.utils import is_blank
 
