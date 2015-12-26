@@ -128,6 +128,7 @@ def theme_apply_to_blog(theme, blog , user):
 
 
     blog.theme = theme
+    blog.theme_modified = False
     blog.save()
 
     cms.purge_blog(blog)
