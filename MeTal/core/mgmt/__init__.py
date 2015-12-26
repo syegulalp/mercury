@@ -132,6 +132,10 @@ def theme_apply_to_blog(theme, blog , user):
                     mapping_obj.template = table_obj.id
                     mapping_obj.save()
 
+
+    blog.theme = theme
+    blog.save()
+
     return
 
 def theme_install_to_system(theme_data):
