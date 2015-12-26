@@ -476,8 +476,13 @@ colsets = {
              },
             {'field': '',
              'label': '',
+             'format_raw':lambda x:'<a href="{}"><span class="label label-success">Current blog theme</span></a>'.format(
+                 '{}/system/theme/{}'.format(BASE_URL, x.id)) if x.blog.theme.id == x.id else ''
+             },
+            {'field': '',
+             'label': '',
              'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Apply theme</span></a>'.format(
-                 BASE_URL + '/blog/{}/theme/{}/apply'.format(x.blog.id, x.id),)
+                 '{}/blog/{}/theme/{}/apply'.format(BASE_URL, x.blog.id, x.id),)
              }
         ]
     },
