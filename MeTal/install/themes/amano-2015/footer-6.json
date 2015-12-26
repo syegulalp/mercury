@@ -1,0 +1,24 @@
+{
+ "mappings": {
+  "311": {
+   "archive_xref": "",
+   "id": 311,
+   "is_default": true,
+   "modified_date": "",
+   "path_string": "%s/footer.html",
+   "template": 369
+  }
+ },
+ "template": {
+  "blog": 2,
+  "default_type": null,
+  "external_path": null,
+  "id": 369,
+  "is_include": true,
+  "modified_date": "2015-10-05 03:17:40",
+  "publishing_mode": "Server-side include",
+  "template_type": "Include",
+  "theme": 2,
+  "title": "Footer"
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "mappings": {
+  "325": {
+   "archive_xref": "Y",
+   "id": 325,
+   "is_default": true,
+   "modified_date": "2015-02-07 03:50:34",
+   "path_string": "%Y/%i",
+   "template": 387
+  }
+ },
+ "template": {
+  "blog": 2,
+  "default_type": null,
+  "external_path": null,
+  "id": 387,
+  "is_include": false,
+  "modified_date": "2015-10-05 02:05:07",
+  "publishing_mode": "Immediate",
+  "template_type": "Archive",
+  "theme": 2,
+  "title": "Yearly Archive"
+ }
+}

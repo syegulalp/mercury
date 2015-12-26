@@ -254,33 +254,6 @@ def step_4_pre():
 
         report.append("Initial admin user created successfully.")
 
-        install_directory = (_s.APPLICATION_PATH + _sep +
-            _s.INSTALL_SRC_PATH)
-
-        with open(install_directory + _sep + "themes" +
-            _sep + _s.DEFAULT_THEME + _sep + "templates.json", "rb") as json_file:
-                json_text = json_file.read()
-
-        new_theme = mgmt.theme_install_to_system(json_text)
-
-        report.append("Default theme created and installed successfully to system.")
-
-        from core.models import Blog
-
-        new_blog = Blog(
-            site=new_site,
-            name="Your first blog",
-            description="The description for your first blog.",
-            url=new_site.url,
-            path=new_site.path,
-            local_path=new_site.path,
-            theme=new_theme
-            )
-
-        new_blog.setup(new_user)
-
-        report.append("Initial blog created successfully with default theme.")
-
         plugindir = (_s.APPLICATION_PATH + _sep + 'data' +
             _sep + 'plugins')
 
@@ -288,6 +261,9 @@ def step_4_pre():
 
         # TODO: warn on doing this?
         # this should only happen with a totally fresh install, not an upgrade
+
+        install_directory = (_s.APPLICATION_PATH + _sep +
+            _s.INSTALL_SRC_PATH)
 
         if (os.path.isdir(plugindir)):
             shutil.rmtree(plugindir)
@@ -306,7 +282,7 @@ def step_4_pre():
         shutil.copytree(install_directory + _sep + 'themes',
             themedir)
 
-        report.append("Default templates copied successfully to data directory.")
+        report.append("Default themes copied successfully to data directory.")
 
         from core import plugins
 
@@ -317,6 +293,26 @@ def step_4_pre():
                 report.append("New plugin '{}' installed successfully.".format(
                     new_plugin.name))
 
+        from settings.defaults import DEFAULT_THEME
+        new_theme = mgmt.theme_install_to_system(DEFAULT_THEME)
+
+        report.append("Default theme created and installed successfully to system.")
+
+        from core.models import Blog
+
+        new_blog = Blog(
+            site=new_site,
+            name="Your first blog",
+            description="The description for your first blog.",
+            url=new_site.url,
+            path=new_site.path,
+            local_path=new_site.path,
+            theme=new_theme
+            )
+
+        new_blog.setup(new_user, new_theme)
+
+        report.append("Initial blog created successfully with default theme.")
 
     db.close()
 

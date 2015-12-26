@@ -1,0 +1,24 @@
+{
+ "mappings": {
+  "312": {
+   "archive_xref": "",
+   "id": 312,
+   "is_default": true,
+   "modified_date": "",
+   "path_string": "header.html",
+   "template": 371
+  }
+ },
+ "template": {
+  "blog": 2,
+  "default_type": null,
+  "external_path": null,
+  "id": 371,
+  "is_include": true,
+  "modified_date": "2015-10-01 17:27:33",
+  "publishing_mode": "Include",
+  "template_type": "Include",
+  "theme": 2,
+  "title": "Header"
+ }
+}

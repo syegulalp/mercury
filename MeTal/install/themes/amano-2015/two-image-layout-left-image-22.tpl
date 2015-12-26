@@ -1,0 +1,1 @@
+<div class="screenshot"><img src="{{media.url}}" /> <img src="http://placehold.it/854x480" /><br />Caption</div>

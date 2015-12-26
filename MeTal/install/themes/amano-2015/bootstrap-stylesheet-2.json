@@ -1,0 +1,24 @@
+{
+ "mappings": {
+  "307": {
+   "archive_xref": "",
+   "id": 307,
+   "is_default": true,
+   "modified_date": "2015-02-07 03:50:34",
+   "path_string": "static/css/bootstrap.css",
+   "template": 365
+  }
+ },
+ "template": {
+  "blog": 2,
+  "default_type": null,
+  "external_path": null,
+  "id": 365,
+  "is_include": false,
+  "modified_date": "2015-02-07 03:50:34",
+  "publishing_mode": "Manual",
+  "template_type": "Index",
+  "theme": 2,
+  "title": "Bootstrap Stylesheet"
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "mappings": {
+  "319": {
+   "archive_xref": "",
+   "id": 319,
+   "is_default": true,
+   "modified_date": "2015-08-26 15:42:08",
+   "path_string": "%s/menu.html",
+   "template": 378
+  }
+ },
+ "template": {
+  "blog": 2,
+  "default_type": null,
+  "external_path": null,
+  "id": 378,
+  "is_include": false,
+  "modified_date": "2015-10-08 21:23:40",
+  "publishing_mode": "Server-side include",
+  "template_type": "Include",
+  "theme": 2,
+  "title": "Menu"
+ }
+}

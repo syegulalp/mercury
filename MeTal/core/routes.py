@@ -871,11 +871,12 @@ def refresh_theme(theme_id):
         theme.json = theme_string
         theme.save()
 
+'''
 @_route(BASE_PATH + "/blog/<blog_id:int>/overwrite-theme")
 def overwrite_blog_theme(blog_id):
-    '''
-    imports JSON and overwrites an existing blog's theme
-    '''
+
+    #imports JSON and overwrites an existing blog's theme
+
     user = auth.is_logged_in(request)
 
     with open(APPLICATION_PATH + _sep + 'install' + _sep +
@@ -895,7 +896,7 @@ def overwrite_blog_theme(blog_id):
         cms.purge_fileinfos(blog.fileinfos)
         mgmt.erase_theme(blog)
         mgmt.theme_install_to_blog(theme, blog, user)
-
+'''
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/theme/save", method=('GET', 'POST'))
 def save_theme_to_system(blog_id):
