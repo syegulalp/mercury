@@ -1,3 +1,6 @@
 blog/*
 /.project
 /.pydevproject
+/requirements.txt
+/setup.cfg
+/setup.py
