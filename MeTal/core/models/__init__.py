@@ -556,6 +556,7 @@ class Site(SiteBase, ConnectionBase):
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
+    theme_modified = BooleanField(null=True, default=False)
     timezone = TextField(null=True, default='UTC')
     set_timezone = None
 
