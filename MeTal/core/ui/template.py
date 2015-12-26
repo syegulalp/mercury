@@ -144,7 +144,7 @@ def template_edit_save(template_id):
 
     if save_mode in (1, 2, 3):
         try:
-            message = _template.save(request, user, tpl)
+            message = _template.save(request, user, tpl, blog)
         except TemplateSaveException as e:
             status = Status(
                 type='danger',
