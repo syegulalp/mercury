@@ -37,7 +37,7 @@ def preview_path(template):
         'path':preview_path,
         'file':preview_file}
 
-def save(request, user, cms_template):
+def save(request, user, cms_template, blog=None):
 
     import datetime
 
@@ -117,6 +117,10 @@ def save(request, user, cms_template):
 
         status += " {} files regenerated from template and sent to publishing queue.".format(
             cms_template.fileinfos_published.count())
+
+    if blog is not None:
+        blog.theme_modified = True
+        blog.save()
 
     logger.info("Template {} edited by user {}.".format(
         cms_template.for_log,
