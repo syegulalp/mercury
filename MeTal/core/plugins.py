@@ -20,13 +20,13 @@ class Plugin(object):
     __compatibility__ = None
 
     def __init__(self):
-        return
+        raise NotImplementedError
 
     def install(self):
-        return
+        raise NotImplementedError
 
     def uninstall(self):
-        return
+        raise NotImplementedError
 '''
 
 def plugin_before(plugin_function):
