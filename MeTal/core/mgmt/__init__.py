@@ -84,12 +84,6 @@ def erase_theme(blog):
     return p, m, n
 '''
 
-def theme_install_to_system2(theme_directory):
-    pass
-    # open the theme directory
-    # get the __manifest__
-    # save the details to a new theme entry
-
 def theme_apply_to_blog(theme, blog , user):
 
     from core import cms
@@ -136,8 +130,11 @@ def theme_apply_to_blog(theme, blog , user):
     blog.theme = theme
     blog.save()
 
+    cms.purge_blog(blog)
+
     return
 
+'''
 def theme_install_to_system(theme_data):
 
     json_raw = theme_data.decode('utf-8')
@@ -151,21 +148,29 @@ def theme_install_to_system(theme_data):
 
     new_theme.save()
     return new_theme
+'''
 
-# move to theme or blog?
-# or make into blog.apply_theme?
+def theme_install_to_system(theme_path):
 
-def _theme_apply_to_blog(theme, blog, user):
-    '''
-    Applies a given theme to a given blog.
-    Removes and regenerates fileinfos for the pages on the blog.
-    '''
+    from settings import THEME_FILE_PATH
 
-    from core import cms
-    cms.purge_fileinfos(blog.fileinfos)
-    erase_theme(blog)
-    theme_install_to_blog(theme, blog, user)
+    theme_dir = THEME_FILE_PATH + _sep + theme_path
 
+    with open(theme_dir + _sep + '__manifest__.json', 'r') as f:
+        json_data = f.read()
+
+    json_obj = json.loads(json_data)
+
+    new_theme = Theme(
+        title=json_obj["title"],
+        description=json_obj["description"],
+        json=theme_path
+        )
+
+    new_theme.save()
+    return new_theme
+
+'''
 def theme_install_to_blog(installed_theme, blog, user):
 
     json_obj = json.loads(installed_theme.json)
@@ -210,7 +215,8 @@ def theme_install_to_blog(installed_theme, blog, user):
     # Theme - set to installed theme ID
     # Blog - set to installed blog ID
     # everything else - parent appropriately and preserve
-    '''
+
+
     for kv in kvs:
         kv_current = kvs[kv]
         new_kv = kx.add_kv(**kv_current)
@@ -230,7 +236,7 @@ def theme_install_to_blog(installed_theme, blog, user):
 
         kv_to_change.parent = kv_index[parent]
         kv_to_change.save()
-    '''
+
 
     from core import cms
     cms.purge_blog(blog)
@@ -238,6 +244,7 @@ def theme_install_to_blog(installed_theme, blog, user):
     blog.theme = installed_theme.id
     blog.save()
 
+'''
 # to be handled by Site.save()
 
 def site_create(**new_site_data):

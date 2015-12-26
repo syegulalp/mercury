@@ -798,8 +798,8 @@ class Blog(SiteBase):
         new_blog_default_category.save()
 
         if theme is not None:
-            from core.mgmt import theme_install_to_blog
-            theme_install_to_blog(theme, self, user)
+            from core.mgmt import theme_apply_to_blog
+            theme_apply_to_blog(theme, self, user)
             self.save()
 
         from core.log import logger
