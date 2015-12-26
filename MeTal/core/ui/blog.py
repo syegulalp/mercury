@@ -661,7 +661,7 @@ def blog_select_themes(blog_id):
     paginator, rowset = utils.generate_paginator(themes, request)
 
     action = utils.action_button(
-        'Save current blog theme',
+        'Save blog templates to new theme',
         '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
         )
 
