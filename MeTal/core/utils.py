@@ -282,7 +282,7 @@ class MetalTemplate(SimpleTemplate):
         template_to_import = Template.get(
             Template.blog == self._tags.get('blog', None),
             Template.title == _name)
-        tpl = MetalTemplate(template_to_import.body)
+        tpl = MetalTemplate(template_to_import.body, tags=self._tags)
         self.includes.append(_name)
         return tpl.execute(env['_stdout'], env)
     def render(self, *args, **kwargs):
