@@ -44,6 +44,8 @@ def new_template(blog_id, tpl_type):
                )
 
             new_template_mapping.save()
+            from core import cms
+            cms.build_mapping_xrefs((new_template_mapping,))
 
     from settings import BASE_URL
     redirect(BASE_URL + '/template/{}/edit'.format(
