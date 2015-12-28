@@ -826,7 +826,6 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 
     return tag_context_next, date_counter
 
-
 archive_functions = {
     "C":{
         "mapping":lambda x:x.primary_category.id,
