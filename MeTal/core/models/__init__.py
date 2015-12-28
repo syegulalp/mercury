@@ -731,9 +731,7 @@ class Blog(SiteBase):
 
     @property
     def index_templates(self):
-
         index_templates_in_blog = self.templates(template_type.index)
-
         return index_templates_in_blog
 
     @property
@@ -754,9 +752,7 @@ class Blog(SiteBase):
 
     @property
     def archive_templates(self):
-
         archive_templates_in_blog = self.templates(template_type.archive)
-
         return archive_templates_in_blog
 
     def template_mappings(self, template_type=None):
@@ -1742,7 +1738,6 @@ class TemplateMapping(BaseModel):
 
     @property
     def first_in_mapping(self):
-
         pass
 
     @property

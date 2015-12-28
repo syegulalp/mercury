@@ -3037,7 +3037,7 @@ class SqliteDatabase(Database):
 
         # Determine which indexes have a unique constraint.
         unique_indexes = set()
-        print ("Table", table)
+        # print ("Table", table)
         cursor = self.execute_sql('PRAGMA index_list("%s")' % table)
         for row in cursor.fetchall():
             name = row[1]
