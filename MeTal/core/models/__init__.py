@@ -735,7 +735,7 @@ class Blog(SiteBase):
         return index_templates_in_blog
 
     def archives(self, name):
-        archives = self.archive(name).get().default_mapping.fileinfos.order_by(FileInfo.mapping_sort.desc())
+        archives = self.archive(name).get().fileinfos_published.order_by(FileInfo.mapping_sort.desc())
         return archives
 
     def archive(self, name):
@@ -1621,10 +1621,10 @@ class Template(BaseModel, DateMod):
         if self.template_type == "Page":
             return self.fileinfos.select().join(Page).where(
                 Page.status == page_status.published)
+
         else:
             if self.publishing_mode != publishing_mode.do_not_publish:
                 return self.fileinfos
-
 
 
     @property
@@ -1724,6 +1724,16 @@ class TemplateMapping(BaseModel):
             FileInfo.template_mapping == self)
 
         return fileinfos
+
+    @property
+    def fileinfos_published(self):
+
+        if self.template_type == "Page":
+            return self.fileinfos.select().join(Page).where(
+                Page.status == page_status.published)
+        else:
+            if self.publishing_mode != publishing_mode.do_not_publish:
+                return self.fileinfos
 
     @property
     def next_in_mapping(self):
