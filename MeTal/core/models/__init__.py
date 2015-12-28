@@ -734,15 +734,19 @@ class Blog(SiteBase):
         index_templates_in_blog = self.templates(template_type.index)
         return index_templates_in_blog
 
-    @property
+    def archives(self, name):
+        archives = self.archive(name).get().default_mapping.fileinfos.order_by(FileInfo.mapping_sort.desc())
+        return archives
+
     def archive(self, name):
         '''
-        Gets the entry link for the named archive template.
+        Gets the named archive template.
         '''
-        archive = self.templates.select().where(
+        archive = self.templates().select().where(
             Template.title == name,
             Template.template_type == template_type.archive)
-        archive.default_mapping.fileinfos
+
+        return archive
 
     @property
     def ssi_templates(self):
@@ -1825,7 +1829,6 @@ class TagAssociation(BaseModel):
 
 
 class FileInfo(BaseModel):
-
     page = ForeignKeyField(Page, null=True, index=True)
     template_mapping = ForeignKeyField(TemplateMapping, null=False, index=True)
     file_path = EnforcedCharField(null=False)
@@ -1842,7 +1845,6 @@ class FileInfo(BaseModel):
 
     @property
     def author(self):
-
         try:
             author = self.context.select().where(FileInfoContext.object == "A").get()
             author = author.ref
@@ -1852,11 +1854,13 @@ class FileInfo(BaseModel):
 
     @property
     def context(self):
-
         context = FileInfoContext.select().where(
             FileInfoContext.fileinfo == self).order_by(FileInfoContext.id.asc())
-
         return context
+
+    @property
+    def date(self):
+        return datetime.date(self.year, self.month, 1)
 
     @property
     def year(self):
@@ -1869,7 +1873,6 @@ class FileInfo(BaseModel):
 
     @property
     def month(self):
-
         try:
             month = self.context.select().where(FileInfoContext.object == "M").get()
             month = month.ref
@@ -1879,7 +1882,6 @@ class FileInfo(BaseModel):
 
     @property
     def category(self):
-
         try:
             category = self.context.select().where(FileInfoContext.object == "C").get()
             category = category.ref
@@ -1890,7 +1892,6 @@ class FileInfo(BaseModel):
 
 
 class FileInfoContext(BaseModel):
-
     fileinfo = ForeignKeyField(FileInfo, null=False, index=True)
     object = CharField(max_length=1)
     ref = IntegerField(null=True)
