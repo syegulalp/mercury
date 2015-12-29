@@ -67,8 +67,12 @@ def boot(aux_settings=None):
             from install import install
             return install.step(step_id)
 
+        def reboot_app():
+            reboot()
+
         app = bottle.Bottle()
         app.route(path=settings.BASE_PATH + "/", callback=setup)
+        app.route(path=settings.BASE_PATH + "/reboot", callback=reboot_app)
         app.route(path=settings.BASE_PATH + '/install', callback=setup)
         app.route(path=settings.BASE_PATH + '/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
         app.route(path=settings.BASE_PATH + settings.STATIC_PATH + '/<filepath:path>', callback=server_static)

@@ -351,18 +351,18 @@ def step_4_pre():
         raise e
 
     finished = '''
-    <p>Installation is complete.
-    '''
+    <p>Installation is complete. <a href="{}">Return to the main page to begin using the application.</a>
+    <script>
+    $.get('/reboot',function(data){{}});
+    </script>
+    '''.format(_s.BASE_URL)
 
     return {'report':report,
         'finished':finished}
 
 def step_4_post():
+    pass
 
-    from core.boot import reboot
-    reboot()
-
-    # return {}
 
 tpl = '''
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/jquery.min.js"></script>
@@ -670,7 +670,7 @@ def step(step):
     else:
         template_button = button(step, None, error_msg)
 
-    return template(tpl,
+    yield template(tpl,
         settings=_s,
         step=step,
         title=step_text[step]['title'],
@@ -680,3 +680,7 @@ def step(step):
             **results),
         crumbs=crumbs(step),
         error=error_msg)
+
+    # if 'finished' in results:
+        # from core.boot import reboot
+        # reboot()
