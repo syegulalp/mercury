@@ -498,7 +498,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
             )
 
     tpl = template('listing/report',
-        menu=generate_menu('blog_delete_media', tags),
+        menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
         search_context=(search_context['blog_media'], blog),

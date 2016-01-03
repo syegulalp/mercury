@@ -55,7 +55,8 @@ def boot(aux_settings=None):
         _stderr('\nNo configuration file [{}] found in \'{}\'.\n'.format(
             settings.INI_FILE_NAME,
             settings.config_file))
-        _stderr('Navigate to http://{}:{} to begin setup.\n\n'.format(
+        _stderr('Navigate to {}{}:{} to begin setup.\n\n'.format(
+                settings.PROTOCOL,
                 settings.DEFAULT_LOCAL_ADDRESS,
                 settings.DEFAULT_LOCAL_PORT[1:]))
 
@@ -95,7 +96,7 @@ def boot(aux_settings=None):
 
     if settings.DESKTOP_MODE and arguments.url:
         import webbrowser
-        webbrowser.open('http://' + settings.DEFAULT_LOCAL_ADDRESS + settings.DEFAULT_LOCAL_PORT + '/' + arguments.url)
+        webbrowser.open(settings.PROTOCOL + settings.DEFAULT_LOCAL_ADDRESS + settings.DEFAULT_LOCAL_PORT + '/' + arguments.url)
 
     if (settings.DEBUG_MODE is True and settings.NO_SETUP is False and settings.USE_WSGI is False):
         from core.log import logger

@@ -133,7 +133,7 @@ def step_2_pre():
 
     domain = get_ini("path", "base_url_root")
     if domain is None:
-        domain = "http://" + request.environ['HTTP_HOST']
+        domain = _s.PROTOCOL + request.environ['HTTP_HOST']
 
     if DESKTOP_MODE is True:
         cms_path = '/~'

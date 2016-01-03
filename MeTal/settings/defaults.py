@@ -87,4 +87,6 @@ MAX_REQUEST = 409600
 
 INSTALL_SRC_PATH = 'install'
 
-DEFAULT_THEME = 'amano-2015'
+DEFAULT_THEME = 'Amano 2015'
+
+PROTOCOL = "http://"

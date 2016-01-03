@@ -227,8 +227,9 @@ def template_preview(template_id):
 
 def template_preview_delete(tpl):
 
-    preview = tpl.preview_path
-    if preview is None:
+    try:
+        preview = tpl.preview_path
+    except:
         return None
 
     from settings import _sep

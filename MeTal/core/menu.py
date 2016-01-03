@@ -274,6 +274,12 @@ menus = {
         'parent_context':lambda x:x.blog,
         'path': lambda x: BASE_URL + '/blog/{}/media'.format(x.id),
         'text':lambda x:'Edit media #{}'.format(x.id)},
+    'blog_delete_media':{
+        'type':'label',
+        'parent':'blog_manage_media',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/media'.format(x.blog.id),
+        'text':lambda x:'Delete media #{}'.format(x.id)},
     'design_div':{
         'type':'divider',
         'parent':'blog_menu',

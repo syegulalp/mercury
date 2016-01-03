@@ -7,7 +7,7 @@ from core.models import (db, get_page, get_blog, get_theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
-                      SECRET_KEY, _sep)
+                      SECRET_KEY, _sep, PROTOCOL)
 
 app = Bottle()
 _route = app.route
@@ -718,7 +718,7 @@ if DESKTOP_MODE:
             y = x.decode('utf8')
             z = re.compile(r' href=["\']' + (blog.url) + '([^"\']*)["\']')
             z2 = re.compile(r' href=["\'](/[^"\']*)["\']')
-            y = re.sub(z, r" href='http://" + DEFAULT_LOCAL_ADDRESS +
+            y = re.sub(z, r" href='" + PROTOCOL + DEFAULT_LOCAL_ADDRESS +
                        DEFAULT_LOCAL_PORT + "\\1?_={}'".format(blog_id), y)
             y = re.sub(z2, r" href='\1?_={}'".format(blog_id), y)
             y = y.encode('utf8')

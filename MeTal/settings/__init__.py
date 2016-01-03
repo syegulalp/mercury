@@ -45,10 +45,12 @@ config_file = APPLICATION_PATH + os.sep + 'data' + os.sep + INI_FILE_NAME
 parser = ConfigParser()
 parser.read(config_file)
 
+# where to get the protocol from?
+
 if len(parser.sections()) == 0:
     NO_SETUP = True
     try:
-        BASE_URL_ROOT = "http://" + os.environ["HTTP_HOST"]
+        BASE_URL_ROOT = PROTOCOL + os.environ["HTTP_HOST"]
         BASE_URL_PATH = os.environ["REQUEST_URI"]
     except KeyError:
         pass
@@ -82,7 +84,7 @@ if DESKTOP_MODE is True:
     else:
         BASE_PATH = "/~"
 
-    BASE_URL_ROOT = "http://" + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
+    BASE_URL_ROOT = PROTOCOL + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
     BASE_URL = BASE_URL_ROOT + BASE_PATH
 
     USE_WSGI = False
