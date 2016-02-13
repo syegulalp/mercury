@@ -133,7 +133,7 @@ def step_2_pre():
 
     domain = get_ini("path", "base_url_root")
     if domain is None:
-        domain = _s.PROTOCOL + request.environ['HTTP_HOST']
+        domain = _s.BASE_URL_PROTOCOL + request.environ['HTTP_HOST']
 
     if DESKTOP_MODE is True:
         cms_path = '/~'
@@ -158,8 +158,8 @@ def step_2_post():
     import urllib
     loc = urllib.parse.urlparse(domain)
 
-    store_ini('path', 'protocol', loc.scheme + "://")
-    store_ini('path', 'base_url_root', loc.netloc)
+    store_ini('path', 'base_url_protocol', loc.scheme + "://")
+    store_ini('path', 'base_url_netloc', loc.netloc)
 
     store_ini('path', 'base_url_path', cms_path)
     store_ini('install', 'install_path', install_path)
@@ -234,7 +234,7 @@ def step_4_pre():
         new_site = mgmt.site_create(
             name="Your first site",
             description="The description for your first site.",
-            url=get_ini('path', 'base_url_root'),
+            url=get_ini('main', 'base_url_root'),
             path=blog_path)
 
         report.append("Initial site created successfully.")

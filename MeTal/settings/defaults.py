@@ -89,4 +89,4 @@ INSTALL_SRC_PATH = 'install'
 
 DEFAULT_THEME = 'amano-2015'
 
-PROTOCOL = "http://"
+BASE_URL_PROTOCOL = "http://"

@@ -50,7 +50,8 @@ parser.read(config_file)
 if len(parser.sections()) == 0:
     NO_SETUP = True
     try:
-        BASE_URL_ROOT = PROTOCOL + os.environ["HTTP_HOST"]
+        BASE_URL_NETLOC = os.environ["HTTP_HOST"]
+        BASE_URL_ROOT = BASE_URL_PROTOCOL + BASE_URL_NETLOC
         BASE_URL_PATH = os.environ["REQUEST_URI"]
     except KeyError:
         pass
@@ -84,12 +85,13 @@ if DESKTOP_MODE is True:
     else:
         BASE_PATH = "/~"
 
-    BASE_URL_ROOT = PROTOCOL + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
+    BASE_URL_ROOT = BASE_URL_PROTOCOL + DEFAULT_LOCAL_ADDRESS + DEFAULT_LOCAL_PORT
     BASE_URL = BASE_URL_ROOT + BASE_PATH
 
     USE_WSGI = False
 else:
     BASE_PATH = ""
+    BASE_URL_ROOT = BASE_URL_PROTOCOL + BASE_URL_NETLOC
     BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
 
 try:
