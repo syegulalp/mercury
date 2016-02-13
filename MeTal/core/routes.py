@@ -68,8 +68,7 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
-@_route(BASE_PATH + "/me")
-@_route(BASE_PATH + "/me", method='POST')
+@_route(BASE_PATH + "/me", method=('GET', 'POST'))
 def me():
     '''
     Route for user to edit their own account

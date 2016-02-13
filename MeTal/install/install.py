@@ -155,7 +155,12 @@ def step_2_post():
     blog_path = request.forms.getunicode('blog_path')
     cms_path = request.forms.getunicode('cms_path')
 
-    store_ini('path', 'base_url_root', domain)
+    import urllib
+    loc = urllib.parse.urlparse(domain)
+
+    store_ini('path', 'protocol', loc.scheme + "://")
+    store_ini('path', 'base_url_root', loc.netloc)
+
     store_ini('path', 'base_url_path', cms_path)
     store_ini('install', 'install_path', install_path)
     store_ini('install', 'blog_path', blog_path)
