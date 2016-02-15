@@ -135,66 +135,79 @@ def page_delete(page_id, confirm):
         page=page,
         user=user)
 
-    if confirm == 'Y':
+    from core.models import page_status
 
-        p = page.for_log
-
-        delete_query = page.delete_instance(
-            recursive=True,
-            delete_nullable=True)
-
-        message = 'Page {} successfully deleted'.format(
-            p)
+    if page.status != page_status.unpublished:
+        message = 'Page <b>{}</b> is not set to unpublished and cannot be deleted. Unpublish this page before deleting it.'.format(
+            page.for_display)
         url = '{}/blog/{}'.format(BASE_URL, blog.id)
         action = 'Return to the page listing'
 
         tags.status = Status(
-            type='success',
+            type='danger',
             message=message,
             action=action,
             url=url,
             close=False)
 
-        logger.info("Page {} deleted by user {}.".format(
-            p,
-            user.for_log))
-
-
     else:
-        message = ('You are about to delete page <b>{}</b> from blog <b>{}</b>.'.format(
-            page.for_display,
-            blog.for_display))
+        if confirm == 'Y':
 
-        from core.models import Struct
-        confirmation = Struct()
+            p = page.for_log
 
-        confirmation.yes = {
-                'label':'Yes, delete this page',
-                'id':'delete',
-                'name':'confirm',
-                'value':'Y'}
-        confirmation.no = {
-            'label':'No, return to blog page listing',
-            'url':'{}/blog/{}'.format(
-                BASE_URL, blog.id)
-            }
+            delete_query = page.delete_instance(
+                recursive=True,
+                delete_nullable=True)
 
-        tags.status = Status(
-            message=message,
-            type='warning',
-            close=False,
-            confirmation=confirmation
+            message = 'Page {} successfully deleted'.format(
+                p)
+            url = '{}/blog/{}'.format(BASE_URL, blog.id)
+            action = 'Return to the page listing'
+
+            tags.status = Status(
+                type='success',
+                message=message,
+                action=action,
+                url=url,
+                close=False)
+
+            logger.info("Page {} deleted by user {}.".format(
+                p,
+                user.for_log))
+
+
+        else:
+            message = ('You are about to delete page <b>{}</b> from blog <b>{}</b>.'.format(
+                page.for_display,
+                blog.for_display))
+
+            from core.models import Struct
+            confirmation = Struct()
+
+            confirmation.yes = {
+                    'label':'Yes, delete this page',
+                    'id':'delete',
+                    'name':'confirm',
+                    'value':'Y'}
+            confirmation.no = {
+                'label':'No, return to blog page listing',
+                'url':'{}/blog/{}'.format(
+                    BASE_URL, blog.id)
+                }
+
+            tags.status = Status(
+                message=message,
+                type='warning',
+                close=False,
+                confirmation=confirmation
             )
 
     tpl = template('listing/report',
-        # category=category,
         menu=generate_menu('blog_delete_page', page),
         search_context=(search_context['sites'], None),
         **tags.__dict__)
 
     return tpl
-    # TODO: proper delete page, not a repurposing of the main page
-
 
 @transaction
 def page_preview(page_id):
