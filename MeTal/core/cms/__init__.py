@@ -397,21 +397,18 @@ def save_page(page, user, blog=None):
     # UNPUBLISH
     if (
         (save_action & save_action_list.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
-        (original_page_status == page_status.published and page.status == page_status.unpublished) or  # set a published page to draft
-        (save_action & save_action_list.DELETE_PAGE)  # delete a page, regardless of status
+        (original_page_status == page_status.published and page.status == page_status.unpublished)  # set a published page to draft
+        # or (save_action & save_action_list.DELETE_PAGE)  # delete a page, regardless of status
         ):
 
-        pass
-
+        unpublish_page(page)
 
     # DELETE; IMPLIES UNPUBLISH
-    if (save_action & save_action_list.DELETE_PAGE):
-
-        pass
+    # if (save_action & save_action_list.DELETE_PAGE):
+        # delete_page(page)
 
     # UNPUBLISHED TO PUBLISHED
     if original_page_status == page_status.unpublished and (save_action & save_action_list.UPDATE_LIVE_PAGE):
-
         page.status = page_status.published
 
     # SAVE DRAFT
@@ -493,11 +490,11 @@ def save_page(page, user, blog=None):
 
 
     # BUILD FILEINFO IF NO DELETE ACTION
-    if not (save_action & save_action_list.DELETE_PAGE):
+    # if not (save_action & save_action_list.DELETE_PAGE):
 
-        build_pages_fileinfos((page,))
-        if page.status == page_status.published:
-            build_archives_fileinfos((page,))
+    build_pages_fileinfos((page,))
+    if page.status == page_status.published:
+        build_archives_fileinfos((page,))
 
     # PUBLISH CHANGES
     if (save_action & save_action_list.UPDATE_LIVE_PAGE) and (page.status == page_status.published):
@@ -610,6 +607,17 @@ def add_page_fileinfo(page, template_mapping, file_path,
 
     return fileinfo
 
+def delete_page_files(page):
+    '''
+    Iterates through the fileinfos for a given page
+    and deletes the physical files from disk.
+    '''
+    for n in page.fileinfos:
+        try:
+            os.remove(n.sitewide_file_path)
+        except OSError:
+            pass
+
 
 def delete_page_fileinfo(page):
     '''
@@ -622,14 +630,28 @@ def delete_page_fileinfo(page):
 
     return fileinfo_to_delete.execute()
 
+def delete_page(page):
+    '''
+    Removes all database entries for a given page from the system.
+    Does not delete files on disk.
+    Implies an unpublish action.
+    '''
+    unpublish_page(page)
+    delete_page_files(page)
+    delete_page_fileinfo(page)
 
-def unpublish_page(page, remove_fileinfo=False):
+
+def unpublish_page(page):
     '''
     Removes all the physical files associated with a given page,
-    and queues any related files
+    and queues any neighboring files to be republished
     '''
 
-    pass
+    page.status = page_status.unpublished
+    delete_page_files(page)
+
+    queue_page_actions(page)
+    queue_index_actions(page.blog)
 
 
 def generate_page_text(f, tags):
