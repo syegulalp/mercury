@@ -118,7 +118,7 @@ def page_edit_save(page_id):
 
 
 @transaction
-def page_delete(page_id):
+def page_delete(page_id, confirm):
     '''
     Deletes a selected page -- no confirmation yet
     Returns user to list of pages in blog with a notice about the deleted file
@@ -127,23 +127,74 @@ def page_delete(page_id):
     user = auth.is_logged_in(request)
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
-    blog_id = page.blog.id
+    blog = page.blog
 
-    delete_query = page.delete_instance(
-        recursive=True,
-        delete_nullable=True)
+    from core.utils import Status
 
-    status = utils.Status(
-        type='success',
-        message='Page <b>{}</b> has been deleted from the database.'.format(page.for_log)
-        )
+    tags = template_tags(
+        page=page,
+        user=user)
 
-    logger.info("Page {} deleted by user {}.".format(
-        page_id,
-        user.for_log))
+    if confirm == 'Y':
 
+        p = page.for_log
+
+        delete_query = page.delete_instance(
+            recursive=True,
+            delete_nullable=True)
+
+        message = 'Page {} successfully deleted'.format(
+            p)
+        url = '{}/blog/{}'.format(BASE_URL, blog.id)
+        action = 'Return to the page listing'
+
+        tags.status = Status(
+            type='success',
+            message=message,
+            action=action,
+            url=url,
+            close=False)
+
+        logger.info("Page {} deleted by user {}.".format(
+            p,
+            user.for_log))
+
+
+    else:
+        message = ('You are about to delete page <b>{}</b> from blog <b>{}</b>.'.format(
+            page.for_display,
+            blog.for_display))
+
+        from core.models import Struct
+        confirmation = Struct()
+
+        confirmation.yes = {
+                'label':'Yes, delete this page',
+                'id':'delete',
+                'name':'confirm',
+                'value':'Y'}
+        confirmation.no = {
+            'label':'No, return to blog page listing',
+            'url':'{}/blog/{}'.format(
+                BASE_URL, blog.id)
+            }
+
+        tags.status = Status(
+            message=message,
+            type='warning',
+            close=False,
+            confirmation=confirmation
+            )
+
+    tpl = template('listing/report',
+        # category=category,
+        menu=generate_menu('blog_delete_page', page),
+        search_context=(search_context['sites'], None),
+        **tags.__dict__)
+
+    return tpl
     # TODO: proper delete page, not a repurposing of the main page
-    return ("Deleted.")
+
 
 @transaction
 def page_preview(page_id):
@@ -284,6 +335,8 @@ def page_media_delete(page_id, media_id):
 
     return template('edit/edit_page_sidebar_media_list.tpl',
         **tags.__dict__)
+
+
 
 
 def page_get_media_templates(page_id, media_id):

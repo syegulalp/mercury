@@ -302,6 +302,12 @@ menus = {
         'parent_context':lambda x:x.blog,
         'path': lambda x: BASE_URL + '/template/{}/delete'.format(x.id),
         'text':lambda x:'Delete template #{}'.format(x.id)},
+    'blog_delete_page':{
+        'type':'label',
+        'parent':'manage_pages',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/page/{}/delete'.format(x.id),
+        'text':lambda x:'Delete page #{}'.format(x.id)},
     'blog_manage_themes':{
         'type':'button',
         'parent':'blog_menu',

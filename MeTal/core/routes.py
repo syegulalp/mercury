@@ -626,14 +626,13 @@ def page_add_media_with_template(page_id, media_id, template_id):
     from core.ui import page
     return page.page_add_media_with_template(page_id, media_id, template_id)
 
-@_route(BASE_PATH + '/page/<page_id:int>/del')
-@_route(BASE_PATH + '/page/<page_id:int>/delete', method='POST')
+@_route(BASE_PATH + '/page/<page_id:int>/delete', method=('GET', 'POST'))
 def page_delete(page_id):
     '''
     Route for deleting a page
     '''
     from core.ui import page
-    return page.page_delete(page_id)
+    return page.page_delete(page_id, request.forms.get('confirm'))
 
 
 '''
