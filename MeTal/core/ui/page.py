@@ -93,10 +93,10 @@ def page_edit_save(page_id):
     page = get_page(page_id)
     permission = auth.is_page_editor(user, page)
 
-    tags = cms.save_page(page, user, page.blog)
-
     from core.mgmt import delete_page_preview
     delete_page_preview(page)
+
+    tags = cms.save_page(page, user, page.blog)
 
     from core.cms import save_action_list
 

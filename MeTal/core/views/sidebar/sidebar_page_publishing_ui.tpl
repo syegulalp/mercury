@@ -84,7 +84,8 @@
             % if page.status_id == 2:
             <li><a title="Remove the live version of this page, and set its status back to Draft." onclick="page_save({{save_action_list.UNPUBLISH_PAGE}})" href="#">Unpublish</a></li>
             % end
-            <li><a title="Remove the live version of this page, and delete its draft and all of its versions as well." onclick="page_save({{save_action_list.DELETE_PAGE}})" href="#">Delete</a></li>
+            <!-- <li><a title="Remove the live version of this page, and delete its draft and all of its versions as well." onclick="page_save({{save_action_list.DELETE_PAGE}})" href="#">Delete</a></li>
+            -->
         </ul>
     </div>
     % if page.id is not None:
