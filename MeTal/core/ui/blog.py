@@ -1023,7 +1023,8 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
         save_tpl = 'edit/edit_theme_save'
         status = None
 
-    tags.status = status
+    tags.status = status if reason is None else status
+
     tpl = template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
         search_context=(search_context['blog'], blog),
@@ -1085,7 +1086,8 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
                 BASE_URL, blog.id)}
             )
 
-    tags.status = status
+    tags.status = status if reason is None else status
+
     tpl = template('listing/report',
         menu=generate_menu('blog_apply_theme', [blog, theme]),
         search_context=(search_context['blog'], blog),
@@ -1093,3 +1095,23 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 
     return tpl
 
+
+@transaction
+def blog_import (blog_id):
+    user = auth.is_logged_in(request)
+    blog = get_blog(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+    reason = auth.check_template_lock(blog, True)
+
+    tags = template_tags(blog=blog,
+        user=user)
+
+    tags.status = reason
+    # tags.status = status if reason is None else status
+
+    tpl = template('ui/ui_blog_import',
+        menu=generate_menu('blog_apply_theme', [blog, theme]),
+        search_context=(search_context['blog'], blog),
+        **tags.__dict__)
+
+    return tpl

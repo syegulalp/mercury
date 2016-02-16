@@ -495,6 +495,14 @@ def blog_publish_process(blog_id):
     from core.ui import blog
     return blog.blog_publish_process(blog_id)
 
+@_route(BASE_PATH + "/blog/<blog_id:int>/import", method=("GET", "POST"))
+def blog_import(blog_id):
+    '''
+    Processes publishing actions in AJAX
+    '''
+    from core.ui import blog
+    return blog.blog_import(blog_id)
+
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
     '''
