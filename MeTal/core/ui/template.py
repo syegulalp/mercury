@@ -109,15 +109,16 @@ def template_delete(template_id):
             message='You are attempting to delete template <b>{}</b> from blog <b>{}</b>. <b>Are you sure you want to do this?</b>'.format(
                 tpl.for_display,
                 blog.for_display),
-            deny={'url':'{}/template/{}/edit'.format(
+            no={'url':'{}/template/{}/edit'.format(
                 settings.BASE_URL, tpl.id),
                 'label':'No, I don\'t want to delete this template'
                 },
-            confirm={'id':'delete',
+            yes={'id':'delete',
                 'name':'confirm',
                 'label':'Yes, I want to delete this template',
                 'value':user.logout_nonce}
             )
+
 
     tags.status = status
     tplt = template('listing/report',

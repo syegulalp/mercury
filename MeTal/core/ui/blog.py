@@ -440,7 +440,8 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
     from core.utils import Status
 
-    if confirm == 'Y':
+    # if confirm == 'Y':
+    if request.forms.getunicode('confirm') == user.logout_nonce:
 
         try:
             _remove(media.path)
@@ -464,9 +465,9 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
             close=False)
 
     else:
-        confirmation = Struct()
+        # confirmation = Struct()
 
-        message = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
+        s1 = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
             media.for_display,
             blog.for_display))
 
@@ -475,17 +476,17 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         for n in media.associated_with:
             used_in.append("<li>{}</li>".format(n.page.for_display))
 
-        confirmation.details = ('''
-        Note that the following pages use this media object. Deleting the object will remove it from these pages as well:
-        <ul>{}</ul>
+        s2 = ('''<p>Note that the following pages use this media object.
+Deleting the object will remove it from these pages as well:
+<ul>{}</ul></p>
         '''.format(''.join(used_in)))
 
-        confirmation.yes = {
+        yes = {
                 'label':'Yes, delete this media',
                 'id':'delete',
                 'name':'confirm',
-                'value':'Y'}
-        confirmation.no = {
+                'value':user.logout_nonce}
+        no = {
             'label':'No, return to media properties',
             'url':'../{}/edit'.format(media.id)
             }
@@ -493,8 +494,9 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         tags.status = Status(
             type='warning',
             close=False,
-            message=message,
-            confirmation=confirmation
+            message=s1 + s2,
+            yes=yes,
+            no=no
             )
 
     tpl = template('listing/report',
@@ -1077,11 +1079,11 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 '''.format(theme.for_display, blog.for_display),
             url='{}/blog/{}/themes'.format(
                 BASE_URL, blog.id),
-            confirm={'id':'delete',
+            yes={'id':'delete',
                 'name':'confirm',
                 'label':'Yes, I want to apply this theme',
                 'value':user.logout_nonce},
-            deny={'label':'No, don\'t apply this theme',
+            no={'label':'No, don\'t apply this theme',
                 'url':'{}/blog/{}/themes'.format(
                 BASE_URL, blog.id)}
             )

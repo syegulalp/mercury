@@ -174,7 +174,8 @@ def delete_category(blog_id, category_id, confirm='N'):
 
     from core.utils import Status
 
-    if confirm == 'Y':
+    # if confirm == 'Y':
+    if request.forms.getunicode('confirm') == user.logout_nonce:
         message = 'Category {} successfully deleted'.format(
             category.for_log)
         url = '{}/blog/{}/categories'.format(BASE_URL, blog.id)
@@ -205,15 +206,12 @@ def delete_category(blog_id, category_id, confirm='N'):
             category.for_display,
             blog.for_display))
 
-        from core.models import Struct
-        confirmation = Struct()
-
-        confirmation.yes = {
+        yes = {
                 'label':'Yes, delete this category',
                 'id':'delete',
                 'name':'confirm',
-                'value':'Y'}
-        confirmation.no = {
+                'value':user.logout_nonce}
+        no = {
             'label':'No, return to category properties',
             'url':'{}/blog/{}/category/{}'.format(
                 BASE_URL, blog.id, category.id)
@@ -223,7 +221,8 @@ def delete_category(blog_id, category_id, confirm='N'):
             message=message,
             type='warning',
             close=False,
-            confirmation=confirmation
+            yes=yes,
+            no=no
             )
 
     tpl = template('listing/report',

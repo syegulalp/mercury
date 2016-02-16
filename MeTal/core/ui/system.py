@@ -276,11 +276,11 @@ You are about to remove theme <b>{}</b>.</p>
 '''.format(theme.for_display),
             url='{}/system/theme/{}/delete'.format(
                 BASE_URL, theme.id),
-            confirm={'id':'delete',
+            yes={'id':'delete',
                 'name':'confirm',
                 'label':'Yes, I want to delete this theme',
                 'value':user.logout_nonce},
-            deny={'label':'No, don\'t delete this theme',
+            no={'label':'No, don\'t delete this theme',
                 'url':'{}/system/themes'.format(
                 BASE_URL)}
             )
