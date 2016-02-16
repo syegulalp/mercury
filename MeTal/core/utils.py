@@ -117,20 +117,8 @@ class Status:
         if self.type in self.status_types:
             self.icon = self.status_types[self.type]
 
-        if 'yes' in ka:
-            self.confirm = ka.get('yes')
-            self.deny = ka.get('no')
-            self.action = ka.get('action')
-
-        elif 'confirmation' in ka:
-            confirmation = ka.get('confirmation')
-            self.confirm = confirmation.yes
-            self.deny = confirmation.no
-            self.action = None
-
-        else:
-            self.confirm = ka.get('confirm', None)
-            self.deny = ka.get('deny', None)
+        self.confirm = ka.get('yes', None)
+        self.deny = ka.get('no', None)
 
         self.action = ka.get('action', None)
         self.url = ka.get('url', None)
