@@ -151,7 +151,8 @@ def page_delete(page_id, confirm):
             close=False)
 
     else:
-        if confirm == 'Y':
+        # if confirm == 'Y':
+        if request.forms.getunicode('confirm') == user.logout_nonce:
 
             p = page.for_log
 
@@ -181,15 +182,12 @@ def page_delete(page_id, confirm):
                 page.for_display,
                 blog.for_display))
 
-            from core.models import Struct
-            confirmation = Struct()
-
-            confirmation.yes = {
+            yes = {
                     'label':'Yes, delete this page',
                     'id':'delete',
                     'name':'confirm',
-                    'value':'Y'}
-            confirmation.no = {
+                    'value':user.logout_nonce}
+            no = {
                 'label':'No, return to blog page listing',
                 'url':'{}/blog/{}'.format(
                     BASE_URL, blog.id)
@@ -199,7 +197,8 @@ def page_delete(page_id, confirm):
                 message=message,
                 type='warning',
                 close=False,
-                confirmation=confirmation
+                yes=yes,
+                no=no
             )
 
     tpl = template('listing/report',

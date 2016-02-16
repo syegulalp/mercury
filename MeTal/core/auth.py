@@ -358,6 +358,9 @@ def check_publishing_lock(blog, action_description, warn_only=False):
         else:
             raise QueueInProgressException(msg)
 
+    else:
+        return None
+
 def check_template_lock(blog, warn_only=False):
     '''
     Checks for a publishing lock for template editing.
