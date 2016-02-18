@@ -130,11 +130,9 @@ def push_to_queue(**ka):
     queue_job.save()
 
 def push_insert_to_queue(blog):
-
     with db.atomic() as txn:
 
         # pages ordered by id desc
-
         push_to_queue(job_type=job_type.insert,
             data_string=job_insert_type.page_fileinfo,
             data_integer=blog.pages().count(),
@@ -143,14 +141,12 @@ def push_insert_to_queue(blog):
             site=blog.site)
 
         # indexes ordered by id asc
-
         push_to_queue(job_type=job_type.insert,
             data_string=job_insert_type.index_fileinfo,
             data_integer=blog.templates(template_type.index).count(),
             is_control=True,
             blog=blog,
             site=blog.site)
-
 
 def _remove_from_queue(queue_deletes):
     '''
@@ -213,7 +209,6 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         # mechanism somehow
 
         if next_page is not None:
-
 
             fileinfos_next = FileInfo.select().where(FileInfo.page == next_page)
 
