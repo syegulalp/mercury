@@ -106,7 +106,7 @@ def template_delete(template_id):
         status = Status(
             type='warning',
             close=False,
-            message='You are attempting to delete template <b>{}</b> from blog <b>{}</b>. <b>Are you sure you want to do this?</b>'.format(
+            message='You are attempting to delete template <b>{}</b> from blog <b>{}</b>.'.format(
                 tpl.for_display,
                 blog.for_display),
             no={'url':'{}/template/{}/edit'.format(
@@ -137,6 +137,8 @@ def template_edit_save(template_id):
     tpl = get_template(template_id)
     blog = get_blog(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
+
+    auth.check_template_lock(blog)
 
     from core.utils import Status
     from core.error import TemplateSaveException, PageNotChanged
