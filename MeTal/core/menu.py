@@ -246,7 +246,15 @@ menus = {
         'parent':'blog_manage_categories',
         'parent_context':lambda x:x.blog,
         'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
-        'text':lambda x:'Edit category #{}'.format(x.id)},
+        'text':lambda x:'Edit category #{}'.format(x.id)
+        },
+    'blog_new_category':{
+        'type':'label',
+        'parent':'blog_manage_categories',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/newcategory'.format(x.blog.id, x.id),
+        'text':lambda x:'Add new category'
+        },
     'blog_manage_tags':{
         'type':'button',
         'parent':'blog_menu',
