@@ -42,6 +42,7 @@ body {
 }
 </style>
 <div class="container">
+<center><img src='{{settings.BASE_URL}}/static/images/metal_logo.png'></center>
     % include('include/header_messages.tpl')
     <form class="form-signin" method="post">{{!csrf_token}}
         <h2 class="form-signin-heading"><center>{{settings.PRODUCT_NAME}}</center></h2>
