@@ -7,7 +7,6 @@ from core.log import logger
 from core.auth import publishing_lock
 from core.libs.bottle import request
 from core.libs.peewee import DeleteQuery
-import json
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
     Category, PageCategory, FileInfo, template_tags, get_blog, User, Blog, Site,
@@ -387,6 +386,8 @@ def save_page(page, user, blog=None):
 
     msg = []
 
+    # DELETING PAGES IS NOT HANDLED HERE, SEE delete_page
+
     # UNPUBLISH
     if (
         (save_action & save_action_list.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
@@ -470,6 +471,7 @@ def save_page(page, user, blog=None):
                 n.save()
 
     if request.forms.getunicode('tag_text') is not None:
+        import json
         tag_text = json.loads(request.forms.getunicode('tag_text'))
         add_tags_to_page(tag_text, page)
         delete_orphaned_tags()
@@ -540,6 +542,7 @@ def add_tags_to_page (tag_text, page, no_delete=False):
 
         add_tag.save()
 
+    import json
     new_tags = json.loads(request.forms.getunicode('new_tags'))
 
     for n in new_tags:
@@ -627,7 +630,6 @@ def delete_page(page):
     delete_page_files(page)
     delete_page_fileinfo(page)
     page.delete_instance(recursive=True)
-
 
 
 def unpublish_page(page):
