@@ -90,15 +90,32 @@
     </div>
     % if page.id is not None:
     <div id="preview_group" class="btn-group btn-block">
-        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-10">Preview</button>
-        <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary dropdown-toggle col-xs-2" data-toggle="dropdown" aria-expanded="false">
+        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-12">Preview</button>
+<!--
+        <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary xdropdown-toggle col-xs-2" xdata-toggle="dropdown" aria-expanded="false">
+
         <span class="caret"></span>
         <span class="sr-only">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu col-xs-10" role="menu">
             <li><a onclick="show_local_preview()" href="#">Local preview</a></li>
+
             <li><a href="#">Shared preview</a></li>
+
         </ul>
+-->
     </div>
-    % end
 </div>
+
+<div class='pull-right'><small>
+% if page.status_id==1:
+<a href='/page/{{page.id}}/delete'>Delete
+<span class="glyphicon glyphicon-trash"></span>
+</a>
+% else:
+To enable deletion, unpublish page
+<span class="glyphicon glyphicon-trash"></span>
+% end
+</small></div>
+% end
+
