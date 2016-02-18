@@ -385,27 +385,15 @@ def save_page(page, user, blog=None):
 
     change_note = request.forms.getunicode('change_note')
 
-    # Save to draft only
-    # Save and publish
-    # Save and exit
-    # Republish and exit
-    # Unpublish (and exit)
-    # Delete (and unpublish) (and exit)
-
     msg = []
 
     # UNPUBLISH
     if (
         (save_action & save_action_list.UNPUBLISH_PAGE and page.status == page_status.published) or  # unpublished a published page
         (original_page_status == page_status.published and page.status == page_status.unpublished)  # set a published page to draft
-        # or (save_action & save_action_list.DELETE_PAGE)  # delete a page, regardless of status
         ):
 
         unpublish_page(page)
-
-    # DELETE; IMPLIES UNPUBLISH
-    # if (save_action & save_action_list.DELETE_PAGE):
-        # delete_page(page)
 
     # UNPUBLISHED TO PUBLISHED
     if original_page_status == page_status.unpublished and (save_action & save_action_list.UPDATE_LIVE_PAGE):
@@ -481,30 +469,28 @@ def save_page(page, user, blog=None):
                 n.primary = True
                 n.save()
 
-
-
     if request.forms.getunicode('tag_text') is not None:
         tag_text = json.loads(request.forms.getunicode('tag_text'))
         add_tags_to_page(tag_text, page)
         delete_orphaned_tags()
 
-
     # BUILD FILEINFO IF NO DELETE ACTION
-    # if not (save_action & save_action_list.DELETE_PAGE):
-
     build_pages_fileinfos((page,))
     if page.status == page_status.published:
         build_archives_fileinfos((page,))
 
-    # PUBLISH CHANGES
-    if (save_action & save_action_list.UPDATE_LIVE_PAGE) and (page.status == page_status.published):
+    # QUEUE CHANGES FOR PUBLICATION
+    if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
+        and (page.status == page_status.published)):
 
         queue_page_actions(page)
         queue_index_actions(page.blog)
-
         msg.append(" Live page updated.")
 
-    if (save_action & (save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE)) and (save_result[1]) is None:
+    if (
+        (save_action & (save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE))
+        and (save_result[1]) is None):
+
         msg.append(" (Page unchanged.)")
 
     tags = template_tags(page_id=page.id, user=user)
