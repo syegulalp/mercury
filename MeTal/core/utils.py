@@ -114,6 +114,10 @@ class Status:
         else:
             self.message = ka['message']
 
+        if 'no_sure' not in ka:
+            self.message += "<p><b>Are you sure you want to do this?</b></p>"
+
+
         if self.type in self.status_types:
             self.icon = self.status_types[self.type]
 
