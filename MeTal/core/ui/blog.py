@@ -465,8 +465,6 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
             close=False)
 
     else:
-        # confirmation = Struct()
-
         s1 = ('You are about to delete media object <b>{}</b> from blog <b>{}</b>.'.format(
             media.for_display,
             blog.for_display))
@@ -476,16 +474,25 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         for n in media.associated_with:
             used_in.append("<li>{}</li>".format(n.page.for_display))
 
-        s2 = ('''<p>Note that the following pages use this media object.
-Deleting the object will remove it from these pages as well:
+        if len(used_in) > 0:
+            s2 = ('''<p>Note that the following pages use this media object.
+Deleting the object will remove it from these pages as well.
+Any references to these images will show as broken.
 <ul>{}</ul></p>
-        '''.format(''.join(used_in)))
+            '''.format(''.join(used_in)))
+        else:
+            s2 = '''
+<p>This media object is not currently used in any pages.
+However, if it is linked directly in a page without a media reference,
+any such links will break. Proceed with caution.
+'''
 
         yes = {
-                'label':'Yes, delete this media',
-                'id':'delete',
-                'name':'confirm',
-                'value':user.logout_nonce}
+            'label':'Yes, delete this media',
+            'id':'delete',
+            'name':'confirm',
+            'value':user.logout_nonce
+            }
         no = {
             'label':'No, return to media properties',
             'url':'../{}/edit'.format(media.id)
@@ -494,7 +501,7 @@ Deleting the object will remove it from these pages as well:
         tags.status = Status(
             type='warning',
             close=False,
-            message=s1 + s2,
+            message=s1 + '<hr>' + s2,
             yes=yes,
             no=no
             )
@@ -967,7 +974,7 @@ def blog_save_theme(blog_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    reason = auth.check_template_lock(blog, True)
+    auth.check_template_lock(blog)
 
     tags = template_tags(blog=blog,
             user=user)
@@ -1042,7 +1049,7 @@ def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    reason = auth.check_template_lock(blog, True)
+    auth.check_template_lock(blog)
 
     theme = get_theme(theme_id)
 
@@ -1075,7 +1082,6 @@ It is recommended that you <a href="{}">republish this blog.</a>
             message='''
 You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 <p>This will OVERWRITE AND REMOVE ALL EXISTING TEMPLATES on this blog!</p>
-<p><b>Are you sure you want to do this?</b></p>
 '''.format(theme.for_display, blog.for_display),
             url='{}/blog/{}/themes'.format(
                 BASE_URL, blog.id),
