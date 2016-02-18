@@ -114,7 +114,7 @@ class Status:
         else:
             self.message = ka['message']
 
-        if 'no_sure' not in ka or self.type not in ('success', 'info'):
+        if self.type not in ('success', 'info') and 'no_sure' not in ka:
             self.message += "<p><b>Are you sure you want to do this?</b></p>"
 
 
