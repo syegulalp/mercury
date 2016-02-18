@@ -190,7 +190,7 @@ def create_basename_core(basename):
     except Exception:
         basename = basename.lower()
 
-    basename = basename.replace(' ', '-')
+    basename = re.sub(r'[ \./]', r'-', basename)
     basename = re.sub(r'<[^>]*>', r'', basename)
     basename = re.sub(r'[^a-z0-9\-]', r'', basename)
     basename = re.sub(r'\-\-', r'-', basename)
