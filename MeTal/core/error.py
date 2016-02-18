@@ -48,6 +48,9 @@ class MaintenanceModeException(Exception):
 class UserCreationError(Exception):
     pass
 
+class DeletionError(Exception):
+    pass
+
 # for earlier Python 3.x backwards compatibility
 
 try:
