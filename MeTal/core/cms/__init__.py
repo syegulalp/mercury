@@ -2,7 +2,7 @@ import os, datetime
 
 from core.utils import (create_basename, Status, tpl, tpl_oneline, generate_date_mapping, date_format)
 from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueueError,
-    QueueInProgressException, PageTemplateError)
+    QueueInProgressException, PageTemplateError, DeletionError)
 from core.log import logger
 from core.auth import publishing_lock
 from core.libs.bottle import request
@@ -627,7 +627,6 @@ def delete_page_fileinfo(page):
     '''
 
     fileinfo_to_delete = FileInfo.delete().where(FileInfo.page == page)
-
     return fileinfo_to_delete.execute()
 
 def delete_page(page):
@@ -636,9 +635,13 @@ def delete_page(page):
     Does not delete files on disk.
     Implies an unpublish action.
     '''
+    if page.status != page_status.unpublished:
+        raise DeletionError('Page must be unpublished before it can be deleted')
     unpublish_page(page)
     delete_page_files(page)
     delete_page_fileinfo(page)
+    page.delete_instance(recursive=True)
+
 
 
 def unpublish_page(page):
@@ -646,7 +649,6 @@ def unpublish_page(page):
     Removes all the physical files associated with a given page,
     and queues any neighboring files to be republished
     '''
-
     page.status = page_status.unpublished
     delete_page_files(page)
 
