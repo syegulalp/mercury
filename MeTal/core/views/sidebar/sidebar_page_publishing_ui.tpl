@@ -79,8 +79,10 @@
             % else:
             <li><a title="Save this page to a draft, and make the changes live on the website." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE}})" href="#">Save and publish</a></li>
             % end
+ <!--
             <li><a title="Save this page to a draft, release the editing lock, and leave the editor." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.EXIT_EDITOR}})" href="#">Save and exit</a></li>
             <li><a title="Close the editor without making any further changes to this draft, and release the editing lock." onclick="page_save({{save_action_list.EXIT_EDITOR}})" href="#">Exit without saving</a></li>
+-->
             % if page.status_id == 2:
             <li><a title="Remove the live version of this page, and set its status back to Draft." onclick="page_save({{save_action_list.UNPUBLISH_PAGE}})" href="#">Unpublish</a></li>
             % end
