@@ -153,7 +153,7 @@ def new_category(blog_id):
     tpl = template('edit/edit_category_ui',
         category=category,
         category_list=category_list,
-        menu=generate_menu('new_category', category),
+        menu=generate_menu('blog_new_category', category),
         search_context=(search_context['sites'], None),
         **tags.__dict__)
 
