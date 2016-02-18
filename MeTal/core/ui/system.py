@@ -4,7 +4,7 @@ from core.menu import generate_menu, colsets
 from core.search import site_search_results
 
 from core.models import (
-    template_tags, Queue, Log,
+    template_tags, Queue, Log, Blog,
     Plugin)
 
 from core.models.transaction import transaction
@@ -267,13 +267,25 @@ Theme <b>{}</b> was successfully deleted from the system.</p>
 
     else:
 
+        m1 = '''You are about to remove theme <b>{}</b>. <b>THIS ACTION CANNOT BE UNDONE.</b></p>
+'''.format(theme.for_display)
+        blogs_with_theme = Blog.select().where(
+            Blog.theme == theme_id)
+        if blogs_with_theme.count() > 0:
+            used_in = []
+            for n in blogs_with_theme:
+                used_in.append("<li>{}</li>".format(n.for_display))
+            m2 = '''<p>This theme is in use by the following blogs:<ul>{}</ul>
+Deleting this theme may <i>break these blogs entirely!</i></p>
+'''.format(
+                ''.join(used_in))
+        else:
+            m2 = ''
+
         status = Status(
             type='warning',
             close=False,
-            message='''
-You are about to remove theme <b>{}</b>.</p>
-<p><b>Are you sure you want to do this?</b></p>
-'''.format(theme.for_display),
+            message=m1 + m2,
             url='{}/system/theme/{}/delete'.format(
                 BASE_URL, theme.id),
             yes={'id':'delete',
