@@ -42,6 +42,7 @@ def login_verify():
 
         tags.status = utils.Status(
             type='danger',
+            no_sure=True,
             message="Email or password not found.")
 
         return template('ui/ui_login',

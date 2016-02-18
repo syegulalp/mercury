@@ -138,6 +138,7 @@ def blog_create_save(site_id):
 
         status = utils.Status(
             type='danger',
+            no_sure=True,
             message='The blog could not be created due to the following problems:',
             message_list=errors)
         from core.libs import pytz
@@ -394,6 +395,7 @@ def blog_media_edit_save(blog_id, media_id):
 
         status = utils.Status(
             type='warning',
+            no_sure=True,
             message='No discernible changes submitted for media <b>{}</b>.'.format(
                 media.id, media.for_display)
             )
@@ -808,6 +810,7 @@ def blog_settings_save(blog_id, nav_setting):
 
         status = Status(
             type='danger',
+            no_sure=True,
             message='Blog settings could not be saved due to the following problems:',
             message_list=errors)
     else:

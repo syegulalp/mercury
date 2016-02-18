@@ -93,7 +93,7 @@ def template_delete(template_id):
         _template.delete(tpl)
 
         status = Status(
-            type='warning',
+            type='success',
             close=False,
             message='Template {} was successfully deleted.'.format(tpl.for_log),
             action='Return to template list',
@@ -153,6 +153,7 @@ def template_edit_save(template_id):
         except TemplateSaveException as e:
             status = Status(
                 type='danger',
+                no_sure=True,
                 message="Error saving template <b>{}</b>:".format(tpl.for_display),
                 message_list=(e,))
         except PageNotChanged as e:
@@ -165,6 +166,7 @@ def template_edit_save(template_id):
             raise e
             status = Status(
                 type='warning',
+                no_sure=True,
                 message="Problem saving template <b>{}</b>: <br>".format(tpl.for_display),
                 message_list=(e,))
 

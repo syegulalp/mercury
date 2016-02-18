@@ -99,6 +99,7 @@ def system_new_user():
         except UserCreationError as e:
             status = utils.Status(
                 type='danger',
+                no_sure=True,
                 message='There were problems creating the new user:',
                 message_list=e.args[0]
                 )
@@ -106,6 +107,7 @@ def system_new_user():
         except peewee.IntegrityError as e:
             status = utils.Status(
                 type='danger',
+                no_sure=True,
                 message='There were problems creating the new user:',
                 message_list=['The new user\'s email or username is the same as another user\'s. Emails and usernames must be unique.']
                 )
@@ -164,6 +166,7 @@ def system_user(user_id, path):
             except peewee.IntegrityError:
                 status = utils.Status(
                     type='danger',
+                    no_sure=True,
                     message='Error: user <b>{}</b>  cannot be changed to the same name or email as another user.'.format(
                         user_to_edit.for_display)
                     )

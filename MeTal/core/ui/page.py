@@ -145,6 +145,7 @@ def page_delete(page_id, confirm):
 
         tags.status = Status(
             type='danger',
+            no_sure=True,
             message=message,
             action=action,
             url=url,
