@@ -353,7 +353,8 @@ def check_publishing_lock(blog, action_description, warn_only=False):
         if warn_only is True:
             return Status(
                 type='warning',
-                message=msg
+                message=msg,
+                no_sure=True,
                 )
         else:
             raise QueueInProgressException(msg)
