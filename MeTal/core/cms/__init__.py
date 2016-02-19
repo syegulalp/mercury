@@ -148,14 +148,14 @@ def push_insert_to_queue(blog):
             blog=blog,
             site=blog.site)
 
-def _remove_from_queue(queue_deletes):
+def remove_from_queue(queue_deletes):
     '''
     Batch deletion of queue jobs.
     '''
     deletes = Queue.delete().where(Queue.id << queue_deletes)
     return deletes.execute()
 
-def remove_from_queue(queue_id):
+def _remove_from_queue(queue_id):
     '''
     Removes a specific job ID from the queue.
 
@@ -599,6 +599,7 @@ def delete_page_files(page):
     for n in page.fileinfos:
         try:
             os.remove(n.sitewide_file_path)
+        # TODO: need more explicit trapping here
         except OSError:
             pass
 
@@ -1032,6 +1033,9 @@ def publish_blog(blog_id):
     pass
 
 def republish_blog(blog_id):
+    '''
+    Queues all published pages and index items for a given blog.
+    '''
 
     import time
 
@@ -1059,7 +1063,12 @@ def republish_blog(blog_id):
     return data
 
 def process_queue_publish(queue_control, blog):
-
+    '''
+    Processes the publishing queue for a given blog.
+    Takes in a queue_control entry, and returns an integer of the number of
+    jobs remaining in the queue for that blog.
+    Typically invoked by the process_queue function.
+    '''
     # Queue for building actual pages
 
     queue_control.is_running = True
@@ -1088,7 +1097,7 @@ def process_queue_publish(queue_control, blog):
         except BaseException:
             raise
         else:
-            remove_from_queue(q.id)
+            remove_from_queue((q.id,))
 
     queue_control = Queue.get(Queue.blog == blog,
         Queue.is_control == True)
@@ -1259,8 +1268,6 @@ def purge_blog(blog):
     into queueable behaviors, so that these operations don't time out.
 
     '''
-
-    # TODO: create fileinfos for SSIs if any
 
     import time
 
