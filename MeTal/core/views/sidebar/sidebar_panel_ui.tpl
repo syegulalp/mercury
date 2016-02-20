@@ -1,7 +1,7 @@
 <div class="panel panel-default">
     <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#{{label}}_collapse" aria-expanded="false" aria-controls="{{label}}_collapse">
         <div class="panel-heading editor-sidebar" role="tab" id="#{{label}}_categories_tab">
-            <h3 class="panel-title"><span class="glyphicon glyphicon-{{icon}} editor-sidebar"></span>{{title}}</h3>
+            <p class="panel-title"><span class="glyphicon glyphicon-{{icon}} editor-sidebar"></span>{{title}}</p>
     	</div>
     </a>
 
