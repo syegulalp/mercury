@@ -3,7 +3,7 @@ from core.log import logger
 from core.menu import generate_menu
 from .ui import search_context, status_badge, save_action
 
-from core.models import (get_media,
+from core.models import (get_media, Media,
     template_tags, get_page, PageRevision, Template,
     MediaAssociation, template_type)
 
@@ -344,12 +344,29 @@ def page_media_delete(page_id, media_id):
     media_reference.delete_instance(recursive=True,
         delete_nullable=True)
 
-    tags = template_tags(page_id=page_id)
+    tags = template_tags(page=page)
 
     return template('edit/edit_page_sidebar_media_list.tpl',
         **tags.__dict__)
 
+@transaction
+def page_media_add(page_id):
 
+    user = auth.is_logged_in(request)
+    page = get_page(page_id)
+    permission = auth.is_page_editor(user, page)
+
+    media_list = Media.select().where(
+        Media.blog == page.blog)
+
+    tags = template_tags(page=page,
+        user=user)
+
+    return template('modal/modal_images.tpl',
+        media_list=media_list,
+        title="Select image",
+        buttons='',
+        **tags.__dict__)
 
 
 def page_get_media_templates(page_id, media_id):
@@ -391,6 +408,9 @@ def page_add_media_with_template(page_id, media_id, template_id):
 
     generated_template = utils.tpl(media_template.body,
         media=media)
+
+    if media not in page.media:
+        media.associate(page)
 
     return generated_template
 

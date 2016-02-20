@@ -376,6 +376,10 @@ function sidebar_wireup() {
 			open_modal(global.base + "/page/" + global.page + "/edit/revisions");
 		});
 		
+        $("#insert_media_link").on("click", function() {
+            open_modal(global.base + "/page/" + global.page + "/media/add");
+        });		
+		
 		if ($('#publication_date_picker').datetimepicker != undefined) {
 			$('#publication_date_picker').datetimepicker({
 				format : 'YYYY-MM-DD HH:mm:ss',

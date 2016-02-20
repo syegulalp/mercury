@@ -1824,6 +1824,14 @@ class Media(BaseModel, DateMod):
             self.link_format,
             self.preview_url)
 
+    def associate(self, page):
+        association = MediaAssociation(
+            media=self,
+            page=page,
+            blog=page.blog,
+            site=page.blog.site)
+
+        association.save()
 
 class MediaAssociation(BaseModel):
 

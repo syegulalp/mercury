@@ -20,7 +20,6 @@
     % try:
     {{!action}}
     % except:
-    
     % end
     </span>
     </div>    

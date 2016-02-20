@@ -552,6 +552,14 @@ def page_edit_save(page_id):
     from core.ui import page
     return page.page_edit_save(page_id)
 
+@_route(BASE_PATH + '/page/<page_id:int>/media/add')
+def page_media_add(page_id):
+    '''
+    Route for listing a page's revisions
+    '''
+    from core.ui import page
+    return page.page_media_add(page_id)
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit/revisions')
 def page_revisions(page_id):
     '''

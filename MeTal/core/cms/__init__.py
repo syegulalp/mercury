@@ -1338,6 +1338,7 @@ def register_media(filename, path, user, **ka):
 
     if 'page' in ka:
         page = ka['page']
+        '''
         association = MediaAssociation(
             media=media,
             page=page,
@@ -1345,6 +1346,8 @@ def register_media(filename, path, user, **ka):
             site=page.blog.site)
 
         association.save()
+        '''
+        media.associate(page)
 
         media.blog = page.blog
         media.site = page.blog.site
