@@ -45,6 +45,13 @@ function delayed_resize() {
 
 }
 
+function adjust_error_view(){
+    pos1 = $('#error_header').innerHeight();
+    pos2 = $('#error_scrollable').offset().top;
+    $('#error_scrollable').css('overflow-y','scroll');
+    $('#error_scrollable').height(window.innerHeight-pos1-pos2-32);    
+}
+
 function save_animation(n) {
 	n.css('color', colors[ rotate ][0])
 	n.css('text-shadow', '0 0 4px '+colors[ rotate ][1])
@@ -114,6 +121,7 @@ function server_failure(xhr, status, error, sorry_message) {
 	}
 
 	error_report(sorry_message, reason + details);
+	
 }
 
 function open_modal(url) {
@@ -156,7 +164,8 @@ function status_message(type, string, id) {
 }
 
 function error_report(header, reason) {
-	status_message('danger', header + reason, 'server-error')
+	status_message('danger', header + reason, 'server-error');
+	adjust_error_view();
 }
 
 function bind_queue() {

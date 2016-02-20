@@ -6,7 +6,7 @@
 <hr/>
 </div>
 % if settings.DEBUG_MODE:
-<div id='error_scrollable' style='overflow-y:scroll'>
+<div id='error_scrollable'>
 <h4>Exception details:</h4>
 <pre>{{error.exception}}</pre>
 <hr/><h4>Error details:</h4>
@@ -21,10 +21,6 @@
 <hr/>
 <center><small><i>{{settings.PRODUCT_NAME}}</i></small></center>
 </div>
-<script>
-pos1 = $('#error_header').innerHeight();
-pos2 = $('#error_scrollable').offset().top;
-$('#error_scrollable').height(window.innerHeight-pos1-pos2-32);
-</script>
+<script></script>
 </div>
 </body></html>
