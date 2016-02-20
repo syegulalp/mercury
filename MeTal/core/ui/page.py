@@ -362,7 +362,7 @@ def page_get_media_templates(page_id, media_id):
 
     media_templates = Template.select().where(
         Template.blog == page.blog,
-        Template.template_type == template_type.media)
+        Template.template_type == template_type.media).order_by(Template.title)
 
     from .ui import media_buttons
     buttons = media_buttons.format(
