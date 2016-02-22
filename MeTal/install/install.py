@@ -70,6 +70,16 @@ def step_0_pre():
         store_ini('main', 'BASE_URL_ROOT', _s.BASE_URL_ROOT)
         store_ini('main', 'BASE_URL_PATH', _s.BASE_URL_PATH)
 
+    # Later on when we support multiple server types,
+    # this will be changed to something more general
+    if os.environ['SERVER_SOFTWARE'] == 'Apache':
+        with open(_s.APPLICATION_PATH + _sep + ".htaccess", 'w', encoding='utf-8') as output_file:
+            output_file.write('''
+RewriteCond %{REQUEST_URI} !static/*
+RewriteCond %{REQUEST_URI} !index.cgi
+RewriteRule ^(.*)$ index.cgi/$1 [QSA,L]
+''')
+
     return {}
 
 def step_0_post():
