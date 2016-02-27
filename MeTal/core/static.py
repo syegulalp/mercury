@@ -54,12 +54,14 @@ html_editor_settings = '''
 
     },
     setup: function(ed) {
+        console.log('Hello');
         ed.on('init', function(args) {
             window.onbeforeunload = leave;
         });
-        ed.on('change', function() {
-            window.onbeforeunload = stay;
+        ed.on('change', function(e) {
+            editor_set_dirty();
         });
+
     },
     selector: "textarea.editor",
     convert_urls: false,
