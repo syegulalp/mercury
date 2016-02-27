@@ -107,6 +107,7 @@
         </ul>
 -->
     </div>
+    % end
 </div>
 
 <div class='pull-right'><small>
@@ -119,5 +120,5 @@ To enable deletion, unpublish page
 <span class="glyphicon glyphicon-trash"></span>
 % end
 </small></div>
-% end
+
 
