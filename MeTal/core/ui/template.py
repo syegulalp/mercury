@@ -237,6 +237,9 @@ def template_preview_delete(tpl):
     except:
         return None
 
+    if preview is None:
+        return None
+
     from settings import _sep
     import os
 
@@ -246,6 +249,7 @@ def template_preview_delete(tpl):
         from core.error import not_found
         if not_found(e) is False:
             raise e
+
     except Exception as e:
         raise e
 
