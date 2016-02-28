@@ -1281,7 +1281,7 @@ class Page(BaseModel, DateMod):
 
         if no_revision == False and self.id is not None:
             page_revision = PageRevision.copy(self)
-            revision_save_result = page_revision.save(user, self, False, change_note)
+            revision_save_result = page_revision.save(user, self, backup_only, change_note)
 
         page_save_result = Model.save(self) if backup_only is False else None
 
@@ -1341,6 +1341,17 @@ class PageRevision(Page, RevisionMixin):
 
         previous_revisions = (self.select().where(PageRevision.page_id == self.page_id)
             .order_by(PageRevision.modified_date.desc()).limit(max_revisions))
+
+        # deprecating this since backups are going to be stored locally instead
+
+        '''
+        if is_backup is True:
+            previous_backups = DeleteQuery(PageRevision).where(
+                PageRevision.page_id == self.page_id,
+                PageRevision.is_backup is True)
+            previous_backups.execute()
+        '''
+
 
         if previous_revisions.count() > 0:
 

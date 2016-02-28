@@ -398,9 +398,9 @@ def save_page(page, user, blog=None):
     # SAVE DRAFT
     if (save_action & save_action_list.SAVE_TO_DRAFT):
 
-        backup_only = True if request.forms.getunicode('draft') == "Y" else False
+        # backup_only = True if request.forms.getunicode('backup') == "Y" else False
         try:
-            save_result = page.save(user, False, backup_only, change_note)
+            save_result = page.save(user, False, False, change_note)
         except PageNotChanged:
             save_result = (None, None)
 

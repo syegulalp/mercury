@@ -62,6 +62,7 @@
 
 <div id="page_save_group" class="form-group" style="line-height: 2.5em;">
     <input type="hidden" id="save" name="save" value="{{page.status_id}}">
+    <input type="hidden" id="backup" name="backup" value="N">
     <div class="btn-group btn-block">
         <button onclick="page_save({{save_action[page.status_id][0]}})" type="button" accesskey="s"
             id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}} col-xs-10">

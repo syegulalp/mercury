@@ -27,13 +27,19 @@ function set_background_save_timer(){
     global.background_save_timer=window.setTimeout(
         function(){
             background_save_draft();
-        }, 10000
+        }, 1000
     );
     console.log('Timer triggered');
 }
 
+function clear_background_save_timer(){
+    window.clearTimeout(global.background_save_timer);
+}
+
 function background_save_draft(){
-    console.log('Save triggered');
+    console.log('Backup triggered');
+    backup = JSON.stringify($('#main_form').serializeArray())
+    localStorage.setItem('backup-'+global.page,backup)
 }
 
 function leave() {}
@@ -171,6 +177,7 @@ function run_queue(blog_id) {
 
 function page_save(n) {
     if (global.saving == true) return;
+    clear_background_save_timer();
     $('#save').attr('value', n);
     editor_update();
     editor_resize(tinymce.activeEditor);
@@ -241,6 +248,7 @@ function form_save(form) {
         $('title').append($(data).filter('title').html());
         sidebar_wireup();
         $('#save_animation').html(icon('ok-sign'));
+        localStorage.removeItem('backup-'+global.page);
         dismiss('#alert_message', 2500);
         dismiss('#response_icon', 2500);
     }).fail(function(xhr, status, error) {
@@ -251,6 +259,7 @@ function form_save(form) {
         global.saving = false;
         reset_animation($('#save_animation'));
         document.title = global.original_title;
+        $('#backup').val('N');
     });
 }
 
