@@ -5,6 +5,7 @@ from core.log import logger
 from core.models import (TemplateMapping, Template, System, KeyValue,
     Permission, Site, Blog, User, Category, Theme, Tag, get_default_theme)
 from core.libs.playhouse.dataset import DataSet
+from os.path import join as _join
 
 def login_verify(email, password):
     try:
@@ -66,7 +67,8 @@ def theme_apply_to_blog(theme, blog , user):
     blog.erase_theme()
     from settings import THEME_FILE_PATH
 
-    theme_dir = THEME_FILE_PATH + _sep + theme.json
+    # theme_dir = THEME_FILE_PATH + _sep + theme.json
+    theme_dir = _join(THEME_FILE_PATH, theme.json)
 
     for subdir, dirs, files in os.walk(theme_dir):
         for n in files:
@@ -74,10 +76,10 @@ def theme_apply_to_blog(theme, blog , user):
                 continue
             if n[-4:] == '.tpl':
                 continue
-            with open(theme_dir + _sep + n, 'r') as f:
+            with open(_join(theme_dir, n), 'r') as f:
                 template = json.loads(f.read())
                 tpl_data = template['template']
-                with open(theme_dir + _sep + n[:-5] + '.tpl', 'r') as b:
+                with open(_join(theme_dir, n[:-5] + '.tpl'), 'r') as b:
                     tpl_data['body'] = b.read()
 
                 mapping_data = template['mappings']
@@ -85,9 +87,10 @@ def theme_apply_to_blog(theme, blog , user):
                 table_obj = Template()
 
                 for name in table_obj._meta.fields:
-                    if name not in ('id', 'blog'):
+                    if name not in ('id', 'blog', 'template_ref'):
                         setattr(table_obj, name, tpl_data[name])
 
+                table_obj.template_ref = n
                 table_obj.blog = blog
                 table_obj.theme = theme
                 table_obj.save(user)
@@ -114,9 +117,10 @@ def theme_install_to_system(theme_path):
 
     from settings import THEME_FILE_PATH
 
-    theme_dir = THEME_FILE_PATH + _sep + theme_path
+    # theme_dir = THEME_FILE_PATH + _sep + theme_path
+    theme_dir = _join(THEME_FILE_PATH, theme_path)
 
-    with open(theme_dir + _sep + '__manifest__.json', 'r') as f:
+    with open(_join(theme_dir, '__manifest__.json'), 'r') as f:
         json_data = f.read()
 
     json_obj = json.loads(json_data)
@@ -251,7 +255,7 @@ def delete_page_preview(page):
     import os
 
     try:
-        return os.remove(page.blog.path + _sep + preview_fileinfo.file_path)
+        return os.remove(_join(page.blog.path, preview_fileinfo.file_path))
     except OSError as e:
         from core.error import not_found
         if not_found(e) is False:
