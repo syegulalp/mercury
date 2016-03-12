@@ -1,7 +1,8 @@
 from core import cms
 from core.models import get_page, page_status
 from core.utils import date_format, html_escape, breaks, utf8_escape
-from settings import BASE_URL, PLUGIN_FILE_PATH, _sep
+from settings import BASE_URL, PLUGIN_FILE_PATH  # , _sep
+from os.path import join as _join
 
 _self = lambda x: x
 _id = lambda x: x.id
@@ -455,8 +456,9 @@ colsets = {
                 'format_raw':lambda x:(
                     x.for_display if x.enabled is True
                     else '<i>{}{}{}</i>'.format(
-                    PLUGIN_FILE_PATH, _sep, x.path)
-                    )
+                    # PLUGIN_FILE_PATH, _sep, x.path
+                    _join(PLUGIN_FILE_PATH, x.path)
+                    ))
             },
             {'field':'description',
                 'label':'Description',
@@ -465,7 +467,9 @@ colsets = {
             {'field':'path',
                 'label':'Path to plugin',
                 'format':lambda x:'{}{}{}'.format(
-                    PLUGIN_FILE_PATH, _sep, x.path)
+                    # PLUGIN_FILE_PATH, _sep, x.path
+                    _join(PLUGIN_FILE_PATH, x.path)
+                    )
             },
             {'field':'status',
                 'label':'Status',
