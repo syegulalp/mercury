@@ -129,7 +129,6 @@ def enable_plugin(plugin_id):
     from core.plugins import enable_plugin
     enable_plugin(plugin_id)
 
-
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
     '''
@@ -527,14 +526,21 @@ def template_preview(template_id):
     from core.ui import template
     return template.template_preview(template_id)
 
-@_route(BASE_PATH + '/template/<template_id:int>/delete')
-@_route(BASE_PATH + '/template/<template_id:int>/delete', method='POST')
+@_route(BASE_PATH + '/template/<template_id:int>/delete', method=('GET', 'POST'))
 def template_delete(template_id):
     '''
     Routes for deleting a blog template
     '''
     from core.ui import template
     return template.template_delete(template_id)
+
+@_route(BASE_PATH + '/template/<template_id:int>/refresh', method=('GET', 'POST'))
+def template_refresh(template_id):
+    '''
+    Routes for refreshing a template from its underlying theme
+    '''
+    from core.ui import template
+    return template.template_refresh(template_id)
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
