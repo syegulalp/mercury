@@ -34,7 +34,7 @@ def recreate_database():
         raise e
 
     try:
-        os.mkdir(settings.APPLICATION_PATH + settings._sep + settings.DATA_FILE_PATH)
+        os.mkdir(os.path.join(settings.APPLICATION_PATH, settings.DATA_FILE_PATH))
     except OSError as e:
         from core.error import file_exists
         if file_exists(e) is False:
