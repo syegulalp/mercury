@@ -463,8 +463,19 @@ class Theme(BaseModel):
         if context.__class__.__name__ == 'Blog':
             return context.site
 
+    @property
+    def path(self):
+        import os, settings
+        from core.utils import create_basename_core
+        return os.path.join(settings.THEME_FILE_PATH,
+            create_basename_core(self.title))
+
+    # TODO: This should be stored as a field.
+    # If we rename the theme, then this will break.
+
     def actions(self, blog=None):
         pass
+
 
     '''
     returns the theme's module for things like action hooks
@@ -842,10 +853,16 @@ class Blog(SiteBase):
                 create_basename_core(n.title),
                 str(index))
 
+            filename_tpl = filename + ".tpl"
+            filename_json = filename + ".json"
+
             body = j_d['body']
             body = body.replace('\r\n', '\n')
 
-            theme[filename + '.tpl'] = body
+            theme[filename_tpl] = body
+
+            n.template_ref = filename_tpl
+            n.save()
 
             template['template'] = j_d
             del template['template']['body']
@@ -857,10 +874,12 @@ class Blog(SiteBase):
             for m in mappings_to_export:
                 template['mappings'][m.id] = json_dump(m)
 
-            theme[filename + '.json'] = json.dumps(template,
+            theme[filename_json] = json.dumps(template,
                 indent=1,
                 sort_keys=True,
                 allow_nan=True)
+
+
         return theme
 
     def erase_theme(self):
@@ -1540,6 +1559,7 @@ class Template(BaseModel, DateMod):
     modified_date = DateTimeField(default=datetime.datetime.utcnow)
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
+    template_ref = TextField(null=True)
 
     @property
     def modified_date_tz(self):
@@ -1558,7 +1578,7 @@ class Template(BaseModel, DateMod):
     @property
     def preview_file(self):
         from core import utils
-        from settings import _sep
+        # from settings import _sep
         default_file = self.default_mapping.fileinfos[0].file_path
         # return utils.preview_file(default_file, self.blog.base_extension)
         return utils.preview_file(self.id, self.blog.base_extension)
