@@ -977,7 +977,7 @@ def blog_save_theme(blog_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    auth.check_template_lock(blog)
+    reason = auth.check_template_lock(blog)
 
     tags = template_tags(blog=blog,
             user=user)
@@ -1035,7 +1035,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
         save_tpl = 'edit/edit_theme_save'
         status = None
 
-    tags.status = status if reason is None else status
+    tags.status = status if reason is None else reason
 
     tpl = template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
@@ -1052,7 +1052,7 @@ def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    auth.check_template_lock(blog)
+    reason = auth.check_template_lock(blog)
 
     theme = get_theme(theme_id)
 
@@ -1097,7 +1097,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
                 BASE_URL, blog.id)}
             )
 
-    tags.status = status if reason is None else status
+    tags.status = status if reason is None else reason
 
     tpl = template('listing/report',
         menu=generate_menu('blog_apply_theme', [blog, theme]),
