@@ -76,6 +76,78 @@ def template_edit(template_id):
 
     return template_edit_output(tags)
 
+def template_refresh(template_id):
+    user = auth.is_logged_in(request)
+    tpl = get_template(template_id)
+    blog = get_blog(tpl.blog)
+    permission = auth.is_blog_designer(user, blog)
+
+    from core.utils import Status
+    import settings
+
+    tags = template_tags(template_id=tpl.id,
+        user=user)
+
+    if request.forms.getunicode('confirm') == user.logout_nonce:
+
+        import os, json
+        template_path = (os.path.join(tpl.theme.path,
+            tpl.template_ref))
+
+        with open(template_path, 'r') as f:
+            tp_json = json.loads(f.read())
+            # TODO: We will eventually merge in all the other refresh functions
+            # and convert this to a generic function called from
+            # mgmt.theme_apply_to_blog as well
+            with open(template_path[:-5] + '.tpl', 'r') as b:
+                tpl.body = b.read()
+            tpl.save(user)
+
+        status = Status(
+            type='success',
+            close=False,
+            message='Template <b>{}</b> was successfully refreshed from theme <b>{}</b>.'.format(
+                tpl.for_display,
+                tpl.theme.for_display),
+            action='Return to template',
+            url='{}/template/{}/edit'.format(
+                settings.BASE_URL, tpl.id)
+            )
+
+    else:
+
+        status = Status(
+            type='warning',
+            close=False,
+            message='''
+You are attempting to refresh template <b>{}</b> for blog <b>{}</b> from its underlying theme <b>{}</b>.</p>
+<p>This will <b>overwrite</b> the current version of the template and replace it with the original version
+from the theme.
+'''.format(
+                tpl.for_display,
+                blog.for_display,
+                tpl.theme.for_display),
+            no={'url':'{}/template/{}/edit'.format(
+                settings.BASE_URL, tpl.id),
+                'label':'No, I don\'t want to replace this template'
+                },
+            yes={'id':'delete',
+                'name':'confirm',
+                'label':'Yes, I want to replace this template',
+                'value':user.logout_nonce}
+            )
+
+
+    tags.status = status
+    tplt = template('listing/report',
+        menu=generate_menu('blog_delete_template', tpl),
+        search_context=(search_context['blog'], blog),
+        **tags.__dict__)
+
+    return tplt
+
+
+
 def template_delete(template_id):
 
     user = auth.is_logged_in(request)
