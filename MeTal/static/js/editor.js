@@ -38,8 +38,8 @@ function clear_background_save_timer(){
 
 function background_save_draft(){
     console.log('Backup triggered');
-    backup = JSON.stringify($('#main_form').serializeArray())
-    localStorage.setItem('backup-'+global.page,backup)
+    backup = JSON.stringify($('#main_form').serializeArray());
+    localStorage.setItem('backup-'+global.page,backup);
 }
 
 function leave() {}
