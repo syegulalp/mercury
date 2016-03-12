@@ -1,6 +1,6 @@
 panels_dict = {
     'edit_template':
-        {'panel_order':['publishing', 'status', 'files'],
+        {'panel_order':['publishing', 'status', 'files', 'theme'],
         'panels':
             {'publishing':{
                 'template':'sidebar/sidebar_template_publishing_ui',
@@ -13,6 +13,12 @@ panels_dict = {
                 'title':'Status',
                 'label':'status',
                 'icon':'info-sign'
+                },
+            'theme':{
+                'template':'sidebar/sidebar_template_theme_ui',
+                'title':'Theme',
+                'label':'theme',
+                'icon':'file'
                 },
             'files':{
                 'template':'sidebar/sidebar_template_output_ui',

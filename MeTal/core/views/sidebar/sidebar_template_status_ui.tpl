@@ -10,6 +10,11 @@
     <p id="template_type">
         {{template.template_type}}
     </p>
+    
+    <label for="template_ref">Original theme template:</label>
+    <p id="template_ref">
+        {{template.template_ref}}
+    </p>
 
     <p><small><a id="revision_link" href="#">See earlier revisions</a></small></p>
 
