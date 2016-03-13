@@ -822,7 +822,7 @@ class Blog(SiteBase):
 
         return self
 
-    def export_theme(self, title, description):
+    def export_theme(self, title, description, user):
         '''
         Returns a dictionary object containing a dump of the blog's theme.
         Used mainly for saving a blog theme.
@@ -862,7 +862,7 @@ class Blog(SiteBase):
             theme[filename_tpl] = body
 
             n.template_ref = filename_tpl
-            n.save()
+            n.save(user)
 
             template['template'] = j_d
             del template['template']['body']
