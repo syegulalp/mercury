@@ -8,6 +8,7 @@ from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
     template_tags, Page, Blog, Queue, Template, Theme, get_theme,
+    Category, PageCategory,
     TemplateMapping, Media, queue_jobs_waiting,
     Tag, template_type, publishing_mode, get_default_theme)
 
@@ -991,7 +992,7 @@ def blog_save_theme(blog_id):
             description=request.forms.getunicode('theme_description'),
             json='')
 
-        export = blog.export_theme(theme.title, theme.description)
+        export = blog.export_theme(theme.title, theme.description, user)
 
         from settings import THEME_FILE_PATH, _sep
         import os
@@ -1117,12 +1118,81 @@ def blog_import (blog_id):
     tags = template_tags(blog=blog,
         user=user)
 
-    tags.status = reason
-    # tags.status = status if reason is None else status
+    import os, settings
+    import_path = os.path.join(
+        settings.APPLICATION_PATH,
+        "data",
+        "import.json")
 
-    tpl = template('ui/ui_blog_import',
-        menu=generate_menu('blog_apply_theme', [blog, theme]),
-        search_context=(search_context['blog'], blog),
-        **tags.__dict__)
+    tags.status = reason
+
+    if request.method == "POST":
+        import json
+        from core.utils import string_to_date
+
+        import_path = request.forms.getunicode('import_path')
+        with open(import_path, 'r', encoding='utf8') as f:
+            json_data = json.load(f)
+
+        q = []
+        for n in json_data:
+            new_entry = Page()
+            new_entry.title = n['title']
+            new_entry.text = n['text']
+            new_entry.basename = n['basename']
+            new_entry.user = user
+            new_entry.blog = blog
+            new_entry.created_date = string_to_date(n['created_date'])
+            new_entry.publication_date = string_to_date(n['publication_date'])
+            new_entry.modified_date = new_entry.publication_date
+            new_entry.save(user)
+
+            # TODO: figure out a way to automatically infer the object type
+            # when adding a kv like this
+
+            # - we should erase any existing kvs for the object if they exist
+
+            new_entry.add_kv(
+                object="Page",
+                objectid=new_entry.id,
+                key="legacy_id",
+                value=n['id']
+                )
+
+            # TODO: setting default category should be done on object creation
+
+            default_blog_category = Category.get(
+                Category.blog == blog.id,
+                Category.default == True)
+
+            saved_page_category = PageCategory.create(
+                page=new_entry,
+                category=default_blog_category,
+                primary=True)
+
+            cms.build_pages_fileinfos((new_entry,))
+
+            q.append("{}/{}".format(n['title'], new_entry.id))
+
+        tpl = '<p>'.join(q)
+        # tpl = str(json_data)
+
+        # parse
+        # iterate:
+        # look for an existing entry with this legacy ID
+        # if found, get that as our entry to update
+        # if not, create a new one
+        # title, body copy
+
+        # todo: tags, categories, special KVs, etc.
+
+        # return (json_data)
+    else:
+        tpl = template('ui/ui_blog_import',
+            menu=generate_menu('blog_import', blog),
+            search_context=(search_context['blog'], blog),
+            import_path=import_path,
+            **tags.__dict__)
 
     return tpl
+
