@@ -331,6 +331,13 @@ menus = {
         'path': lambda x: BASE_URL + '/blog/{}/settings'.format(x.id),
         'text':lambda x:'Blog settings'
         },
+    'blog_import':{
+        'type':'label',
+        'parent':'blog_menu',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/import'.format(x.id),
+        'text':lambda x:'Import data to blog'
+        },
     'blog_users_div':{
         'type':'divider',
         'parent':'blog_menu',
