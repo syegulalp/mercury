@@ -313,9 +313,22 @@ class BaseModel(Model):
 
         return kv
 
+    def kv_get(self, key=None, value=None, object_id=None):
+        kv = KeyValue.select().where(
+                KeyValue.object == self.__class__.__name__,
+                KeyValue.key == key,
+                KeyValue.value == value)
+        if kv.count() == 0:
+            return None
+        if object_id is not None:
+            kv = kv.select().where(
+                KeyValue.objectid == object_id
+                )
+        return kv.get()
+
     def kv(self, key=None, context=None):
         kv = self.kvs(key, context)
-        if kv.count() > 0:
+        if kv is not None:
             return kv[0]
         else:
             return None
