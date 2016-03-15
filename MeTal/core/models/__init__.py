@@ -141,6 +141,10 @@ class BaseModel(Model):
 
     def add_kv(self, **kw):
 
+        # TODO: need to get the object from the underlying field type,
+        # and the objectID from its id
+        # do those if they're not explicitly passed
+
         kv = KeyValue(
             object=kw['object'],
             objectid=kw['objectid'],
