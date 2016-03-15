@@ -462,7 +462,7 @@ colsets = {
                 'label':'Name',
                 'format_raw':lambda x:(
                     x.for_display if x.enabled is True
-                    else '<i>{}{}{}</i>'.format(
+                    else '<i>{}</i>'.format(
                     # PLUGIN_FILE_PATH, _sep, x.path
                     _join(PLUGIN_FILE_PATH, x.path)
                     ))
