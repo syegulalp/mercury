@@ -473,7 +473,7 @@ colsets = {
             },
             {'field':'path',
                 'label':'Path to plugin',
-                'format':lambda x:'{}{}{}'.format(
+                'format':lambda x:'{}'.format(
                     # PLUGIN_FILE_PATH, _sep, x.path
                     _join(PLUGIN_FILE_PATH, x.path)
                     )
