@@ -20,6 +20,7 @@ from settings import (BASE_URL)
 
 import datetime
 from os import remove as _remove
+from core.models import TagAssociation
 
 @transaction
 def blog(blog_id, errormsg=None):
@@ -1135,58 +1136,82 @@ def blog_import (blog_id):
             json_data = json.load(f)
 
         q = []
+        from core.models import KeyValue
+        format_str = "<b>{}</b> / (<i>{}</i>)"
         for n in json_data:
-            new_entry = Page()
-            new_entry.title = n['title']
-            new_entry.text = n['text']
-            new_entry.basename = n['basename']
-            new_entry.user = user
-            new_entry.blog = blog
-            new_entry.created_date = string_to_date(n['created_date'])
-            new_entry.publication_date = string_to_date(n['publication_date'])
-            new_entry.modified_date = new_entry.publication_date
-            new_entry.save(user)
+            id = n['id']
+            match = Page().kv_get('legacy_id', id)
+            if match is not None:
+                q.append("Exists: " + format_str.format(n['title'], id))
+            else:
+                q.append("Creating: " + format_str.format(n['title'], id))
 
-            # TODO: figure out a way to automatically infer the object type
-            # when adding a kv like this
+                new_entry = Page()
+                new_entry.title = n['title']
+                new_entry.text = n['text']
+                new_entry.basename = n['basename']
+                new_entry.user = user
+                new_entry.blog = blog
+                new_entry.created_date = string_to_date(n['created_date'])
+                new_entry.publication_date = string_to_date(n['publication_date'])
+                new_entry.modified_date = new_entry.publication_date
+                new_entry.save(user)
 
-            # - we should erase any existing kvs for the object if they exist
+                # Register a legacy ID for the page
 
-            new_entry.add_kv(
-                object="Page",
-                objectid=new_entry.id,
-                key="legacy_id",
-                value=n['id']
-                )
+                new_entry.add_kv(
+                    object="Page",
+                    objectid=new_entry.id,
+                    key="legacy_id",
+                    value=n['id']
+                    )
 
-            # TODO: setting default category should be done on object creation
+                # Set default page category for blog
+                # TODO: setting default category should be done on object creation
 
-            default_blog_category = Category.get(
-                Category.blog == blog.id,
-                Category.default == True)
+                default_blog_category = Category.get(
+                    Category.blog == blog.id,
+                    Category.default == True)
 
-            saved_page_category = PageCategory.create(
-                page=new_entry,
-                category=default_blog_category,
-                primary=True)
+                saved_page_category = PageCategory.create(
+                    page=new_entry,
+                    category=default_blog_category,
+                    primary=True)
 
-            cms.build_pages_fileinfos((new_entry,))
+                # Register tags
 
-            q.append("{}/{}".format(n['title'], new_entry.id))
+                tags_added = []
+                tags_existing = []
+
+                for tag in n['tags']:
+                    try:
+                        tag_to_match = Tag.get(
+                            Tag.tag == tag,
+                            Tag.blog == blog)
+                    except Tag.DoesNotExist:
+                        tag_to_match = Tag(
+                            blog=blog,
+                            tag=tag)
+                        tag_to_match.save()
+                        tags_added.append(tag)
+                    else:
+                        tags_existing.append(tag)
+
+                    association = TagAssociation(
+                        tag=tag_to_match,
+                        page=new_entry)
+                    association.save()
+
+                q.append('Tags added: {}'.format(','.join(tags_added)))
+                q.append('Tags existing: {}'.format(','.join(tags_existing)))
+
+                cms.build_pages_fileinfos((new_entry,))
+
 
         tpl = '<p>'.join(q)
-        # tpl = str(json_data)
 
-        # parse
-        # iterate:
-        # look for an existing entry with this legacy ID
-        # if found, get that as our entry to update
-        # if not, create a new one
-        # title, body copy
+        # todo: categories, special KVs, etc.
 
-        # todo: tags, categories, special KVs, etc.
-
-        # return (json_data)
     else:
         tpl = template('ui/ui_blog_import',
             menu=generate_menu('blog_import', blog),
