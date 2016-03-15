@@ -5,6 +5,7 @@
 
 import os, importlib
 _sep = os.sep
+from os.path import join as _join
 
 from .defaults import *
 
@@ -19,8 +20,10 @@ PRODUCT_NAME = "MeTal " + __version__
 # Leave this as-is for most functionality.
 
 DATA_FILE_PATH = _sep + 'data'
-EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
-PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + 'plugins'
+# EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
+EXPORT_FILE_PATH = _join(DATA_FILE_PATH, 'saved')
+# PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + 'plugins'
+PLUGIN_FILE_PATH = _join(DATA_FILE_PATH, 'plugins')
 
 # Top-level path to the application.
 # Automatically calculated; does not need to be changed.
