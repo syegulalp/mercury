@@ -518,7 +518,7 @@ def delete_orphaned_tags():
 def add_tags_to_page (tag_text, page, no_delete=False):
     tag_list = Tag.select().where(Tag.id << tag_text)
 
-    if no_delete is True:
+    if no_delete is False:
 
         tags_to_delete = TagAssociation.delete().where(
             TagAssociation.page == page,
