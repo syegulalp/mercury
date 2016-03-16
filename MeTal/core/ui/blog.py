@@ -1160,12 +1160,7 @@ def blog_import (blog_id):
 
                 # Register a legacy ID for the page
 
-                new_entry.add_kv(
-                    object="Page",
-                    objectid=new_entry.id,
-                    key="legacy_id",
-                    value=n['id']
-                    )
+                new_entry.kv_set("legacy_id", n["id"])
 
                 # Set default page category for blog
                 # TODO: setting default category should be done on object creation
@@ -1206,8 +1201,13 @@ def blog_import (blog_id):
                 q.append('Tags added: {}'.format(','.join(tags_added)))
                 q.append('Tags existing: {}'.format(','.join(tags_existing)))
 
-                cms.build_pages_fileinfos((new_entry,))
+                kvs = n['kvs']
+                for key in kvs:
+                    value = kvs[key]
+                    new_entry.kv_set(key, value)
+                    q.append('KV: {}:{}'.format(key, value))
 
+                cms.build_pages_fileinfos((new_entry,))
 
         tpl = '<p>'.join(q)
 
