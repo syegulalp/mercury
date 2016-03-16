@@ -1150,6 +1150,7 @@ def blog_import (blog_id):
                 new_entry.title = n['title']
                 new_entry.text = n['text']
                 new_entry.basename = n['basename']
+                new_entry.excerpt = n['excerpt']
                 new_entry.user = user
                 new_entry.blog = blog
                 new_entry.created_date = string_to_date(n['created_date'])
