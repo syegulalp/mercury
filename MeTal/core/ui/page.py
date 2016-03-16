@@ -157,6 +157,9 @@ def page_delete(page_id, confirm):
 
             p = page.for_log
 
+            # TODO: make this part of the delete action for the underlying schema
+            page.kv_del()
+
             delete_query = page.delete_instance(
                 recursive=True,
                 delete_nullable=True)
