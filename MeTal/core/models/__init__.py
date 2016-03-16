@@ -141,9 +141,7 @@ class BaseModel(Model):
 
     def add_kv(self, **kw):
 
-        # TODO: need to get the object from the underlying field type,
-        # and the objectID from its id
-        # do those if they're not explicitly passed
+        # TODO: deprecate
 
         kv = KeyValue(
             object=kw['object'],
@@ -312,6 +310,19 @@ class BaseModel(Model):
                 )
 
         return kv
+
+    def kv_set(self, key=None, value=None, **kw):
+        kv = KeyValue(
+            object=self.__class__.__name__,
+            objectid=self.id,
+            key=key,
+            value=value,
+            parent=kw['parent'] if 'parent' in kw else None,
+            is_schema=kw['is_schema'] if 'is_schema' in kw else False,
+            is_unique=kw['is_unique'] if 'is_unique' in kw else False,
+            value_type=kw['value_type'] if 'value_type' in kw else ''
+            )
+        return kv.save()
 
     def kv_get(self, key=None, value=None, object_id=None):
         kv = KeyValue.select().where(
