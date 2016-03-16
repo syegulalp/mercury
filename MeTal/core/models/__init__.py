@@ -337,6 +337,17 @@ class BaseModel(Model):
                 )
         return kv.get()
 
+    def kv_del(self, key=None):
+        kv = KeyValue.delete().where(
+            KeyValue.object == self.__class__.__name__,
+            KeyValue.objectid == self.id,
+            )
+        if key is not None:
+            kv = kv.delete().where(
+                KeyValue.key == key)
+
+        return kv.execute()
+
     def kv(self, key=None, context=None):
         kv = self.kvs(key, context)
         if kv is not None:
