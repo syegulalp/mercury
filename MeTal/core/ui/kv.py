@@ -37,6 +37,7 @@ def add_kv():
 
     security = auth.__dict__[object_to_add_to.security](user, object_instance)
 
+    # TODO: replace with kv_add
     added_kv = object_instance.add_kv(
         object=object,
         objectid=object_id,
