@@ -65,6 +65,7 @@ def remove_kv():
 
     security = auth.__dict__[object_to_delete_from.security](user, object_instance)
 
+    # TODO: replace with kv_del?
     kv_delete = KeyValue.delete().where(
         KeyValue.id == object_id)
 
