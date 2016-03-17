@@ -8,7 +8,7 @@ from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
     template_tags, Page, Blog, Queue, Template, Theme, get_theme,
-    Category, PageCategory,
+    Category, PageCategory, MediaAssociation,
     TemplateMapping, Media, queue_jobs_waiting,
     Tag, template_type, publishing_mode, get_default_theme)
 
@@ -21,6 +21,7 @@ from settings import (BASE_URL)
 import datetime
 from os import remove as _remove
 from core.models import TagAssociation
+from core.models import MediaAssociation
 
 @transaction
 def blog(blog_id, errormsg=None):
@@ -1201,11 +1202,49 @@ def blog_import (blog_id):
                 q.append('Tags added: {}'.format(','.join(tags_added)))
                 q.append('Tags existing: {}'.format(','.join(tags_existing)))
 
+                # Register KVs
+
                 kvs = n['kvs']
                 for key in kvs:
                     value = kvs[key]
                     new_entry.kv_set(key, value)
                     q.append('KV: {}:{}'.format(key, value))
+
+                # Register media
+
+                media = n['media']
+
+                from core.cms import media_filetypes
+
+                for m in media:
+
+                    if 'path' not in m:
+                        continue
+
+                    path = os.path.split(m['path'])
+                    new_media = Media(
+                        filename=path[1],
+                        path=m['path'],
+                        url=m['url'],
+                        type=media_filetypes.image,
+                        created_date=string_to_date(m['created_date']),
+                        modified_date=string_to_date(m['modified_date']),
+                        friendly_name=m['friendly_name'],
+                        user=user,
+                        blog=blog,
+                        site=blog.site
+                        )
+                    new_media.save()
+
+                    media_association = MediaAssociation(
+                        media=new_media,
+                        page=new_entry)
+                    media_association.save()
+
+                    if 'id' in m:
+                        new_media.kv_set('legacy_id', m['id'])
+
+                    q.append('IMG: {}'.format(new_media.url))
 
                 cms.build_pages_fileinfos((new_entry,))
 
