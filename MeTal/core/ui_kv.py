@@ -1,7 +1,7 @@
 from core.utils import html_escape
 
 blank_item = '''
-<li class="list-group-item">
+<li class="list-group-item wrap-txt">
 {}<a onclick="remove_kv({});" href="#" title="Remove item">
 <span class="pull-right glyphicon glyphicon-remove media-remove"></span></a></li>
 '''

@@ -40,6 +40,15 @@
         </div>
     </div>
     -->
+    
+    <div class="form-group">
+        <label for="media_path" class="col-sm-2 control-label">File path</label>
+        <div class="col-sm-9">
+            <input type="text" disabled class="form-control" aria-describedby="media_path_help"
+            id="media_path" name="media_path" value="{{media.path}}">
+            <span id="media_path_help" class="help-block">Full path to the file for this media object. (This cannot be changed.)</span>
+        </div>
+    </div>      
 
     <div class="form-group">
         <label for="media_url" class="col-sm-2 control-label">URL</label>

@@ -157,6 +157,10 @@ body {
     padding: 15px 8px;
 }
 
+.wrap-txt {
+    overflow-wrap: break-word;
+}
+
 .nav .breadcrumb .btn-group a.btn {
     max-width: 100px;
     overflow: hidden;

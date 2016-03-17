@@ -1,7 +1,7 @@
 % if page.media.count()>0:
 <ul class="list-group">
 % for m in page.media:
-  <li class="list-group-item" data-toggle="tooltip" data-placement="left"
+  <li class="list-group-item wrap-txt" data-toggle="tooltip" data-placement="left"
       data-html="true"
       title="<div style='background-color:white'><img style='max-height:50px;' src='{{m.preview_url}}'></div>">
       <span
