@@ -164,6 +164,10 @@ def page_delete(page_id, confirm):
                 recursive=True,
                 delete_nullable=True)
 
+            from core.cms import delete_orphaned_tags
+
+            delete_orphaned_tags()
+
             message = 'Page {} successfully deleted'.format(
                 p)
             url = '{}/blog/{}'.format(BASE_URL, blog.id)
