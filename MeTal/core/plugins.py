@@ -70,7 +70,7 @@ def unregister_plugin(plugin):
 def register_plugin(path_to_plugin, **ka):
 
     # if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
-    if os.path.isfile(_join(PLUGIN_PATH, path_to_plugin), "__init__.py"):
+    if os.path.isfile(_join(PLUGIN_PATH, path_to_plugin, "__init__.py")):
         try:
             added_plugin = importlib.import_module("data.plugins." + path_to_plugin)
         except SystemError:
