@@ -186,6 +186,9 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
     '''
 
     # fileinfos = FileInfo.select().where(FileInfo.page == page)
+    if page is None:
+        return
+
     fileinfos = page.fileinfos
 
     blog = page.blog
@@ -390,10 +393,14 @@ def save_page(page, user, blog=None):
         ):
 
         unpublish_page(page)
+        page.status = page_status.unpublished
+        msg.append("Page <b>{}</b> unpublished successfully.")
+
 
     # UNPUBLISHED TO PUBLISHED
     if original_page_status == page_status.unpublished and (save_action & save_action_list.UPDATE_LIVE_PAGE):
         page.status = page_status.published
+        msg.append("Set to publish.")
 
     # SAVE DRAFT
     if (save_action & save_action_list.SAVE_TO_DRAFT):
@@ -474,6 +481,7 @@ def save_page(page, user, blog=None):
         delete_orphaned_tags()
 
     # BUILD FILEINFO IF NO DELETE ACTION
+
     build_pages_fileinfos((page,))
     if page.status == page_status.published:
         build_archives_fileinfos((page,))
@@ -598,13 +606,16 @@ def delete_page_files(page):
     Iterates through the fileinfos for a given page
     and deletes the physical files from disk.
     '''
+    _ = []
     for n in page.fileinfos:
         try:
-            os.remove(n.sitewide_file_path)
-        # TODO: need more explicit trapping here
-        except OSError:
-            pass
+            if os.path.isfile(n.sitewide_file_path):
+                os.remove(n.sitewide_file_path)
+                _.append(n.sitewide_file_path)
+        except Exception as e:
+            raise e
 
+    return ' '.join(_)
 
 def delete_page_fileinfo(page):
     '''
@@ -625,7 +636,7 @@ def delete_page(page):
     if page.status != page_status.unpublished:
         raise DeletionError('Page must be unpublished before it can be deleted')
     unpublish_page(page)
-    delete_page_files(page)
+    # delete_page_files(page)
     delete_page_fileinfo(page)
     page.delete_instance(recursive=True)
 
@@ -636,10 +647,13 @@ def unpublish_page(page):
     and queues any neighboring files to be republished
     '''
     page.status = page_status.unpublished
-    delete_page_files(page)
+    page.save(page.user)
 
-    queue_page_actions(page)
+    queue_page_actions(page.next_page, True)
+    queue_page_actions(page.previous_page, True)
     queue_index_actions(page.blog)
+
+    delete_page_files(page)
 
 
 def generate_page_text(f, tags):

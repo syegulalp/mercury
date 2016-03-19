@@ -1137,8 +1137,12 @@ def blog_import (blog_id):
             json_data = json.load(f)
 
         q = []
+
         from core.models import KeyValue
+        from core.cms import media_filetypes
+
         format_str = "<b>{}</b> / (<i>{}</i>)"
+
         for n in json_data:
             id = n['id']
             match = Page().kv_get('legacy_id', id)
@@ -1214,14 +1218,13 @@ def blog_import (blog_id):
 
                 media = n['media']
 
-                from core.cms import media_filetypes
-
                 for m in media:
 
                     if 'path' not in m:
                         continue
 
                     path = os.path.split(m['path'])
+
                     new_media = Media(
                         filename=path[1],
                         path=m['path'],
@@ -1234,12 +1237,16 @@ def blog_import (blog_id):
                         blog=blog,
                         site=blog.site
                         )
+
                     new_media.save()
 
                     media_association = MediaAssociation(
                         media=new_media,
                         page=new_entry)
+
                     media_association.save()
+
+                    # Save legacy ID to KV on media
 
                     if 'id' in m:
                         new_media.kv_set('legacy_id', m['id'])
