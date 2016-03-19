@@ -19,16 +19,15 @@ def transaction(func):
                 with db.atomic():
                     fn = func(*a, **ka)
             except OperationalError as e:
-                if str(e).startswith(DB.db_is_locked()):
-                    n += 1
-                    if n >= DATABASE_RETRIES:
-                        raise e
-                    else:
-                        db.close()
-                        sleep(RETRY_INTERVAL)
-                        continue
-                else:
+                # if str(e).startswith(DB.db_is_locked()):
+                n += 1
+                if n >= DATABASE_RETRIES:
                     raise e
+                else:
+                    db.close()
+                    sleep(RETRY_INTERVAL)
+                    continue
+
             except LoggedException as e:
                 raise exc_info()[0](e.msg)
             except DBError as e:
