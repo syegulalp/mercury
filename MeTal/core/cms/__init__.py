@@ -247,28 +247,32 @@ def queue_page_archive_actions(page):
     tags = template_tags(page_id=page.id)
 
     for n in archive_templates:
-        # TODO: this seems inefficient
-        # why not just store a backreference to the mapping in question?
-        for m in n.mappings:
+        if n.publishing_mode != publishing_mode.do_not_publish:
+            for m in n.mappings:
+                file_path = (page.blog.path + '/' +
+                             generate_date_mapping(page.publication_date_tz.date(),
+                                                   tags,
+                                                   replace_mapping_tags(m.path_string)))
 
-            file_path = (page.blog.path + '/' +
-                         generate_date_mapping(page.publication_date_tz.date(),
-                                               tags,
-                                               replace_mapping_tags(m.path_string)))
+                fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
 
-            fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
-
-            push_to_queue(job_type=job_type.archive,
-                          blog=page.blog,
-                          site=page.blog.site,
-                          data_integer=fileinfo_mapping.id)
+                push_to_queue(job_type=job_type.archive,
+                              blog=page.blog,
+                              site=page.blog.site,
+                              data_integer=fileinfo_mapping.id)
 
 
 def queue_ssi_actions(blog):
+    '''
+    Pushes to the publishing queue all the SSIs for a given blog.
+    '''
 
+    '''
     templates = Template.select().where(Template.blog == blog,
         Template.template_type == template_type.include,
         Template.publishing_mode == publishing_mode.ssi)
+    '''
+    templates = blog.ssi_templates
 
     if templates.count() == 0:
         return None
@@ -278,6 +282,7 @@ def queue_ssi_actions(blog):
     fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
 
     for f in fileinfos:
+
         push_to_queue(job_type=job_type.include,
             priority=1,
             blog=blog,
@@ -289,8 +294,13 @@ def queue_index_actions(blog, include_manual=False):
     Pushes to the publishing queue all the index pages for a given blog
     that are marked for Immediate publishing.
     '''
+
+    '''
     templates = Template.select().where(Template.blog == blog,
         Template.template_type == template_type.index,
+        Template.publishing_mode != publishing_mode.do_not_publish)
+    '''
+    templates = blog.index_templates.select().where(
         Template.publishing_mode != publishing_mode.do_not_publish)
 
     if include_manual is False:
@@ -306,7 +316,6 @@ def queue_index_actions(blog, include_manual=False):
     fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
 
     for f in fileinfos:
-
         push_to_queue(job_type=job_type.index,
             priority=1,
             blog=blog,
@@ -650,8 +659,8 @@ def unpublish_page(page):
     page.status = page_status.unpublished
     page.save(page.user)
 
-    queue_page_actions(page.next_page, True)
-    queue_page_actions(page.previous_page, True)
+    queue_page_actions(page.next_page, no_neighbors=True)
+    queue_page_actions(page.previous_page, no_neighbors=True)
     queue_index_actions(page.blog)
 
     delete_page_files(page)
@@ -1065,9 +1074,9 @@ def republish_blog(blog_id):
     begin = time.clock()
 
     for p in blog.published_pages():
-        queue_page_actions(p, True)
+        queue_page_actions(p, no_neighbors=True)
 
-    queue_index_actions(blog, True)
+    queue_index_actions(blog, include_manual=True)
 
     queue_ssi_actions(blog)
 
