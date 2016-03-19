@@ -195,10 +195,11 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
     site = page.blog.site
 
     for f in fileinfos:
-        push_to_queue(job_type=job_type.page,
-            blog=blog,
-            site=site,
-            data_integer=f.id)
+        if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+            push_to_queue(job_type=job_type.page,
+                blog=blog,
+                site=site,
+                data_integer=f.id)
 
     if no_archive is False:
         queue_page_archive_actions(page)
