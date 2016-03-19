@@ -1279,6 +1279,7 @@ class Page(BaseModel, DateMod):
     def next_page(self):
         '''
         Returns the next published page in the blog, in ascending chronological order.
+        FIXME: this does not assume any categories are present
         '''
 
         try:
@@ -1298,6 +1299,7 @@ class Page(BaseModel, DateMod):
     def previous_page(self):
         '''
         Returns the previous published page in the blog, in descending chronological order.
+        FIXME: this does not assume any categories are present
         '''
 
         try:
