@@ -65,15 +65,20 @@ media_filetypes.types = {
     'png':media_filetypes.image,
     }
 
-def build_page(q):
+def build_page(queue_entry):
     '''
-    Builds the file for a single blog page, q, based on its fileinfo data.
+    Builds the file for a single fileinfo from a queue entry,
+    based on its fileinfo data.
+
+    :param queue_entry:
+        A single entry from the job queue that will be used to build the page.
+        The data_integer field for the queue entry is the page's fileinfo ID.
     '''
-    fileinfo = FileInfo.get(FileInfo.id == q.data_integer)
+    fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
     try:
-        build_file(fileinfo, q.blog)
-    except BaseException:
-        raise
+        build_file(fileinfo, queue_entry.blog)
+    except BaseException as e:
+        raise e
 
 def push_to_queue(**ka):
     '''
@@ -129,7 +134,10 @@ def push_to_queue(**ka):
     queue_job.date_touched = datetime.datetime.utcnow()
     queue_job.save()
 
-def push_insert_to_queue(blog):
+def _push_insert_to_queue(blog):
+    '''
+    This method appears to be deprecated.
+    '''
     with db.atomic() as txn:
 
         # pages ordered by id desc
@@ -150,7 +158,9 @@ def push_insert_to_queue(blog):
 
 def remove_from_queue(queue_deletes):
     '''
-    Batch deletion of queue jobs.
+    Removes jobs from the queue.
+    :param queue_deletes:
+        A list of queue items, represented by their IDs, to be deleted.
     '''
     deletes = Queue.delete().where(Queue.id << queue_deletes)
     return deletes.execute()
@@ -158,6 +168,7 @@ def remove_from_queue(queue_deletes):
 def _remove_from_queue(queue_id):
     '''
     Removes a specific job ID from the queue.
+    Deprecated.
 
     :param queue_id:
         The ID number of the job queue item to remove.
@@ -185,7 +196,6 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         useful for mass-queued actions.
     '''
 
-    # fileinfos = FileInfo.select().where(FileInfo.page == page)
     if page is None:
         return
 
@@ -241,6 +251,9 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 def queue_page_archive_actions(page):
     '''
     Pushes to the publishing queue all the page archives for a given page object.
+
+    :param page:
+        The page object whose archives will be pushed to the publishing queue.
     '''
 
     archive_templates = page.blog.archive_templates
@@ -265,6 +278,9 @@ def queue_page_archive_actions(page):
 def queue_ssi_actions(blog):
     '''
     Pushes to the publishing queue all the SSIs for a given blog.
+
+    :param blog:
+        The blog object whose SSI templates will be pushed to the queue.
     '''
 
     '''
@@ -282,7 +298,6 @@ def queue_ssi_actions(blog):
     fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
 
     for f in fileinfos:
-
         push_to_queue(job_type=job_type.include,
             priority=1,
             blog=blog,
@@ -293,6 +308,13 @@ def queue_index_actions(blog, include_manual=False):
     '''
     Pushes to the publishing queue all the index pages for a given blog
     that are marked for Immediate publishing.
+
+    :param blog:
+        The blog object whose index templates will be pushed to the queue.
+    :param include_manual:
+        If set to True, all templates, including those set to the Manual publishing mode,
+        will be pushed to the queue. Default is False, since those templates are not
+        pushed in most publishing actions.
     '''
 
     '''
@@ -328,6 +350,16 @@ def save_page(page, user, blog=None):
     Note that this function does _not_ perform permission checking. In other words, it doesn't
     verify if the user described in the `user` parameter does in fact have permissions to
     edit the page in question.
+
+    :param page:
+        Page object whose data is to be saved. If this is None, then it is assumed that we are
+        creating a new page.
+    :param user:
+        The user object associated with the save action for this page. If this is a newly-created page,
+        the page's user will be set to this.
+    :param blog:
+        The blog object under which the page will be created, if this is a newly-created page.
+
     '''
 
     save_action = int(request.forms.get('save'))
@@ -488,7 +520,7 @@ def save_page(page, user, blog=None):
         import json
         tag_text = json.loads(request.forms.getunicode('tag_text'))
         add_tags_to_page(tag_text, page)
-        delete_orphaned_tags()
+        delete_orphaned_tags(page.blog)
 
     # BUILD FILEINFO IF NO DELETE ACTION
 
@@ -522,18 +554,35 @@ def save_page(page, user, blog=None):
 
     return tags
 
-def delete_orphaned_tags():
+def delete_orphaned_tags(blog):
     '''
     Cleans up tags that no longer have any page associations.
+
+    :param blog:
+        A blog object used as the context for this cleanup.
     '''
     orphaned_tags = Tag.delete().where(
-        ~Tag.id << (TagAssociation.select(TagAssociation.tag)))
+        Tag.blog == blog,
+        ~ Tag.id << (TagAssociation.select(TagAssociation.tag)))
 
     orphaned_tags.execute()
 
     return orphaned_tags
 
 def add_tags_to_page (tag_text, page, no_delete=False):
+    '''
+    Takes a list of tags, in JSON text format, and adds them to the page in question.
+    Any tags not already in the system will be added.
+
+    :param tag_text:
+        List of tags to add.
+    :param page:
+        Page object to add the tags to.
+    :param no_delete:
+        When set to True, this will preserve tags already in the page if they are
+        not found in tag_text. By default this is False, so any tags not specified in
+        tag_text that exist in the page will be removed.
+    '''
     tag_list = Tag.select().where(Tag.id << tag_text)
 
     if no_delete is False:

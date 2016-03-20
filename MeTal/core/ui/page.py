@@ -166,7 +166,7 @@ def page_delete(page_id, confirm):
 
             from core.cms import delete_orphaned_tags
 
-            delete_orphaned_tags()
+            delete_orphaned_tags(page.blog)
 
             message = 'Page {} successfully deleted'.format(
                 p)
