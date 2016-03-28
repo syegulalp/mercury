@@ -2241,6 +2241,7 @@ def default_template_mapping(page):
     return time_string
 
 
+
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
     # Also used for building many other things.
@@ -2320,7 +2321,15 @@ class TemplateTags(object):
 
         if 'archive' in ka:
             self.archive = Struct()
-            setattr(self.archive, "pages", self.blog.pages(ka['archive']))
+            pages = self.blog.pages(ka['archive'])
+            setattr(self.archive, "pages", pages)
+            setattr(self.archive, "context", pages[0].publication_date)
+
+            # TODO: how do we compute next/previous in archive?
+            # we need to have archive from blog.archive
+            # blog.archive should take a context in much the same way we compute
+            # for previews of an archive template
+            # by way of next_in_mapping, etc.
 
             # TODO: replace this with a proper fixed list of archive types!!
             for n in ('year', 'month', 'category', 'author'):
