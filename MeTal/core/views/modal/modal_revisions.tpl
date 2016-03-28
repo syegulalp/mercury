@@ -2,7 +2,7 @@
       % if page.revisions.count()>0:
       <ol>
         % for page in page.revisions:
-        <li><a href="{{settings.BASE_URL}}/page/{{page.page_id}}/edit/restore/{{page.id}}">{{ utils.date_format(page.modified_date)}}</a>
+        <li><a href="{{settings.BASE_URL}}/page/{{page.page.id}}/edit/restore/{{page.id}}">{{ utils.date_format(page.modified_date)}}</a>
         % if page.change_note:
         (<i>{{page.change_note}}</i>)
         % end
