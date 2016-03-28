@@ -1114,7 +1114,7 @@ class Page(BaseModel, DateMod):
     @property
     def revisions(self):
         revisions = PageRevision.select().where(
-            PageRevision.page_id == self.id).order_by(PageRevision.modified_date.desc())
+            PageRevision.page == self.id).order_by(PageRevision.modified_date.desc())
 
         return revisions
 
@@ -1358,7 +1358,7 @@ class Page(BaseModel, DateMod):
 
         return (page_save_result, revision_save_result)
 
-    revision_fields = {'id':'page_id'}
+    revision_fields = {'id':'page'}
 
 class RevisionMixin(object):
     @classmethod
@@ -1376,7 +1376,8 @@ class RevisionMixin(object):
         return instance
 
 class PageRevision(Page, RevisionMixin):
-    page_id = IntegerField(null=False)
+    # page_id = IntegerField(null=False)
+    page = ForeignKeyField(Page, null=False, index=True)
     is_backup = BooleanField(default=False)
     change_note = TextField(null=True)
     saved_by = IntegerField(null=True)
@@ -1398,9 +1399,12 @@ class PageRevision(Page, RevisionMixin):
         from core.error import PageNotChanged
 
         max_revisions = self.blog.max_revisions
+        previous_revisions = self.page.revisions
 
-        previous_revisions = (self.select().where(PageRevision.page_id == self.page_id)
-            .order_by(PageRevision.modified_date.desc()).limit(max_revisions))
+        # previous_revisions = (PageRevision.select().where(PageRevision.page == self.page)
+            # .order_by(PageRevision.modified_date.desc()).limit(max_revisions))
+        # @raise Exception(self.page_id)
+
 
         # deprecating this since backups are going to be stored locally instead
 
@@ -1420,7 +1424,7 @@ class PageRevision(Page, RevisionMixin):
             page_changed = False
 
             for name in last_revision._meta.fields:
-                if name not in ("modified_date", "id", "page_id", "is_backup", "change_note", "saved_by"):
+                if name not in ("modified_date", "id", "page", "is_backup", "change_note", "saved_by"):
                     value = getattr(current_revision, name)
                     new_value = getattr(last_revision, name)
 
@@ -1436,8 +1440,8 @@ class PageRevision(Page, RevisionMixin):
         if previous_revisions.count() >= max_revisions:
 
             older_revisions = DeleteQuery(PageRevision).where(
-                PageRevision.page_id == self.page_id,
-                PageRevision.modified_date < previous_revisions[max_revisions - 1].modified_date)
+                PageRevision.page == self.page,
+                PageRevision.modified_date <= previous_revisions[max_revisions - 1].modified_date)
 
             older_revisions.execute()
 
