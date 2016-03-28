@@ -156,8 +156,11 @@ def page_delete(page_id, confirm):
         if request.forms.getunicode('confirm') == user.logout_nonce:
 
             p = page.for_log
+            from core.cms import delete_page
+            delete_page(page)
 
-            # TODO: make this part of the delete action for the underlying schema
+            '''
+
             page.kv_del()
 
             delete_query = page.delete_instance(
@@ -167,6 +170,7 @@ def page_delete(page_id, confirm):
             from core.cms import delete_orphaned_tags
 
             delete_orphaned_tags(page.blog)
+            '''
 
             message = 'Page {} successfully deleted'.format(
                 p)
