@@ -691,22 +691,30 @@ def delete_page(page):
     Removes all database entries for a given page from the system.
     Does not delete files on disk.
     Implies an unpublish action.
+
+    # TODO: make this part of the delete action for the schema
+    # same with unpublish
     '''
     if page.status != page_status.unpublished:
         raise DeletionError('Page must be unpublished before it can be deleted')
-    unpublish_page(page)
-    # delete_page_files(page)
+
+    unpublish_page(page, no_save=True)
+    page.kv_del()
     delete_page_fileinfo(page)
-    page.delete_instance(recursive=True)
+    page.delete_instance(recursive=True,
+        )
+
+    delete_orphaned_tags(page.blog)
 
 
-def unpublish_page(page):
+def unpublish_page(page, no_save=False):
     '''
     Removes all the physical files associated with a given page,
     and queues any neighboring files to be republished
     '''
     page.status = page_status.unpublished
-    page.save(page.user)
+    if not no_save:
+        page.save(page.user)
 
     queue_page_actions(page.next_page, no_neighbors=True)
     queue_page_actions(page.previous_page, no_neighbors=True)
