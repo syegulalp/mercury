@@ -190,9 +190,13 @@ def import_data():
                 filename = (APPLICATION_PATH + EXPORT_FILE_PATH +
                     '/dump-' + table_name + '.json')
                 if os.path.exists(filename):
-                    table.thaw(format='json',
-                        filename=filename,
-                        strict=True)
+                    try:
+                        table.thaw(format='json',
+                            filename=filename,
+                            strict=True)
+                    except Exception as e:
+                        yield("<p>Sorry, error:{}".format(e))
+
                 else:
                     n = ("No data for table " + table_name)
                     yield "<p>" + n
