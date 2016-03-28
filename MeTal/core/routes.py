@@ -800,7 +800,16 @@ APIs
 
 @_route(BASE_PATH + "/api/1/hi")
 def api_hi():
-    return settings.PRODUCT_NAME
+    from core.models import PageRevision, Page
+    pages = []
+    for n in PageRevision.select():
+        try:
+            Page.get(Page.id == n.page)
+        except:
+            pages.append(n.page)
+            n.delete()
+    return "Deleted: {}".format(pages)
+    # return settings.PRODUCT_NAME
 
 # We're going to scrap the /api convention, it adds nothing
 # just use regular application routes
@@ -840,12 +849,12 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 
 ### Everything after this is experimental/provisional #############################
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/erase-queue")
+@_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
 def erase_queue(blog_id):
     blog = get_blog(blog_id)
     from core.mgmt import erase_queue
     erase_queue(blog)
-    return "Queue for blog {} erased".format(blog.id)
+    return "Queue for blog {} cleared".format(blog.id)
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
 def delete_blog(blog_id):
