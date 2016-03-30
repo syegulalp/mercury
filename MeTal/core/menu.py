@@ -463,9 +463,9 @@ colsets = {
                 'format_raw':lambda x:(
                     x.for_display if x.enabled is True
                     else '<i>{}</i>'.format(
-                    # PLUGIN_FILE_PATH, _sep, x.path
                     _join(PLUGIN_FILE_PATH, x.path)
-                    ))
+                    )
+                    )
             },
             {'field':'description',
                 'label':'Description',
@@ -474,7 +474,6 @@ colsets = {
             {'field':'path',
                 'label':'Path to plugin',
                 'format':lambda x:'{}'.format(
-                    # PLUGIN_FILE_PATH, _sep, x.path
                     _join(PLUGIN_FILE_PATH, x.path)
                     )
             },
