@@ -119,11 +119,11 @@ def is_logged_in_core(request):
 
 def get_users_with_permission(level):
 
-    permissions = Permission.select().where(
+    permissions = Permission.select(Permission.user).where(
         Permission.permission == level)
 
     users_with_permissions = User.select().where(
-        User.id << permissions[0].user)
+        User.id << permissions)
 
     return users_with_permissions
 
