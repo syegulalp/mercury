@@ -20,6 +20,8 @@ from core.auth import get_users_with_permission, role
 
 admin_users = get_users_with_permission(role.SYS_ADMIN)
 
+print ('Admins: {}'.format(admin_users.count()))
+
 print ('Looking for scheduled tasks...')
 
 from core.models import Page, page_status
@@ -28,21 +30,64 @@ scheduled_pages = Page.select().where(
     Page.status == page_status.scheduled,
     Page.publication_date <= datetime.datetime.utcnow())
 
-print ('{} pages scheduled'.format(scheduled_pages.count()))
+total_pages = scheduled_pages.count()
 
-scheduled_page_report = []
-for n in scheduled_pages:
-    scheduled_page_report.append('{} -- on {}'.format(n.title, n.publication_date))
-    # push pages in question to queue
-    # activate queue runner for all jobs, no timeout by default
-    # do we reset publishing mode for page here, or in actual queue?
+print ('{} pages scheduled'.format(total_pages))
 
-if scheduled_pages.count() > 0:
+if total_pages > 0:
+
+    from core.cms import (queue_page_actions, queue_index_actions, process_queue,
+        build_pages_fileinfos, build_archives_fileinfos, push_to_queue, job_type)
+    from core.models import Log, db, queue_jobs_waiting
+
+
+    scheduled_page_report = []
+    blogs = []
+
+    for n in scheduled_pages:
+
+        try:
+            with db.atomic() as txn:
+                scheduled_page_report.append('{} -- on {}'.format(n.title, n.publication_date))
+                n.status = page_status.published
+                build_pages_fileinfos((n,))
+                build_archives_fileinfos((n,))
+                queue_page_actions(n)
+                queue_index_actions(n.blog)
+                blogs.append(n.blog)
+                n.save(n.user, no_revision=True)
+
+        except Exception as e:
+            problem = 'Problem with page {}: {}'.format(n.title, e)
+            print (problem)
+            scheduled_page_report.append(problem)
+
+    # TODO: where to put txn in this area?
+
+    # TODO: push control job should be its own function
+    # TODO: elsewhere, use queue_jobs_waiting function instead of
+    # the ad hoc stuff
+
+    for n in blogs:
+        waiting = queue_jobs_waiting(blog=n)
+        push_to_queue(blog=n,
+                site=n.site,
+                job_type=job_type.control,
+                is_control=True,
+                data_integer=waiting
+                )
+        print ("Processing {} jobs for blog '{}'.".format(
+            waiting, n.name))
+        while 1:
+            remaining = process_queue(n)
+            print ("{} jobs remaining.".format(remaining))
+            if remaining == 0:
+                break
 
     message_text = '''
-This is a report for the installation of {}.
+This is a scheduled-tasks report from the installation of {}.
 
-Pages to be published:
+Pages published:
 
 {}
 '''.format(product_id,
