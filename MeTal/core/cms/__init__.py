@@ -1262,8 +1262,6 @@ def process_queue_insert(queue_control, blog):
 def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
-    Will eventually be expanded to take blog or site params,
-    and publish accordingly.
     '''
 
     with db.atomic():
