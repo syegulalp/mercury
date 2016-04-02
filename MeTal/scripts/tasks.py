@@ -26,9 +26,12 @@ print ('Looking for scheduled tasks...')
 
 from core.models import Page, page_status
 
+# TODO: we may want to move this into some systemwide schema?
+
 scheduled_pages = Page.select().where(
     Page.status == page_status.scheduled,
-    Page.publication_date <= datetime.datetime.utcnow())
+    Page.publication_date <= datetime.datetime.utcnow()).order_by(
+        Page.blog, Page.publication_date.desc())
 
 total_pages = scheduled_pages.count()
 
@@ -38,11 +41,11 @@ if total_pages > 0:
 
     from core.cms import (queue_page_actions, queue_index_actions, process_queue,
         build_pages_fileinfos, build_archives_fileinfos, push_to_queue, job_type)
-    from core.models import Log, db, queue_jobs_waiting
-
+    from core.models import db, queue_jobs_waiting
+    from core.log import logger
 
     scheduled_page_report = []
-    blogs = []
+    blogs = set()
 
     for n in scheduled_pages:
 
@@ -54,7 +57,7 @@ if total_pages > 0:
                 build_archives_fileinfos((n,))
                 queue_page_actions(n)
                 queue_index_actions(n.blog)
-                blogs.append(n.blog)
+                blogs.add(n.blog)
                 n.save(n.user, no_revision=True)
 
         except Exception as e:
@@ -104,7 +107,7 @@ Pages published:
 
     print ('Reports emailed.')
 
-    # write to event log, too
+    logger.info("Scheduled job run, processed {} pages.".format(total_pages))
 
 else:
 
