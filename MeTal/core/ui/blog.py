@@ -1170,13 +1170,14 @@ def blog_import (blog_id):
                 # Set default page category for blog
                 # TODO: setting default category should be done on object creation
 
-                default_blog_category = Category.get(
-                    Category.blog == blog.id,
-                    Category.default == True)
+                # default_blog_category = Category.get(
+                    # Category.blog == blog.id,
+                    # Category.default == True)
 
                 saved_page_category = PageCategory.create(
                     page=new_entry,
-                    category=default_blog_category,
+                    category=blog.default_category,
+                    # default_blog_category,
                     primary=True)
 
                 # Register tags
