@@ -336,6 +336,8 @@ def blog_media(blog_id):
     paginator, media_list = utils.generate_paginator(media, request)
     # media_list = media.paginate(paginator['page_num'], ITEMS_PER_PAGE)
 
+
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         media_list=media_list,
@@ -344,6 +346,7 @@ def blog_media(blog_id):
         search_context=(search_context['blog_media'], blog),
         rowset=media_list,
         colset=colsets['media'],
+
         **tags.__dict__)
 
     return tpl
@@ -359,10 +362,20 @@ def blog_media_edit(blog_id, media_id, status=None):
     media = get_media(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(media.kvs(no_traverse=True))
+
     tags = template_tags(blog_id=blog.id,
          media=media,
          status=status,
-         user=user)
+         user=user,
+        )
+    tags.sidebar = ui_mgr.render_sidebar(
+            panel_set='edit_media',
+            status_badge=status_badge,
+            # save_action_list=save_action_list,
+            # save_action=save_action,
+            kv_ui=kv_ui_data)
 
     return blog_media_edit_output(tags)
 

@@ -1,4 +1,16 @@
 panels_dict = {
+    'edit_media':
+        {'panel_order':['kv', ],
+        'panels':
+            {
+            'kv':{
+                'template':'sidebar/sidebar_page_kv_ui',
+                'title':'Key/Value',
+                'label':'kv',
+                'icon':'tasks'
+                }
+            }
+        },
     'edit_template':
         {'panel_order':['publishing', 'status', 'files', 'theme'],
         'panels':
