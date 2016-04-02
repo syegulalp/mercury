@@ -219,7 +219,7 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         next_page = page.next_page
         previous_page = page.previous_page
 
-        # Next and previous across categories should be done through this
+        # Next and previous across categories should also be done through this
         # mechanism somehow
 
         if next_page is not None:
@@ -228,12 +228,14 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 
             for f in fileinfos_next:
 
-                push_to_queue(job_type=job_type.page,
-                    blog=blog,
-                    site=site,
-                    data_integer=f.id)
+                if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-            queue_page_archive_actions(next_page)
+                    push_to_queue(job_type=job_type.page,
+                        blog=blog,
+                        site=site,
+                        data_integer=f.id)
+
+                    queue_page_archive_actions(next_page)
 
         if previous_page is not None:
 
@@ -241,12 +243,14 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 
             for f in fileinfos_previous:
 
-                push_to_queue(job_type=job_type.page,
-                    blog=blog,
-                    site=site,
-                    data_integer=f.id)
+                if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-            queue_page_archive_actions(previous_page)
+                    push_to_queue(job_type=job_type.page,
+                        blog=blog,
+                        site=site,
+                        data_integer=f.id)
+
+                    queue_page_archive_actions(previous_page)
 
 def queue_page_archive_actions(page):
     '''
@@ -459,13 +463,13 @@ def save_page(page, user, blog=None):
 
             # TODO: setting default category should be done on object creation
 
-            default_blog_category = Category.get(
-                Category.blog == blog.id,
-                Category.default == True)
+            # default_blog_category = Category.get(
+                # Category.blog == blog.id,
+                # Category.default == True)
 
             saved_page_category = PageCategory.create(
                 page=page,
-                category=default_blog_category,
+                category=blog.default_category,
                 primary=True)
 
         else:
