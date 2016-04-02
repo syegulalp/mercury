@@ -904,12 +904,17 @@ def blog_publish(blog_id):
 
         except Queue.DoesNotExist:
 
+            cms.start_queue(blog=blog,
+                queue_length=queue_length)
+
+            '''
             cms.push_to_queue(blog=blog,
                 site=blog.site,
                 job_type=job_type.control,
                 is_control=True,
                 data_integer=queue_length
                 )
+            '''
     else:
 
         start_message = "Queue empty."
@@ -968,14 +973,15 @@ def blog_publish_process(blog_id):
                 Queue.is_control == False)
 
         if queue.count() > 0:
-
+            cms.start_queue(blog, queue_count)
+            '''
             cms.push_to_queue(blog=blog,
                 site=blog.site,
                 job_type=job_type.control,
                 is_control=True,
                 data_integer=queue.count()
                 )
-
+            '''
 
             queue_count = cms.process_queue(blog)
 
@@ -1151,7 +1157,7 @@ def blog_import (blog_id):
 
         q = []
 
-        from core.models import KeyValue
+        from core.models import KeyValue, page_status
         from core.cms import media_filetypes
 
         format_str = "<b>{}</b> / (<i>{}</i>)"
@@ -1174,6 +1180,10 @@ def blog_import (blog_id):
                 new_entry.created_date = string_to_date(n['created_date'])
                 new_entry.publication_date = string_to_date(n['publication_date'])
                 new_entry.modified_date = new_entry.publication_date
+
+                if n['status'] in ('Publish', 'Published', 'Live'):
+                    new_entry.status = page_status.published
+
                 new_entry.save(user)
 
                 # Register a legacy ID for the page

@@ -40,7 +40,8 @@ print ('{} pages scheduled'.format(total_pages))
 if total_pages > 0:
 
     from core.cms import (queue_page_actions, queue_index_actions, process_queue,
-        build_pages_fileinfos, build_archives_fileinfos, push_to_queue, job_type)
+        build_pages_fileinfos, build_archives_fileinfos, push_to_queue, job_type,
+        start_queue
     from core.models import db, queue_jobs_waiting
     from core.log import logger
 
@@ -73,12 +74,15 @@ if total_pages > 0:
 
     for n in blogs:
         waiting = queue_jobs_waiting(blog=n)
+        start_queue(n)
+        '''
         push_to_queue(blog=n,
                 site=n.site,
                 job_type=job_type.control,
                 is_control=True,
                 data_integer=waiting
                 )
+        '''
         print ("Processing {} jobs for blog '{}'.".format(
             waiting, n.name))
         while 1:
