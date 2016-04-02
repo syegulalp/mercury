@@ -40,8 +40,7 @@ print ('{} pages scheduled'.format(total_pages))
 if total_pages > 0:
 
     from core.cms import (queue_page_actions, queue_index_actions, process_queue,
-        build_pages_fileinfos, build_archives_fileinfos, push_to_queue, job_type,
-        start_queue
+        build_pages_fileinfos, build_archives_fileinfos, start_queue)
     from core.models import db, queue_jobs_waiting
     from core.log import logger
 
