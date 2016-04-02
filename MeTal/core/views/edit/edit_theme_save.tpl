@@ -24,7 +24,7 @@
     </div>    
     
     <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-9">
+        <div class="col-sm-offset-2 col-sm-8">
             <button type="submit" class="btn btn-primary">Save changes</button>
          
         </div>
