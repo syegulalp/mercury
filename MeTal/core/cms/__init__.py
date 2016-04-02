@@ -1440,3 +1440,17 @@ def register_media(filename, path, user, **ka):
         media.save()
 
     return media
+
+def start_queue(blog=None, queue_length=None):
+    if blog is None:
+        raise Exception("You must specify a blog when starting a queue process.")
+    # from core.models import queue_jobs_waiting
+    if queue_length is None:
+        queue_length = queue_jobs_waiting(blog=blog)
+    push_to_queue(blog=blog,
+        site=blog.site,
+        job_type=job_type.control,
+        is_control=True,
+        data_integer=queue_length
+        )
+    return queue_length
