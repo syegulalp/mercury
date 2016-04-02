@@ -691,6 +691,22 @@ class Blog(SiteBase):
 
 
     @property
+    def default_category(self):
+        '''
+        Return default category for this blog.
+        '''
+        try:
+            default_category = Category.get(
+            blog=self,
+            default=True)
+        except Category.DoesNotExist:
+            raise Category.DoesNotExist(
+                "No default category set for blog {}. This blog's category listing may have been damaged or improperly imported.".format(
+                self.for_log))
+        else:
+            return default_category
+
+    @property
     def permalink(self):
         return self.url
 
@@ -701,8 +717,24 @@ class Blog(SiteBase):
         '''
         pass
 
-    def pages(self, page_list=None):
+    def page(self, page_id=None, title=None):
+        '''
+        Select a single page in this blog by either its ID or title.
+        '''
+        try:
+            if title is not None:
+                page = self.pages(titles=(title,))[0]
+            else:
+                page = self.pages((page_id,))[0]
+        except Exception:
+            return None
+        else:
+            return page
 
+    def pages(self, page_list=None, titles=None):
+        '''
+        Select a list of pages in this blog by their IDs or titles
+        '''
         pages = Page.select(Page, PageCategory).where(
             Page.blog == self.id).join(
             PageCategory).where(
@@ -711,6 +743,8 @@ class Blog(SiteBase):
 
         if page_list is not None:
             pages = pages.select().where(Page.id << page_list)
+        if titles is not None:
+            pages = pages.select().where(Page.title.contains(titles))
 
         return pages
 
@@ -839,6 +873,7 @@ class Blog(SiteBase):
         Prepares a newly-created blog with a default category.
         '''
 
+        # We need this to flush any pending changes
         self.save()
 
         new_blog_default_category = Category(
@@ -875,8 +910,8 @@ class Blog(SiteBase):
         theme = {}
 
         theme_manifest = {}
-        theme_manifest["title"] = title  # theme_to_export[0].theme.title
-        theme_manifest["description"] = description  # theme_to_export[0].theme.description
+        theme_manifest["title"] = title
+        theme_manifest["description"] = description
 
         theme['__manifest__.json'] = json.dumps(theme_manifest,
             indent=1,
@@ -1276,57 +1311,83 @@ class Page(BaseModel, DateMod):
         return media
 
     @property
+    def next_all(self):
+        '''
+        Returns all pages in this blog later than the current one
+        so that it can be filtered by some other method.
+        This allows any number of next/previous methods to be built.
+        '''
+        next_all = self.blog.published_pages().select().where(
+                Page.blog == self.blog,
+                Page.publication_date > self.publication_date).order_by(
+                Page.publication_date.asc(), Page.id.asc())
+
+        return next_all
+
+    @property
+    def prev_all(self):
+        '''
+        Returns all pages in this blog earlier than the current one
+        so that it can be filtered by some other method.
+        '''
+        prev_all = self.blog.published_pages().select().where(
+                Page.blog == self.blog,
+                Page.publication_date < self.publication_date).order_by(
+                Page.publication_date.desc(), Page.id.desc())
+        return prev_all
+
+    @property
+    def next_pages(self):
+        '''
+        Returns an iterable of all next pages across categories for this page.
+        '''
+
+    @property
+    def previous_pages(self):
+        '''
+        Returns an iterable of all previous pages across categories for this page.
+        '''
+
+    @property
     def next_page(self):
         '''
         Returns the next published page in the blog, in ascending chronological order.
-        FIXME: this does not assume any categories are present
+        This ignores all categories.
         '''
 
         try:
-
-            next_page = self.blog.published_pages().select().where(
-                Page.blog == self.blog,
-                Page.publication_date > self.publication_date).order_by(
-                Page.publication_date.asc(), Page.id.asc()).get()
-
+            next_page = self.next_all.get()
         except Page.DoesNotExist:
-
             next_page = None
-
         return next_page
 
     @property
     def previous_page(self):
         '''
         Returns the previous published page in the blog, in descending chronological order.
-        FIXME: this does not assume any categories are present
+        This ignores all categories.
         '''
 
         try:
-
-            previous_page = self.blog.published_pages().select().where(
-                Page.blog == self.blog,
-                Page.publication_date < self.publication_date).order_by(
-                Page.publication_date.desc(), Page.id.desc()).get()
-
+            previous_page = self.prev_all.get()
         except Page.DoesNotExist:
-
             previous_page = None
-
         return previous_page
 
     @property
-    def next_in_category(self):
+    def next_in_category(self, category=None):
         '''
-        This returns a dictionary of categories associated with the current entry
-        along with the next entry in that category
-        This way we can say self.next_in_category[category_id], etc.
+        This returns the next entry in the blog under the category in question.
+        The default category choice is the blog's default category.
         '''
-        pass
+
 
     @property
-    def previous_in_category(self):
-        pass
+    def previous_in_category(self, category=None):
+        '''
+        This returns the previous entry in the blog under the category in question.
+        The default category choice is the blog's default category.
+        '''
 
     def save(self, user, no_revision=False, backup_only=False, change_note=None, force_update=False):
 
@@ -2259,6 +2320,8 @@ class TemplateTags(object):
                 self.search_query = "&search=" + self.search_terms
 
         self.pages = ka.get('pages', None)
+        # we need to bring this into harmony with the other defs
+
         self.status = ka.get('status', None)
 
         # self.media = ka.get('media', None)
@@ -2288,6 +2351,7 @@ class TemplateTags(object):
         if 'blog_id' in ka:
             self.blog = get_blog(ka['blog_id'])
             ka['site_id'] = self.blog.site.id
+
         else:
             self.blog = ka.get('blog', self.blog)
 
