@@ -1612,6 +1612,7 @@ class Tag(BaseModel):
 
         tags_added = []
         tags_existing = []
+        # all_tags = []
 
         for tag in tags:
             try:
@@ -1626,6 +1627,7 @@ class Tag(BaseModel):
                 tags_added.append(tag)
             else:
                 tags_existing.append(tag)
+            # all_tags.append(tag)
 
             association = TagAssociation(
                 tag=tag_to_match,
@@ -1634,6 +1636,7 @@ class Tag(BaseModel):
             association.save()
 
         return (tags_added, tags_existing)
+
 
     @property
     def in_pages(self):
