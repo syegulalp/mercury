@@ -1191,41 +1191,15 @@ def blog_import (blog_id):
                 new_entry.kv_set("legacy_id", n["id"])
 
                 # Set default page category for blog
-                # TODO: setting default category should be done on object creation
-
-                # default_blog_category = Category.get(
-                    # Category.blog == blog.id,
-                    # Category.default == True)
 
                 saved_page_category = PageCategory.create(
                     page=new_entry,
                     category=blog.default_category,
-                    # default_blog_category,
                     primary=True)
 
                 # Register tags
 
-                tags_added = []
-                tags_existing = []
-
-                for tag in n['tags']:
-                    try:
-                        tag_to_match = Tag.get(
-                            Tag.tag == tag,
-                            Tag.blog == blog)
-                    except Tag.DoesNotExist:
-                        tag_to_match = Tag(
-                            blog=blog,
-                            tag=tag)
-                        tag_to_match.save()
-                        tags_added.append(tag)
-                    else:
-                        tags_existing.append(tag)
-
-                    association = TagAssociation(
-                        tag=tag_to_match,
-                        page=new_entry)
-                    association.save()
+                tags_added, tags_existing = Tag.add_or_create(n['tags'], blog=blog)
 
                 q.append('Tags added: {}'.format(','.join(tags_added)))
                 q.append('Tags existing: {}'.format(','.join(tags_existing)))
@@ -1276,6 +1250,10 @@ def blog_import (blog_id):
                         new_media.kv_set('legacy_id', m['id'])
 
                     q.append('IMG: {}'.format(new_media.url))
+
+                    # add tags for media
+
+                    Tag.add_or_create(m['tags'], media=new_media)
 
                 cms.build_pages_fileinfos((new_entry,))
 
