@@ -397,8 +397,19 @@ def make_tag_for_media(media_id=None, tag=None):
     if len(tag_name) < 1:
         return None
 
-    # TODO: replace with add_or_create
+    # Note that this is a single tag only!
 
+    tag = Tag.add_or_create((tag_name,),
+        media=media)
+
+    if len(tag[0]) > 0:
+        tpl = template(tag[0].new_tag_for_display)
+    else:
+        tpl = template(tag[1].for_display)
+
+    return tpl
+
+    '''
     try:
         tag = Tag.get(Tag.tag == tag_name,
             Tag.blog == media.blog)
@@ -409,8 +420,8 @@ def make_tag_for_media(media_id=None, tag=None):
 
     else:
         tpl = template(tag.for_display)
+    '''
 
-    return tpl
 
 @transaction
 def make_tag_for_page(blog_id=None, page_id=None):
@@ -431,6 +442,18 @@ def make_tag_for_page(blog_id=None, page_id=None):
     if len(tag_name) < 1:
         return None
 
+    # Note that this is a single tag only!
+
+    tag = Tag.add_or_create((tag_name,),
+        blog=blog)
+    if len(tag[0]) > 0:
+        tpl = template(tag[0].new_tag_for_display)
+    else:
+        tpl = template(tag[1].for_display)
+
+    return tpl
+
+    '''
     # TODO: replace with add_or_create
     try:
         tag = Tag.get(Tag.tag == tag_name,
@@ -444,5 +467,6 @@ def make_tag_for_page(blog_id=None, page_id=None):
         tpl = template(tag.for_display)
 
     return tpl
+    '''
 
 
