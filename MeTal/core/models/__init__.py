@@ -1550,6 +1550,7 @@ class KeyValue(BaseModel):
     is_unique = BooleanField(default=False)
     value_type = CharField(max_length=64)
 
+
     @property
     def key_parent(self):
         try:
@@ -1598,6 +1599,41 @@ class Tag(BaseModel):
     tag = TextField()
     blog = ForeignKeyField(Blog, null=False, index=True)
     is_hidden = BooleanField(default=False, index=True)
+
+    def add_or_create(self, tags, page=None, media=None, blog=None):
+
+        if blog is None:
+            if page is not None:
+                blog = page.blog
+                assoc = {'page':page}
+            elif media is not None:
+                blog = media.blog
+                assoc = {'media':media}
+
+        tags_added = []
+        tags_existing = []
+
+        for tag in tags:
+            try:
+                tag_to_match = Tag.get(
+                    Tag.tag == tag,
+                    Tag.blog == blog)
+            except Tag.DoesNotExist:
+                tag_to_match = Tag(
+                    blog=blog,
+                    tag=tag)
+                tag_to_match.save()
+                tags_added.append(tag)
+            else:
+                tags_existing.append(tag)
+
+            association = TagAssociation(
+                tag=tag_to_match,
+                **assoc)
+
+            association.save()
+
+        return (tags_added, tags_existing)
 
     @property
     def in_pages(self):
