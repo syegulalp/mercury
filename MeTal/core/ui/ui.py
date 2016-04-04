@@ -1,7 +1,7 @@
 from core import (auth)
 from core.menu import generate_menu
 
-from core.models import (get_blog,
+from core.models import (get_blog, get_media,
     template_tags, get_page, Page, Tag, get_category)
 
 from core.models.transaction import transaction
@@ -11,6 +11,7 @@ from core.libs.bottle import (template, request, redirect)
 from settings import (BASE_URL)
 
 import json
+from core.models import get_media
 
 queue_selections = (
     ('Remove from queue', '1', ''),
@@ -382,6 +383,36 @@ def get_tag(tag_name):
     return tag_list_json
 
 @transaction
+def make_tag_for_media(media_id=None, tag=None):
+
+    user = auth.is_logged_in(request)
+    media = get_media(media_id)
+    permission = auth.is_media_owner(user, media)
+
+    if tag == None:
+        tag_name = request.forms.getunicode('tag')
+    else:
+        tag_name = tag
+
+    if len(tag_name) < 1:
+        return None
+
+    # TODO: replace with add_or_create
+
+    try:
+        tag = Tag.get(Tag.tag == tag_name,
+            Tag.blog == media.blog)
+    except Tag.DoesNotExist:
+        new_tag = Tag(tag=tag_name,
+            blog=media.blog)
+        tpl = template(new_tag.new_tag_for_display)
+
+    else:
+        tpl = template(tag.for_display)
+
+    return tpl
+
+@transaction
 def make_tag_for_page(blog_id=None, page_id=None):
 
     user = auth.is_logged_in(request)
@@ -400,6 +431,7 @@ def make_tag_for_page(blog_id=None, page_id=None):
     if len(tag_name) < 1:
         return None
 
+    # TODO: replace with add_or_create
     try:
         tag = Tag.get(Tag.tag == tag_name,
             Tag.blog == blog)
@@ -412,3 +444,5 @@ def make_tag_for_page(blog_id=None, page_id=None):
         tpl = template(tag.for_display)
 
     return tpl
+
+
