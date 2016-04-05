@@ -1130,10 +1130,13 @@ class Page(BaseModel, DateMod):
         return paginated_text
 
     @property
-    def tags(self):
+    def tags(self, show_hidden=True):
         tag_list = Tag.select().where(
             Tag.id << TagAssociation.select(TagAssociation.tag).where(
                 TagAssociation.page == self)).order_by(Tag.tag)
+
+        if show_hidden == False:
+            tag_list.select().where(Tag.is_hidden == False)
 
         return tag_list
 
@@ -1600,6 +1603,13 @@ class Tag(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
     is_hidden = BooleanField(default=False, index=True)
 
+    def save(self, *a, **ka):
+        if self.tag[0] == '@':
+            self.is_hidden = True
+        else:
+            self.is_hidden = False
+        super().save(*a, **ka)
+
     def add_or_create(self, tags, page=None, media=None, blog=None):
 
         if blog is None:
@@ -1705,6 +1715,17 @@ class Template(BaseModel, DateMod):
     is_include = BooleanField(default=False, null=True)
     default_type = CharField(max_length=32, default=None, null=True)
     template_ref = TextField(null=True)
+
+    # TODO: for each inheritor of BaseModel,
+    # set revision_schema to that model
+    # so we can use this __del__ globally?
+    # or better yet, just set the revision model to use a proper foreign key...
+
+    def __del__(self, *a, **ka):
+        delete_revisions = TemplateRevision.delete().where(
+            TemplateRevision.template_id == self.id)
+        delete_revisions.execute()
+        super().__del__(*a, **ka)
 
     @property
     def modified_date_tz(self):
