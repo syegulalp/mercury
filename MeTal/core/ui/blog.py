@@ -832,7 +832,7 @@ def blog_settings_save(blog_id, nav_setting):
     else:
         status = Status(
             type='success',
-            message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/republish'>republish this blog</a>.".format(
+            message="Settings for <b>{}</b> saved successfully.<hr/>It is recommended that you <a href='{}/blog/{}/purge'>republish this blog</a> immediately.".format(
                 blog.for_display, BASE_URL, blog.id))
 
         logger.info("Settings for blog {} edited by user {}.".format(
