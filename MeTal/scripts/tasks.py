@@ -27,11 +27,11 @@ print ('Looking for scheduled tasks...')
 from core.models import Page, page_status
 
 # TODO: we may want to move this into some systemwide schema?
-
 scheduled_pages = Page.select().where(
     Page.status == page_status.scheduled,
     Page.publication_date <= datetime.datetime.utcnow()).order_by(
-        Page.blog, Page.publication_date.desc())
+        # Page.blog,
+        Page.publication_date.desc())
 
 total_pages = scheduled_pages.count()
 
@@ -40,7 +40,7 @@ print ('{} pages scheduled'.format(total_pages))
 if total_pages > 0:
 
     from core.cms import (queue_page_actions, queue_index_actions, process_queue,
-        build_pages_fileinfos, build_archives_fileinfos, start_queue)
+        build_pages_fileinfos, build_archives_fileinfos, start_queue, get_blog)
     from core.models import db, queue_jobs_waiting
     from core.log import logger
 
@@ -57,7 +57,7 @@ if total_pages > 0:
                 build_archives_fileinfos((n,))
                 queue_page_actions(n)
                 queue_index_actions(n.blog)
-                blogs.add(n.blog)
+                blogs.add(n.blog.id)
                 n.save(n.user, no_revision=True)
 
         except Exception as e:
@@ -72,8 +72,9 @@ if total_pages > 0:
     # the ad hoc stuff
 
     for n in blogs:
-        waiting = queue_jobs_waiting(blog=n)
-        start_queue(n)
+        blog = get_blog(n)
+        waiting = queue_jobs_waiting(blog=blog)
+        start_queue(blog)
         '''
         push_to_queue(blog=n,
                 site=n.site,
@@ -83,9 +84,9 @@ if total_pages > 0:
                 )
         '''
         print ("Processing {} jobs for blog '{}'.".format(
-            waiting, n.name))
+            waiting, blog.name))
         while 1:
-            remaining = process_queue(n)
+            remaining = process_queue(blog)
             print ("{} jobs remaining.".format(remaining))
             if remaining == 0:
                 break
