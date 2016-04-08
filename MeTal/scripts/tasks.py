@@ -65,24 +65,11 @@ if total_pages > 0:
             print (problem)
             scheduled_page_report.append(problem)
 
-    # TODO: where to put txn in this area?
-
-    # TODO: push control job should be its own function
-    # TODO: elsewhere, use queue_jobs_waiting function instead of
-    # the ad hoc stuff
-
     for n in blogs:
         blog = get_blog(n)
         waiting = queue_jobs_waiting(blog=blog)
         start_queue(blog)
-        '''
-        push_to_queue(blog=n,
-                site=n.site,
-                job_type=job_type.control,
-                is_control=True,
-                data_integer=waiting
-                )
-        '''
+
         print ("Processing {} jobs for blog '{}'.".format(
             waiting, blog.name))
         while 1:
@@ -100,16 +87,19 @@ Pages published:
 '''.format(product_id,
     scheduled_page_report)
 
+    admins = []
+
     for n in admin_users:
         msg = MIMEText(message_text)
         msg['Subject'] = 'Scheduled activity report for {}'.format(product_id)
         msg['From'] = n.email
         msg['To'] = n.email
+        admins.append(n.email)
         s = smtplib.SMTP('localhost')
         s.send_message(msg)
         s.quit()
 
-    print ('Reports emailed.')
+    print ('Reports emailed to {}.'.format(','.join(admins)))
 
     logger.info("Scheduled job run, processed {} pages.".format(total_pages))
 
