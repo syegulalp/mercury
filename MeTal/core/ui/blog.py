@@ -2,25 +2,22 @@ from core import (auth, mgmt, utils, cms, ui_mgr)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.error import EmptyQueueError
 from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
     template_tags, Page, Blog, Queue, Template, Theme, get_theme,
-    Category, PageCategory, MediaAssociation,
-    TemplateMapping, Media, queue_jobs_waiting,
-    Tag, template_type, publishing_mode, get_default_theme)
+    PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
+    get_default_theme)
 
 from core.models.transaction import transaction
 
-from core.libs.bottle import (template, request, response, redirect)
+from core.libs.bottle import (template, request, response)
 
 from settings import (BASE_URL)
 
 import datetime
 from os import remove as _remove
-from core.models import TagAssociation
 from core.models import MediaAssociation
 
 @transaction
@@ -51,9 +48,6 @@ def blog(blog_id, errormsg=None):
         'Create new page',
         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
         )
-
-    # theme_actions = blog.theme_actions().menus()
-
 
     list_actions = [
         ['Republish', '{}/api/1/republish'],
@@ -162,7 +156,6 @@ def blog_create_save(site_id):
         return tpl
 
     else:
-        # new_blog.setup(user, new_blog.theme)
         tags = template_tags(user=user, site=site,
             blog=new_blog)
         status = utils.Status(
@@ -334,9 +327,6 @@ def blog_media(blog_id):
         user=user)
 
     paginator, media_list = utils.generate_paginator(media, request)
-    # media_list = media.paginate(paginator['page_num'], ITEMS_PER_PAGE)
-
-
 
     tpl = template('listing/listing_ui',
         paginator=paginator,
@@ -373,8 +363,6 @@ def blog_media_edit(blog_id, media_id, status=None):
     tags.sidebar = ui_mgr.render_sidebar(
             panel_set='edit_media',
             status_badge=status_badge,
-            # save_action_list=save_action_list,
-            # save_action=save_action,
             kv_ui=kv_ui_data)
 
     return blog_media_edit_output(tags)
@@ -458,7 +446,6 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
     from core.utils import Status
 
-    # if confirm == 'Y':
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
         try:
@@ -618,9 +605,9 @@ def blog_templates(blog_id):
 
     template_list = Template.select(Template, TemplateMapping).join(
         TemplateMapping, JOIN_LEFT_OUTER).where(
-        # (TemplateMapping.is_default == True) &
         (Template.blog == blog)
         ).order_by(Template.title)
+
 
     index_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.index)
@@ -854,7 +841,6 @@ def blog_settings_output(tags):
     timezones = pytz.all_timezones
     path = '/blog/{}/settings/'.format(tags.blog.id)
     tpl = template('ui/ui_blog_settings',
-        # section_title='Basic settings',
         search_context=(search_context['blog'], tags.blog),
         timezones=timezones,
         menu=generate_menu('blog_settings', tags.blog),
@@ -877,7 +863,6 @@ def blog_publish(blog_id):
     queue = Queue.select().where(Queue.blog == blog.id)
 
     queue_length - Queue.job_counts(blog=blog)
-    # queue_length = queue_jobs_waiting(blog=blog)
 
     tags = template_tags(blog_id=blog.id,
             user=user)

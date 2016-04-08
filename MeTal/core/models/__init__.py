@@ -2192,8 +2192,8 @@ def all_queue_jobs(blog=None, site=None):
 
     return all_jobs
 
-def queue_jobs_waiting(blog=None, site=None):
-    return Queue.job_counts(blog, site)
+# def queue_jobs_waiting(blog=None, site=None):
+    # return Queue.job_counts(blog, site)
 
 
 class Permission(BaseModel):
