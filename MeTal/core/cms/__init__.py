@@ -292,21 +292,19 @@ def queue_ssi_actions(blog):
         Template.template_type == template_type.include,
         Template.publishing_mode == publishing_mode.ssi)
     '''
-    templates = blog.ssi_templates
+    templates = blog.ssi_templates.select()
 
     if templates.count() == 0:
         return None
 
-    mappings = TemplateMapping.select().where(TemplateMapping.template << templates)
-
-    fileinfos = FileInfo.select().where(FileInfo.template_mapping << mappings)
-
-    for f in fileinfos:
-        push_to_queue(job_type=job_type.include,
-            priority=1,
-            blog=blog,
-            site=blog.site,
-            data_integer=f.id)
+    for n in templates:
+        for f in n.fileinfos:
+            push_to_queue(
+                job_type=job_type.include,
+                priority=10,
+                blog=blog,
+                site=blog.site,
+                data_integer=f.id)
 
 def queue_index_actions(blog, include_manual=False):
     '''
@@ -538,6 +536,7 @@ def save_page(page, user, blog=None):
 
         queue_page_actions(page)
         queue_index_actions(page.blog)
+        # queue_ssi_actions(page.blog)
         msg.append(" Live page updated.")
 
     if (
@@ -1134,12 +1133,12 @@ def republish_blog(blog_id):
 
     begin = time.clock()
 
+    queue_ssi_actions(blog)
+
     for p in blog.published_pages():
         queue_page_actions(p, no_neighbors=True)
 
     queue_index_actions(blog, include_manual=True)
-
-    queue_ssi_actions(blog)
 
     end = time.clock()
 
@@ -1156,7 +1155,6 @@ def process_queue_publish(queue_control, blog):
     jobs remaining in the queue for that blog.
     Typically invoked by the process_queue function.
     '''
-    # Queue for building actual pages
 
     queue_control.is_running = True
     queue_control.save()
@@ -1181,8 +1179,8 @@ def process_queue_publish(queue_control, blog):
     for q in queue:
         try:
             job_type.action[q.job_type](q)
-        except BaseException:
-            raise
+        except Exception as e:
+            raise e
         else:
             remove_from_queue((q.id,))
 
@@ -1200,6 +1198,7 @@ def process_queue_publish(queue_control, blog):
             date_format(queue_control.date_touched),
             queue_control.blog.id,
             total_time))
+
     else:
         queue_control.is_running = False
         queue_control.save()
