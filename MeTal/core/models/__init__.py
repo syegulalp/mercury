@@ -1380,9 +1380,15 @@ class Page(BaseModel, DateMod):
     @property
     def next_in_category(self, category=None):
         '''
-        This returns the next entry in the blog under the category in question.
+        Returns the next entry in the blog under the category in question.
         The default category choice is the blog's default category.
         '''
+        # determine if page is in category
+        # if not, just return first next
+        # if so:
+        # get all next pages
+        # join by category (look up the exclusive join function)
+
 
 
     @property
@@ -1604,12 +1610,13 @@ class Tag(BaseModel):
     is_hidden = BooleanField(default=False, index=True)
 
     def save(self, *a, **ka):
-        if self.tag[0] == '@':
+        if str(self.tag)[:1] == '@':
             self.is_hidden = True
         else:
             self.is_hidden = False
         super().save(*a, **ka)
 
+    @classmethod
     def add_or_create(self, tags, page=None, media=None, blog=None):
 
         if blog is None:
@@ -1619,10 +1626,12 @@ class Tag(BaseModel):
             elif media is not None:
                 blog = media.blog
                 assoc = {'media':media}
+        else:
+            assoc = {'blog':blog}
 
         tags_added = []
         tags_existing = []
-        # all_tags = []
+        all_tags = []
 
         for tag in tags:
             try:
@@ -1634,10 +1643,10 @@ class Tag(BaseModel):
                     blog=blog,
                     tag=tag)
                 tag_to_match.save()
-                tags_added.append(tag)
+                tags_added.append(tag_to_match)
             else:
-                tags_existing.append(tag)
-            # all_tags.append(tag)
+                tags_existing.append(tag_to_match)
+            all_tags.append(tag)
 
             association = TagAssociation(
                 tag=tag_to_match,
@@ -1645,7 +1654,7 @@ class Tag(BaseModel):
 
             association.save()
 
-        return (tags_added, tags_existing)
+        return (tags_added, tags_existing, all_tags)
 
 
     @property
@@ -1716,16 +1725,19 @@ class Template(BaseModel, DateMod):
     default_type = CharField(max_length=32, default=None, null=True)
     template_ref = TextField(null=True)
 
-    # TODO: for each inheritor of BaseModel,
-    # set revision_schema to that model
-    # so we can use this __del__ globally?
-    # or better yet, just set the revision model to use a proper foreign key...
-
-    def __del__(self, *a, **ka):
+    def delete_instance(self, *a, **ka):
+        # eventually we shouldn't need these once we have all the proper
+        # ID refs set up
+        t0 = FileInfo.delete().where(FileInfo.template_mapping << self.mappings)
+        t0.execute()
+        t1 = TemplateMapping.delete().where(TemplateMapping.id << self.mappings)
+        t1.execute()
+        t2 = Template.delete().where(Template.id == self.id)
         delete_revisions = TemplateRevision.delete().where(
-            TemplateRevision.template_id == self.id)
+                TemplateRevision.template_id == self.id)
         delete_revisions.execute()
-        super().__del__(*a, **ka)
+        t2.execute()
+        return BaseModel.delete_instance(self, *a, **ka)
 
     @property
     def modified_date_tz(self):
@@ -1745,14 +1757,34 @@ class Template(BaseModel, DateMod):
     def preview_file(self):
         from core import utils
         # from settings import _sep
-        default_file = self.default_mapping.fileinfos[0].file_path
+        # default_file = self.default_mapping.fileinfos[0].file_path
         # return utils.preview_file(default_file, self.blog.base_extension)
         return utils.preview_file(self.id, self.blog.base_extension)
 
     @property
     def preview_path(self):
-        from core.template import preview_path
-        return preview_path(self)
+        # from core.template import preview_path
+        # return preview_path(self)
+
+        if self.default_mapping.fileinfos.count() == 0:
+            return None
+
+        from settings import _sep
+        file_path = self.default_mapping.fileinfos[0].file_path
+
+        preview_subpath = file_path.rsplit('/', 1)
+        if len(preview_subpath) > 1:
+            preview_subpath = preview_subpath[0]
+        else:
+            preview_subpath = ''
+
+        preview_path = (self.blog.path + _sep + preview_subpath)
+
+        preview_file = self.preview_file
+
+        return {'subpath':preview_subpath,
+            'path':preview_path,
+            'file':preview_file}
 
     def include(self, include_name):
         include = Template.get(Template.title == include_name,
@@ -2129,7 +2161,7 @@ def all_queue_jobs(blog=None, site=None):
     if blog is not None:
         all_jobs = all_jobs.select().where(Queue.blog == blog)
     if site is not None:
-        all_jobs = all_jobs.select().where(Queue.blog == site)
+        all_jobs = all_jobs.select().where(Queue.site == site)
 
     return all_jobs
 

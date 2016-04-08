@@ -403,9 +403,9 @@ def make_tag_for_media(media_id=None, tag=None):
         media=media)
 
     if len(tag[0]) > 0:
-        tpl = template(tag[0].new_tag_for_display)
+        tpl = template(tag[0][0].new_tag_for_display)
     else:
-        tpl = template(tag[1].for_display)
+        tpl = template(tag[1][0].for_display)
 
     return tpl
 
@@ -429,13 +429,16 @@ def make_tag_for_page(blog_id=None, page_id=None):
     user = auth.is_logged_in(request)
 
     if page_id is None:
-        page = Page()
+        # page = Page()
         blog = get_blog(blog_id)
+        page = None
         permission = auth.is_blog_editor(user, blog)
+        assoc = {'blog':blog}
     else:
         page = get_page(page_id)
-        blog = page.blog
+        blog = None
         permission = auth.is_page_editor(user, page)
+        assoc = {'page':page}
 
     tag_name = request.forms.getunicode('tag')
 
@@ -444,12 +447,15 @@ def make_tag_for_page(blog_id=None, page_id=None):
 
     # Note that this is a single tag only!
 
-    tag = Tag.add_or_create((tag_name,),
-        blog=blog)
+    tag = Tag.add_or_create(
+        [tag_name, ],
+        **assoc
+        )
+
     if len(tag[0]) > 0:
-        tpl = template(tag[0].new_tag_for_display)
+        tpl = template(tag[0][0].new_tag_for_display)
     else:
-        tpl = template(tag[1].for_display)
+        tpl = template(tag[1][0].for_display)
 
     return tpl
 
