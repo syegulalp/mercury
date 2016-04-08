@@ -374,6 +374,7 @@ class User(BaseModel):
     blog = None
     logout_nonce = CharField(max_length=64, null=True, default=None)
 
+    @classmethod
     def find(self, user_id=None):
         try:
             user = self.get(User.id == user_id)
@@ -1482,7 +1483,7 @@ class PageRevision(Page, RevisionMixin):
     @property
     def saved_by_user(self):
 
-        saved_by_user = get_user(user_id=self.saved_by)
+        saved_by_user = User.find(user_id=self.saved_by)
         if saved_by_user is None:
             dead_user = User(name='Deleted user (ID #' + str(self.saved_by) + ')', id=saved_by_user)
             return dead_user
@@ -1903,7 +1904,7 @@ class TemplateRevision(Template, RevisionMixin):
 
     @property
     def saved_by_user(self):
-        saved_by_user = get_user(user_id=self.saved_by)
+        saved_by_user = User.find(user_id=self.saved_by)
         if saved_by_user is None:
             dead_user = User(name='Deleted user (ID #' + str(self.saved_by) + ')',
                 id=saved_by_user)
@@ -2341,15 +2342,7 @@ class ThemeData(AuxData):
 
 # Move to User
 def get_user(**ka):
-
-    if 'user_id' in ka:
-        try:
-            user = User.get(User.id == ka['user_id'])
-        except User.DoesNotExist:
-            raise User.DoesNotExist('User #{} was not found.'.format(ka['user_id']))
-        else:
-            return user
-
+    return User.find(**ka)
 
 def get_page(page_id):
 
