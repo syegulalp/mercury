@@ -2468,13 +2468,16 @@ class TemplateTags(object):
 
         if self.blog:
             self.queue = Queue.select().where(Queue.blog == self.blog)
-            self.queue_count = queue_jobs_waiting(blog=self.blog)
+            self.queue_count = Queue.job_counts(blog=self.blog)
+            # self.queue_count = queue_jobs_waiting(blog=self.blog)
         elif self.site:
             self.queue = Queue.select().where(Queue.site == self.site)
-            self.queue_count = queue_jobs_waiting(site=self.site)
+            # self.queue_count = queue_jobs_waiting(site=self.site)
+            self.queue_count = Queue.job_counts(site=self.site)
         else:
             self.queue = Queue.select()
-            self.queue_count = queue_jobs_waiting()
+            # self.queue_count = queue_jobs_waiting()
+            self.queue_count = Queue.job_counts()
 
 
         if 'archive' in ka:

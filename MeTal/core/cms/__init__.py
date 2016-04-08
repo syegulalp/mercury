@@ -1422,15 +1422,6 @@ def register_media(filename, path, user, **ka):
 
     if 'page' in ka:
         page = ka['page']
-        '''
-        association = MediaAssociation(
-            media=media,
-            page=page,
-            blog=page.blog,
-            site=page.blog.site)
-
-        association.save()
-        '''
         media.associate(page)
 
         media.blog = page.blog
@@ -1444,7 +1435,7 @@ def start_queue(blog=None, queue_length=None):
     if blog is None:
         raise Exception("You must specify a blog when starting a queue process.")
     if queue_length is None:
-        queue_length = queue_jobs_waiting(blog=blog)
+        queue_length = Queue.job_counts(blog=blog)
     push_to_queue(blog=blog,
         site=blog.site,
         job_type=job_type.control,
