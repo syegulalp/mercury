@@ -874,17 +874,7 @@ def blog_publish(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    # TODO: check if control job already exists, if so, report back and quit
-
-    '''
-    queue = Queue.select().where(
-        Queue.blog == blog.id,
-        Queue.is_control == False)
-
-    queue_length = queue.count()
-    '''
-    queue = Queue.select().where(
-        Queue.blog == blog.id)
+    queue = Queue.select().where(Queue.blog == blog.id)
 
     queue_length = queue_jobs_waiting(blog=blog)
 
@@ -907,14 +897,6 @@ def blog_publish(blog_id):
             cms.start_queue(blog=blog,
                 queue_length=queue_length)
 
-            '''
-            cms.push_to_queue(blog=blog,
-                site=blog.site,
-                job_type=job_type.control,
-                is_control=True,
-                data_integer=queue_length
-                )
-            '''
     else:
 
         start_message = "Queue empty."
@@ -937,8 +919,7 @@ def blog_publish_progress(blog_id, original_queue_length):
 
     queue_count = 0
 
-    control_jobs = Queue.select().where(Queue.blog == blog.id,
-        Queue.is_control == True)
+    control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
         queue_count = cms.process_queue(blog)
@@ -958,14 +939,12 @@ def blog_publish_process(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    control_jobs = Queue.select().where(Queue.blog == blog.id,
-                Queue.is_control == True)
+    control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
         queue_count = cms.process_queue(blog)
     else:
-        jobs = Queue.select().where(Queue.blog == blog_id,
-                Queue.is_control == False)
+        jobs = Queue.jobs(blog)
         queue_count = 0
         if jobs.count() > 0:
             queue_count = jobs.count()
