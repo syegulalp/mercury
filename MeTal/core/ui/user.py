@@ -1,7 +1,7 @@
 from core.models.transaction import transaction
 from core.libs.bottle import (request, template, redirect)
 from core import auth, utils
-from core.models import (template_tags, get_user, get_site, get_blog)
+from core.models import (template_tags, User, get_site, get_blog)
 from core.menu import generate_menu, colsets
 from .ui import search_context
 
@@ -144,7 +144,7 @@ def system_user(user_id, path):
     # Obtains user edit in system context.
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    user_to_edit = get_user(user_id=user_id)
+    user_to_edit = User.find(user_id=user_id)
 
     status = None
 
@@ -233,7 +233,7 @@ def system_user(user_id, path):
             user_to_edit.last_login = datetime.datetime.utcnow()
             user_to_edit.save()
 
-    tags = template_tags(user=get_user(user_id=user.id))
+    tags = template_tags(user=User.find(user_id=user.id))
     tags.status = status
     try:
         tags.permissions = auth.get_permissions(user_to_edit)
@@ -279,7 +279,7 @@ def site_user(user_id, site_id):
     user = auth.is_logged_in(request)
     site = get_site(site_id)
     permission = auth.is_site_admin(user, site)
-    user_to_edit = get_user(user_id)
+    user_to_edit = User.find(user_id)
 
     return edit_user(user_to_edit, editing_user=user, context=site_context, site=site)
 
@@ -289,7 +289,7 @@ def blog_user(user_id, blog_id):
     user = auth.is_logged_in(request)
     blog = get_blog(blog_id)
     permission = auth.is_blog_admin(user, blog)
-    user_to_edit = get_user(user_id)
+    user_to_edit = User.find(user_id)
 
     return edit_user(user_to_edit, editing_user=user, context=blog_context, blog=blog)
 
