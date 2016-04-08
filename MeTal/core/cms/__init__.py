@@ -461,10 +461,6 @@ def save_page(page, user, blog=None):
 
             # TODO: setting default category should be done on object creation
 
-            # default_blog_category = Category.get(
-                # Category.blog == blog.id,
-                # Category.default == True)
-
             saved_page_category = PageCategory.create(
                 page=page,
                 category=blog.default_category,
@@ -531,19 +527,25 @@ def save_page(page, user, blog=None):
         build_archives_fileinfos((page,))
 
     # QUEUE CHANGES FOR PUBLICATION
+
     if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
         and (page.status == page_status.published)):
 
+        queue_ssi_actions(page.blog)
         queue_page_actions(page)
         queue_index_actions(page.blog)
-        # queue_ssi_actions(page.blog)
+
         msg.append(" Live page updated.")
+
+    # DETECT ANY PAGE CHANGES
 
     if (
         (save_action & (save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE))
         and (save_result[1]) is None):
 
         msg.append(" (Page unchanged.)")
+
+    # RETURN REPORT
 
     tags = template_tags(page_id=page.id, user=user)
 
@@ -598,7 +600,7 @@ def add_tags_to_page (tag_text, page, no_delete=False):
     else:
         tags_to_delete = None
 
-    tags_in_page = page.tags.select(Tag.id).tuples()
+    tags_in_page = page.tags_all.select(Tag.id).tuples()
 
     tags_to_add = tag_list.select().where(~Tag.id << (tags_in_page))
 
