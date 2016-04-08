@@ -347,6 +347,14 @@ def generate_date_mapping(date_value, tags, path_string):
     The tag set is contextual -- e.g., for a blog or a site.
     '''
 
+    # need to have this return an iterable
+    # for when we generate mappings for items like tags
+
+    # look for iterable tags
+    # get the appropriate iterable from the tag context
+    # assume page/blog/site
+    # loop through, generate, return
+
     time_string = date_value.strftime(path_string)
     path_string = tpl(time_string, **tags.__dict__)
 
