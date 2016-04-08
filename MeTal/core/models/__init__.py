@@ -2154,6 +2154,21 @@ class Queue(BaseModel):
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
 
+    @classmethod
+    def control_jobs(self, blog=None):
+        if blog is None:
+            raise Blog.DoesNotExist("You need to supply a blog object to retrieve a list of queue control jobs.")
+        return Queue.select().where(Queue.blog == blog,
+            Queue.is_control == True)
+
+    @classmethod
+    def jobs(self, blog=None):
+        if blog is None:
+            raise Blog.DoesNotExist("You need to supply a blog object to retrieve a list of queue jobs.")
+        return Queue.select().where(Queue.blog == blog,
+            Queue.is_control == False)
+
+
 def all_queue_jobs(blog=None, site=None):
 
     all_jobs = Queue.select()
@@ -2176,11 +2191,6 @@ def queue_jobs_waiting(blog=None, site=None):
 
     return int(0 if publish_jobs is None else publish_jobs) + int(
         0 if insert_jobs.total is None else insert_jobs.total)
-
-def queue_control_jobs(blog=None, site=None):
-    all_jobs = all_queue_jobs(blog, site)
-    control_jobs = all_jobs.select().where(Queue.is_control == True).count()
-    return control_jobs
 
 class Permission(BaseModel):
     user = ForeignKeyField(User, index=True)
