@@ -950,6 +950,9 @@ def replace_mapping_tags(string):
 
     import re
 
+    # TODO: these should be changed to %_i or something like that
+    # to avoid collisions with the actual date format
+
     mapping_tags = (
         (re.compile('%i'), '{{blog.index_file}}'),
         (re.compile('%s'), '{{blog.ssi_path}}'),
@@ -979,6 +982,12 @@ def build_pages_fileinfos(pages):
 
             path_string = replace_mapping_tags(t.path_string)
             path_string = generate_date_mapping(page.publication_date_tz.date(), tags, path_string)
+
+            # for tag archives, we need to return a list from the date mapping
+            # in the event that we have a tag present that's an iterable like the tag list
+            # e.g., for /%t/%Y, for a given page that has five tags
+            # we return five values, one for each tag, along with the year
+
             if path_string == '':
                 continue
 
