@@ -56,24 +56,24 @@ publishing_mode.ssi = "Server-side include"
 publishing_mode.description = {
         publishing_mode.immediate:{
             'label':'primary',
-            'description':'Changes are pushed to the queue and processed immediately.'
+            'description':'Template is pushed to the queue and processed immediately.'
             },
         publishing_mode.batch_only:{
             'label':'success',
-            'description':'Changes are pushed to the queue but held for whenever the queue is next triggered.'},
+            'description':'Template is only published whenever the queue is run on a scheduled job.'},
         publishing_mode.manual:{
             'label':'warning',
-            'description':'Changes are published only when "regenerate pages" is selected.'},
+            'description':'Template is pushed to the queue and published only when specifically selected,\nor during a full blog republishing.'},
         publishing_mode.do_not_publish:{
             'label':'danger',
-            'description':'Changes are never published.'},
+            'description':'Template is never published.'},
         publishing_mode.include:{
             'label':'default',
-            'description':'Changes are published as includes present in another template.'
+            'description':'Template is published as includes present in another template.'
             },
         publishing_mode.ssi:{
             'label':'info',
-            'description':'Changes are published to an element to be used as a server-side include.'
+            'description':'Template is published to an element to be used as a server-side include.'
             }
     }
 
@@ -1130,7 +1130,25 @@ class Page(BaseModel, DateMod):
         return paginated_text
 
     @property
-    def tags(self, show_hidden=True):
+    def tags_public(self):
+        return self.tags.where(Tag.is_hidden == False)
+
+    @property
+    def tags_private(self):
+        return self.tags.where(Tag.is_hidden == True)
+
+    @property
+    def tags(self):
+        return Tag.select().where(
+            Tag.id << TagAssociation.select(TagAssociation.tag).where(
+                TagAssociation.page == self)).order_by(Tag.tag)
+
+    @property
+    def tags_all(self):
+        return self.tags
+
+    '''
+    def _tags(self, show_hidden=True):
         tag_list = Tag.select().where(
             Tag.id << TagAssociation.select(TagAssociation.tag).where(
                 TagAssociation.page == self)).order_by(Tag.tag)
@@ -1139,6 +1157,7 @@ class Page(BaseModel, DateMod):
             tag_list.select().where(Tag.is_hidden == False)
 
         return tag_list
+    '''
 
     @property
     def tags_text(self):
@@ -2172,7 +2191,14 @@ class Queue(BaseModel):
     def job_counts(cls, blog=None, site=None):
         from core.cms import job_type as jt
 
-        all_jobs = all_queue_jobs(blog, site)
+        # all_jobs = all_queue_jobs(blog, site)
+
+        all_jobs = Queue.select()
+
+        if blog is not None:
+            all_jobs = all_jobs.select().where(Queue.blog == blog)
+        if site is not None:
+            all_jobs = all_jobs.select().where(Queue.site == site)
 
         publish_jobs = all_jobs.select().where(Queue.is_control == False).count()
         insert_jobs = all_jobs.select(Queue, fn.SUM(Queue.data_integer).alias('total')).where(
@@ -2181,6 +2207,7 @@ class Queue(BaseModel):
         return int(0 if publish_jobs is None else publish_jobs) + int(
             0 if insert_jobs.total is None else insert_jobs.total)
 
+'''
 def all_queue_jobs(blog=None, site=None):
 
     all_jobs = Queue.select()
@@ -2191,7 +2218,7 @@ def all_queue_jobs(blog=None, site=None):
         all_jobs = all_jobs.select().where(Queue.site == site)
 
     return all_jobs
-
+'''
 # def queue_jobs_waiting(blog=None, site=None):
     # return Queue.job_counts(blog, site)
 
