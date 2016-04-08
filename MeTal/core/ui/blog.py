@@ -935,12 +935,13 @@ def blog_publish_progress(blog_id, original_queue_length):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    try:
+    queue_count = 0
+
+    control_jobs = Queue.select().where(Queue.blog == blog.id,
+        Queue.is_control == True)
+
+    if control_jobs.count() > 0:
         queue_count = cms.process_queue(blog)
-    except EmptyQueueError:
-        queue_count = 0
-    except BaseException as e:
-        raise e
 
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
 
@@ -957,36 +958,19 @@ def blog_publish_process(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    # queue_jobs_waiting should report actual JOBS
-    # queue_control_jobs_waiting should report CONTROL JOBS
-    # both should return a tuple of the actual queue and the queue count
-
-    # get how many control jobs we have
-    queue = Queue.select().where(Queue.blog == blog.id,
+    control_jobs = Queue.select().where(Queue.blog == blog.id,
                 Queue.is_control == True)
 
-    queue_count = queue.count()
-    if queue_count == 0:
-
-        # get how many regular jobs we have
-        queue = Queue.select().where(Queue.blog == blog_id,
-                Queue.is_control == False)
-
-        if queue.count() > 0:
-            cms.start_queue(blog, queue_count)
-            '''
-            cms.push_to_queue(blog=blog,
-                site=blog.site,
-                job_type=job_type.control,
-                is_control=True,
-                data_integer=queue.count()
-                )
-            '''
-
-            queue_count = cms.process_queue(blog)
-
-    else:
+    if control_jobs.count() > 0:
         queue_count = cms.process_queue(blog)
+    else:
+        jobs = Queue.select().where(Queue.blog == blog_id,
+                Queue.is_control == False)
+        queue_count = 0
+        if jobs.count() > 0:
+            queue_count = jobs.count()
+            cms.start_queue(blog, queue_count)
+            queue_count = cms.process_queue(blog)
 
     tpl = template('queue/queue_counter_include',
             queue_count=queue_count)

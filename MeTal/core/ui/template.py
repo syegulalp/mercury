@@ -162,7 +162,9 @@ def template_delete(template_id):
         user=user)
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
-        _template.delete(tpl)
+
+        # _template.delete(tpl)
+        tpl.delete_instance()
 
         status = Status(
             type='success',

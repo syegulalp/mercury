@@ -1,4 +1,7 @@
-from core.models import FileInfo, Template, TemplateMapping, publishing_mode
+# TODO: move all this out of here and into the schema
+# delete will eventually just be subsumed into __del__ for the model, for instance?
+
+from core.models import FileInfo, Template, TemplateMapping, TemplateRevision, publishing_mode
 from core.utils import is_blank
 from core.log import logger
 from core.cms import build_mapping_xrefs
@@ -7,16 +10,22 @@ from core.error import PageNotChanged
 
 
 def delete(template):
-
+    return template.delete_instance()
+    '''
     t0 = FileInfo.delete().where(FileInfo.template_mapping << template.mappings)
     t0.execute()
     t1 = TemplateMapping.delete().where(TemplateMapping.id << template.mappings)
     t1.execute()
     t2 = Template.delete().where(Template.id == template.id)
+    delete_revisions = TemplateRevision.delete().where(
+            TemplateRevision.template_id == template.id)
+    delete_revisions.execute()
     t2.execute()
+    '''
 
 def preview_path(template):
-
+    return template.preview_path
+    '''
     if template.default_mapping.fileinfos.count() == 0:
         return None
 
@@ -36,8 +45,15 @@ def preview_path(template):
     return {'subpath':preview_subpath,
         'path':preview_path,
         'file':preview_file}
-
+    '''
 def save(request, user, cms_template, blog=None):
+
+    # TODO: move the bulk of this into the actual model
+    # the .getunicode stuff should be moved out,
+    # make that part of the ui
+    # we should just submit cms_template as self,
+    # make whatever mods to it are needed in the ui func,
+    # and perform the validation we did elsewhere, perhaps
 
     import datetime
 
@@ -109,6 +125,7 @@ def save(request, user, cms_template, blog=None):
     if int(save_action) in (2, 3):
 
         from core import cms
+
         for f in cms_template.fileinfos_published:
             cms.push_to_queue(job_type=f.template_mapping.template.template_type,
                 blog=cms_template.blog,
@@ -127,3 +144,4 @@ def save(request, user, cms_template, blog=None):
         user.for_log))
 
     return status
+

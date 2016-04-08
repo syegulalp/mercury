@@ -139,6 +139,9 @@ def old_system_plugins():
 
 @transaction
 def register_plugin(plugin_path):
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+
     from core.plugins import register_plugin, PluginImportError
     try:
         new_plugin = register_plugin(plugin_path)
