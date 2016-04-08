@@ -862,7 +862,7 @@ def blog_publish(blog_id):
 
     queue = Queue.select().where(Queue.blog == blog.id)
 
-    queue_length - Queue.job_counts(blog=blog)
+    queue_length = Queue.job_counts(blog=blog)
 
     tags = template_tags(blog_id=blog.id,
             user=user)
