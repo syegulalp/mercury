@@ -374,6 +374,14 @@ class User(BaseModel):
     blog = None
     logout_nonce = CharField(max_length=64, null=True, default=None)
 
+    def find(self, user_id=None):
+        try:
+            user = self.get(User.id == user_id)
+        except User.DoesNotExist:
+            raise User.DoesNotExist('User #{} was not found.'.format(user_id))
+        else:
+            return user
+
     def save_mod(self, **ka):
         # Save modification to user data other than last_login
         # TODO: make this into a confirmation function a la what we did with blog settings
