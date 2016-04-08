@@ -2341,8 +2341,8 @@ class ThemeData(AuxData):
 
 
 # Move to User
-def get_user(**ka):
-    return User.find(**ka)
+# def get_user(**ka):
+    # return User.find(**ka)
 
 def get_page(page_id):
 
