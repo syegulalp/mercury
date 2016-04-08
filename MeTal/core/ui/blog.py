@@ -860,32 +860,18 @@ def blog_publish(blog_id):
     blog = get_blog(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
-    queue = Queue.select().where(Queue.blog == blog.id)
-
     queue_length = Queue.job_counts(blog=blog)
+
+    if queue_length > 0:
+        start_message = template('queue/queue_run_include',
+            queue=Queue.jobs(blog),
+            percentage_complete=0)
+        cms.start_queue(blog, queue_length)
+    else:
+        start_message = "Queue empty."
 
     tags = template_tags(blog_id=blog.id,
             user=user)
-
-    if queue_length > 0:
-
-        start_message = template('queue/queue_run_include',
-            queue=queue,
-            percentage_complete=0)
-
-        try:
-            Queue.get(Queue.site == blog.site,
-                Queue.blog == blog,
-                Queue.is_control == True)
-
-        except Queue.DoesNotExist:
-
-            cms.start_queue(blog=blog,
-                queue_length=queue_length)
-
-    else:
-
-        start_message = "Queue empty."
 
     tpl = template('queue/queue_run_ui',
         original_queue_length=queue_length,
@@ -931,11 +917,12 @@ def blog_publish_process(blog_id):
         queue_count = cms.process_queue(blog)
     else:
         jobs = Queue.jobs(blog)
-        queue_count = 0
         if jobs.count() > 0:
             queue_count = jobs.count()
             cms.start_queue(blog, queue_count)
             queue_count = cms.process_queue(blog)
+        else:
+            queue_count = 0
 
     tpl = template('queue/queue_counter_include',
             queue_count=queue_count)
