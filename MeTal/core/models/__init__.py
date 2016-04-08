@@ -2155,19 +2155,31 @@ class Queue(BaseModel):
     site = ForeignKeyField(Site, index=True, null=False)
 
     @classmethod
-    def control_jobs(self, blog=None):
+    def for_blog(self, blog=None):
         if blog is None:
-            raise Blog.DoesNotExist("You need to supply a blog object to retrieve a list of queue control jobs.")
-        return Queue.select().where(Queue.blog == blog,
-            Queue.is_control == True)
+            raise Blog.DoesNotExist("You need to supply a blog object to retrive queue information.")
+        return Queue.select().where(Queue.blog == blog)
 
     @classmethod
-    def jobs(self, blog=None):
-        if blog is None:
-            raise Blog.DoesNotExist("You need to supply a blog object to retrieve a list of queue jobs.")
-        return Queue.select().where(Queue.blog == blog,
-            Queue.is_control == False)
+    def control_jobs(cls, blog=None):
+        return cls.for_blog(blog).where(Queue.is_control == True)
 
+    @classmethod
+    def jobs(cls, blog=None):
+        return cls.for_blog(blog).where(Queue.is_control == False)
+
+    @classmethod
+    def job_counts(cls, blog=None, site=None):
+        from core.cms import job_type as jt
+
+        all_jobs = all_queue_jobs(blog, site)
+
+        publish_jobs = all_jobs.select().where(Queue.is_control == False).count()
+        insert_jobs = all_jobs.select(Queue, fn.SUM(Queue.data_integer).alias('total')).where(
+            Queue.is_control == True and Queue.job_type == jt.insert).get()
+
+        return int(0 if publish_jobs is None else publish_jobs) + int(
+            0 if insert_jobs.total is None else insert_jobs.total)
 
 def all_queue_jobs(blog=None, site=None):
 
@@ -2181,16 +2193,8 @@ def all_queue_jobs(blog=None, site=None):
     return all_jobs
 
 def queue_jobs_waiting(blog=None, site=None):
-    from core.cms import job_type as jt
+    return Queue.job_counts(blog, site)
 
-    all_jobs = all_queue_jobs(blog, site)
-
-    publish_jobs = all_jobs.select().where(Queue.is_control == False).count()
-    insert_jobs = all_jobs.select(Queue, fn.SUM(Queue.data_integer).alias('total')).where(
-        Queue.is_control == True and Queue.job_type == jt.insert).get()
-
-    return int(0 if publish_jobs is None else publish_jobs) + int(
-        0 if insert_jobs.total is None else insert_jobs.total)
 
 class Permission(BaseModel):
     user = ForeignKeyField(User, index=True)

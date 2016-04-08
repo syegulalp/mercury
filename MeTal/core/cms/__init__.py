@@ -1281,7 +1281,7 @@ def process_queue(blog):
         elif queue_control.job_type == job_type.insert:
             process_queue_insert(queue_control, blog)
 
-    return queue_jobs_waiting(blog=blog)
+    return Queue.job_counts(blog=blog)
 
 def build_mapping_xrefs(mapping_list):
 
