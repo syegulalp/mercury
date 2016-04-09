@@ -2396,10 +2396,11 @@ class ThemeData(AuxData):
                 Theme.title == theme_title))
 
 
+"""
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)
 
-"""
+
 def default_template_mapping(page):
     '''Returns the default template mapping for a given page,
     the one associated with its permalink.'''
@@ -2468,14 +2469,14 @@ class TemplateTags(object):
             ka['blog_id'] = self.template.blog.id
 
         if 'blog_id' in ka:
-            self.blog = get_blog(ka['blog_id'])
+            self.blog = Blog.load(ka['blog_id'])
             ka['site_id'] = self.blog.site.id
 
         else:
             self.blog = ka.get('blog', self.blog)
 
         if 'site_id' in ka:
-            self.site = get_site(ka['site_id'])
+            self.site = Site.load(ka['site_id'])
         else:
             self.site = ka.get('site', self.site)
 
