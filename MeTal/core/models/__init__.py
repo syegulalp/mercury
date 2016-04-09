@@ -541,6 +541,14 @@ class Theme(BaseModel):
 
 class Site(SiteBase, ConnectionBase):
 
+    @classmethod
+    def load(cls, site_id=None):
+        try:
+            site = Site.get(Site.id == site_id)
+        except Site.DoesNotExist as e:
+            raise Site.DoesNotExist('Site #{} does not exist'.format(site_id), e)
+        return site
+
     @property
     def parent(self, context=None):
         return System()

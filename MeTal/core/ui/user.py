@@ -1,7 +1,7 @@
 from core.models.transaction import transaction
 from core.libs.bottle import (request, template, redirect)
 from core import auth, utils
-from core.models import (template_tags, User, get_site, Blog)
+from core.models import (template_tags, User, Site, Blog)
 from core.menu import generate_menu, colsets
 from .ui import search_context
 
@@ -201,7 +201,7 @@ def system_user(user_id, path):
             if permission_to_add != auth.role.SYS_ADMIN:
                 permission_target_item = permission_target[:5]
                 if permission_target_item == 'site-':
-                    target_site = get_site(permission_target[5:])
+                    target_site = Site.load(permission_target[5:])
                 else:
                     target_blog = Blog.load(permission_target[5:])
 
@@ -277,7 +277,7 @@ def system_users():
 def site_user(user_id, site_id):
     # Obtains user edit in site context.
     user = auth.is_logged_in(request)
-    site = get_site(site_id)
+    site = Site.load(site_id)
     permission = auth.is_site_admin(user, site)
     user_to_edit = User.find(user_id)
 

@@ -5,7 +5,7 @@ from core.menu import generate_menu, colsets, icons
 from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
-from core.models import (Struct, get_site, get_media,
+from core.models import (Struct, Site, get_media,
     template_tags, Page, Blog, Queue, Template, Theme,
     PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
     get_default_theme)
@@ -70,7 +70,7 @@ def blog(blog_id, errormsg=None):
 def blog_create(site_id):
 
     user = auth.is_logged_in(request)
-    site = get_site(site_id)
+    site = Site.load(site_id)
     permission = auth.is_site_admin(user, site)
 
     new_blog = Blog(
@@ -103,7 +103,7 @@ def blog_create(site_id):
 def blog_create_save(site_id):
 
     user = auth.is_logged_in(request)
-    site = get_site(site_id)
+    site = Site.load(site_id)
     permission = auth.is_site_admin(user, site)
 
     errors = []

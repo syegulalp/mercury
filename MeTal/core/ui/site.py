@@ -2,7 +2,7 @@ from core import (auth, utils)
 from core.menu import generate_menu, colsets, icons
 from core.search import site_search_results
 
-from core.models import (get_site, template_tags)
+from core.models import (Site, template_tags)
 
 from core.models.transaction import transaction
 
@@ -16,7 +16,7 @@ def site(site_id, errormsg=None):
     UI for listing contents of a given site
     '''
     user = auth.is_logged_in(request)
-    site = get_site(site_id)
+    site = Site.load(site_id)
     permission = auth.is_site_member(user, site)
 
     try:

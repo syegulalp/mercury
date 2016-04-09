@@ -1,7 +1,7 @@
 import os
 import settings
 from core.models import init_db, db
-from core.models import Page, TextField, get_site
+from core.models import Page, TextField, Site
 from core.libs.peewee import OperationalError
 from core.libs import bottle
 _stderr = bottle._stderr
@@ -96,7 +96,7 @@ def site_search(search_terms_enc, site):
     ct = 0
 
     if site is not None:
-        site_to_search = get_site(site).pages().select(Page.id).tuples()
+        site_to_search = Site.load(site).pages().select(Page.id).tuples()
 
     try:
         search_results = (Page_Search.select(Page_Search.id)
