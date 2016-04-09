@@ -6,7 +6,7 @@ from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, get_site, get_blog, get_media,
-    template_tags, Page, Blog, Queue, Template, Theme, get_theme,
+    template_tags, Page, Blog, Queue, Template, Theme,
     PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
     get_default_theme)
 
@@ -1012,7 +1012,7 @@ def blog_apply_theme(blog_id, theme_id):
     permission = auth.is_blog_publisher(user, blog)
     reason = auth.check_template_lock(blog)
 
-    theme = get_theme(theme_id)
+    theme = Theme.load(theme_id)
 
     tags = template_tags(blog=blog,
             user=user)

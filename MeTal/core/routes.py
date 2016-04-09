@@ -3,7 +3,7 @@ import os, re, urllib
 from core import auth
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (Bottle, static_file, request, response, abort)
-from core.models import (db, Page, get_blog, get_theme, get_media, FileInfo)
+from core.models import (db, Page, get_blog, Theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
@@ -896,7 +896,7 @@ def refresh_theme(theme_id):
         theme_string = input_file.read()
 
     with db.atomic():
-        theme = get_theme(theme_id)
+        theme = Theme.load(theme_id)
         theme.json = theme_string
         theme.save()
 

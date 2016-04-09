@@ -501,6 +501,14 @@ class Theme(BaseModel):
     json = TextField(null=True)
     # path = TextField()
 
+    @classmethod
+    def load(cls, theme_id=None):
+        try:
+            theme = Theme.get(Theme.id == theme_id)
+        except Theme.DoesNotExist as e:
+            raise Theme.DoesNotExist('Theme #{} does not exist.'.format(theme_id), e)
+        return theme
+
     @property
     def link_format(self):
         return "{}/system/theme/{}".format(
@@ -2356,11 +2364,7 @@ def get_template(template_id):
     return Template.load(template_id)
 
 def get_theme(theme_id):
-    try:
-        theme = Theme.get(Theme.id == theme_id)
-    except Theme.DoesNotExist as e:
-        raise Theme.DoesNotExist('Theme #{} does not exist.'.format(theme_id), e)
-    return theme
+    return Theme.load(theme_id)
 
 def get_blog(blog_id, **ka):
 

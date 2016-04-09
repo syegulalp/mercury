@@ -194,8 +194,8 @@ def system_plugins(errormsg=None):
 def system_theme_data(theme_id):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    from core.models import get_theme
-    theme = get_theme(theme_id)
+    from core.models import Theme
+    theme = Theme.load(theme_id)
 
     tags = template_tags(user=user)
 
@@ -243,11 +243,11 @@ def system_delete_theme(theme_id):
     # allow that user to delete
 
     tags = template_tags(user=user)
-    from core.models import get_theme
+    from core.models import Theme
     from settings import BASE_URL
     from core.utils import Status
 
-    theme = get_theme(theme_id)
+    theme = Theme.load(theme_id)
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
