@@ -13,7 +13,6 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue)
 
 from settings import MAX_BATCH_OPS, BASE_URL
-from core.models import get_category
 
 save_action_list = Struct()
 
@@ -496,7 +495,7 @@ def save_page(page, user, blog=None):
                 if n not in page_categories:
                     new_page_category = PageCategory.create(
                         page=page,
-                        category=get_category(blog=page.blog, category_id=n),
+                        category=Category.load(blog=page.blog, category_id=n),
                         primary=False)
 
             if page.categories.count() == 0:

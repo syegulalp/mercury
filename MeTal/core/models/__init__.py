@@ -1054,6 +1054,18 @@ class Category(BaseModel):
     default = BooleanField(default=False, index=True)
     sort = IntegerField(default=None, null=True, index=True)
 
+    @classmethod
+    def load(**kwargs):
+        blog = kwargs.get('blog', None)
+        category_id = kwargs.get('category_id', None)
+        try:
+            category_to_get = Category.get(
+                Category.blog == blog,
+                Category.id == category_id)
+        except Category.DoesNotExist:
+            raise Category.DoesNotExist('Category #{} does not exist in blog {}'.format(category_id, blog.for_log))
+        return category_to_get
+
     @property
     def link_format(self):
         if self.id is None:
@@ -2399,29 +2411,11 @@ def get_blog(blog_id):
 def get_site(site_id):
     return Site.load(site_id)
 
-def get_media(media_id, blog=None):
-    try:
-        media = Media.get(Media.id == media_id)
-    except Media.DoesNotExist as e:
-        raise Media.DoesNotExist ('Media element #{} does not exist'.format(media_id), e)
-
-    if blog:
-        if media.blog != blog:
-            raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.for_log))
-
-    return media
+def get_media(*a, **ka):
+    return Media.load(*a, **ka)
 
 def get_category(**kwargs):
-    blog = kwargs.get('blog', None)
-    category_id = kwargs.get('category_id', None)
-    try:
-        category_to_get = Category.get(
-            Category.blog == blog,
-            Category.id == category_id)
-    except Category.DoesNotExist:
-        raise Category.DoesNotExist('Category #{} does not exist in blog {}'.format(category_id, blog.for_log))
-
-    return category_to_get
+    return Category.load(**kwargs)
 
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)

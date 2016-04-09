@@ -2,7 +2,7 @@ from core import (auth)
 from core.menu import generate_menu
 
 from core.models import (Blog, Media,
-    template_tags, Page, Tag, get_category)
+    template_tags, Page, Tag)
 
 from core.models.transaction import transaction
 
@@ -11,7 +11,7 @@ from core.libs.bottle import (template, request, redirect)
 from settings import (BASE_URL)
 
 import json
-from core.models import get_media
+
 
 queue_selections = (
     ('Remove from queue', '1', ''),
@@ -166,7 +166,7 @@ def delete_category(blog_id, category_id, confirm='N'):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    category = get_category(blog=blog, category_id=category_id)
+    category = Category.load(blog=blog, category_id=category_id)
     auth.check_category_editing_lock(blog)
 
     tags = template_tags(
@@ -240,7 +240,7 @@ def edit_category(blog_id, category_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    category = get_category(blog=blog, category_id=category_id)
+    category = Category.load(blog=blog, category_id=category_id)
     auth.check_category_editing_lock(blog)
 
     category_list = [n for n in blog.categories]
@@ -286,7 +286,7 @@ def edit_category(blog_id, category_id):
             category.save()
 
             if new_parent_category is not None:
-                new_category = get_category(
+                new_category = Category.load(
                     category_id=new_parent_category,
                     blog=blog)
             else:
