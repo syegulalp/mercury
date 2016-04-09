@@ -1,7 +1,7 @@
 from core import (auth, utils, ui_mgr, template as _template)
 from core.menu import generate_menu, icons
 
-from core.models import (get_blog, get_template,
+from core.models import (get_blog, Template,
     template_tags, Template,
     TemplateMapping, db, template_type, publishing_mode)
 
@@ -58,7 +58,7 @@ def template_edit(template_id):
     '''
 
     user = auth.is_logged_in(request)
-    edit_template = get_template(template_id)
+    edit_template = Template.load(template_id)
     blog = get_blog(edit_template.blog.id)
     permission = auth.is_blog_designer(user, blog)
 
@@ -78,7 +78,7 @@ def template_edit(template_id):
 
 def template_refresh(template_id):
     user = auth.is_logged_in(request)
-    tpl = get_template(template_id)
+    tpl = Template.load(template_id)
     blog = get_blog(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
@@ -151,7 +151,7 @@ from the theme.
 def template_delete(template_id):
 
     user = auth.is_logged_in(request)
-    tpl = get_template(template_id)
+    tpl = Template.load(template_id)
     blog = get_blog(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
@@ -208,7 +208,7 @@ def template_edit_save(template_id):
     UI for saving a blog template
     '''
     user = auth.is_logged_in(request)
-    tpl = get_template(template_id)
+    tpl = Template.load(template_id)
     blog = get_blog(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
@@ -277,7 +277,7 @@ def template_preview(template_id):
     from settings import _sep
     import os
 
-    template = get_template(template_id)
+    template = Template.load(template_id)
 
     if template.template_type == template_type.index:
         tags = template_tags(blog=template.blog)

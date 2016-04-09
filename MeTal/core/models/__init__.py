@@ -1097,7 +1097,7 @@ class Page(BaseModel, DateMod):
     security = 'is_page_editor'
 
     @classmethod
-    def load(self, page_id=None):
+    def load(cls, page_id=None):
         try:
             page = Page.get(Page.id == page_id)
         except Page.DoesNotExist as e:
@@ -1763,6 +1763,15 @@ class Template(BaseModel, DateMod):
         t2.execute()
         return BaseModel.delete_instance(self, *a, **ka)
 
+    @classmethod
+    def load(cls, template_id=None):
+        try:
+            template = Template.get(Template.id == template_id)
+        except Template.DoesNotExist as e:
+            raise Template.DoesNotExist('Template #{} does not exist'.format(template_id), e)
+
+        return template
+
     @property
     def modified_date_tz(self):
         return self._date_from_utc(self.blog.timezone, self.modified_date)
@@ -2344,13 +2353,7 @@ def get_page(page_id):
     return Page.load(page_id)
 
 def get_template(template_id):
-
-    try:
-        template = Template.get(Template.id == template_id)
-    except Template.DoesNotExist as e:
-        raise Template.DoesNotExist('Template #{} does not exist'.format(template_id), e)
-
-    return template
+    return Template.load(template_id)
 
 def get_theme(theme_id):
     try:
@@ -2468,7 +2471,7 @@ class TemplateTags(object):
             self.pages = (self.page,)
 
         if 'template_id' in ka:
-            self.template = get_template(ka['template_id'])
+            self.template = Template.load(ka['template_id'])
             ka['blog_id'] = self.template.blog.id
 
         if 'blog_id' in ka:
