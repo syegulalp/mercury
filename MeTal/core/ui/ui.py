@@ -2,7 +2,7 @@ from core import (auth)
 from core.menu import generate_menu
 
 from core.models import (get_blog, get_media,
-    template_tags, get_page, Page, Tag, get_category)
+    template_tags, Page, Tag, get_category)
 
 from core.models.transaction import transaction
 
@@ -435,7 +435,7 @@ def make_tag_for_page(blog_id=None, page_id=None):
         permission = auth.is_blog_editor(user, blog)
         assoc = {'blog':blog}
     else:
-        page = get_page(page_id)
+        page = Page.load(page_id)
         blog = None
         permission = auth.is_page_editor(user, page)
         assoc = {'page':page}

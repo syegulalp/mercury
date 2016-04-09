@@ -3,7 +3,7 @@ import os, re, urllib
 from core import auth
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (Bottle, static_file, request, response, abort)
-from core.models import (db, get_page, get_blog, get_theme, get_media, FileInfo)
+from core.models import (db, Page, get_blog, get_theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
@@ -866,7 +866,7 @@ def delete_blog(blog_id):
 @_route(BASE_PATH + "/page/<page_id:int>/reparent/<blog_id:int>")
 def reparent_page(page_id, blog_id):
     with db.atomic():
-        page = get_page(page_id)
+        page = Page.load(page_id)
         blog = get_blog(blog_id)
         page.blog = blog.id
         page.text += "\n"  # stupid hack, we should have a force-save option

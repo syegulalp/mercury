@@ -1096,6 +1096,14 @@ class Page(BaseModel, DateMod):
 
     security = 'is_page_editor'
 
+    @classmethod
+    def load(self, page_id=None):
+        try:
+            page = Page.get(Page.id == page_id)
+        except Page.DoesNotExist as e:
+            raise Page.DoesNotExist('Page #{} does not exist'.format(page_id), e)
+        return page
+
     @property
     def created_date_tz(self):
         return self._date_from_utc(self.blog.timezone, self.created_date)
@@ -1155,18 +1163,6 @@ class Page(BaseModel, DateMod):
     @property
     def tags_all(self):
         return self.tags
-
-    '''
-    def _tags(self, show_hidden=True):
-        tag_list = Tag.select().where(
-            Tag.id << TagAssociation.select(TagAssociation.tag).where(
-                TagAssociation.page == self)).order_by(Tag.tag)
-
-        if show_hidden == False:
-            tag_list.select().where(Tag.is_hidden == False)
-
-        return tag_list
-    '''
 
     @property
     def tags_text(self):
@@ -2345,14 +2341,7 @@ class ThemeData(AuxData):
     # return User.find(**ka)
 
 def get_page(page_id):
-
-    try:
-        page = Page.get(Page.id == page_id)
-
-    except Page.DoesNotExist as e:
-        raise Page.DoesNotExist('Page #{} does not exist'.format(page_id), e)
-
-    return page
+    return Page.load(page_id)
 
 def get_template(template_id):
 
@@ -2470,7 +2459,7 @@ class TemplateTags(object):
         self.csrf = csrf_hash(token)
 
         if 'page_id' in ka:
-            self.page = get_page(ka['page_id'])
+            self.page = Page.load(ka['page_id'])
             ka['page'] = self.page
 
         if 'page' in ka:

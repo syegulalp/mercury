@@ -4,7 +4,7 @@ from core.menu import generate_menu
 from .ui import search_context, status_badge, save_action
 
 from core.models import (get_media, Media,
-    template_tags, get_page, PageRevision, Template,
+    template_tags, Page, PageRevision, Template,
     MediaAssociation, template_type)
 
 from core.models.transaction import transaction
@@ -36,7 +36,7 @@ def page_edit(page_id):
     UI for editing a page in a blog
     '''
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     from core.cms import save_action_list
@@ -90,7 +90,7 @@ def page_edit_save(page_id):
     UI for saving changes to an edited blog page
     '''
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     from core.mgmt import delete_page_preview
@@ -125,7 +125,7 @@ def page_delete(page_id, confirm):
     '''
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
     blog = page.blog
 
@@ -224,7 +224,7 @@ def page_delete(page_id, confirm):
 def page_preview(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     preview_file = page.preview_file
@@ -258,7 +258,7 @@ def page_preview(page_id):
 def delete_page_preview(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     from core.mgmt import delete_page_preview
@@ -269,7 +269,7 @@ def delete_page_preview(page_id):
 def page_revisions(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
     tags = template_tags(page_id=page_id)
 
@@ -287,7 +287,7 @@ def page_revisions(page_id):
 def page_media_upload_confirm(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     # get file NAMES, attributes, size, etc. first
@@ -317,7 +317,7 @@ def page_media_upload_confirm(page_id):
 def page_media_upload(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     overwrite = []
@@ -345,7 +345,7 @@ def page_media_upload(page_id):
 def page_media_delete(page_id, media_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     media = get_media(media_id)
@@ -364,7 +364,7 @@ def page_media_delete(page_id, media_id):
 def page_media_add(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     media_list = Media.select().where(
@@ -383,7 +383,7 @@ def page_media_add(page_id):
 def page_get_media_templates(page_id, media_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     media = get_media(media_id, page.blog)
@@ -409,7 +409,7 @@ def page_get_media_templates(page_id, media_id):
 def page_add_media_with_template(page_id, media_id, template_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
     media = get_media(media_id, page.blog)
@@ -429,7 +429,7 @@ def page_add_media_with_template(page_id, media_id, template_id):
 def page_revision_restore(page_id, revision_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
     page_revision = PageRevision.select().where(PageRevision.id == revision_id).get()
 
@@ -476,7 +476,7 @@ def page_revision_restore(page_id, revision_id):
 def page_revision_restore_save(page_id):
 
     user = auth.is_logged_in(request)
-    page = get_page(page_id)
+    page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
     tags = cms.save_page(page, user, page.blog)
 

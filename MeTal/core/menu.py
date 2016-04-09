@@ -1,5 +1,5 @@
 from core import cms
-from core.models import get_page, page_status
+from core.models import Page, page_status
 from core.utils import date_format, html_escape, breaks, utf8_escape
 from settings import BASE_URL, PLUGIN_FILE_PATH  # , _sep
 from os.path import join as _join
@@ -655,23 +655,23 @@ colsets = {
         'actions': (
             {'unpublish': {
                 'label': 'Unpublish',
-                'action': lambda x: cms.unpublish_page(get_page(x), remove_fileinfo=True)}
+                'action': lambda x: cms.unpublish_page(Page.load(x), remove_fileinfo=True)}
              },
             {'republish': {
                 'label': 'Republish',
-                'action': lambda x: cms.publish_page(get_page(x))}
+                'action': lambda x: cms.publish_page(Page.load(x))}
              },
             {'delete': {
                 'label': 'Delete',
-                'action': lambda x: cms.delete_page(get_page(x))}
+                'action': lambda x: cms.delete_page(Page.load(x))}
              },
             {'add_tags': {
                 'label': 'Add tags',
-                'action': lambda x, tag_ids: cms.page_add_tags(get_page(x), tag_ids)}
+                'action': lambda x, tag_ids: cms.page_add_tags(Page.load(x), tag_ids)}
              },
             {'remove_tags': {
                 'label': 'Remove tags',
-                'action': lambda x, tag_ids: cms.page_remove_tags(get_page(x), tag_ids)}
+                'action': lambda x, tag_ids: cms.page_remove_tags(Page.load(x), tag_ids)}
              }
         ),
         'colset': (
