@@ -2064,6 +2064,17 @@ class Media(BaseModel, DateMod):
     blog = ForeignKeyField(Blog, null=True)
     site = ForeignKeyField(Site, null=True)
 
+    @classmethod
+    def load(cls, media_id=None, blog=None):
+        try:
+            media = Media.get(Media.id == media_id)
+        except Media.DoesNotExist as e:
+            raise Media.DoesNotExist ('Media element #{} does not exist'.format(media_id), e)
+        if blog:
+            if media.blog != blog:
+                raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.for_log))
+        return media
+
     @property
     def created_date_tz(self):
         return self._date_from_utc(self.blog.timezone, self.created_date)
@@ -2386,13 +2397,7 @@ def get_blog(blog_id):
     return Blog.load(blog_id)
 
 def get_site(site_id):
-
-    try:
-        site = Site.get(Site.id == site_id)
-    except Site.DoesNotExist as e:
-        raise Site.DoesNotExist('Site #{} does not exist'.format(site_id), e)
-
-    return site
+    return Site.load(site_id)
 
 def get_media(media_id, blog=None):
     try:

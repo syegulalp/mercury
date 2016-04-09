@@ -5,7 +5,7 @@ from core.menu import generate_menu, colsets, icons
 from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
-from core.models import (Struct, Site, get_media,
+from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
     PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
     get_default_theme)
@@ -349,7 +349,7 @@ def blog_media_edit(blog_id, media_id, status=None):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
-    media = get_media(media_id, blog)
+    media = Media.load(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
     from core.ui_kv import kv_ui
@@ -375,7 +375,7 @@ def blog_media_edit_save(blog_id, media_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
-    media = get_media(media_id)
+    media = Media.load(media_id)
     permission = auth.is_media_owner(user, media)
 
     friendly_name = request.forms.getunicode('media_friendly_name')
@@ -435,7 +435,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
-    media = get_media(media_id, blog)
+    media = Media.load(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
     tags = template_tags(blog_id=blog.id,

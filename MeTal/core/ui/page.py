@@ -3,7 +3,7 @@ from core.log import logger
 from core.menu import generate_menu
 from .ui import search_context, status_badge, save_action
 
-from core.models import (get_media, Media,
+from core.models import (Media,
     template_tags, Page, PageRevision, Template,
     MediaAssociation, template_type)
 
@@ -348,7 +348,7 @@ def page_media_delete(page_id, media_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    media = get_media(media_id)
+    media = Media.load(media_id)
     media_reference = MediaAssociation.get(
         MediaAssociation.page == page,
         MediaAssociation.media == media)
@@ -386,7 +386,7 @@ def page_get_media_templates(page_id, media_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    media = get_media(media_id, page.blog)
+    media = Media.load(media_id, page.blog)
 
     media_templates = Template.select().where(
         Template.blog == page.blog,
@@ -412,7 +412,7 @@ def page_add_media_with_template(page_id, media_id, template_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    media = get_media(media_id, page.blog)
+    media = Media.load(media_id, page.blog)
 
     media_template = Template.get(
         Template.id == template_id)

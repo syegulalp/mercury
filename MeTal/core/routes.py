@@ -3,7 +3,7 @@ import os, re, urllib
 from core import auth
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (Bottle, static_file, request, response, abort)
-from core.models import (db, Page, Blog, Theme, get_media, FileInfo)
+from core.models import (db, Page, Blog, Theme, Media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
@@ -663,7 +663,7 @@ STATIC ROUTING FUNCTIONS
 
 @_route(BASE_PATH + '/media/<media_id:int>')
 def media_preview(media_id):
-    media = get_media(media_id)
+    media = Media.load(media_id)
     try:
         root = media.path.rsplit(_sep, 1)[0]
     except:

@@ -1,7 +1,7 @@
 from core import (auth)
 from core.menu import generate_menu
 
-from core.models import (Blog, get_media,
+from core.models import (Blog, Media,
     template_tags, Page, Tag, get_category)
 
 from core.models.transaction import transaction
@@ -386,7 +386,7 @@ def get_tag(tag_name):
 def make_tag_for_media(media_id=None, tag=None):
 
     user = auth.is_logged_in(request)
-    media = get_media(media_id)
+    media = Media.load(media_id)
     permission = auth.is_media_owner(user, media)
 
     if tag == None:
