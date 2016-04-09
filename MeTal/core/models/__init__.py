@@ -502,6 +502,10 @@ class Theme(BaseModel):
     # path = TextField()
 
     @classmethod
+    def default(cls):
+        return cls.get(cls.title == DEFAULT_THEME)
+
+    @classmethod
     def load(cls, theme_id=None):
         try:
             theme = Theme.get(Theme.id == theme_id)
@@ -2395,6 +2399,7 @@ class ThemeData(AuxData):
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)
 
+"""
 def default_template_mapping(page):
     '''Returns the default template mapping for a given page,
     the one associated with its permalink.'''
@@ -2402,7 +2407,7 @@ def default_template_mapping(page):
     t = TemplateMapping.get(TemplateMapping.is_default == True, TemplateMapping.template << templates)
     time_string = page.publication_date_tz.date().strftime(t.path_string)
     return time_string
-
+"""
 
 
 class TemplateTags(object):

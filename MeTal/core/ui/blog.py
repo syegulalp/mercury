@@ -7,8 +7,7 @@ from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
-    PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
-    get_default_theme)
+    PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode)
 
 from core.models.transaction import transaction
 
@@ -115,7 +114,8 @@ def blog_create_save(site_id):
             url=request.forms.getunicode('blog_url'),
             path=request.forms.getunicode('blog_path'),
             set_timezone=request.forms.getunicode('blog_timezone'),
-            theme=get_default_theme(),
+            # theme=get_default_theme(),
+            theme=Theme.default
             )
 
     try:
