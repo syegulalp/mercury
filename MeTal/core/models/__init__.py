@@ -2392,9 +2392,9 @@ class ThemeData(AuxData):
                 Theme.title == theme_title))
 
 
-# Move to User
-# def get_user(**ka):
-    # return User.find(**ka)
+'''
+def get_user(**ka):
+    return User.find(**ka)
 
 def get_page(page_id):
     return Page.load(page_id)
@@ -2416,6 +2416,7 @@ def get_media(*a, **ka):
 
 def get_category(**kwargs):
     return Category.load(**kwargs)
+'''
 
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)
