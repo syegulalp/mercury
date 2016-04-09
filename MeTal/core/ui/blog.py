@@ -5,7 +5,7 @@ from core.menu import generate_menu, colsets, icons
 from core.search import blog_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
-from core.models import (Struct, get_site, get_blog, get_media,
+from core.models import (Struct, get_site, get_media,
     template_tags, Page, Blog, Queue, Template, Theme,
     PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
     get_default_theme)
@@ -26,7 +26,7 @@ def blog(blog_id, errormsg=None):
     UI for listing contents of a given blog
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
     try:
@@ -184,7 +184,7 @@ def blog_create_user(blog_id):
     '''
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
     tags = template_tags(blog_id=blog.id,
         user=user)
@@ -207,7 +207,7 @@ def blog_create_user(blog_id):
 def blog_list_users(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
     user_list = blog.users
 
@@ -236,7 +236,7 @@ def blog_new_page(blog_id):
     Displays UI for newly created (unsaved) page
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
     tags = template_tags(
@@ -297,7 +297,7 @@ def blog_new_page_save(blog_id):
     UI for saving a newly created page.
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
     tags = cms.save_page(None, user, blog)
@@ -318,7 +318,7 @@ def blog_media(blog_id):
     '''
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
     media = blog.media.order_by(Media.id.desc())
@@ -347,7 +347,7 @@ def blog_media_edit(blog_id, media_id, status=None):
     UI for editing a given media entry
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
     media = get_media(media_id, blog)
     permission = auth.is_media_owner(user, media)
@@ -373,7 +373,7 @@ def blog_media_edit_save(blog_id, media_id):
     Save changes to a media entry.
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
     media = get_media(media_id)
     permission = auth.is_media_owner(user, media)
@@ -433,7 +433,7 @@ def blog_media_edit_output(tags):
 def blog_media_delete(blog_id, media_id, confirm='N'):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     is_member = auth.is_blog_member(user, blog)
     media = get_media(media_id, blog)
     permission = auth.is_media_owner(user, media)
@@ -524,7 +524,7 @@ any such links will break. Proceed with caution.
 def blog_categories(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
 
     blog_category_list = blog.categories
@@ -559,7 +559,7 @@ def blog_categories(blog_id):
 def blog_tags(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_author(user, blog)
 
     reason = auth.check_tag_editing_lock(blog, True)
@@ -591,7 +591,7 @@ def blog_templates(blog_id):
     List all templates in a given blog
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_designer(user, blog)
 
     reason = auth.check_template_lock(blog, True)
@@ -662,7 +662,7 @@ def blog_templates(blog_id):
 @transaction
 def blog_select_themes(blog_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_designer(user, blog)
     reason = auth.check_template_lock(blog, True)
 
@@ -702,7 +702,7 @@ def blog_republish(blog_id):
     Eventually to be reworked
     '''
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
     report = cms.republish_blog(blog_id)
 
@@ -724,7 +724,7 @@ def blog_purge(blog_id):
 
     user = auth.is_logged_in(request)
 
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
 
     permission = auth.is_blog_publisher(user, blog)
 
@@ -743,7 +743,7 @@ def blog_purge(blog_id):
 def blog_queue(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     tags = template_tags(blog_id=blog.id,
@@ -766,7 +766,7 @@ def blog_queue(blog_id):
 def blog_settings(blog_id, nav_setting):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
     auth.check_settings_lock(blog)
@@ -782,7 +782,7 @@ def blog_settings(blog_id, nav_setting):
 def blog_settings_save(blog_id, nav_setting):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
     _get = request.forms.getunicode
@@ -857,7 +857,7 @@ def blog_settings_output(tags):
 def blog_publish(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     queue_length = Queue.job_counts(blog=blog)
@@ -886,7 +886,7 @@ def blog_publish(blog_id):
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     queue_count = 0
@@ -908,7 +908,7 @@ def blog_publish_progress(blog_id, original_queue_length):
 def blog_publish_process(blog_id):
 
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     control_jobs = Queue.control_jobs(blog)
@@ -933,7 +933,7 @@ def blog_publish_process(blog_id):
 @transaction
 def blog_save_theme(blog_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
     reason = auth.check_template_lock(blog)
 
@@ -1008,7 +1008,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 @transaction
 def blog_apply_theme(blog_id, theme_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
     reason = auth.check_template_lock(blog)
 
@@ -1068,7 +1068,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 @transaction
 def blog_import (blog_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
     reason = auth.check_template_lock(blog, True)
 

@@ -1,7 +1,7 @@
 from core import (auth, utils, ui_mgr, template as _template)
 from core.menu import generate_menu, icons
 
-from core.models import (get_blog, Template,
+from core.models import (Blog, Template,
     template_tags, Template,
     TemplateMapping, db, template_type, publishing_mode)
 
@@ -15,7 +15,7 @@ def new_template(blog_id, tpl_type):
     with db.atomic() as txn:
 
         user = auth.is_logged_in(request)
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
         permission = auth.is_blog_designer(user, blog)
 
         auth.check_template_lock(blog)
@@ -59,7 +59,7 @@ def template_edit(template_id):
 
     user = auth.is_logged_in(request)
     edit_template = Template.load(template_id)
-    blog = get_blog(edit_template.blog.id)
+    blog = Blog.load(edit_template.blog.id)
     permission = auth.is_blog_designer(user, blog)
 
     auth.check_template_lock(blog)
@@ -79,7 +79,7 @@ def template_edit(template_id):
 def template_refresh(template_id):
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
-    blog = get_blog(tpl.blog)
+    blog = Blog.load(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
     from core.utils import Status
@@ -152,7 +152,7 @@ def template_delete(template_id):
 
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
-    blog = get_blog(tpl.blog)
+    blog = Blog.load(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
     from core.utils import Status
@@ -209,7 +209,7 @@ def template_edit_save(template_id):
     '''
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
-    blog = get_blog(tpl.blog)
+    blog = Blog.load(tpl.blog)
     permission = auth.is_blog_designer(user, blog)
 
     auth.check_template_lock(blog)

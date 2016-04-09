@@ -632,6 +632,14 @@ class Blog(SiteBase):
             Template.default_type == default_type).get()
         return archive_default
 
+    @classmethod
+    def load(cls, blog_id=None):
+        try:
+            blog = Blog.get(Blog.id == blog_id)
+        except Blog.DoesNotExist as e:
+            raise Blog.DoesNotExist('Blog #{} does not exist'.format(blog_id), e)
+        return blog
+
     @property
     def theme_actions(self):
         return self.theme.actions(self)
@@ -2366,14 +2374,8 @@ def get_template(template_id):
 def get_theme(theme_id):
     return Theme.load(theme_id)
 
-def get_blog(blog_id, **ka):
-
-    try:
-        blog = Blog.get(Blog.id == blog_id)
-    except Blog.DoesNotExist as e:
-        raise Blog.DoesNotExist('Blog #{} does not exist'.format(blog_id), e)
-
-    return blog
+def get_blog(blog_id):
+    return Blog.load(blog_id)
 
 def get_site(site_id):
 

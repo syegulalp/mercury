@@ -3,7 +3,7 @@ import os, re, urllib
 from core import auth
 from core.error import (UserNotFound, CSRFTokenNotFound)
 from core.libs.bottle import (Bottle, static_file, request, response, abort)
-from core.models import (db, Page, get_blog, Theme, get_media, FileInfo)
+from core.models import (db, Page, Blog, Theme, get_media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
@@ -300,7 +300,7 @@ def blog_editor_css(blog_id):
     Route for a copy of the blog's editor CSS;
     this allows it to be cached browser-side
     '''
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
 
     from core.models import Template, template_type
     try:
@@ -706,7 +706,7 @@ if DESKTOP_MODE:
             return system_site_index()
             # raise
 
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
 
         root_path = blog.path
 
@@ -851,7 +851,7 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
 def erase_queue(blog_id):
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     from core.mgmt import erase_queue
     erase_queue(blog)
     return "Queue for blog {} cleared".format(blog.id)
@@ -859,7 +859,7 @@ def erase_queue(blog_id):
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
 def delete_blog(blog_id):
     with db.atomic():
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
         blog.delete_instance(recursive=True)
     return "Blog {} deleted".format(blog_id)
 
@@ -867,7 +867,7 @@ def delete_blog(blog_id):
 def reparent_page(page_id, blog_id):
     with db.atomic():
         page = Page.load(page_id)
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
         page.blog = blog.id
         page.text += "\n"  # stupid hack, we should have a force-save option
         # also, have .save options kw, not args
@@ -918,7 +918,7 @@ def overwrite_blog_theme(blog_id):
     theme = Struct()
     theme.id = None
     theme.json = theme_string
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     from core import cms, mgmt
     from core.auth import get_users_with_permission, role
     with db.atomic():
@@ -1048,7 +1048,7 @@ def blog_list_users(blog_id):
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
 def import_theme_to_blog(theme_id, blog_id):
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     old_theme = get_theme(theme_id)
     # this needs rewriting.
     # new_theme = mgmt.theme_install_to_blog(blog)
@@ -1079,7 +1079,7 @@ def export_theme(blog_id):
 @_route(BASE_PATH + '/blog/<blog_id:int>/apply-theme/<theme_id:int>')
 def apply_theme_test(blog_id, theme_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     theme = get_theme(theme_id)
     from core import mgmt
     with db.atomic():

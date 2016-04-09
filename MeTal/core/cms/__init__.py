@@ -9,7 +9,7 @@ from core.libs.bottle import request
 from core.libs.peewee import DeleteQuery
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
-    Category, PageCategory, FileInfo, template_tags, get_blog, User, Blog, Site,
+    Category, PageCategory, FileInfo, template_tags, User, Blog, Site,
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue)
 
 from settings import MAX_BATCH_OPS, BASE_URL
@@ -1136,7 +1136,7 @@ def republish_blog(blog_id):
 
     import time
 
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
 
     data = []
     data.extend(["<h3>Queuing <b>{}</b> for republishing</h3><hr>".format(

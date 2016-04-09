@@ -40,7 +40,7 @@ print ('{} pages scheduled'.format(total_pages))
 if total_pages > 0:
 
     from core.cms import (queue_page_actions, queue_index_actions, process_queue,
-        build_pages_fileinfos, build_archives_fileinfos, start_queue, get_blog)
+        build_pages_fileinfos, build_archives_fileinfos, start_queue, Blog)
     from core.models import db, Queue
     from core.log import logger
 
@@ -66,7 +66,7 @@ if total_pages > 0:
             scheduled_page_report.append(problem)
 
     for n in blogs:
-        blog = get_blog(n)
+        blog = Blog.load(n)
         # waiting = queue_jobs_waiting(blog=blog)
         waiting = Queue.job_counts(blog=blog)
         start_queue(blog)

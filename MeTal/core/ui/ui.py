@@ -1,7 +1,7 @@
 from core import (auth)
 from core.menu import generate_menu
 
-from core.models import (get_blog, get_media,
+from core.models import (Blog, get_media,
     template_tags, Page, Tag, get_category)
 
 from core.models.transaction import transaction
@@ -109,7 +109,7 @@ def new_category(blog_id):
     with db.atomic() as txn:
 
         user = auth.is_logged_in(request)
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
         permission = auth.is_blog_editor(user, blog)
 
         category_list = [n for n in blog.categories]
@@ -163,7 +163,7 @@ def new_category(blog_id):
 @transaction
 def delete_category(blog_id, category_id, confirm='N'):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
     category = get_category(blog=blog, category_id=category_id)
@@ -237,7 +237,7 @@ def delete_category(blog_id, category_id, confirm='N'):
 @transaction
 def edit_category(blog_id, category_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
     category = get_category(blog=blog, category_id=category_id)
@@ -333,7 +333,7 @@ def edit_category(blog_id, category_id):
 @transaction
 def edit_tag(blog_id, tag_id):
     user = auth.is_logged_in(request)
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
 
     auth.check_tag_editing_lock(blog)
@@ -430,7 +430,7 @@ def make_tag_for_page(blog_id=None, page_id=None):
 
     if page_id is None:
         # page = Page()
-        blog = get_blog(blog_id)
+        blog = Blog.load(blog_id)
         page = None
         permission = auth.is_blog_editor(user, blog)
         assoc = {'blog':blog}

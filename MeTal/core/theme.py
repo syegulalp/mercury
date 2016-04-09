@@ -26,9 +26,9 @@ def save_theme_for_blog(blog_id, theme_name):
 # TODO: deprecated
 def export_theme_for_blog(blog_id, theme_name, theme_description):
 
-    from core.models import KeyValue, get_blog
+    from core.models import KeyValue, Blog
 
-    blog = get_blog(blog_id)
+    blog = Blog.load(blog_id)
     theme_to_export = blog.templates()
 
     theme = {}
