@@ -2392,32 +2392,6 @@ class ThemeData(AuxData):
                 Theme.title == theme_title))
 
 
-'''
-def get_user(**ka):
-    return User.find(**ka)
-
-def get_page(page_id):
-    return Page.load(page_id)
-
-def get_template(template_id):
-    return Template.load(template_id)
-
-def get_theme(theme_id):
-    return Theme.load(theme_id)
-
-def get_blog(blog_id):
-    return Blog.load(blog_id)
-
-def get_site(site_id):
-    return Site.load(site_id)
-
-def get_media(*a, **ka):
-    return Media.load(*a, **ka)
-
-def get_category(**kwargs):
-    return Category.load(**kwargs)
-'''
-
 def get_default_theme():
     return Theme.get(Theme.title == DEFAULT_THEME)
 
