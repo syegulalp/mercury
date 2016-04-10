@@ -1657,21 +1657,21 @@ class KeyValue(BaseModel):
 
         return siblings
 
-tag_template = '''
-<span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
-type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button id="tag_del_{id}"
-data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
-'''
-tag_link_template = '''
-<a class="tag_link" target="_blank" href="{url}">{tag}</a>'''
-
-new_tag_template = '''
-<span class="tag_link">{tag}</span>'''
-
 class Tag(BaseModel):
     tag = TextField()
     blog = ForeignKeyField(Blog, null=False, index=True)
     is_hidden = BooleanField(default=False, index=True)
+
+    tag_template = '''
+    <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
+    type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button id="tag_del_{id}"
+    data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
+    '''
+    tag_link_template = '''
+    <a class="tag_link" target="_blank" href="{url}">{tag}</a>'''
+
+    new_tag_template = '''
+    <span class="tag_link">{tag}</span>'''
 
     def save(self, *a, **ka):
         if str(self.tag)[:1] == '@':
@@ -1736,7 +1736,7 @@ class Tag(BaseModel):
     @property
     def for_listing(self):
 
-        template = tag_link_template.format(
+        template = self.tag_link_template.format(
             id=self.id,
             url=BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
             tag=html_escape(self.tag))
@@ -1748,11 +1748,11 @@ class Tag(BaseModel):
 
         btn_type = 'warning' if self.tag[0] == "@" else 'info'
 
-        template = tag_template.format(
+        template = self.tag_template.format(
             id=self.id,
             btn_type=btn_type,
             new='',
-            tag=tag_link_template.format(
+            tag=self.tag_link_template.format(
                 id=self.id,
                 url=BASE_URL + "/blog/" + str(self.blog.id) + "/tag/" + str(self.id),
                 tag=html_escape(self.tag))
@@ -1765,9 +1765,9 @@ class Tag(BaseModel):
 
         btn_type = 'warning' if self.tag[0] == "@" else 'info'
 
-        template = tag_template.format(
+        template = self.tag_template.format(
             id=0,
-            tag=new_tag_template.format(
+            tag=self.new_tag_template.format(
                 tag=html_escape(self.tag)),
             btn_type=btn_type,
             new='data-new-tag="{}" '.format(html_escape(self.tag))
