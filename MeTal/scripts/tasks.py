@@ -27,10 +27,10 @@ print ('Looking for scheduled tasks...')
 from core.models import Page, page_status
 
 # TODO: we may want to move this into some systemwide schema?
+
 scheduled_pages = Page.select().where(
     Page.status == page_status.scheduled,
     Page.publication_date <= datetime.datetime.utcnow()).order_by(
-        # Page.blog,
         Page.publication_date.desc())
 
 total_pages = scheduled_pages.count()
