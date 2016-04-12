@@ -85,8 +85,10 @@ def boot(aux_settings=None):
     else:
 
         from core.routes import app
-        settings.DB.make_db_connection()
-
+        try:
+            settings.DB.make_db_connection()
+        except Exception:
+            _stderr("Could not make DB connection.")
 
         from core import plugins
         try:
