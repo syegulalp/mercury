@@ -56,19 +56,22 @@ def make_db_connection():
 
         _stderr ("No database found or settings.RESET was set.\n")
 
-        # db.close()
-        # throws spurious AttributeError when no DB present
+        try:
+            db.close()
+        except Exception:
+            pass
 
-        from core.error import FileNotFoundError
+        from core.error import FileExistsError
 
         try:
             os.remove(settings.FULL_SQLITE_DATABASE_PATH)
-        except FileNotFoundError:
+        except (OSError, FileExistsError):
             _stderr ("Database already removed.\n")
         else:
             _stderr ("Database removed.\n")
         finally:
             _stderr ("Re-initializing database.\n")
+        print ("Recreating")
 
         init_db.recreate_database()
 
