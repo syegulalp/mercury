@@ -7,6 +7,7 @@ from core.models import (TemplateMapping, Template, System, KeyValue,
 from core.libs.playhouse.dataset import DataSet
 from os.path import join as _join
 
+# TODO: move to auth
 def login_verify(email, password):
     try:
         user = User.get(User.email == email,
@@ -169,14 +170,20 @@ def export_data():
 def import_data():
     n = ("Beginning import process.")
     yield "<p>" + n
-    DB.clean_database()
-    xdb = DataSet(DB.dataset_connection())
-    xdb.query(DB.pre_import(), commit=False)
 
-    # do we still need this?
-    with xdb.transaction() as txn:
-        for table_name in xdb.tables:
-            xdb.query('DELETE FROM `{}`;'.format(table_name), commit=True)
+    n = ("Cleaning DB.")
+    yield "<p>" + n
+    try:
+        DB.clean_database()
+    except:
+        from core.models import init_db
+        init_db.recreate_database()
+        DB.remove_indexes()
+
+    n = ("Clearing tables.")
+    yield "<p>" + n
+
+    xdb = DataSet(DB.dataset_connection())
 
     with xdb.transaction() as txn:
         for table_name in xdb.tables:
