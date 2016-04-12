@@ -1610,7 +1610,17 @@ class PageCategory(BaseModel):
 
 
 class System(BaseModel):
-    pass
+    def scheduled_pages(self, due=False):
+        scheduled_pages = (
+            Page.select().where(Page.status == page_status.scheduled).order_by(
+            Page.publication_date.desc())
+            )
+        if due is True:
+            scheduled_pages = (
+                scheduled_pages.select().where(
+                    Page.publication_date <= datetime.datetime.utcnow())
+                )
+        return scheduled_pages
 
 class KeyValue(BaseModel):
 
