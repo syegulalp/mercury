@@ -1135,10 +1135,10 @@ def blog_import (blog_id):
 
                 # Register tags
 
-                tags_added, tags_existing = Tag.add_or_create(n['tags'], blog=blog)
+                tags_added, tags_existing, _ = Tag.add_or_create(n['tags'], blog=blog)
 
-                q.append('Tags added: {}'.format(','.join(tags_added)))
-                q.append('Tags existing: {}'.format(','.join(tags_existing)))
+                q.append('Tags added: {}'.format(','.join(n.tag for n in tags_added)))
+                q.append('Tags existing: {}'.format(','.join(n.tag for n in tags_existing)))
 
                 # Register KVs
 
