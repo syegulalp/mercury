@@ -87,8 +87,11 @@ def boot(aux_settings=None):
         from core.routes import app
         try:
             settings.DB.make_db_connection()
-        except Exception:
-            _stderr("Could not make DB connection.")
+        except Exception as e:
+            _stderr("Could not make DB connection: {}".format(e))
+
+        # TODO: problem - on loss of DB for /import this will fail,
+        # so we need more robust exception handling in that case
 
         from core import plugins
         try:

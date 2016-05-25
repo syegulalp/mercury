@@ -167,6 +167,12 @@ def export_data():
     n = "Export process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL)
     yield ("<p>" + n)
 
+    # TODO: export n rows at a time from each table into a separate file
+    # to make the import process more granular
+    # by way of a query:
+    # peewee_users = db['user'].find(favorite_orm='peewee')
+    # db.freeze(peewee_users, format='json', filename='peewee_users.json')
+
 def import_data():
     n = ("Beginning import process.")
     yield "<p>" + n

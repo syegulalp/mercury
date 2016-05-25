@@ -53,6 +53,7 @@ def make_db_connection():
     _stderr ("Looking for database in " + settings.DATABASE_PATH + "\n")
 
     if settings.RESET or not os.path.exists(settings.FULL_SQLITE_DATABASE_PATH):
+        # FIXME: will this throw a spurious error on MySQL?
 
         _stderr ("No database found or settings.RESET was set.\n")
 
