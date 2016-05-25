@@ -3,7 +3,7 @@
 
     <div class="form-group">
         <label for="media_name" class="col-sm-2 control-label">Image</label>
-        <div class="col-sm-9">
+        <div class="col-sm-10">
             <img id="media_name"
             class="img-responsive img-edit-preview"
             src="{{media.preview_url}}">
