@@ -949,13 +949,18 @@ def replace_mapping_tags(string):
 
     import re
 
-    # TODO: these should be changed to %_i or something like that
+    # TODO: these should be changed to %%i or something like that
     # to avoid collisions with the actual date format
 
     mapping_tags = (
-        (re.compile('%i'), '{{blog.index_file}}'),
-        (re.compile('%s'), '{{blog.ssi_path}}'),
-        (re.compile('%f'), '{{page.filename}}'),
+        # (re.compile('%i'), '{{blog.index_file}}'),
+        # (re.compile('%s'), '{{blog.ssi_path}}'),
+        # (re.compile('%f'), '{{page.filename}}'),
+        # Replacing these to allow proper computation of a Python expression
+        # for template mappings
+        (re.compile('$i'), 'blog.index_file'),
+        (re.compile('$s'), 'blog.ssi_path'),
+        (re.compile('$f'), 'page.filename'),
     )
 
     for n in mapping_tags:
@@ -989,6 +994,8 @@ def build_pages_fileinfos(pages):
 
             if path_string == '':
                 continue
+
+            # TODO: eventually, this will be None, not ''
 
             master_path_string = path_string
             add_page_fileinfo(page, t, master_path_string,
@@ -1083,7 +1090,8 @@ def build_indexes_fileinfos(templates):
             path_string = tpl(tpl_oneline(path_string), **tags.__dict__)
             if path_string == '':
                 continue
-            path_string = replace_mapping_tags(path_string)
+            # why are we doing this twice?
+            # path_string = replace_mapping_tags(path_string)
             master_path_string = path_string
             add_page_fileinfo(None, i, master_path_string,
                  blog.url + "/" + master_path_string,
