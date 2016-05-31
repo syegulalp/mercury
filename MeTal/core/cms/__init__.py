@@ -958,13 +958,20 @@ def replace_mapping_tags(string):
         # (re.compile('%f'), '{{page.filename}}'),
         # Replacing these to allow proper computation of a Python expression
         # for template mappings
-        (re.compile('$i'), 'blog.index_file'),
-        (re.compile('$s'), 'blog.ssi_path'),
-        (re.compile('$f'), 'page.filename'),
+        (re.compile('\$i'), 'blog.index_file'),
+        (re.compile('\$s'), 'blog.ssi_path'),
+        (re.compile('\$f'), 'page.filename'),
     )
 
     for n in mapping_tags:
         string = re.sub(n[0], n[1], string)
+
+
+    # temporary shim
+
+    if string[0] != "'":
+        string = "'" + string + "'"
+
     return string
 
 def build_pages_fileinfos(pages):
@@ -1025,7 +1032,11 @@ def build_archives_fileinfos(pages):
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
         for m in page.archive_mappings:
+
+            # raise Exception(m.path_string)
+
             path_string = replace_mapping_tags(m.path_string)
+
             path_string = generate_date_mapping(page.publication_date_tz, tags, path_string)
 
             if path_string == '':
@@ -1087,11 +1098,25 @@ def build_indexes_fileinfos(templates):
 
         for i in index_mappings:
             path_string = replace_mapping_tags(i.path_string)
-            path_string = tpl(tpl_oneline(path_string), **tags.__dict__)
+
+            # raise Exception(path_string[2:])
+
+            # path_string = tpl(path_string, **tags.__dict__)
+
+
+
+            path_string = eval(path_string, tags.__dict__)
+
+            # raise Exception(path_string)
+
             if path_string == '':
                 continue
+
             # why are we doing this twice?
             # path_string = replace_mapping_tags(path_string)
+
+            # raise Exception(path_string)
+
             master_path_string = path_string
             add_page_fileinfo(None, i, master_path_string,
                  blog.url + "/" + master_path_string,
@@ -1302,6 +1327,7 @@ def process_queue(blog):
     return Queue.job_counts(blog=blog)
 
 def build_mapping_xrefs(mapping_list):
+    # raise Exception(len(mapping_list))
 
     import re
     iterable_tags = (
