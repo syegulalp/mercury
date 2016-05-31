@@ -1033,11 +1033,12 @@ def build_archives_fileinfos(pages):
 
         for m in page.archive_mappings:
 
-            # raise Exception(m.path_string)
-
             path_string = replace_mapping_tags(m.path_string)
-
             path_string = generate_date_mapping(page.publication_date_tz, tags, path_string)
+
+            # TODO: test here to see if we get back an iterable or a string
+            # if it's a string, convert it to a single list element
+            # then iterate through each and add
 
             if path_string == '':
                 continue
