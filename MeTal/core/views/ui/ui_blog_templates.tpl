@@ -10,7 +10,7 @@
             <tr>
             <th style="width:1%"><input type="checkbox" id="check-all-{{n}}" name="check-all-{{n}}"></th>
             <th style="width:50%">Title</th>
-            <th style="width:30%">Default File Mapping</th>
+            <th style="width:30%">File Mapping Expression</th>
             <th style="width:20%">Publishing Mode</th>
             </tr>
         </thead>
