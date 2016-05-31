@@ -1040,6 +1040,8 @@ def build_archives_fileinfos(pages):
             # if it's a string, convert it to a single list element
             # then iterate through each and add
 
+            # a blank string or a Nonetype means "skip"
+
             if path_string == '':
                 continue
 
