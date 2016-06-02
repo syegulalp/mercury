@@ -351,7 +351,12 @@ def generate_date_mapping(date_value, tags, path_string):
     # path_string = tpl(time_string, **tags.__dict__)
 
     # time_string = tpl(path_string, **tags.__dict__)
+
     time_string = eval(path_string, tags.__dict__)
+
+    if time_string == '' or time_string is None:
+        return None
+
     path_string = date_value.strftime(time_string)
 
     return path_string

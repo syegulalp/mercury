@@ -966,11 +966,10 @@ def replace_mapping_tags(string):
     for n in mapping_tags:
         string = re.sub(n[0], n[1], string)
 
-
     # temporary shim
 
-    if string[0] != "'":
-        string = "'" + string + "'"
+    # if string[:1] != "'":
+        # string = "'" + string + "'"
 
     return string
 
@@ -999,7 +998,7 @@ def build_pages_fileinfos(pages):
             # e.g., for /%t/%Y, for a given page that has five tags
             # we return five values, one for each tag, along with the year
 
-            if path_string == '':
+            if path_string == '' or path_string is None:
                 continue
 
             # TODO: eventually, this will be None, not ''
@@ -1042,7 +1041,7 @@ def build_archives_fileinfos(pages):
 
             # a blank string or a Nonetype means "skip"
 
-            if path_string == '':
+            if path_string == '' or path_string is None:
                 continue
 
             if path_string in mapping_list:
@@ -1101,18 +1100,9 @@ def build_indexes_fileinfos(templates):
 
         for i in index_mappings:
             path_string = replace_mapping_tags(i.path_string)
-
-            # raise Exception(path_string[2:])
-
-            # path_string = tpl(path_string, **tags.__dict__)
-
-
-
             path_string = eval(path_string, tags.__dict__)
 
-            # raise Exception(path_string)
-
-            if path_string == '':
+            if path_string == '' or path_string is None:
                 continue
 
             # why are we doing this twice?
@@ -1370,8 +1360,10 @@ def build_mapping_xrefs(mapping_list):
         # TODO: eventually build only the mappings for the affected template, not all of them
         build_archives_fileinfos(mapping.template.blog.published_pages())
     if 'Index' in map_types:
+        # TODO: eventually build only the mappings for the affected template, not all of them
         build_indexes_fileinfos(mapping.template.blog.index_templates)
     if 'Include' in map_types:
+        # TODO: eventually build only the mappings for the affected template, not all of them
         build_indexes_fileinfos(mapping.template.blog.ssi_templates)
 
 def purge_fileinfos(fileinfos):
