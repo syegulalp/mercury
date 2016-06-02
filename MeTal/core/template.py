@@ -98,7 +98,7 @@ def save(request, user, cms_template, blog=None):
                     mapping_id))
             else:
                 if is_blank(_forms.getunicode(n)):
-                    raise TemplateSaveException('Template mapping #{} ({}) cannot be blank.'.format(
+                    raise TemplateSaveException('Template mapping #{} ({}) cannot be blank. Use None to specify no mapping.'.format(
                         mapping_id,
                         template_mapping.path_string))
                 else:

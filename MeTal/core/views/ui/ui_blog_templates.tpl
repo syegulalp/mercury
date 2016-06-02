@@ -1,4 +1,5 @@
 %from core.utils import breaks
+% nonelist = ['None','',None]
 % include('include/header.tpl')
 % include('include/header_messages.tpl')
 <div class="col-sm-9">
@@ -22,7 +23,13 @@
             <span title="Default template for {{template.default_type}}" class="label label-success pull-right">{{template.default_type}} default</span>
             % end
             </td>
-            <td><code>{{!breaks(template.templatemapping.path_string)}}</code></td>
+            <td>
+            % if template.templatemapping.path_string in nonelist:
+            <kbd>None</kbd>
+            % else:
+            <code>{{!breaks(template.templatemapping.path_string)}}</code>
+            % end
+            </td>
             <td><span title="{{publishing_mode.description[template.publishing_mode]['description']}}"
             	class="label label-{{publishing_mode.description[template.publishing_mode]['label']}}">{{template.publishing_mode}}</span></td>
         </tr>
