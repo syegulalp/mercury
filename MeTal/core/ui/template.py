@@ -40,7 +40,7 @@ def new_template(blog_id, tpl_type):
             new_template_mapping = TemplateMapping(
                template=template,
                is_default=True,
-               path_string=utils.create_basename(template.title, blog)
+               path_string="'" + utils.create_basename(template.title, blog) + "'"
                )
 
             new_template_mapping.save()

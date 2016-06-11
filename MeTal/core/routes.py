@@ -13,6 +13,63 @@ app = Bottle()
 _route = app.route
 _hook = app.hook
 
+'''
+    obj.tags = post.tags
+    obj.categories = post.categories
+
+    obj_dict = {'post':obj}
+    while True:
+        try:
+            return (eval(mapping, obj_dict))
+        except NameError as n:
+            return str(n)
+'''
+
+@_route(BASE_PATH + "/d", method=('GET', 'POST'))
+def dummy():
+
+    from core.models import template_tags, TemplateMapping
+    # from core.cms import eval_paths, generate_date_mapping
+    output = []
+    pages = (Page.load(286),)
+
+    for page in pages:
+
+        if page.archive_mappings.count() == 0:
+            raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
+
+        tags = template_tags(page_id=page.id)
+
+        for m in page.archive_mappings:
+
+            output.append(m.archive_xref)
+            '''
+
+            # traverse xref
+            # for each one, push a new level of the loop
+
+            paths_list = eval_paths(m.path_string, tags.__dict__)
+
+            for path in paths_list:
+
+                path_string = generate_date_mapping(page.publication_date_tz, tags, path, do_eval=False)
+
+                if path_string == '' or path_string is None:
+                    continue
+
+                if path_string in mapping_list:
+                    continue
+
+                mapping_list[path_string] = ((None, m, path_string,
+                                   page.blog.url + "/" + path_string,
+                                   page.blog.path + '/' + path_string,
+                                   ),
+                                   (page),
+                                   )
+
+            '''
+    return (str(output))
+
 # Setup routine
 
 def setup(step_id=None):

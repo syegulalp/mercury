@@ -64,7 +64,7 @@ else:
 
 def not_found(e):
     import errno
-    if e.errno == errno.ENOENT:
+    if e.errno == errno.ENOENT or e.errno == 20:
         return True
     else:
         return False
