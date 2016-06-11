@@ -1,6 +1,6 @@
 import datetime, sys
 
-from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc
+from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc, create_basename_core
 
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
@@ -180,6 +180,13 @@ class BaseModel(Model):
         Returns a text-only, auto-escaped version of the object title.
         '''
         return html_escape(self.n_t)
+
+    @property
+    def as_basename(self):
+        '''
+        Returns a basename variation of the object title.
+        '''
+        return create_basename_core(self.n_t)
 
     @property
     def for_log(self):
@@ -1494,6 +1501,59 @@ class Page(BaseModel, DateMod):
 
     revision_fields = {'id':'page'}
 
+iterable_categories = ('tags', 'categories', 'author')  # , 'publication_date_tz')
+others = ('iterate', '_obj', 'itr', 'iterations', 'map', 'iteration', 'iters')
+
+class PageMod():
+
+    iters = None
+    def __init__(self, page_id):
+        object.__setattr__(self, '_obj', Page.load(page_id))
+        self.iteration = 0
+        self.map = {}
+        for x, n in enumerate(iterable_categories):
+            self.map[n] = x
+
+        def _id(obj):
+            if hasattr(obj, 'id'):
+                return obj.id
+            else:
+                return obj
+
+        def itr(obj):
+            try:
+                _ = iter(obj)
+            except TypeError:
+                return (obj,)
+            else:
+                return obj
+
+        import itertools
+        self.iters = list(itertools.product(
+            *(itr(getattr(self._obj, n)) for n in iterable_categories)
+            ))
+
+        # object.__setattr__(self, '__getattribute__', self.getattribute__)
+        # self.__getattribute__ = self.getattribute__
+
+
+    def __getattribute__(self, name):
+
+        if name in iterable_categories:
+            proxy_object = getattr(object.__getattribute__(self, '_obj'), name)
+            return proxy_object[self.iteration]
+            # return proxy_object[self.iters[self.iteration][self.map[name]]]
+        elif name in others:
+            return object.__getattribute__(self, name)
+        else:
+            return getattr(object.__getattribute__(self, '_obj'), name)
+
+    @property
+    def iterate(self):
+        self.iteration += 1
+        if self.iteration == len(self.iters):
+            raise StopIteration
+
 class RevisionMixin(object):
     @classmethod
     def copy(_class, source, **ka):
@@ -2230,7 +2290,15 @@ class FileInfo(BaseModel):
             category = None
         return category
 
+    @property
+    def tags(self):
+        try:
+            category = self.context.select().where(FileInfoContext.object == "T").get()
+            category = category.ref
 
+        except FileInfoContext.DoesNotExist:
+            category = None
+        return category
 
 class FileInfoContext(BaseModel):
     fileinfo = ForeignKeyField(FileInfo, null=False, index=True)
@@ -2420,6 +2488,8 @@ def default_template_mapping(page):
     return time_string
 """
 
+# We should eventually convert this to a class where the attributes
+# are generated as needed.
 
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
@@ -2510,6 +2580,13 @@ class TemplateTags(object):
             setattr(self.archive, "pages", pages)
             setattr(self.archive, "context", pages[0].publication_date)
 
+            # archive.pages = a list of pages constrained by the current archive definition
+            # archive.context = the DATE context for those pages
+            # archive.archive_context.year/month = date values
+            # archive.archive_context.category = category object
+            # archive.archive_context.author = user object
+            # archive.archive_context.tags = collection of tag objects
+
             # TODO: how do we compute next/previous in archive?
             # we need to have archive from blog.archive
             # blog.archive should take a context in much the same way we compute
@@ -2517,6 +2594,8 @@ class TemplateTags(object):
             # by way of next_in_mapping, etc.
 
             # TODO: replace this with a proper fixed list of archive types!!
+
+            # These are taken from the fileinfo for the underlying object
             for n in ('year', 'month', 'category', 'author'):
                 setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
 
