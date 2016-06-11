@@ -339,7 +339,7 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
 
 
 
-def generate_date_mapping(date_value, tags, path_string):
+def generate_date_mapping(date_value, tags, path_string, do_eval=True):
     '''
     Generates a date mapping string, usually from a template mapping,
     using a date value, a tag set, and the supplied path string.
@@ -347,12 +347,10 @@ def generate_date_mapping(date_value, tags, path_string):
     The tag set is contextual -- e.g., for a blog or a site.
     '''
 
-    # time_string = date_value.strftime(path_string)
-    # path_string = tpl(time_string, **tags.__dict__)
-
-    # time_string = tpl(path_string, **tags.__dict__)
-
-    time_string = eval(path_string, tags.__dict__)
+    if do_eval:
+        time_string = eval(path_string, tags.__dict__)
+    else:
+        time_string = path_string
 
     if time_string == '' or time_string is None:
         return None
