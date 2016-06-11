@@ -90,6 +90,7 @@ def push_to_queue(**ka):
     :param data_integer:
         Any integer data passed along with the job. For a job control item, this
         is the number of items remaining for that particular job.
+        For a regular publishing job, this is the id of the fileinfo.
 
     :param blog:
         The blog object associated with the job.
@@ -251,6 +252,13 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 
                     queue_page_archive_actions(previous_page)
 
+def eval_paths(path_string, dict_data):
+    path_string = replace_mapping_tags(path_string)
+    paths = eval(path_string, dict_data)
+    if not isinstance(paths, list):
+        paths = (paths,)
+    return paths
+
 def queue_page_archive_actions(page):
     '''
     Pushes to the publishing queue all the page archives for a given page object.
@@ -265,14 +273,18 @@ def queue_page_archive_actions(page):
     for n in archive_templates:
         if n.publishing_mode != publishing_mode.do_not_publish:
             for m in n.mappings:
-                file_path = (page.blog.path + '/' +
-                             generate_date_mapping(page.publication_date_tz.date(),
-                                                   tags,
-                                                   replace_mapping_tags(m.path_string)))
+                path_list = eval_paths(m.path_string, tags.__dict__)
+                for t in path_list:
 
-                fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+                    file_path = (page.blog.path + '/' +
+                                 generate_date_mapping(page.publication_date_tz.date(),
+                                                       tags,
+                                                       t,
+                                                       do_eval=False))
 
-                push_to_queue(job_type=job_type.archive,
+                    fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+
+                    push_to_queue(job_type=job_type.archive,
                               blog=page.blog,
                               site=page.blog.site,
                               data_integer=fileinfo_mapping.id)
@@ -523,6 +535,8 @@ def save_page(page, user, blog=None):
 
     build_pages_fileinfos((page,))
     if page.status == page_status.published:
+        # TODO: later, run this only if the "mapping dirty bit" is set
+        # e.g., change in publication status
         build_archives_fileinfos((page,))
 
     # QUEUE CHANGES FOR PUBLICATION
@@ -769,6 +783,8 @@ def generate_file(f, blog):
             archive_pages = generate_archive_context_from_fileinfo(
                 f.xref.archive_xref, blog.published_pages(), f)
 
+            # The context object we use
+
             tags = template_tags(blog_id=blog.id,
                 archive=archive_pages,
                 archive_context=f)
@@ -859,8 +875,9 @@ def generate_archive_context(context_list, original_pageset, **ka):
         }
 
     for m in context_list:
-
+        # figure out how to narrow tags here, we're using one tag at a time
         tag_context, date_counter = archive_functions[m]["context"](fileinfo, original_page, tag_context, date_counter)
+
 
     return tag_context
 
@@ -922,6 +939,30 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 
     return tag_context_next, date_counter
 
+def page_tags_context(fileinfo, original_page, tag_context, date_counter):
+
+    # Get a set of pages from tag_context
+    # Narrow it down to the tags hinted at
+    # for an original page, this is easy; use the page reference
+    # for a fileinfo, look for the page it refers to
+    # if it doesn't refer to anything, just use the blog's public tag list
+
+    if fileinfo is None:
+        page_tags_context = [original_page.tags]
+    else:
+        page_tags_context = [fileinfo.tags]
+
+    tag_list = TagAssociation.select(TagAssociation.page).where(
+        TagAssociation.tag == page_tags_context)
+
+    tag_context_next = tag_context.select().where(
+            Page << tag_list
+        )
+
+    # tag_context_next.
+
+    return tag_context_next, date_counter
+
 archive_functions = {
     "C":{
         "mapping":lambda x:x.primary_category.id,
@@ -942,26 +983,28 @@ archive_functions = {
         "mapping":lambda x:x.user.id,
         "context":author_context,
         'format':lambda x:'{}'.format(x)
+        },
+
+    "T":{
+        # This should be a SINGLE TAG
+        "mapping":lambda x:x.tags,
+        "context":page_tags_context,
+        'format':lambda x:'{}'.format(x)
         }
     }
 
+
+import re
+
+mapping_tags = (
+    # Replacing these to allow proper computation of a Python expression
+    # for template mappings
+    (re.compile('\$i'), 'blog.index_file'),
+    (re.compile('\$s'), 'blog.ssi_path'),
+    (re.compile('\$f'), 'page.filename'),
+)
+
 def replace_mapping_tags(string):
-
-    import re
-
-    # TODO: these should be changed to %%i or something like that
-    # to avoid collisions with the actual date format
-
-    mapping_tags = (
-        # (re.compile('%i'), '{{blog.index_file}}'),
-        # (re.compile('%s'), '{{blog.ssi_path}}'),
-        # (re.compile('%f'), '{{page.filename}}'),
-        # Replacing these to allow proper computation of a Python expression
-        # for template mappings
-        (re.compile('\$i'), 'blog.index_file'),
-        (re.compile('\$s'), 'blog.ssi_path'),
-        (re.compile('\$f'), 'page.filename'),
-    )
 
     for n in mapping_tags:
         string = re.sub(n[0], n[1], string)
@@ -1030,35 +1073,47 @@ def build_archives_fileinfos(pages):
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
+        # What we need to do is go through each type of iterable exposed for the page,
+        # and generate ONE MAPPING PER ITERABLE COMBINATION.
+        # Tags and categories are the two big ones.
+        # Then we modify the tags VARIABLE so that each eval_paths only produces one result.
+
         for m in page.archive_mappings:
 
-            path_string = replace_mapping_tags(m.path_string)
-            path_string = generate_date_mapping(page.publication_date_tz, tags, path_string)
+            # traverse xref
+            # for each one, push a new level of the loop
 
-            # TODO: test here to see if we get back an iterable or a string
-            # if it's a string, convert it to a single list element
-            # then iterate through each and add
+            paths_list = eval_paths(m.path_string, tags.__dict__)
 
-            # a blank string or a Nonetype means "skip"
+            for path in paths_list:
 
-            if path_string == '' or path_string is None:
-                continue
+                path_string = generate_date_mapping(page.publication_date_tz, tags, path, do_eval=False)
 
-            if path_string in mapping_list:
-                continue
+                if path_string == '' or path_string is None:
+                    continue
 
-            mapping_list[path_string] = ((None, m, path_string,
-                               page.blog.url + "/" + path_string,
-                               page.blog.path + '/' + path_string,
-                               ), (page))
+                if path_string in mapping_list:
+                    continue
+
+                mapping_list[path_string] = ((None, m, path_string,
+                                   page.blog.url + "/" + path_string,
+                                   page.blog.path + '/' + path_string,
+                                   ),
+                                   (page),
+                                   )
 
     for counter, n in enumerate(mapping_list):
+        # TODO: we should bail if there is already a fileinfo for this page?
         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
         archive_context = []
         m = mapping_list[n][0][1]
 
         for r in m.archive_xref:
-            archive_context.append(archive_functions[r]["format"](archive_functions[r]["mapping"](mapping_list[n][1])))
+            archive_context.append(
+                archive_functions[r]["format"](
+                    archive_functions[r]["mapping"](mapping_list[n][1])
+                    )
+                )
 
         for t, r in zip(archive_context, m.archive_xref):
             new_fileinfo_context = FileInfoContext.get_or_create(
@@ -1320,17 +1375,17 @@ def process_queue(blog):
     return Queue.job_counts(blog=blog)
 
 def build_mapping_xrefs(mapping_list):
-    # raise Exception(len(mapping_list))
 
     import re
     iterable_tags = (
         (re.compile('%Y'), 'Y'),
         (re.compile('%m'), 'M'),
         (re.compile('%d'), 'D'),
-        (re.compile('\{\{page\.categories\}\}'), 'C'),
-        # (re.compile('\{\{page\.primary_category.?[^\}]*\}\}'), 'C'),  # Not yet implemented
-        (re.compile('\{\{page\.user.?[^\}]*\}\}'), 'A'),
-        (re.compile('\{\{page\.author.?[^\}]*\}\}'), 'A')
+        (re.compile('page\.categories.?'), 'C'),
+        (re.compile('page\.user.?'), 'A'),
+        (re.compile('page\.author.?'), 'A')
+        # (re.compile('page\.tags.?'), 'T')
+        # (re.compile('page\.primary_category.?'), 'P'),
         )
 
     map_types = {}
@@ -1339,6 +1394,8 @@ def build_mapping_xrefs(mapping_list):
         purge_fileinfos(mapping.fileinfos)
 
         match_pos = []
+
+        # TODO: make sure we don't append the same thing twice
 
         for tag, func in iterable_tags:
             match = tag.search(mapping.path_string)
