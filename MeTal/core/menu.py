@@ -525,6 +525,10 @@ colsets = {
              'label': 'Title',
              'format_raw': lambda x: x.for_listing
              },
+             {'field': 'default',
+             'label': '',
+             'format_raw': lambda x: '<span class="label label-success">Default theme</span>' if x.is_default else ''
+             },
              {'field': '',
              'label': '',
              'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Delete theme</span></a>'.format(
