@@ -939,7 +939,7 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 
     return tag_context_next, date_counter
 
-def page_tags_context(fileinfo, original_page, tag_context, date_counter):
+def page_tag_context(fileinfo, original_page, tag_context, date_counter):
 
     # Get a set of pages from tag_context
     # Narrow it down to the tags hinted at
@@ -948,12 +948,12 @@ def page_tags_context(fileinfo, original_page, tag_context, date_counter):
     # if it doesn't refer to anything, just use the blog's public tag list
 
     if fileinfo is None:
-        page_tags_context = [original_page.tags]
+        page_tag_context = [original_page.context.tag]
     else:
-        page_tags_context = [fileinfo.tags]
+        page_tag_context = [fileinfo.tag]
 
     tag_list = TagAssociation.select(TagAssociation.page).where(
-        TagAssociation.tag == page_tags_context)
+        TagAssociation.tag == page_tag_context)
 
     tag_context_next = tag_context.select().where(
             Page << tag_list
@@ -986,9 +986,8 @@ archive_functions = {
         },
 
     "T":{
-        # This should be a SINGLE TAG
-        "mapping":lambda x:x.tags,
-        "context":page_tags_context,
+        "mapping":lambda x:x.context.tag,
+        "context":page_tag_context,
         'format':lambda x:'{}'.format(x)
         }
     }
@@ -1085,7 +1084,16 @@ def build_archives_fileinfos(pages):
 
             paths_list = eval_paths(m.path_string, tags.__dict__)
 
-            for path in paths_list:
+            if type(paths_list) == list:
+                paths = []
+                from core.models import PageProxy
+                for n in paths_list:
+                    paths.append((PageProxy(n[0]), n[1]))
+                # add page, path to list of paths to iterate over
+            else:
+                paths = ((page, paths),)
+
+            for page, path in paths:
 
                 path_string = generate_date_mapping(page.publication_date_tz, tags, path, do_eval=False)
 
@@ -1384,7 +1392,7 @@ def build_mapping_xrefs(mapping_list):
         (re.compile('page\.categories.?'), 'C'),
         (re.compile('page\.user.?'), 'A'),
         (re.compile('page\.author.?'), 'A')
-        # (re.compile('page\.tags.?'), 'T')
+        (re.compile('page\.tags.?'), 'T')
         # (re.compile('page\.primary_category.?'), 'P'),
         )
 
