@@ -189,6 +189,16 @@ class BaseModel(Model):
         return create_basename_core(self.n_t)
 
     @property
+    def permalink_as_path(self):
+        '''
+        For page paths that end in '/'+the base index and extension, remove that
+        '''
+        base_to_remove = '/' + self.blog.base_index + '\.' + self.blog.base_extension + '$'
+        import re
+        return re.sub(base_to_remove, '', self.permalink)
+        # return self.n_t.replace()
+
+    @property
     def for_log(self):
         '''
         Returns a version of the object title formatted for a log entry, which will be auto-escaped.
@@ -506,11 +516,16 @@ class Theme(BaseModel):
     title = TextField()
     description = TextField()
     json = TextField(null=True)
+    is_default = BooleanField(null=True)
     # path = TextField()
 
     @classmethod
-    def default(cls):
-        return cls.get(cls.title == DEFAULT_THEME)
+    def default_theme(cls):
+        try:
+            default_theme = cls.get(cls.title == DEFAULT_THEME)
+        except:
+            default_theme = Theme.get(Theme.is_default == True)
+        return default_theme
 
     @classmethod
     def load(cls, theme_id=None):
@@ -682,10 +697,16 @@ class Blog(SiteBase):
     def parent(self, context=None):
         return self.theme
 
+    @property
+    def subdir(self):
+        import urllib
+        return urllib.parse.urlparse(self.url)[2] + '/'
+
     def ssi(self, ssi_name):
         ssi = self.templates(template_type.include).select().where(
             Template.title == ssi_name).get()
-        return '<!--#include virtual="/{}" -->'.format(
+        return '<!--#include virtual="/{}{}" -->'.format(
+            self.subdir,
             ssi.default_mapping.fileinfos.get().file_path)
 
 
@@ -1501,8 +1522,11 @@ class Page(BaseModel, DateMod):
 
     revision_fields = {'id':'page'}
 
+
+
 iterable_categories = ('tags', 'categories', 'author')  # , 'publication_date_tz')
 others = ('iterate', '_obj', 'itr', 'iterations', 'map', 'iteration', 'iters')
+
 
 class PageMod():
 
@@ -2295,7 +2319,6 @@ class FileInfo(BaseModel):
         try:
             category = self.context.select().where(FileInfoContext.object == "T").get()
             category = category.ref
-
         except FileInfoContext.DoesNotExist:
             category = None
         return category
@@ -2474,22 +2497,22 @@ class ThemeData(AuxData):
                 Theme.title == theme_title))
 
 
-"""
-def get_default_theme():
-    return Theme.get(Theme.title == DEFAULT_THEME)
+# We do this to prevent collisions with other objects
 
+def pageproxy():
+    class PageProxy(Page):
+        iterables = {Tag:'tag', Category:'category'}
+        def __init__(self, object_map):
+            super().__init__()
+            self.context = lambda:None
+            for n in object_map:
+                if type(n) in self.iterables:
+                    setattr(self.context, self.iterables[type(n)], n)
 
-def default_template_mapping(page):
-    '''Returns the default template mapping for a given page,
-    the one associated with its permalink.'''
-    templates = Template.select().where(Template.template_type == template_type.page)
-    t = TemplateMapping.get(TemplateMapping.is_default == True, TemplateMapping.template << templates)
-    time_string = page.publication_date_tz.date().strftime(t.path_string)
-    return time_string
-"""
+    return PageProxy
 
 # We should eventually convert this to a class where the attributes
-# are generated as needed.
+# are generated as needed on demand, not all at once. If possible
 
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
