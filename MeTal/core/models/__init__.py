@@ -345,6 +345,36 @@ class BaseModel(Model):
         return kv.save()
 
     def kv_get(self, key=None, value=None, object_id=None):
+        '''
+        Retrieves one or more KVs for a specific key, value, and object ID.
+        If no object_id is supplied, the "id" of the invoking object is used.
+        '''
+
+        kv = KeyValue.select().where(
+            KeyValue.object == self.__class__.__name__
+            )
+
+        if object_id is not None:
+            kv = kv.select().where(
+                KeyValue.objectid == object_id
+                )
+
+        if key is not None:
+            kv = kv.select().where(
+                KeyValue.key == key
+                )
+
+        if value is not None:
+            kv = kv.select().where(
+                KeyValue.value == value
+                )
+
+        return kv
+
+    '''
+    def _kv_get(self, key=None, value=None, object_id=None):
+
+
         kv = KeyValue.select().where(
                 KeyValue.object == self.__class__.__name__,
                 KeyValue.key == key,
@@ -356,6 +386,7 @@ class BaseModel(Model):
                 KeyValue.objectid == object_id
                 )
         return kv.get()
+    '''
 
     def kv_del(self, key=None):
         kv = KeyValue.delete().where(
@@ -368,12 +399,31 @@ class BaseModel(Model):
 
         return kv.execute()
 
-    # def kv(self, key=None, context=None):
-        # kv = self.kvs(key, context)
-    def kv(self, key=None):
-        kv = self.kv_get(key)
+    def kv(self, key=None, value=None, all=False):
+        '''
+        Retrieves a KV for a given object in context.
+        E.g., if you call this from an instance of Page,
+        it will fetch any KVs attached to that page.
+        Set 'all' to True if you are expecting to retrieve
+        multiple keys with the same name.
+        '''
+        kv = KeyValue.select().where(
+                KeyValue.object == self.__class__.__name__,
+                KeyValue.objectid == self.id,
+                KeyValue.key == key,
+                )
+
+        if value is not None:
+            kv = kv.select().where(
+                KeyValue.value == value)
+
+        if kv.count() == 0:
+            return None
         if kv is not None:
-            return kv[0]
+            if all:
+                return kv
+            else:
+                return kv[0]
         else:
             return None
 
@@ -976,6 +1026,7 @@ class Blog(SiteBase):
 
         from core.utils import json_dump, create_basename_core, default
         import json
+        from core.error import PageNotChanged
 
         theme = {}
 
@@ -1006,7 +1057,12 @@ class Blog(SiteBase):
             theme[filename_tpl] = body
 
             n.template_ref = filename_tpl
-            n.save(user)
+
+            # FIXME: I'm not sure why a save is required here.
+            try:
+                n.save(user)
+            except PageNotChanged:
+                pass
 
             template['template'] = j_d
             del template['template']['body']
