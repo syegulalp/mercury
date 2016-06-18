@@ -873,9 +873,9 @@ def api_hi():
 # If we need versioning
 
 @_route(BASE_PATH + "/api/1/kv", method='POST')
-def api_add_kv():
+def api_kv_add():
     from core.ui import kv
-    return kv.add_kv()
+    return kv.kv_add()
 
 @_route(BASE_PATH + "/api/1/kv", method='DELETE')
 def api_remove_kv():

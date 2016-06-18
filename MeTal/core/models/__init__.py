@@ -139,7 +139,7 @@ class BaseModel(Model):
         except KeyError:
             return 'System'
 
-    def add_kv(self, **kw):
+    def kv_add(self, **kw):
 
         # TODO: deprecate
 

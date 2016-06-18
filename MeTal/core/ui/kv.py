@@ -21,7 +21,7 @@ from core.libs.bottle import (request)
 from core import auth
 
 @transaction
-def add_kv():
+def kv_add():
 
     user = auth.is_logged_in(request)
 
@@ -39,7 +39,7 @@ def add_kv():
     security = auth.__dict__[object_to_add_to.security](user, object_instance)
 
     # TODO: replace with kv_add
-    added_kv = object_instance.add_kv(
+    added_kv = object_instance.kv_add(
         object=object,
         objectid=object_id,
         key=key,
