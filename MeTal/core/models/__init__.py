@@ -241,6 +241,7 @@ class BaseModel(Model):
 
         return kv_list
 
+    """
     def _kvs(self, key=None, context=None):
         '''
         1) first, look at the object parent level for any existing parent keys
@@ -268,7 +269,9 @@ class BaseModel(Model):
             kvs.append([n, key_match])
         return kvs
 
+
     def kvs(self, key=None, context=None, no_traverse=False, raise_exception=False):
+
         '''
         Looks for keys assigned to a given object.
         Goes up the chain to find where the top-level assignment
@@ -327,7 +330,7 @@ class BaseModel(Model):
                 )
 
         return kv
-
+    """
     def kv_set(self, key=None, value=None, **kw):
         kv = KeyValue(
             object=self.__class__.__name__,
@@ -365,8 +368,10 @@ class BaseModel(Model):
 
         return kv.execute()
 
-    def kv(self, key=None, context=None):
-        kv = self.kvs(key, context)
+    # def kv(self, key=None, context=None):
+        # kv = self.kvs(key, context)
+    def kv(self, key=None):
+        kv = self.kv_get(key)
         if kv is not None:
             return kv[0]
         else:

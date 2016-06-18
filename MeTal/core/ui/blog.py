@@ -265,7 +265,8 @@ def blog_new_page(blog_id):
     from core.cms import save_action_list
 
     from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(blog_new_page.kvs())
+    # kv_ui_data = kv_ui(blog_new_page.kvs())
+    kv_ui_data = kv_ui(blog_new_page.kv_list())
 
     try:
         html_editor_settings = Template.get(
@@ -355,6 +356,7 @@ def blog_media_edit(blog_id, media_id, status=None):
 
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(media.kvs(no_traverse=True))
+    # kv_ui_data = kv_ui(media.kv_list())
 
     tags = template_tags(blog_id=blog.id,
          media=media,

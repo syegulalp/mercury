@@ -8,7 +8,8 @@ def kv_page_response(page_id):
 
     tags = template_tags(page_id=page_id)
 
-    kv_ui_data = kv_ui(tags.page.kvs(no_traverse=True))
+    # kv_ui_data = kv_ui(tags.page.kvs(no_traverse=True))
+    kv_ui_data = kv_ui(tags.page.kv_list())
 
     tpl = template('sidebar/sidebar_page_kv_ui',
         kv_ui=kv_ui_data,
