@@ -115,7 +115,7 @@ def blog_create_save(site_id):
             path=request.forms.getunicode('blog_path'),
             set_timezone=request.forms.getunicode('blog_timezone'),
             # theme=get_default_theme(),
-            theme=Theme.default
+            theme=Theme.default_theme()
             )
 
     try:
@@ -126,7 +126,8 @@ def blog_create_save(site_id):
     if len(errors) == 0:
         from core.libs.peewee import IntegrityError
         try:
-            new_blog.setup(user, new_blog.theme)
+            new_blog.setup(user, Theme.default_theme())
+                # new_blog.theme)
         except IntegrityError as e:
             from core.utils import field_error
             errors.append(field_error(e))
