@@ -134,28 +134,6 @@ def push_to_queue(**ka):
     queue_job.date_touched = datetime.datetime.utcnow()
     queue_job.save()
 
-def _push_insert_to_queue(blog):
-    '''
-    This method appears to be deprecated.
-    '''
-    with db.atomic() as txn:
-
-        # pages ordered by id desc
-        push_to_queue(job_type=job_type.insert,
-            data_string=job_insert_type.page_fileinfo,
-            data_integer=blog.pages().count(),
-            is_control=True,
-            blog=blog,
-            site=blog.site)
-
-        # indexes ordered by id asc
-        push_to_queue(job_type=job_type.insert,
-            data_string=job_insert_type.index_fileinfo,
-            data_integer=blog.templates(template_type.index).count(),
-            is_control=True,
-            blog=blog,
-            site=blog.site)
-
 def remove_from_queue(queue_deletes):
     '''
     Removes jobs from the queue.
@@ -164,19 +142,6 @@ def remove_from_queue(queue_deletes):
     '''
     deletes = Queue.delete().where(Queue.id << queue_deletes)
     return deletes.execute()
-
-def _remove_from_queue(queue_id):
-    '''
-    Removes a specific job ID from the queue.
-    Deprecated.
-
-    :param queue_id:
-        The ID number of the job queue item to remove.
-
-    '''
-
-    queue_delete = Queue.get(Queue.id == queue_id)
-    return queue_delete.delete_instance()
 
 def queue_page_actions(page, no_neighbors=False, no_archive=False):
     '''
@@ -1086,9 +1051,9 @@ def build_archives_fileinfos(pages):
 
             if type(paths_list) == list:
                 paths = []
-                from core.models import PageProxy
+                from core.models import pageproxy
                 for n in paths_list:
-                    paths.append((PageProxy(n[0]), n[1]))
+                    paths.append((pageproxy(n[0]), n[1]))
                 # add page, path to list of paths to iterate over
             else:
                 paths = ((page, paths),)

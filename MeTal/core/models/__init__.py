@@ -2463,7 +2463,7 @@ class ThemeData(AuxData):
 
 # We do this to prevent collisions with other objects
 
-def pageproxy():
+def pageproxy(o_map):
     class PageProxy(Page):
         iterables = {Tag:'tag', Category:'category'}
         def __init__(self, object_map):
@@ -2473,7 +2473,7 @@ def pageproxy():
                 if type(n) in self.iterables:
                     setattr(self.context, self.iterables[type(n)], n)
 
-    return PageProxy
+    return PageProxy(o_map)
 
 # We should eventually convert this to a class where the attributes
 # are generated as needed on demand, not all at once. If possible
