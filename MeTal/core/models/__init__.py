@@ -344,14 +344,17 @@ class BaseModel(Model):
             )
         return kv.save()
 
-    def kv_get(self, key=None, value=None, object_id=None):
+    def kv_get(self, key=None, value=None, object_type=None, object_id=None):
         '''
         Retrieves one or more KVs for a specific key, value, and object ID.
         If no object_id is supplied, the "id" of the invoking object is used.
         '''
 
+        if object_type is None:
+            object_type = self.__class__.__name__
+
         kv = KeyValue.select().where(
-            KeyValue.object == self.__class__.__name__
+            KeyValue.object == object_type
             )
 
         if object_id is not None:
@@ -371,24 +374,12 @@ class BaseModel(Model):
 
         return kv
 
-    '''
-    def _kv_get(self, key=None, value=None, object_id=None):
-
-
-        kv = KeyValue.select().where(
-                KeyValue.object == self.__class__.__name__,
-                KeyValue.key == key,
-                KeyValue.value == value)
-        if kv.count() == 0:
-            return None
-        if object_id is not None:
-            kv = kv.select().where(
-                KeyValue.objectid == object_id
-                )
-        return kv.get()
-    '''
-
     def kv_del(self, key=None):
+        '''
+        Deletes a specific key on a selected object.
+        If no specific key is provided, all keys on
+        the current object are purged.
+        '''
         kv = KeyValue.delete().where(
             KeyValue.object == self.__class__.__name__,
             KeyValue.objectid == self.id,
@@ -407,6 +398,8 @@ class BaseModel(Model):
         Set 'all' to True if you are expecting to retrieve
         multiple keys with the same name.
         '''
+        # TODO: Use kv_get
+
         kv = KeyValue.select().where(
                 KeyValue.object == self.__class__.__name__,
                 KeyValue.objectid == self.id,
