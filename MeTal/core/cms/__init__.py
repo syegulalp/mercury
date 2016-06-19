@@ -1052,8 +1052,9 @@ def build_archives_fileinfos(pages):
             if type(paths_list) == list:
                 paths = []
                 from core.models import pageproxy
+                pp = pageproxy()
                 for n in paths_list:
-                    paths.append((pageproxy(n[0]), n[1]))
+                    paths.append((pp(n[0]), n[1]))
                 # add page, path to list of paths to iterate over
             else:
                 paths = ((page, paths),)
