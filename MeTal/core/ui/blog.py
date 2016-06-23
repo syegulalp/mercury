@@ -39,6 +39,25 @@ def blog(blog_id, errormsg=None):
 
     taglist = tags.blog.pages(pages_searched)
 
+    # taglist = blog_order_results(request,taglist)
+    # put this in search as well - search & sort
+
+    # This is the sorting function and should be
+    # broken out on its own over time
+
+    # we also need to turn all the relevant keys into
+    # a dict that we can use for the controls when we render those.
+    # I think urllib has something we can use
+
+    try:
+        sort_terms = request.query['order_by']
+    except KeyError:
+        pass
+    else:
+        taglist = taglist.select().order_by(
+            getattr(Page, sort_terms).asc()
+            )
+
     paginator, rowset = utils.generate_paginator(taglist, request)
 
     tags.status = errormsg if errormsg is not None else None
@@ -974,6 +993,10 @@ def blog_save_theme(blog_id):
         os.makedirs(dir_name_final)
         theme.json = dir_name_full
         theme.save()
+
+        blog.theme = theme
+        blog.theme_modified = False
+        blog.save()
 
         for n in export:
             with open(dir_name_final + _sep +
