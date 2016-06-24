@@ -220,8 +220,6 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 def eval_paths(path_string, dict_data):
     path_string = replace_mapping_tags(path_string)
     paths = eval(path_string, dict_data)
-    if not isinstance(paths, list):
-        paths = (paths,)
     return paths
 
 def queue_page_archive_actions(page):
@@ -239,12 +237,20 @@ def queue_page_archive_actions(page):
         if n.publishing_mode != publishing_mode.do_not_publish:
             for m in n.mappings:
                 path_list = eval_paths(m.path_string, tags.__dict__)
-                for t in path_list:
 
+                paths = []
+
+                if type(path_list) == list:
+                    for n in path_list:
+                        paths.append(n[1])
+                else:
+                    paths.append(path_list)
+
+                for p in paths:
                     file_path = (page.blog.path + '/' +
                                  generate_date_mapping(page.publication_date_tz.date(),
                                                        tags,
-                                                       t,
+                                                       p,
                                                        do_eval=False))
 
                     fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
@@ -906,25 +912,19 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 
 def page_tag_context(fileinfo, original_page, tag_context, date_counter):
 
-    # Get a set of pages from tag_context
-    # Narrow it down to the tags hinted at
-    # for an original page, this is easy; use the page reference
-    # for a fileinfo, look for the page it refers to
-    # if it doesn't refer to anything, just use the blog's public tag list
-
     if fileinfo is None:
         page_tag_context = [original_page.context.tag]
     else:
-        page_tag_context = [fileinfo.tag]
+        page_tag_context = [fileinfo.tags]
 
     tag_list = TagAssociation.select(TagAssociation.page).where(
         TagAssociation.tag == page_tag_context)
 
     tag_context_next = tag_context.select().where(
-            Page << tag_list
+            Page.id << tag_list
         )
 
-    # tag_context_next.
+    # TypeError: unsupported operand type(s) for <<: 'BaseModel' and 'SelectQuery'
 
     return tag_context_next, date_counter
 
@@ -951,7 +951,7 @@ archive_functions = {
         },
 
     "T":{
-        "mapping":lambda x:x.context.tag,
+        "mapping":lambda x:x.context.tag.id,
         "context":page_tag_context,
         'format':lambda x:'{}'.format(x)
         }
@@ -1037,44 +1037,39 @@ def build_archives_fileinfos(pages):
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
-        # What we need to do is go through each type of iterable exposed for the page,
-        # and generate ONE MAPPING PER ITERABLE COMBINATION.
-        # Tags and categories are the two big ones.
-        # Then we modify the tags VARIABLE so that each eval_paths only produces one result.
-
         for m in page.archive_mappings:
 
-            # traverse xref
-            # for each one, push a new level of the loop
+            # FIXME: do we rebuild the archives whenever tags are changed? I think so.
 
             paths_list = eval_paths(m.path_string, tags.__dict__)
 
-            if type(paths_list) == list:
+            if type(paths_list) in (list,):
                 paths = []
-                from core.models import pageproxy
-                pp = pageproxy()
                 for n in paths_list:
-                    paths.append((pp(n[0]), n[1]))
-                # add page, path to list of paths to iterate over
+                    if n is None:
+                        continue
+                    p = page.proxy(n[0])
+                    paths.append((p, n[1]))
             else:
-                paths = ((page, paths),)
+                paths = (
+                    (page, paths_list)
+                    ,)
 
             for page, path in paths:
-
                 path_string = generate_date_mapping(page.publication_date_tz, tags, path, do_eval=False)
 
                 if path_string == '' or path_string is None:
                     continue
-
                 if path_string in mapping_list:
                     continue
 
-                mapping_list[path_string] = ((None, m, path_string,
-                                   page.blog.url + "/" + path_string,
-                                   page.blog.path + '/' + path_string,
-                                   ),
-                                   (page),
-                                   )
+                mapping_list[path_string] = (
+                    (None, m, path_string,
+                    page.blog.url + "/" + path_string,
+                    page.blog.path + '/' + path_string,)
+                    ,
+                    (page),
+                    )
 
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
@@ -1357,7 +1352,7 @@ def build_mapping_xrefs(mapping_list):
         (re.compile('%d'), 'D'),
         (re.compile('page\.categories.?'), 'C'),
         (re.compile('page\.user.?'), 'A'),
-        (re.compile('page\.author.?'), 'A')
+        (re.compile('page\.author.?'), 'A'),
         (re.compile('page\.tags.?'), 'T')
         # (re.compile('page\.primary_category.?'), 'P'),
         )
@@ -1459,12 +1454,12 @@ def purge_blog(blog):
     f_i = build_archives_fileinfos(blog.published_pages())
 
     arch_obj = time.clock()
-    report.append("{0} archive objects created in {1:.2f} seconds.".format(f_i,
+    report.append("{0} archive page objects created in {1:.2f} seconds.".format(f_i,
         arch_obj - rebuild))
 
     index_objects = build_indexes_fileinfos(blog.index_templates)
     index_obj = time.clock()
-    report.append("{0} index objects created in {1:.2f} seconds.".format(index_objects,
+    report.append("{0} index page objects created in {1:.2f} seconds.".format(index_objects,
         index_obj - arch_obj))
 
     end = time.clock()
