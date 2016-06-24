@@ -165,6 +165,19 @@ class BaseModel(Model):
     @property
     def n_t(self):
         # TODO: replace this with proxies for name in all fields that need it
+        name=None
+        for n in ('name', 'title', 'tag'):
+            k = getattr(self, n, None)
+            if k is not None:
+                name = k
+                break
+
+        if name is None or name == '':
+            return "[Untitled]"
+        else:
+            return trunc(name)
+
+        '''
         try:
             name = self.name
         except:
@@ -173,6 +186,7 @@ class BaseModel(Model):
         if name is None or name == "":
             return "[Untitled]"
         return trunc(name)
+        '''
 
     @property
     def as_text(self):
@@ -1128,6 +1142,15 @@ class Page(BaseModel, DateMod):
 
     security = 'is_page_editor'
 
+    def proxy(self, object_map):
+        page_proxy = Page.load(self.id)
+        iterables = {Tag:'tag', Category:'category'}
+        page_proxy.context = lambda:None
+        for n in object_map:
+            if type(n) in iterables:
+                setattr(page_proxy.context, iterables[type(n)], n)
+        return page_proxy
+
     @classmethod
     def load(cls, page_id=None):
         try:
@@ -1487,61 +1510,6 @@ class Page(BaseModel, DateMod):
     revision_fields = {'id':'page'}
 
 
-
-iterable_categories = ('tags', 'categories', 'author')  # , 'publication_date_tz')
-others = ('iterate', '_obj', 'itr', 'iterations', 'map', 'iteration', 'iters')
-
-
-class PageMod():
-
-    iters = None
-    def __init__(self, page_id):
-        object.__setattr__(self, '_obj', Page.load(page_id))
-        self.iteration = 0
-        self.map = {}
-        for x, n in enumerate(iterable_categories):
-            self.map[n] = x
-
-        def _id(obj):
-            if hasattr(obj, 'id'):
-                return obj.id
-            else:
-                return obj
-
-        def itr(obj):
-            try:
-                _ = iter(obj)
-            except TypeError:
-                return (obj,)
-            else:
-                return obj
-
-        import itertools
-        self.iters = list(itertools.product(
-            *(itr(getattr(self._obj, n)) for n in iterable_categories)
-            ))
-
-        # object.__setattr__(self, '__getattribute__', self.getattribute__)
-        # self.__getattribute__ = self.getattribute__
-
-
-    def __getattribute__(self, name):
-
-        if name in iterable_categories:
-            proxy_object = getattr(object.__getattribute__(self, '_obj'), name)
-            return proxy_object[self.iteration]
-            # return proxy_object[self.iters[self.iteration][self.map[name]]]
-        elif name in others:
-            return object.__getattribute__(self, name)
-        else:
-            return getattr(object.__getattribute__(self, '_obj'), name)
-
-    @property
-    def iterate(self):
-        self.iteration += 1
-        if self.iteration == len(self.iters):
-            raise StopIteration
-
 class RevisionMixin(object):
     @classmethod
     def copy(_class, source, **ka):
@@ -1582,22 +1550,6 @@ class PageRevision(Page, RevisionMixin):
 
         max_revisions = self.blog.max_revisions
         previous_revisions = self.page.revisions
-
-        # previous_revisions = (PageRevision.select().where(PageRevision.page == self.page)
-            # .order_by(PageRevision.modified_date.desc()).limit(max_revisions))
-        # @raise Exception(self.page_id)
-
-
-        # deprecating this since backups are going to be stored locally instead
-
-        '''
-        if is_backup is True:
-            previous_backups = DeleteQuery(PageRevision).where(
-                PageRevision.page_id == self.page_id,
-                PageRevision.is_backup is True)
-            previous_backups.execute()
-        '''
-
 
         if previous_revisions.count() > 0:
 
@@ -2279,6 +2231,10 @@ class FileInfo(BaseModel):
         return category
 
     @property
+    def tag(self):
+        return self.tags
+
+    @property
     def tags(self):
         try:
             category = self.context.select().where(FileInfoContext.object == "T").get()
@@ -2461,20 +2417,6 @@ class ThemeData(AuxData):
                 Theme.title == theme_title))
 
 
-# We do this to prevent collisions with other objects
-
-def pageproxy():
-    class PageProxy(Page):
-        iterables = {Tag:'tag', Category:'category'}
-        def __init__(self, object_map):
-            super().__init__()
-            self.context = lambda:None
-            for n in object_map:
-                if type(n) in self.iterables:
-                    setattr(self.context, self.iterables[type(n)], n)
-
-    return PageProxy
-
 # We should eventually convert this to a class where the attributes
 # are generated as needed on demand, not all at once. If possible
 
@@ -2550,14 +2492,11 @@ class TemplateTags(object):
         if self.blog:
             self.queue = Queue.select().where(Queue.blog == self.blog)
             self.queue_count = Queue.job_counts(blog=self.blog)
-            # self.queue_count = queue_jobs_waiting(blog=self.blog)
         elif self.site:
             self.queue = Queue.select().where(Queue.site == self.site)
-            # self.queue_count = queue_jobs_waiting(site=self.site)
             self.queue_count = Queue.job_counts(site=self.site)
         else:
             self.queue = Queue.select()
-            # self.queue_count = queue_jobs_waiting()
             self.queue_count = Queue.job_counts()
 
 
@@ -2566,6 +2505,18 @@ class TemplateTags(object):
             pages = self.blog.pages(ka['archive'])
             setattr(self.archive, "pages", pages)
             setattr(self.archive, "context", pages[0].publication_date)
+
+            # TODO: 'tags' should be 'tag' - contexts are singular!
+
+            for n in (
+                (Tag, 'tag'),
+                ):
+                item_id = ka['archive_context'].__getattribute__(n[1])
+                if item_id is not None:
+                    setattr(self.archive,
+                        n[1],
+                        n[0].get(n[0].id == item_id),
+                        )
 
             # archive.pages = a list of pages constrained by the current archive definition
             # archive.context = the DATE context for those pages
