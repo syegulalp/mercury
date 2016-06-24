@@ -68,7 +68,6 @@ def theme_apply_to_blog(theme, blog , user):
     blog.erase_theme()
     from settings import THEME_FILE_PATH
 
-    # theme_dir = THEME_FILE_PATH + _sep + theme.json
     theme_dir = _join(THEME_FILE_PATH, theme.json)
 
     for subdir, dirs, files in os.walk(theme_dir):
@@ -105,6 +104,9 @@ def theme_apply_to_blog(theme, blog , user):
                     mapping_obj.template = table_obj.id
                     mapping_obj.save()
 
+
+    set_theme = Template.update(theme=theme).where(Template.theme == blog.theme)
+    set_theme.execute()
 
     blog.theme = theme
     blog.theme_modified = False
