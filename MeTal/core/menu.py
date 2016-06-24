@@ -513,11 +513,11 @@ colsets = {
              },
              {'field': 'default',
              'label': '',
-             'format_raw': lambda x: '<span class="label label-primary">Default theme</span>' if x.is_default else ''
+             'format_raw': lambda x: '<span class="label label-primary">Default theme for new blogs</span>' if x.is_default else ''
              },
             {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Apply theme</span></a>'.format(
+             'format_raw':lambda x:'<a href="{}"><span class="label label-warning pull-right">Apply theme</span></a>'.format(
                  '{}/blog/{}/theme/{}/apply'.format(BASE_URL, x.blog.id, x.id),)
              }
         ]
@@ -531,11 +531,11 @@ colsets = {
              },
              {'field': 'default',
              'label': '',
-             'format_raw': lambda x: '<span class="label label-primary">Default theme</span>' if x.is_default else ''
+             'format_raw': lambda x: '<span class="label label-primary">Default theme for new blogs</span>' if x.is_default else ''
              },
              {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-warning">Delete theme</span></a>'.format(
+             'format_raw':lambda x:'<a href="{}"><span class="label label-warning pull-right">Delete theme</span></a>'.format(
                  '{}/system/theme/{}/delete'.format(BASE_URL, x.id),)
              }
         ]
