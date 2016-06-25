@@ -452,7 +452,9 @@ def page_revision_restore(page_id, revision_id):
 
     from core.cms import save_action_list
     from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(page.kvs())
+    kv_ui_data = kv_ui(page.kv_list())
+
+    # kv_ui_data = kv_ui(page.kvs())
 
     # TODO: save action from this doesn't trigger queue run
 
