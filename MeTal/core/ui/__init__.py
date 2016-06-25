@@ -75,6 +75,10 @@ def listing(request, user, errormsg, context, tags_data):
 
     tags.status = errormsg if errormsg is not None else None
 
+    callback = context.get('rowset_callback', None)
+    if callback is not None:
+        rowset = callback(rowset)
+
     tpl = template('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context[search_ui], search_object),
