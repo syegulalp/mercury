@@ -510,10 +510,30 @@ def blog_categories(blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
+    reason = auth.check_category_editing_lock(blog, True)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'categories',
+            'menu':'blog_manage_categories',
+            'search_ui':'blog',
+            'search_object':blog,
+            'search_context':blog_search_results,
+            'item_list_object':blog.categories.select(),
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id,
+            'status':reason}
+        )
+
+
+    """
 
     blog_category_list = blog.categories
 
-    reason = auth.check_category_editing_lock(blog, True)
+
 
     tags = template_tags(blog_id=blog.id,
         user=user)
@@ -538,6 +558,7 @@ def blog_categories(blog_id):
         **tags.__dict__)
 
     return tpl
+    """
 
 @transaction
 def blog_tags(blog_id):
