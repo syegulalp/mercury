@@ -28,7 +28,7 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-    action = utils.action_button(
+    action = (
         'Create new page',
         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
         )
@@ -40,11 +40,11 @@ def blog(blog_id, errormsg=None):
     return listing(
         request, user, errormsg,
         {
-            'search_context':blog_search_results,
-            'search_ui':'blog',
             'colset':'blog',
             'menu':'blog_menu',
+            'search_ui':'blog',
             'search_object':blog,
+            'search_context':blog_search_results,
             'item_list_object':blog.pages,
             'action_button':action,
             'list_actions':list_actions

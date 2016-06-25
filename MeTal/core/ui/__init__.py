@@ -30,12 +30,17 @@ def listing(request, user, errormsg, context, tags_data):
     item_list_object = context['item_list_object']
     # For future use when we perform search ordering.
     # blog.pages
-    action_button = context['action_button']
+    action_button = context.get('action_button', None)
     # Any action button to be displayed.
     # (action button)
-    list_actions = context['list_actions']
+    list_actions = context.get('list_actions', None)
     # Any list actions to the shown.
     # (list actions)
+
+    if action_button is not None:
+        action_button = utils.action_button(*action_button)
+    else:
+        action_button = ''
 
     try:
         items_searched, search = search_context_obj(request, search_object)
@@ -45,6 +50,7 @@ def listing(request, user, errormsg, context, tags_data):
     item_list = item_list_object(items_searched)
 
     '''
+    # For future use: sorting
     try:
         sort_terms = request.query['order_by']
     except KeyError:
