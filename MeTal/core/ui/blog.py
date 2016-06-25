@@ -19,8 +19,42 @@ import datetime
 from os import remove as _remove
 from core.models import MediaAssociation
 
+from . import listing
+
 @transaction
 def blog(blog_id, errormsg=None):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_member(user, blog)
+
+    action = utils.action_button(
+        'Create new page',
+        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
+        )
+
+    list_actions = [
+        ['Republish', '{}/api/1/republish'],
+    ]
+
+    return listing(
+        request, user, errormsg,
+        {
+            'search_context':blog_search_results,
+            'search_ui':'blog',
+            'colset':'blog',
+            'menu':'blog_menu',
+            'search_object':blog,
+            'item_list_object':blog.pages,
+            'action_button':action,
+            'list_actions':list_actions
+        },
+        {'blog_id':blog.id}
+        )
+
+"""
+@transaction
+def _blog(blog_id, errormsg=None):
     '''
     UI for listing contents of a given blog
     '''
@@ -33,34 +67,18 @@ def blog(blog_id, errormsg=None):
     except (KeyError, ValueError):
         pages_searched, search = None, None
 
-    tags = template_tags(blog_id=blog.id,
-        search=search,
-        user=user)
-
-    taglist = tags.blog.pages(pages_searched)
-
-    # taglist = blog_order_results(request,taglist)
-    # put this in search as well - search & sort
-
-    # This is the sorting function and should be
-    # broken out on its own over time
-
-    # we also need to turn all the relevant keys into
-    # a dict that we can use for the controls when we render those.
-    # I think urllib has something we can use
+    item_list = blog.pages(pages_searched)
 
     try:
         sort_terms = request.query['order_by']
     except KeyError:
         pass
     else:
-        taglist = taglist.select().order_by(
+        item_list = item_list.select().order_by(
             getattr(Page, sort_terms).asc()
             )
 
-    paginator, rowset = utils.generate_paginator(taglist, request)
-
-    tags.status = errormsg if errormsg is not None else None
+    paginator, rowset = utils.generate_paginator(item_list, request)
 
     action = utils.action_button(
         'Create new page',
@@ -70,6 +88,12 @@ def blog(blog_id, errormsg=None):
     list_actions = [
         ['Republish', '{}/api/1/republish'],
         ]
+
+    tags = template_tags(blog_id=blog.id,
+        search=search,
+        user=user)
+
+    tags.status = errormsg if errormsg is not None else None
 
     tpl = template('listing/listing_ui',
         paginator=paginator,
@@ -83,6 +107,7 @@ def blog(blog_id, errormsg=None):
         **tags.__dict__)
 
     return tpl
+"""
 
 @transaction
 def blog_create(site_id):

@@ -67,6 +67,7 @@ def theme_apply_to_blog(theme, blog , user):
     cms.purge_fileinfos(blog.fileinfos)
     blog.erase_theme()
     from settings import THEME_FILE_PATH
+    # import io
 
     theme_dir = _join(THEME_FILE_PATH, theme.json)
 
@@ -76,10 +77,10 @@ def theme_apply_to_blog(theme, blog , user):
                 continue
             if n[-4:] == '.tpl':
                 continue
-            with open(_join(theme_dir, n), 'r') as f:
+            with open(_join(theme_dir, n), 'r', encoding='utf8') as f:
                 template = json.loads(f.read())
                 tpl_data = template['template']
-                with open(_join(theme_dir, n[:-5] + '.tpl'), 'r') as b:
+                with open(_join(theme_dir, n[:-5] + '.tpl'), 'r', encoding='utf8') as b:
                     tpl_data['body'] = b.read()
 
                 mapping_data = template['mappings']
