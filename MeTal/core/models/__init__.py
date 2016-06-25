@@ -969,7 +969,7 @@ class Blog(SiteBase):
         '''
         Select all tags that belong to this blog.
         '''
-        tags = Tag.select().where(Tag.blog == self)
+        tags = Tag.select().where(Tag.blog == self).order_by(Tag.tag.asc())
         if tag_list is not None:
             tags = tags.select().where(Tag.id << tag_list)
         return tags

@@ -551,10 +551,7 @@ def blog_tags(blog_id):
             'search_ui':'blog_tags',
             'search_object':blog,
             'search_context':tag_search_results,
-            # 'item_list_object':blog.tags(),
-            'item_list_object':Tag.select().where(Tag.blog == blog).order_by(Tag.tag.asc()),
-            # 'action_button':action,
-            # 'list_actions':list_actions
+            'item_list_object':blog.tags()
         },
         {'blog_id':blog.id,
             'status':reason}
