@@ -647,6 +647,12 @@ def blog_select_themes(blog_id):
     permission = auth.is_blog_designer(user, blog)
     reason = auth.check_template_lock(blog, True)
 
+    action = (
+        'Save blog templates to new theme',
+        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
+        )
+
+
     def add_blog_reference(rowset):
         for n in rowset:
             n.blog = blog
@@ -661,7 +667,8 @@ def blog_select_themes(blog_id):
             'search_object':blog,
             'search_context':blog_search_results,
             'item_list_object':Theme.select().order_by(Theme.id),
-            'rowset_callback':add_blog_reference
+            'rowset_callback':add_blog_reference,
+            'action_button':action
         },
         {'blog_id':blog.id,
             'status':reason,
