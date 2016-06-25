@@ -534,38 +534,6 @@ def blog_categories(blog_id):
             'status':reason}
         )
 
-
-    """
-
-    blog_category_list = blog.categories
-
-
-
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-
-    tags.status = reason
-
-    action = utils.action_button(
-        'Add new category',
-        '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)
-        )
-
-    paginator, rowset = utils.generate_paginator(blog_category_list, request)
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog_manage_categories', blog),
-        rowset=rowset,
-        colset=colsets['categories'],
-        icons=icons,
-        action=action,
-        **tags.__dict__)
-
-    return tpl
-    """
-
 @transaction
 def blog_tags(blog_id):
 
