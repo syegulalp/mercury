@@ -1,15 +1,8 @@
-from core import (auth, utils)
-from core.menu import generate_menu, colsets, icons
+from core import auth
 from core.search import site_search_results
-
-from core.models import (Site, template_tags)
-
+from core.models import Site
 from core.models.transaction import transaction
-
-from core.libs.bottle import (template, request)
-
-from .ui import search_context
-
+from core.libs.bottle import request
 from . import listing
 
 @transaction

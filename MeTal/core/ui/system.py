@@ -1,16 +1,17 @@
 from core import (auth, utils)
 from core.cms import job_type
 from core.menu import generate_menu, colsets
-from core.search import site_search_results
+# from core.search import site_search_results
 
 from core.models import (
-    template_tags, Queue, Log, Blog,
+    template_tags, Queue, Log, Blog, Site,
     Plugin)
 
 from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request)
 from .ui import search_context
+from . import listing
 
 @transaction
 def system_info():
@@ -53,6 +54,25 @@ def system_sites(errormsg=None):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
+    return listing(
+        request, user, errormsg,
+        {
+            'colset':'all_sites',
+            'menu':'manage_sites',
+            'search_ui':'sites',
+            'search_object':None,
+            'search_context':None,
+            'item_list_object':Site.select(),
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {
+            'status':errormsg}
+        )
+
+
+    """
+
     try:
         sites_searched, search = site_search_results(request)
     except (KeyError, ValueError):
@@ -77,6 +97,7 @@ def system_sites(errormsg=None):
         **tags.__dict__)
 
     return tpl
+    """
 
 
 @transaction

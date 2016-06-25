@@ -45,7 +45,7 @@ def listing(request, user, errormsg, context, tags_data):
 
     try:
         items_searched, search = search_context_obj(request, search_object)
-    except (KeyError, ValueError):
+    except (KeyError, ValueError, TypeError):
         items_searched, search = None, None
 
     if items_searched is not None:
