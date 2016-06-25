@@ -45,16 +45,18 @@ def media_search_results(request, blog_id=None, site_id=None):
 
     search_terms_enc = utf8_escape(search_terms)
 
-    # not working yet
-    '''media_searched = (Page_Search.select(Page_Search.id)
-        .where(Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
-        .order_by(Page_Search.id.desc()).tuples())
-    '''
+    from core.models import Media
+
+    # TODO: move to DB.media_search for indexing
+
+    media_searched = (Media.select(Media.id)
+        .where(Media.friendly_name.contains(search_terms_enc) |
+            Media.filename.contains(search_terms_enc))
+        .order_by(Media.id.desc()).tuples())
 
     if site_id is not None:
-        pass  #
+        media_searched.select().where(Media.site == site_id)
     if blog_id is not None:
-        pass  # pages_searched = get_blog(blog_id).media().select(Page.id).tuples()
+        media_searched.select().where(Media.blog == blog_id)
 
-    return None
-    # return media_searched, search_terms
+    return media_searched, search_terms

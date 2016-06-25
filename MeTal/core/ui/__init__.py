@@ -7,6 +7,7 @@ from .ui import search_context
 def listing(request, user, errormsg, context, tags_data):
     '''
     Listing framework.
+    Used to present a searchable and sortable list of objects.
     '''
     # tags_data = {'blog_id':blog.id}
     # This is any data to pass to the template_tags function.
@@ -47,7 +48,11 @@ def listing(request, user, errormsg, context, tags_data):
     except (KeyError, ValueError):
         items_searched, search = None, None
 
-    item_list = item_list_object(items_searched)
+    if items_searched is not None:
+        # raise Exception(item_list_object.__dict__)
+        item_list = item_list_object.select().where(item_list_object.model_class.id << items_searched)
+    else:
+        item_list = item_list_object.select()
 
     '''
     # For future use: sorting

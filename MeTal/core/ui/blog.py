@@ -2,7 +2,7 @@ from core import (auth, mgmt, utils, cms, ui_mgr)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.search import blog_search_results
+from core.search import blog_search_results, media_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
@@ -45,7 +45,7 @@ def blog(blog_id, errormsg=None):
             'search_ui':'blog',
             'search_object':blog,
             'search_context':blog_search_results,
-            'item_list_object':blog.pages,
+            'item_list_object':blog.pages(),
             'action_button':action,
             'list_actions':list_actions
         },
@@ -311,6 +311,20 @@ def blog_media(blog_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
+    return listing(
+        request, user, None,
+        {
+            'colset':'media',
+            'menu':'blog_manage_media',
+            'search_ui':'blog_media',
+            'search_object':blog,
+            'search_context':media_search_results,
+            'item_list_object':blog.media
+        },
+        {'blog_id':blog.id}
+        )
+
+    """
     media = blog.media.order_by(Media.id.desc())
 
     tags = template_tags(blog_id=blog.id,
@@ -330,6 +344,7 @@ def blog_media(blog_id):
         **tags.__dict__)
 
     return tpl
+    """
 
 @transaction
 def blog_media_edit(blog_id, media_id, status=None):
