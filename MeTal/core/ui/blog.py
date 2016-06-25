@@ -512,6 +512,11 @@ def blog_categories(blog_id):
     permission = auth.is_blog_editor(user, blog)
     reason = auth.check_category_editing_lock(blog, True)
 
+    action = (
+        'Add new category',
+        '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)
+        )
+
     return listing(
         request, user, None,
         {
@@ -521,6 +526,7 @@ def blog_categories(blog_id):
             'search_object':blog,
             'search_context':blog_search_results,
             'item_list_object':blog.categories.select(),
+            'action_button':action,
             # 'action_button':action,
             # 'list_actions':list_actions
         },
