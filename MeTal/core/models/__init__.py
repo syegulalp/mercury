@@ -165,7 +165,7 @@ class BaseModel(Model):
     @property
     def n_t(self):
         # TODO: replace this with proxies for name in all fields that need it
-        name=None
+        name = None
         for n in ('name', 'title', 'tag'):
             k = getattr(self, n, None)
             if k is not None:
@@ -633,88 +633,34 @@ class Blog(SiteBase):
     timezone = TextField(null=True, default='UTC')
     set_timezone = None
 
+    def archive(self, name):
+        '''
+        Gets the named archive template.
+        '''
+        archive = self.templates().select().where(
+            Template.title == name,
+            Template.template_type == template_type.archive)
+
+        return archive
+
     def archive_default(self, default_type):
         archive_default = self.templates().select().where(
             Template.default_type == default_type).get()
         return archive_default
 
-    @classmethod
-    def load(cls, blog_id=None):
-        try:
-            blog = Blog.get(Blog.id == blog_id)
-        except Blog.DoesNotExist as e:
-            raise Blog.DoesNotExist('Blog #{} does not exist'.format(blog_id), e)
-        return blog
 
     @property
-    def theme_actions(self):
-        return self.theme.actions(self)
-    @property
-    def index_archive(self):
-        return self.archive_default(archive_type.index)
-    @property
-    def page_archive(self):
-        return self.archive_default(archive_type.page)
+    def archive_templates(self):
+        archive_templates_in_blog = self.templates(template_type.archive)
+        return archive_templates_in_blog
+
+    def archives(self, name):
+        archives = self.archive(name).get().fileinfos_published.order_by(FileInfo.mapping_sort.desc())
+        return archives
+
     @property
     def author_archive(self):
         return self.archive_default(archive_type.author)
-    @property
-    def date_archive(self):
-        return self.archive_default(archive_type.archive)
-    @property
-    def category_archive(self):
-        return self.archive_default(archive_type.category)
-
-    @property
-    def parent(self, context=None):
-        return self.theme
-
-    @property
-    def subdir(self):
-        import urllib
-        return urllib.parse.urlparse(self.url)[2] + '/'
-
-    def ssi(self, ssi_name):
-        ssi = self.templates(template_type.include).select().where(
-            Template.title == ssi_name).get()
-        return '<!--#include virtual="/{}{}" -->'.format(
-            self.subdir,
-            ssi.default_mapping.fileinfos.get().file_path)
-
-
-    @property
-    def link_format(self):
-        return "{}/blog/{}".format(
-            BASE_URL, self.id)
-
-    @property
-    def media_path_(self, media_object=None):
-
-        tags = template_tags(
-            media=media_object,
-            blog=self)
-
-        template = tpl(self.media_path,
-            **tags)
-
-        # TODO: strip all newlines for a multi-line template?
-
-        return template
-
-
-    @property
-    def users(self):
-
-        blog_user_list = Permission.select(fn.Distinct(Permission.user)).where(
-            (Permission.site << [self.site.id, 0]) |
-            (Permission.blog << [self.id, 0])
-            ).tuples()
-
-        blog_users = User.select().where(User.id << blog_user_list)
-
-        return blog_users
-
-
 
     @property
     def categories(self):
@@ -726,6 +672,13 @@ class Blog(SiteBase):
 
         return categories
 
+    @property
+    def category_archive(self):
+        return self.archive_default(archive_type.category)
+
+    @property
+    def date_archive(self):
+        return self.archive_default(archive_type.archive)
 
     @property
     def default_category(self):
@@ -743,195 +696,20 @@ class Blog(SiteBase):
         else:
             return default_category
 
-    @property
-    def permalink(self):
-        return self.url
-
-    def module(self, module_name):
+    def erase_theme(self):
         '''
-        Returns a module from the current blog that matches this name.
-        If no module of the name is found, it will attempt to also import a template.
+        Erases a blog's theme in preparation for installing a new one.
         '''
-        pass
+        # leave these in, we'll need them later
+        # del_kvs = get_kvs_for_theme(self.theme)
+        # kvs_to_delete = KeyValue.delete().where(KeyValue.id << del_kvs)
+        # p = kvs_to_delete.execute()
 
-    def page(self, page_id=None, title=None):
-        '''
-        Select a single page in this blog by either its ID or title.
-        '''
-        try:
-            if title is not None:
-                page = self.pages(titles=(title,))[0]
-            else:
-                page = self.pages((page_id,))[0]
-        except Exception:
-            return None
-        else:
-            return page
-
-    def pages(self, page_list=None, titles=None):
-        '''
-        Select a list of pages in this blog by their IDs or titles
-        '''
-        pages = Page.select(Page, PageCategory).where(
-            Page.blog == self.id).join(
-            PageCategory).where(
-            PageCategory.primary == True).order_by(
-            Page.publication_date.desc(), Page.id.desc())
-
-        if page_list is not None:
-            pages = pages.select().where(Page.id << page_list)
-        if titles is not None:
-            pages = pages.select().where(Page.title.contains(titles))
-
-        return pages
-
-    def published_pages(self):
-
-        published_pages = self.pages().select().where(Page.status == page_status.published)
-
-        return published_pages
-
-    def scheduled_pages(self, due=False):
-
-        scheduled_pages = self.pages().select().where(Page.status == page_status.scheduled)
-        if due is True:
-            scheduled_pages = scheduled_pages.select().where(
-                Page.publication_date >= datetime.datetime.utcnow())
-
-        return scheduled_pages
-
-    def last_n_pages(self, count=0):
-        '''
-        Returns the most recent pages posted in a blog, ordered by publication date.
-        Set count to zero to retrieve all published pages.
-        '''
-
-        last_n_pages = self.published_pages().select().order_by(
-            Page.publication_date.desc())
-
-        if count > 0:
-            last_n_pages = last_n_pages.limit(count)
-
-        return last_n_pages
-
-    def last_n_edited_pages(self, count=5):
-
-        last_n_edited_pages = self.pages().select().order_by(Page.modified_date.desc()).limit(count)
-
-        return last_n_edited_pages
-
-    @property
-    def index_file(self):
-        return self.base_index + "." + self.base_extension
-
-    @property
-    def media(self):
-        '''
-        Returns all Media types associated with a given blog.
-        '''
-        media = Media.select().where(Media.blog == self)
-
-        return media
-
-    def templates(self, template_type=None):
-        '''
-        Returns all templates associated with a given blog.
-        '''
-        templates_in_blog = Template.select().where(Template.blog == self)
-
-        if template_type is not None:
-            templates_in_blog = templates_in_blog.select().where(Template.template_type == template_type)
-
-        return templates_in_blog
-
-    def template(self, template_id):
-
-        template_in_blog = self.templates_in_blog.select().where(Template.id == template_id)
-
-        return template_in_blog
-
-    @property
-    def index_templates(self):
-        index_templates_in_blog = self.templates(template_type.index)
-        return index_templates_in_blog
-
-    def archives(self, name):
-        archives = self.archive(name).get().fileinfos_published.order_by(FileInfo.mapping_sort.desc())
-        return archives
-
-    def archive(self, name):
-        '''
-        Gets the named archive template.
-        '''
-        archive = self.templates().select().where(
-            Template.title == name,
-            Template.template_type == template_type.archive)
-
-        return archive
-
-    @property
-    def ssi_templates(self):
-        ssi_templates = self.templates(template_type.include).select().where(
-            Template.publishing_mode == publishing_mode.ssi)
-        return ssi_templates
-
-    @property
-    def archive_templates(self):
-        archive_templates_in_blog = self.templates(template_type.archive)
-        return archive_templates_in_blog
-
-    def template_mappings(self, template_type=None):
-        '''
-        Returns all template mappings associated with a given blog.
-        '''
-
-        template_mappings_in_blog = TemplateMapping.select().where(TemplateMapping.template <<
-            self.templates())
-
-        if template_type is not None:
-            template_mappings_in_blog = template_mappings_in_blog.select().where(
-                TemplateMapping.template << self.templates(template_type))
-
-        return template_mappings_in_blog
-
-    @property
-    def fileinfos(self):
-        '''
-        Returns all fileinfos associated with a given blog.
-        '''
-
-        fileinfos_for_blog = FileInfo.select().where(FileInfo.template_mapping <<
-            self.template_mappings())
-
-        return fileinfos_for_blog
-
-    def setup(self, user, theme=None):
-        '''
-        Prepares a newly-created blog with a default category.
-        '''
-
-        # We need this to flush any pending changes
-        self.save()
-
-        new_blog_default_category = Category(
-            blog=self,
-            title="Uncategorized",
-            default=True)
-
-        new_blog_default_category.save()
-
-        if theme is not None:
-            from core.mgmt import theme_apply_to_blog
-            theme_apply_to_blog(theme, self, user)
-            self.save()
-
-        from core.log import logger
-        logger.info("Blog {} created on site {} by user {}.".format(
-            self.for_log,
-            self.site.for_log,
-            user.for_log))
-
-        return self
+        mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << self.template_mappings())
+        m = mappings_to_delete.execute()
+        templates_to_delete = Template.delete().where(Template.id << self.templates())
+        n = templates_to_delete.execute()
+        return m, n  # , p
 
     def export_theme(self, title, description, user):
         '''
@@ -999,20 +777,258 @@ class Blog(SiteBase):
 
         return theme
 
-    def erase_theme(self):
+    @property
+    def fileinfos(self):
         '''
-        Erases a blog's theme in preparation for installing a new one.
+        Returns all fileinfos associated with a given blog.
         '''
-        # leave these in, we'll need them later
-        # del_kvs = get_kvs_for_theme(self.theme)
-        # kvs_to_delete = KeyValue.delete().where(KeyValue.id << del_kvs)
-        # p = kvs_to_delete.execute()
 
-        mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << self.template_mappings())
-        m = mappings_to_delete.execute()
-        templates_to_delete = Template.delete().where(Template.id << self.templates())
-        n = templates_to_delete.execute()
-        return m, n  # , p
+        fileinfos_for_blog = FileInfo.select().where(FileInfo.template_mapping <<
+            self.template_mappings())
+
+        return fileinfos_for_blog
+
+    @property
+    def index_archive(self):
+        return self.archive_default(archive_type.index)
+
+    @property
+    def index_file(self):
+        return self.base_index + "." + self.base_extension
+
+    @property
+    def index_templates(self):
+        index_templates_in_blog = self.templates(template_type.index)
+        return index_templates_in_blog
+
+    def last_n_edited_pages(self, count=5):
+        last_n_edited_pages = self.pages().select().order_by(Page.modified_date.desc()).limit(count)
+        return last_n_edited_pages
+
+    def last_n_pages(self, count=0):
+        '''
+        Returns the most recent pages posted in a blog, ordered by publication date.
+        Set count to zero to retrieve all published pages.
+        '''
+
+        last_n_pages = self.published_pages().select().order_by(
+            Page.publication_date.desc())
+
+        if count > 0:
+            last_n_pages = last_n_pages.limit(count)
+
+        return last_n_pages
+
+    @property
+    def link_format(self):
+        return "{}/blog/{}".format(
+            BASE_URL, self.id)
+
+    @classmethod
+    def load(cls, blog_id=None):
+        try:
+            blog = Blog.get(Blog.id == blog_id)
+        except Blog.DoesNotExist as e:
+            raise Blog.DoesNotExist('Blog #{} does not exist'.format(blog_id), e)
+        return blog
+
+    @property
+    def media(self):
+        '''
+        Returns all Media types associated with a given blog.
+        '''
+        media = Media.select().where(Media.blog == self)
+
+        return media
+
+    @property
+    def media_path_(self, media_object=None):
+
+        tags = template_tags(
+            media=media_object,
+            blog=self)
+
+        template = tpl(self.media_path,
+            **tags)
+
+        # TODO: strip all newlines for a multi-line template?
+
+        return template
+
+    def module(self, module_name):
+        '''
+        Returns a module from the current blog that matches this name.
+        If no module of the name is found, it will attempt to also import a template.
+        '''
+        pass
+
+
+    def page(self, page_id=None, title=None):
+        '''
+        Select a single page in this blog by either its ID or title.
+        '''
+        try:
+            if title is not None:
+                page = self.pages(titles=(title,))[0]
+            else:
+                page = self.pages((page_id,))[0]
+        except Exception:
+            return None
+        else:
+            return page
+
+    def pages(self, page_list=None, titles=None):
+        '''
+        Select a list of pages in this blog by their IDs or titles
+        '''
+        pages = Page.select(Page, PageCategory).where(
+            Page.blog == self.id).join(
+            PageCategory).where(
+            PageCategory.primary == True).order_by(
+            Page.publication_date.desc(), Page.id.desc())
+
+        if page_list is not None:
+            pages = pages.select().where(Page.id << page_list)
+        if titles is not None:
+            pages = pages.select().where(Page.title.contains(titles))
+
+        return pages
+
+
+    @property
+    def page_archive(self):
+        return self.archive_default(archive_type.page)
+
+    @property
+    def parent(self, context=None):
+        return self.theme
+
+    @property
+    def permalink(self):
+        return self.url
+
+    def published_pages(self):
+        published_pages = self.pages().select().where(Page.status == page_status.published)
+        return published_pages
+
+
+    def scheduled_pages(self, due=False):
+        scheduled_pages = self.pages().select().where(Page.status == page_status.scheduled)
+        if due is True:
+            scheduled_pages = scheduled_pages.select().where(
+                Page.publication_date >= datetime.datetime.utcnow())
+        return scheduled_pages
+
+    def setup(self, user, theme=None):
+        '''
+        Prepares a newly-created blog with a default category.
+        '''
+
+        # We need this to flush any pending changes
+        self.save()
+
+        new_blog_default_category = Category(
+            blog=self,
+            title="Uncategorized",
+            default=True)
+
+        new_blog_default_category.save()
+
+        if theme is not None:
+            from core.mgmt import theme_apply_to_blog
+            theme_apply_to_blog(theme, self, user)
+            self.save()
+
+        from core.log import logger
+        logger.info("Blog {} created on site {} by user {}.".format(
+            self.for_log,
+            self.site.for_log,
+            user.for_log))
+
+        return self
+
+    def ssi(self, ssi_name):
+        ssi = self.templates(template_type.include).select().where(
+            Template.title == ssi_name).get()
+        return '<!--#include virtual="/{}{}" -->'.format(
+            self.subdir,
+            ssi.default_mapping.fileinfos.get().file_path)
+
+    @property
+    def ssi_templates(self):
+        ssi_templates = self.templates(template_type.include).select().where(
+            Template.publishing_mode == publishing_mode.ssi)
+        return ssi_templates
+
+    @property
+    def subdir(self):
+        import urllib
+        return urllib.parse.urlparse(self.url)[2] + '/'
+
+    def tags(self, tag_list=None):
+        '''
+        Select all tags that belong to this blog.
+        '''
+        tags = Tag.select().where(Tag.blog == self)
+        if tag_list is not None:
+            tags = tags.select().where(Tag.id << tag_list)
+        return tags
+
+    def tags_all(self):
+        return self.tags(tag_list=None)
+
+    def tags_private(self, tag_list=None):
+        return self.tags(tag_list).select().where(Tag.is_hidden == True)
+
+    def tags_public(self, tag_list=None):
+        return self.tags(tag_list).select().where(Tag.is_hidden == False)
+
+    def template(self, template_id):
+        template_in_blog = self.templates_in_blog.select().where(Template.id == template_id)
+        return template_in_blog
+
+    def template_mappings(self, template_type=None):
+        '''
+        Returns all template mappings associated with a given blog.
+        '''
+
+        template_mappings_in_blog = TemplateMapping.select().where(TemplateMapping.template <<
+            self.templates())
+
+        if template_type is not None:
+            template_mappings_in_blog = template_mappings_in_blog.select().where(
+                TemplateMapping.template << self.templates(template_type))
+
+        return template_mappings_in_blog
+
+    def templates(self, template_type=None):
+        '''
+        Returns all templates associated with a given blog.
+        '''
+        templates_in_blog = Template.select().where(Template.blog == self)
+
+        if template_type is not None:
+            templates_in_blog = templates_in_blog.select().where(Template.template_type == template_type)
+
+        return templates_in_blog
+
+    @property
+    def theme_actions(self):
+        return self.theme.actions(self)
+
+
+
+    @property
+    def users(self):
+
+        blog_user_list = Permission.select(fn.Distinct(Permission.user)).where(
+            (Permission.site << [self.site.id, 0]) |
+            (Permission.blog << [self.id, 0])
+            ).tuples()
+
+        blog_users = User.select().where(User.id << blog_user_list)
+
+        return blog_users
 
     def validate(self):
         '''
