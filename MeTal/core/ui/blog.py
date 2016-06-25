@@ -2,7 +2,7 @@ from core import (auth, mgmt, utils, cms, ui_mgr)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.search import blog_search_results, media_search_results
+from core.search import blog_search_results, media_search_results, tag_search_results
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
@@ -548,6 +548,24 @@ def blog_tags(blog_id):
 
     reason = auth.check_tag_editing_lock(blog, True)
 
+    return listing(
+        request, user, None,
+        {
+            'colset':'tags',
+            'menu':'blog_manage_tags',
+            'search_ui':'blog_tags',
+            'search_object':blog,
+            'search_context':tag_search_results,
+            # 'item_list_object':blog.tags(),
+            'item_list_object':Tag.select().where(Tag.blog == blog).order_by(Tag.tag.asc()),
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id,
+            'status':reason}
+        )
+
+    '''
     blog_tag_list = Tag.select().where(
         Tag.blog == blog).order_by(Tag.tag.asc())
 
@@ -568,6 +586,7 @@ def blog_tags(blog_id):
         **tags.__dict__)
 
     return tpl
+    '''
 
 @transaction
 def blog_templates(blog_id):

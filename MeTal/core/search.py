@@ -60,3 +60,32 @@ def media_search_results(request, blog_id=None, site_id=None):
         media_searched.select().where(Media.blog == blog_id)
 
     return media_searched, search_terms
+
+
+def tag_search_results(request, blog_id=None, site_id=None):
+
+    try:
+        search_terms = request.query['search']
+    except KeyError:
+        raise KeyError('No search field in query.')
+
+    if search_terms == "":
+        raise ValueError('Search field is empty.')
+
+    search_terms_enc = utf8_escape(search_terms)
+
+    from core.models import Tag
+
+    # TODO: move to DB.media_search for indexing
+
+    tags_searched = (Tag.select(Tag.id)
+        .where(Tag.tag.contains(search_terms_enc))
+        .order_by(Tag.tag.asc()).tuples())
+
+    # if site_id is not None:
+        # tags_searched.select().where(Tag.blog.site == site_id)
+    if blog_id is not None:
+        tags_searched.select().where(Tag.blog == blog_id)
+
+
+    return tags_searched, search_terms

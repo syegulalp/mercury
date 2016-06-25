@@ -49,7 +49,6 @@ def listing(request, user, errormsg, context, tags_data):
         items_searched, search = None, None
 
     if items_searched is not None:
-        # raise Exception(item_list_object.__dict__)
         item_list = item_list_object.select().where(item_list_object.model_class.id << items_searched)
     else:
         item_list = item_list_object.select()

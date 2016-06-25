@@ -63,6 +63,10 @@ search_context = (
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/templates",
             'form_description':'Search templates:',
             'form_placeholder':'Template title or text in template'},
+    'blog_tags':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search tags:',
+            'form_placeholder':'Tag name'},
     'site':
             {'form_target':lambda x: BASE_URL,  # @UnusedVariable
             'form_description':'Search blogs:',
