@@ -565,28 +565,6 @@ def blog_tags(blog_id):
             'status':reason}
         )
 
-    '''
-    blog_tag_list = Tag.select().where(
-        Tag.blog == blog).order_by(Tag.tag.asc())
-
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-
-    tags.status = reason
-
-    paginator, rowset = utils.generate_paginator(blog_tag_list, request)
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog_manage_tags', blog),
-        rowset=rowset,
-        colset=colsets['tags'],
-        icons=icons,
-        **tags.__dict__)
-
-    return tpl
-    '''
 
 @transaction
 def blog_templates(blog_id):
