@@ -52,62 +52,6 @@ def blog(blog_id, errormsg=None):
         {'blog_id':blog.id}
         )
 
-"""
-@transaction
-def _blog(blog_id, errormsg=None):
-    '''
-    UI for listing contents of a given blog
-    '''
-    user = auth.is_logged_in(request)
-    blog = Blog.load(blog_id)
-    permission = auth.is_blog_member(user, blog)
-
-    try:
-        pages_searched, search = blog_search_results(request, blog)
-    except (KeyError, ValueError):
-        pages_searched, search = None, None
-
-    item_list = blog.pages(pages_searched)
-
-    try:
-        sort_terms = request.query['order_by']
-    except KeyError:
-        pass
-    else:
-        item_list = item_list.select().order_by(
-            getattr(Page, sort_terms).asc()
-            )
-
-    paginator, rowset = utils.generate_paginator(item_list, request)
-
-    action = utils.action_button(
-        'Create new page',
-        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
-        )
-
-    list_actions = [
-        ['Republish', '{}/api/1/republish'],
-        ]
-
-    tags = template_tags(blog_id=blog.id,
-        search=search,
-        user=user)
-
-    tags.status = errormsg if errormsg is not None else None
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog_menu', blog),
-        rowset=rowset,
-        colset=colsets['blog'],
-        icons=icons,
-        action=action,
-        list_actions=list_actions,
-        **tags.__dict__)
-
-    return tpl
-"""
 
 @transaction
 def blog_create(site_id):
