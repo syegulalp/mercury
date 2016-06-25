@@ -660,50 +660,13 @@ def blog_select_themes(blog_id):
             'search_ui':'blog',
             'search_object':blog,
             'search_context':blog_search_results,
-            # 'item_list_object':blog.pages(),
             'item_list_object':Theme.select().order_by(Theme.id),
-            # 'rowset_callback':lambda x:add_blog_reference(x, blog)
             'rowset_callback':add_blog_reference
-            # 'action_button':action,
-            # 'list_actions':list_actions
         },
         {'blog_id':blog.id,
             'status':reason,
             }
         )
-
-    """
-
-
-
-    themes = Theme.select().order_by(Theme.id)
-
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-    tags.status = reason
-
-    paginator, rowset = utils.generate_paginator(themes, request)
-
-    action = utils.action_button(
-        'Save blog templates to new theme',
-        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
-        )
-
-    for n in rowset:
-        n.blog = blog
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog_manage_themes', blog),
-        rowset=rowset,
-        colset=colsets['themes'],
-        icons=icons,
-        action=action,
-        **tags.__dict__)
-
-    return tpl
-    """
 
 
 @transaction
