@@ -70,36 +70,6 @@ def system_sites(errormsg=None):
             'status':errormsg}
         )
 
-
-    """
-
-    try:
-        sites_searched, search = site_search_results(request)
-    except (KeyError, ValueError):
-        sites_searched, search = None, None
-
-    tags = template_tags(
-        user=user)
-
-    if errormsg is not None:
-        tags.status = errormsg
-
-    taglist = tags.sites
-
-    paginator, rowset = utils.generate_paginator(taglist, request)
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['sites'], None),
-        menu=generate_menu('manage_sites', None),
-        rowset=rowset,
-        colset=colsets['all_sites'],
-        **tags.__dict__)
-
-    return tpl
-    """
-
-
 @transaction
 def system_queue():
     user = auth.is_logged_in(request)
