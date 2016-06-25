@@ -324,28 +324,6 @@ def blog_media(blog_id):
         {'blog_id':blog.id}
         )
 
-    """
-    media = blog.media.order_by(Media.id.desc())
-
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-
-    paginator, media_list = utils.generate_paginator(media, request)
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        media_list=media_list,
-        menu=generate_menu('blog_manage_media', blog),
-        icons=icons,
-        search_context=(search_context['blog_media'], blog),
-        rowset=media_list,
-        colset=colsets['media'],
-
-        **tags.__dict__)
-
-    return tpl
-    """
-
 @transaction
 def blog_media_edit(blog_id, media_id, status=None):
     '''
