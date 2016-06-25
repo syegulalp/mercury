@@ -513,7 +513,7 @@ def blog_categories(blog_id):
     reason = auth.check_category_editing_lock(blog, True)
 
     action = (
-        'Add new category',
+        'Create new category',
         '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)
         )
 
