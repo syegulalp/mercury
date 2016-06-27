@@ -1,6 +1,9 @@
 from core.utils import utf8_escape
 from settings import DB
 
+def blog_pages_in_category_search_results(request, category):
+    return blog_search_results(request, category.blog)
+
 def tag_in_blog_search_results(request, tag):
     return blog_search_results(request, tag.blog)
 

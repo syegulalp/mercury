@@ -72,7 +72,13 @@ search_context = (
                 BASE_URL, x.blog.id, x.id),
                 # lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
             'form_description':'Search pages with this tag:',
-            'form_placeholder':'Tag name'},
+            'form_placeholder':'Page title or text in description'},
+    'blog_pages_in_category':
+            {'form_target': lambda x: "{}/blog/{}/category/{}/pages".format(
+                BASE_URL, x.blog.id, x.id),
+                # lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search pages in this category:',
+            'form_placeholder':'Page title or text in description'},
     'site':
             {'form_target':lambda x: BASE_URL,  # @UnusedVariable
             'form_description':'Search blogs:',
@@ -251,7 +257,7 @@ def edit_category(blog_id, category_id):
     permission = auth.is_blog_admin(user, blog)
 
     from core.models import Category
-    category = Category.load(blog=blog, category_id=category_id)
+    category = Category.load(blog_id=blog.id, category_id=category_id)
     auth.check_category_editing_lock(blog)
 
     category_list = [n for n in blog.categories]

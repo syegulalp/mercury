@@ -3,7 +3,8 @@ from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
 from core.search import (
-    blog_search_results, media_search_results, tag_search_results, tag_in_blog_search_results)
+    blog_search_results, media_search_results, tag_search_results, tag_in_blog_search_results,
+    blog_pages_in_category_search_results)
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
@@ -54,7 +55,7 @@ def blog(blog_id, errormsg=None):
         )
 
 @transaction
-def tag_list_pages(blog_id, tag_id):
+def blog_tag_list_pages(blog_id, tag_id):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
@@ -558,6 +559,35 @@ def blog_categories(blog_id):
         {'blog_id':blog.id,
             'status':reason}
         )
+
+@transaction
+def blog_pages_in_category(blog_id, category_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_editor(user, blog)
+    reason = auth.check_category_editing_lock(blog, True)
+
+    from core.models import Category
+    category = Category.load(blog_id=blog.id, category_id=category_id)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'blog',
+            'menu':'blog_pages_in_category',
+            'search_ui':'blog_pages_in_category',
+            'search_object':category,
+            'search_context':blog_pages_in_category_search_results,
+            'item_list_object':category.pages.select(),
+            # 'action_button':action,
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id,
+            'status':reason}
+        )
+
 
 @transaction
 def blog_tags(blog_id):

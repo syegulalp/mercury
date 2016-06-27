@@ -1089,7 +1089,7 @@ class Category(BaseModel):
 
     @classmethod
     def load(cls, **kwargs):
-        blog = kwargs.get('blog', None)
+        blog = kwargs.get('blog_id', None)
         category_id = kwargs.get('category_id', None)
         try:
             category_to_get = Category.get(

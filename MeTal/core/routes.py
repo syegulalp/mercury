@@ -434,7 +434,16 @@ def blog_tag_list_pages(blog_id, tag_id):
     Routes for editing a tag in a blog
     '''
     from core.ui import blog
-    return blog.tag_list_pages(blog_id, tag_id)
+    return blog.blog_tag_list_pages(blog_id, tag_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages')
+@_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages', method='POST')
+def blog_pages_in_category(blog_id, category_id):
+    '''
+    Routes for editing a tag in a blog
+    '''
+    from core.ui import blog
+    return blog.blog_pages_in_category(blog_id, category_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):

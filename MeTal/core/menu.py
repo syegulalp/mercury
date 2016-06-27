@@ -249,6 +249,20 @@ menus = {
         'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
         'text':lambda x:'Edit category #{}'.format(x.id)
         },
+    'blog_edit_category_button':{
+        'type':'button',
+        'parent':'blog_manage_categories',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Category #{}'.format(x.id)
+        },
+    'blog_pages_in_category':{
+        'type':'label',
+        'parent':'blog_edit_category_button',
+        'parent_context':lambda x:x,
+        'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Pages in {}'.format(x.for_log)
+        },
     'blog_new_category':{
         'type':'label',
         'parent':'blog_manage_categories',
@@ -598,7 +612,12 @@ colsets = {
              },
              {'field': 'pages',
              'label': 'Pages in category',
-             'format_raw': lambda x: x.pages.count()
+             'format_raw': lambda x: "<a href='{}/blog/{}/category/{}/pages'>{}</a>".format(
+                 BASE_URL,
+                 x.blog.id,
+                 x.id,
+                 x.pages.count()
+                 )
              },
              {'field':'default',
              'label':'Default',
