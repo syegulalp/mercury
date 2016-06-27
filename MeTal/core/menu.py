@@ -596,6 +596,10 @@ colsets = {
              'label': 'Parent',
              'format_raw': lambda x: x.parent_c.for_listing
              },
+             {'field': 'pages',
+             'label': 'Pages in category',
+             'format_raw': lambda x: x.pages.count()
+             },
              {'field':'default',
              'label':'Default',
              'format_raw':lambda x:'<span class="label label-primary">Default blog category</span>' if x.default is True else ''

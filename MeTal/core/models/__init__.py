@@ -1080,8 +1080,15 @@ class Category(BaseModel):
     default = BooleanField(default=False, index=True)
     sort = IntegerField(default=None, null=True, index=True)
 
+    @property
+    def pages(self):
+        categories = PageCategory.select(PageCategory.page).where(
+            PageCategory.category == self)
+        pages = Page.select().where(Page.id << categories)
+        return pages
+
     @classmethod
-    def load(**kwargs):
+    def load(cls, **kwargs):
         blog = kwargs.get('blog', None)
         category_id = kwargs.get('category_id', None)
         try:

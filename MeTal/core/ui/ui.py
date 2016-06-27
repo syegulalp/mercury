@@ -250,12 +250,11 @@ def edit_category(blog_id, category_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
+    from core.models import Category
     category = Category.load(blog=blog, category_id=category_id)
     auth.check_category_editing_lock(blog)
 
     category_list = [n for n in blog.categories]
-
-    from core.models import Category
 
     top_level_category = Category(
         id=None,
