@@ -700,8 +700,14 @@ colsets = {
              {'field': 'url',
              'label': 'URL',
              'colwidth': '20%',
-             'format_raw': lambda x: '<a target="_blank" href="{}">{}</a>'.format(x.url, breaks(utf8_escape(x.url)))}
-             ,
+             'format_raw': lambda x: '<a target="_blank" href="{}">{}</a>'.format(x.url, breaks(utf8_escape(x.url)))
+             },
+             {'field': 'pages',
+             'label': 'Used in',
+             'colwidth': '1%',
+             'format': lambda x: x.pages.count()
+             },
+
         )
     },
     'blog_users':{

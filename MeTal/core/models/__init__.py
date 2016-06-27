@@ -2164,6 +2164,17 @@ class Media(BaseModel, DateMod):
             return self.url
 
     @property
+    def pages(self):
+        '''
+        Returns a listing of all pages this media is associated with.
+        '''
+        pages = MediaAssociation.select().where(
+            MediaAssociation.media == self)
+
+        return pages
+
+    """
+    @property
     def associated_with(self):
         '''
         Returns a listing of all pages this media is associated with.
@@ -2172,6 +2183,7 @@ class Media(BaseModel, DateMod):
             MediaAssociation.media == self)
 
         return associated_with
+    """
 
     @property
     def preview_for_listing(self):

@@ -362,8 +362,8 @@ def blog_media_edit(blog_id, media_id, status=None):
     permission = auth.is_media_owner(user, media)
 
     from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(media.kvs(no_traverse=True))
-    # kv_ui_data = kv_ui(media.kv_list())
+    # kv_ui_data = kv_ui(media.kvs(no_traverse=True))
+    kv_ui_data = kv_ui(media.kv_list())
 
     tags = template_tags(blog_id=blog.id,
          media=media,
@@ -486,7 +486,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
         used_in = []
 
-        for n in media.associated_with:
+        for n in media.pages:
             used_in.append("<li>{}</li>".format(n.page.for_display))
 
         if len(used_in) > 0:
