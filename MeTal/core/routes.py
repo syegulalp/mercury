@@ -427,6 +427,15 @@ def blog_edit_tag(blog_id, tag_id):
     from core.ui import ui
     return ui.edit_tag(blog_id, tag_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages')
+@_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages', method='POST')
+def blog_tag_list_pages(blog_id, tag_id):
+    '''
+    Routes for editing a tag in a blog
+    '''
+    from core.ui import blog
+    return blog.tag_list_pages(blog_id, tag_id)
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):
     '''

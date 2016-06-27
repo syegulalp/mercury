@@ -67,6 +67,12 @@ search_context = (
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
             'form_description':'Search tags:',
             'form_placeholder':'Tag name'},
+    'blog_pages_with_tag':
+            {'form_target': lambda x: "{}/blog/{}/tag/{}/pages".format(
+                BASE_URL, x.blog.id, x.id),
+                # lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search pages with this tag:',
+            'form_placeholder':'Tag name'},
     'site':
             {'form_target':lambda x: BASE_URL,  # @UnusedVariable
             'form_description':'Search blogs:',

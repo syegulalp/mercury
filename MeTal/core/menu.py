@@ -267,7 +267,23 @@ menus = {
         'parent':'blog_manage_tags',
         'parent_context':lambda x:x.blog,
         'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
-        'text':lambda x:'Edit tag #{}'.format(x.id)},
+        'text':lambda x:'Edit tag #{}'.format(x.id)
+        },
+    'blog_edit_tag_button':{
+        'type':'button',
+        'parent':'blog_manage_tags',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Tag #{}'.format(x.id)
+        },
+    'blog_pages_for_tag':{
+        'type':'label',
+        'parent':'blog_edit_tag_button',
+        'parent_context':lambda x:x,
+        # 'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
+        # 'text': lambda x:'Edit tag #{}'.format(x.id)},
+        'text': lambda x:'Pages with {}'.format(x.for_log),
+        },
     'media_div':{
         'type':'divider',
         'text':lambda x:'Media'},
@@ -502,7 +518,14 @@ colsets = {
         'colset': [
             {'field': 'title',
              'label': 'Title',
-             'format_raw': lambda x: x.for_listing
+             'format_raw': lambda x:x.for_listing
+                # lambda x: '{}<br/><small>{}</small>'.format(
+                # x.for_listing,
+                # x.description)
+             },
+            {'field': 'description',
+             'label': 'Description',
+             'format': lambda x: x.description
              },
             {'field': '',
              'label': '',
@@ -529,6 +552,10 @@ colsets = {
              'label': 'Title',
              'format_raw': lambda x: x.for_listing
              },
+            {'field': 'description',
+             'label': 'Description',
+             'format': lambda x: x.description
+             },
              {'field': 'default',
              'label': '',
              'format_raw': lambda x: '<span class="label label-primary">Default theme for new blogs</span>' if x.is_default else ''
@@ -549,7 +576,12 @@ colsets = {
              },
             {'field': 'in_pages',
              'label': 'Pages',
-             'format_raw': lambda x: x.in_pages.count()
+             'format_raw': lambda x: "<a href='{}/blog/{}/tag/{}/pages'>{}</a>".format(
+                 BASE_URL,
+                 x.blog.id,
+                 x.id,
+                 x.in_pages.count()
+                 )
              }
         ]
     },

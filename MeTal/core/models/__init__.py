@@ -1699,6 +1699,15 @@ class Tag(BaseModel):
     new_tag_template = '''
     <span class="tag_link">{tag}</span>'''
 
+    @classmethod
+    def load(cls, tag_id=None):
+        try:
+            tag = Tag.get(Tag.id == tag_id)
+        except Tag.DoesNotExist as e:
+            raise Tag.DoesNotExist('Tag #{} does not exist'.format(tag_id), e)
+        return tag
+
+
     def save(self, *a, **ka):
         if str(self.tag)[:1] == '@':
             self.is_hidden = True

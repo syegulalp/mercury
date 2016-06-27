@@ -1,6 +1,6 @@
 from core.models import template_tags
 from core import utils
-from core.libs.bottle import template
+from core.libs.bottle import template as _tpl
 from core.menu import generate_menu, colsets, icons
 from .ui import search_context
 
@@ -75,11 +75,14 @@ def listing(request, user, errormsg, context, tags_data):
 
     tags.status = errormsg if errormsg is not None else None
 
+    # Use 'rowset_callback' to supply a function that can be used
+    # to transform the rowset before display
+
     callback = context.get('rowset_callback', None)
     if callback is not None:
         rowset = callback(rowset)
 
-    tpl = template('listing/listing_ui',
+    tpl = _tpl('listing/listing_ui',
         paginator=paginator,
         search_context=(search_context[search_ui], search_object),
         menu=generate_menu(menu, search_object),

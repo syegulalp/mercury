@@ -2,7 +2,8 @@ from core import (auth, mgmt, utils, cms, ui_mgr)
 from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.search import blog_search_results, media_search_results, tag_search_results
+from core.search import (
+    blog_search_results, media_search_results, tag_search_results, tag_in_blog_search_results)
 from .ui import search_context, submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
@@ -51,6 +52,30 @@ def blog(blog_id, errormsg=None):
         },
         {'blog_id':blog.id}
         )
+
+@transaction
+def tag_list_pages(blog_id, tag_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_member(user, blog)
+    tag = Tag.load(tag_id)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'blog',
+            'menu':'blog_pages_for_tag',
+            'search_ui':'blog_pages_with_tag',
+            'search_object':tag,
+            'search_context':tag_in_blog_search_results,
+            'item_list_object':tag.in_pages,
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id}
+        )
+
 
 
 @transaction
