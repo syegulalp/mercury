@@ -233,7 +233,7 @@ def remove_user_permissions(user, permission_ids):
     return done
 
 # move to Page.delete_preview()
-
+'''
 def delete_page_preview(page):
 
     preview_file = page.preview_file
@@ -255,3 +255,4 @@ def delete_page_preview(page):
             raise e
     except Exception as e:
         raise e
+'''

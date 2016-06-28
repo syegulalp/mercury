@@ -100,8 +100,9 @@ def page_edit_save(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    from core.mgmt import delete_page_preview
-    delete_page_preview(page)
+    # from core.mgmt import delete_page_preview
+    # delete_page_preview(page)
+    page.delete_preview()
 
     tags = cms.save_page(page, user, page.blog)
 
@@ -269,8 +270,9 @@ def delete_page_preview(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    from core.mgmt import delete_page_preview
-    delete_page_preview(page)
+    # from core.mgmt import delete_page_preview
+    # delete_page_preview(page)
+    page.delete_preview()
 
 
 @transaction

@@ -1179,6 +1179,29 @@ class Page(BaseModel, DateMod):
 
     security = 'is_page_editor'
 
+    def delete_preview(self):
+
+        preview_file = self.preview_file
+        preview_fileinfo = self.default_fileinfo
+        split_path = preview_fileinfo.file_path.rsplit('/', 1)
+
+        preview_fileinfo.file_path = preview_fileinfo.file_path = (
+             split_path[0] + "/" +
+             preview_file
+             )
+
+        import os
+        from os.path import join as _join
+
+        try:
+            return os.remove(_join(self.blog.path, preview_fileinfo.file_path))
+        except OSError as e:
+            from core.error import not_found
+            if not_found(e) is False:
+                raise e
+        except Exception as e:
+            raise e
+
     def proxy(self, object_map):
         page_proxy = Page.load(self.id)
         iterables = {Tag:'tag', Category:'category'}
