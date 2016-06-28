@@ -83,21 +83,6 @@ def theme_install_to_system(theme_path):
     new_theme.save()
     return new_theme
 
-'''
-def site_create(**new_site_data):
-
-    new_site = Site()
-
-    new_site.name = new_site_data['name']
-    new_site.description = new_site_data['description']
-    new_site.url = new_site_data['url']
-    new_site.path = new_site_data['path']
-    new_site.local_path = new_site.path
-
-    new_site.save()
-
-    return new_site
-'''
 
 def export_data():
     n = ("Beginning export process. Writing files to {}.".format(APPLICATION_PATH + EXPORT_FILE_PATH))
