@@ -7,40 +7,12 @@ from core.models import (TemplateMapping, Template, System, KeyValue,
 from core.libs.playhouse.dataset import DataSet
 from os.path import join as _join
 
-'''
-# TODO: move to User as a classmethod
-def login_verify(email, password):
-    try:
-        user = User.get(User.email == email,
-            User.password == encrypt_password(password))
-    except User.DoesNotExist:
-        raise User.DoesNotExist
-    else:
-        user.last_login = datetime.datetime.utcnow()
-        user.save()
-        return user
-
-
-# move to Queue.erase?
-# more like blog_ and perhapse site_
-
-def erase_queue(blog=None):
-    from core.models import Queue
-    if blog is None:
-        delete_queue = Queue.delete()
-    else:
-        delete_queue = Queue.delete().where(Queue.blog == blog)
-    return delete_queue.execute()
-
-'''
-
 def theme_apply_to_blog(theme, blog , user):
 
     from core import cms
     cms.purge_fileinfos(blog.fileinfos)
     blog.erase_theme()
     from settings import THEME_FILE_PATH
-    # import io
 
     theme_dir = _join(THEME_FILE_PATH, theme.json)
 
@@ -198,61 +170,3 @@ def import_data():
 
     from core.routes import app
     app.reset()
-
-def add_user_permission(user, **permission):
-
-    new_permission = Permission(
-        user=user,
-        permission=permission['permission'],
-        site=permission['site'],
-        )
-
-    try:
-        new_permission.blog = permission['blog']
-    except KeyError:
-        pass
-
-    new_permission.save()
-
-    return new_permission
-
-# move to User.remove_permission()
-
-def remove_user_permissions(user, permission_ids):
-    from core import auth
-    remove_permission = Permission.delete().where(
-        Permission.id << permission_ids)
-    done = remove_permission.execute()
-
-    try:
-        no_sysop = auth.get_users_with_permission(auth.role.SYS_ADMIN)
-    except IndexError:
-        from core.error import PermissionsException
-        raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
-
-    return done
-
-# move to Page.delete_preview()
-'''
-def delete_page_preview(page):
-
-    preview_file = page.preview_file
-    preview_fileinfo = page.default_fileinfo
-    split_path = preview_fileinfo.file_path.rsplit('/', 1)
-
-    preview_fileinfo.file_path = preview_fileinfo.file_path = (
-         split_path[0] + "/" +
-         preview_file
-         )
-
-    import os
-
-    try:
-        return os.remove(_join(page.blog.path, preview_fileinfo.file_path))
-    except OSError as e:
-        from core.error import not_found
-        if not_found(e) is False:
-            raise e
-    except Exception as e:
-        raise e
-'''
