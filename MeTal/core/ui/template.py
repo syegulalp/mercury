@@ -1,7 +1,7 @@
 from core import (auth, utils, ui_mgr, template as _template)
 from core.menu import generate_menu, icons
 
-from core.models import (Blog, Template,
+from core.models import (Blog,
     template_tags, Template,
     TemplateMapping, db, template_type, publishing_mode)
 
@@ -9,7 +9,40 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
-from .ui import template_mapping_index, search_context
+# from . import template_mapping_index, search_context
+
+common_archive_mappings = (
+    ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
+    ('%Y/{{blog.index_file}}', 'Yearly archive'),
+    ('{{page.user.name}}/{{blog.index_file}}', 'Author archive'),
+    ('{{page.user.name}}/%Y/%m/{{blog.index_file}}', 'Author/yearly/monthly archive'),
+    ('{{page.user.name}}/%Y/{{blog.index_file}}', 'Author/yearly archive'),
+    ('{{page.primary_category.title}}/{{blog.index_file}}', 'Category archive'),
+    ('{{page.primary_category.title}}/%Y/%m/{{blog.index_file}}', 'Category/yearly/monthly archive'),
+    ('{{page.primary_category.title}}/%Y/{{blog.index_file}}', 'Category/yearly archive'),
+    ('{{page.primary_category.title}}/{{page.user.name}}/{{blog.index_file}}', 'Category/author archive'),
+    ('{{page.primary_category.title}}/{{page.user.name}}/%Y/%m/{{blog.index_file}}', 'Category/author/yearly/monthly archive'),
+    ('{{page.primary_category.title}}/{{page.user.name}}/%Y/{{blog.index_file}}', 'Category/author/yearly archive'),
+    )
+
+common_page_mappings = (
+    ('{{page.basename}}/{{blog.index_file}}', '{{page.basename}}/{{blog.index_file}}'),
+    ('{{page.basename}}.{{blog.base_extension}}', '{{page.basename}}.{{blog.base_extension}}')
+    )
+
+common_index_mappings = (
+    ('{{blog.index_file}}', 'Default index file type for blog'),
+    )
+
+template_mapping_index = {
+    'Index':common_index_mappings,
+    'Page':common_page_mappings,
+    'Archive':common_archive_mappings,
+    'Include':(),
+    'Media':(),
+    'System':()
+    }
+
 
 def new_template(blog_id, tpl_type):
     with db.atomic() as txn:

@@ -1,7 +1,7 @@
 from core import (auth, utils, cms, ui_mgr)
 from core.log import logger
 from core.menu import generate_menu
-from .ui import search_context, status_badge, save_action
+from . import search_context, status_badge, save_action
 
 from core.models import (Media,
     template_tags, Page, PageRevision, Template,
@@ -12,10 +12,16 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request, response)
 
 from settings import (BASE_URL, _sep)
+# TODO: replace _sep with proper urllib function
 
 import re, datetime
 from os.path import exists as _exists
 from os import makedirs
+
+media_buttons = '''
+<button type="button" id="modal_close_button" class="btn btn-default" data-dismiss="modal">Close</button>
+<button type="button" {} class="btn btn-primary">{}</button>
+'''
 
 def html_editor_settings(blog):
     try:
@@ -394,7 +400,6 @@ def page_get_media_templates(page_id, media_id):
         Template.blog == page.blog,
         Template.template_type == template_type.media).order_by(Template.title)
 
-    from .ui import media_buttons
     buttons = media_buttons.format(
         'onclick="add_template();"',
         'Apply')

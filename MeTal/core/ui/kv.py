@@ -17,6 +17,8 @@ def kv_page_response(page_id):
 
     return tpl
 
+obj_map = {'Page': kv_page_response}
+
 from core.libs.bottle import (request)
 from core import auth
 
@@ -74,4 +76,4 @@ def remove_kv():
 
     return obj_map[object_type.object](object_type.objectid)
 
-obj_map = {'Page': kv_page_response}
+

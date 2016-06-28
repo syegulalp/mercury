@@ -3,9 +3,10 @@ from core.cms import job_type
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
 from core.search import (
-    blog_search_results, media_search_results, tag_search_results, tag_in_blog_search_results,
+    blog_search_results, media_search_results,
+    tag_search_results, tag_in_blog_search_results,
     blog_pages_in_category_search_results)
-from .ui import search_context, submission_fields, status_badge, save_action
+from . import search_context  # , submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
@@ -19,9 +20,10 @@ from settings import (BASE_URL)
 
 import datetime
 from os import remove as _remove
-from core.models import MediaAssociation
 
-from . import listing
+from . import listing, status_badge, save_action
+
+submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
 @transaction
 def blog(blog_id, errormsg=None):
@@ -70,7 +72,7 @@ def blog_tag_list_pages(blog_id, tag_id):
             'search_ui':'blog_pages_with_tag',
             'search_object':tag,
             'search_context':tag_in_blog_search_results,
-            'item_list_object':tag.in_pages,
+            'item_list_object':tag.pages,
             # 'action_button':action,
             # 'list_actions':list_actions
         },
@@ -732,7 +734,7 @@ def blog_republish(blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    report = cms.republish_blog(blog_id)
+    report = cms.republish_blog(blog)
 
     tpl = template('listing/report',
         report=report,
@@ -1125,7 +1127,7 @@ def blog_import (blog_id):
 
         q = []
 
-        from core.models import KeyValue, page_status
+        from core.models import KeyValue, page_status, MediaAssociation
         from core.cms import media_filetypes
 
         format_str = "<b>{}</b> / (<i>{}</i>)"
