@@ -594,7 +594,7 @@ colsets = {
                  BASE_URL,
                  x.blog.id,
                  x.id,
-                 x.in_pages.count()
+                 x.pages.count()
                  )
              }
         ]
