@@ -1057,7 +1057,8 @@ def blog_apply_theme(blog_id, theme_id):
 
         from core.models import db
         with db.transaction() as txn:
-            mgmt.theme_apply_to_blog(theme, blog, user)
+            # mgmt.theme_apply_to_blog(theme, blog, user)
+            blog.apply_theme(theme, user)
 
         status = Status(
             type='success',

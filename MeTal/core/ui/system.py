@@ -111,24 +111,6 @@ def system_log():
     return tpl
 
 @transaction
-def old_system_plugins():
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
-
-    tags = template_tags(
-        user=user)
-
-    plugins = Plugin.select()
-
-    tpl = template('ui/ui_plugins',
-        menu=generate_menu('system_plugins', None),
-        search_context=(search_context['sites'], None),
-        plugins=plugins,
-        **tags.__dict__)
-
-    return tpl
-
-@transaction
 def register_plugin(plugin_path):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)

@@ -535,6 +535,26 @@ class Theme(BaseModel):
     # path = TextField()
 
     @classmethod
+    def theme_install_to_system(cls, theme_path):
+        from settings import THEME_FILE_PATH, _join
+        import json
+
+        theme_dir = _join(THEME_FILE_PATH, theme_path)
+        with open(_join(theme_dir, '__manifest__.json'), 'r') as f:
+            json_data = f.read()
+
+        json_obj = json.loads(json_data)
+
+        new_theme = cls(
+            title=json_obj["title"],
+            description=json_obj["description"],
+            json=theme_path
+            )
+
+        new_theme.save()
+        return new_theme
+
+    @classmethod
     def default_theme(cls):
         try:
             default_theme = cls.get(cls.title == DEFAULT_THEME)
@@ -581,6 +601,17 @@ class Theme(BaseModel):
     '''
 
 class Site(SiteBase, ConnectionBase):
+
+    @classmethod
+    def create(cls, **new_site_data):
+        new_site = cls()
+        new_site.name = new_site_data['name']
+        new_site.description = new_site_data['description']
+        new_site.url = new_site_data['url']
+        new_site.path = new_site_data['path']
+        new_site.local_path = new_site.path
+        new_site.save()
+        return new_site
 
     @classmethod
     def load(cls, site_id=None):
@@ -675,6 +706,64 @@ class Blog(SiteBase):
     theme_modified = BooleanField(null=True, default=False)
     timezone = TextField(null=True, default='UTC')
     set_timezone = None
+
+    # def theme_apply_to_blog(theme, blog, user):
+    def apply_theme(self, theme, user):
+
+        from core import cms
+
+        cms.purge_fileinfos(self.fileinfos)
+        self.erase_theme()
+
+        from settings import THEME_FILE_PATH, _join
+        import os, json
+
+        theme_dir = _join(THEME_FILE_PATH, theme.json)
+
+        for subdir, dirs, files in os.walk(theme_dir):
+            for n in files:
+                if n == '__manifest__.json':
+                    continue
+                if n[-4:] == '.tpl':
+                    continue
+                with open(_join(theme_dir, n), 'r', encoding='utf8') as f:
+                    template = json.loads(f.read())
+                    tpl_data = template['template']
+                    with open(_join(theme_dir, n[:-5] + '.tpl'), 'r', encoding='utf8') as b:
+                        tpl_data['body'] = b.read()
+
+                    mapping_data = template['mappings']
+
+                    table_obj = Template()
+
+                    for name in table_obj._meta.fields:
+                        if name not in ('id', 'blog', 'template_ref'):
+                            setattr(table_obj, name, tpl_data[name])
+
+                    table_obj.template_ref = n
+                    table_obj.blog = self
+                    table_obj.theme = theme
+                    table_obj.save(user)
+
+                    for mapping in mapping_data:
+                        mapping_obj = TemplateMapping()
+                        for name in mapping_obj._meta.fields:
+                            if name not in ('id', 'template'):
+                                setattr(mapping_obj, name, mapping_data[mapping][name])
+
+                        mapping_obj.template = table_obj.id
+                        mapping_obj.save()
+
+
+        set_theme = Template.update(theme=theme).where(Template.theme == self.theme)
+        set_theme.execute()
+
+        self.theme = theme
+        self.theme_modified = False
+        self.save()
+
+        cms.purge_blog(self)
+
 
     def archive(self, name):
         '''
@@ -979,8 +1068,9 @@ class Blog(SiteBase):
         new_blog_default_category.save()
 
         if theme is not None:
-            from core.mgmt import theme_apply_to_blog
-            theme_apply_to_blog(theme, self, user)
+            # from core.mgmt import theme_apply_to_blog
+            # theme_apply_to_blog(theme, self, user)
+            self.apply_theme(theme, user)
             self.save()
 
         from core.log import logger
