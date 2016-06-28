@@ -85,7 +85,7 @@ def push_to_queue(**ka):
 
     :param job_type:
         A string representing the type of job to be inserted.
-        'Page','Index', eventually 'Fileinfo'
+        One of a list of strings from the job_type object in core.cms.
 
     :param data_integer:
         Any integer data passed along with the job. For a job control item, this
@@ -155,7 +155,7 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         The Page object whose actions are to be queued.
     :param no_neighbors:
         Set to True to suppress generation of next/previous posts. Useful if you've loaded
-        all the posts for a blog into a queue.
+        all the posts for a blog into a queue and don't need to have this performed here.
     :param no_archive:
         Set to True to suppress generation of archive pages associated with this page. Also
         useful for mass-queued actions.
@@ -269,11 +269,6 @@ def queue_ssi_actions(blog):
         The blog object whose SSI templates will be pushed to the queue.
     '''
 
-    '''
-    templates = Template.select().where(Template.blog == blog,
-        Template.template_type == template_type.include,
-        Template.publishing_mode == publishing_mode.ssi)
-    '''
     templates = blog.ssi_templates.select()
 
     if templates.count() == 0:
@@ -301,11 +296,6 @@ def queue_index_actions(blog, include_manual=False):
         pushed in most publishing actions.
     '''
 
-    '''
-    templates = Template.select().where(Template.blog == blog,
-        Template.template_type == template_type.index,
-        Template.publishing_mode != publishing_mode.do_not_publish)
-    '''
     templates = blog.index_templates.select().where(
         Template.publishing_mode != publishing_mode.do_not_publish)
 
@@ -618,6 +608,18 @@ def add_page_fileinfo(page, template_mapping, file_path,
     '''
     Add a given page (could also be an index) to the fileinfo index.
     Called by the page builder routines.
+    :param page:
+        The page object to add to the fileinfo index.
+    :param template_mapping:
+        The template mapping to use for creating the page's fileinfo(s).
+    :param file_path:
+        The file path to use for the fileinfo.
+    :param url:
+        The URL to associate with the fileinfo.
+    :param sitewide_file_path:
+        The sitewide file path to use for the fileinfo.
+    :param mapping_sort:
+        Sort order for the mapping, if used.
     '''
     try:
         existing_fileinfo = FileInfo.get(
@@ -653,6 +655,8 @@ def delete_page_files(page):
     '''
     Iterates through the fileinfos for a given page
     and deletes the physical files from disk.
+    :param page:
+        The page object to remove from the fileinfo index and on disk.
     '''
     _ = []
     for n in page.fileinfos:
@@ -670,6 +674,8 @@ def delete_page_fileinfo(page):
     Deletes the fileinfo entry associated with a specific page.
     This does not perform any security checks.
     This also does not delete anything from the filesystem.
+    :param page:
+        The page object remove from the fileinfo index.
     '''
 
     fileinfo_to_delete = FileInfo.delete().where(FileInfo.page == page)
@@ -678,20 +684,21 @@ def delete_page_fileinfo(page):
 def delete_page(page):
     '''
     Removes all database entries for a given page from the system.
-    Does not delete files on disk.
     Implies an unpublish action.
 
+    :param page:
+        The page object to remove from disk.
+    '''
     # TODO: make this part of the delete action for the schema
     # same with unpublish
-    '''
+
     if page.status != page_status.unpublished:
         raise DeletionError('Page must be unpublished before it can be deleted')
 
     unpublish_page(page, no_save=True)
     page.kv_del()
     delete_page_fileinfo(page)
-    page.delete_instance(recursive=True,
-        )
+    page.delete_instance(recursive=True)
 
     delete_orphaned_tags(page.blog)
 
@@ -699,7 +706,13 @@ def delete_page(page):
 def unpublish_page(page, no_save=False):
     '''
     Removes all the physical files associated with a given page,
-    and queues any neighboring files to be republished
+    and queues any neighboring files to be republished.
+
+    :param page:
+        The page object to unpublish.
+    :param no_save:
+        By default the page object in question is saved before
+        being unpublished. Set this to True to skip this step.
     '''
     page.status = page_status.unpublished
     if not no_save:
@@ -716,13 +729,17 @@ def generate_page_text(f, tags):
     '''
     Generates the text for a given page based on its fileinfo
     and a given tagset.
-    '''
-    tp = f.template_mapping.template
 
+    :param f:
+        The fileinfo object to use.
+    :param tags:
+        The tagset to use.
     '''
-    TODO: try to find a way to cache the template for multi-job runs
-    template = tpl_cached(tp.id), stash that in a dict
-    '''
+
+    # TODO: try to find a way to cache the template for multi-job runs
+    # template = tpl_cached(tp.id), stash that in a dict
+
+    tp = f.template_mapping.template
 
     try:
         return tpl(tp.body,
@@ -743,6 +760,11 @@ def generate_file(f, blog):
     '''
     Returns the page text and the pathname for a file to generate.
     Used with build_file but can be used for other things as well.
+
+    :param f:
+        The fileinfo object to use.
+    :param blog:
+        The blog object to use as the context for the fileinfo.
     '''
 
     if f.page is None:
@@ -779,6 +801,11 @@ def build_file(f, blog):
 
     This should be the action that is pushed to the queue, and consolidated
     based on the generated filename. (The consolidation should be part of the queue push function)
+
+    :param f:
+        The fileinfo object to use.
+    :param blog:
+        The blog object to use as the context for the fileinfo.
     '''
 
     import time
@@ -813,19 +840,28 @@ def build_file(f, blog):
 
 
 def generate_archive_context_from_page(context_list, original_pageset, original_page):
-
     return generate_archive_context(context_list, original_pageset, page=original_page)
 
 def generate_archive_context_from_fileinfo(context_list, original_pageset, fileinfo):
-
     return generate_archive_context(context_list, original_pageset, fileinfo=fileinfo)
 
 def generate_archive_context(context_list, original_pageset, **ka):
     """
     Creates the template_tags object for a given archive context,
     based on the context list string ("CYM", etc.), the original pageset
-    (e.g., a blog), and the page (or fileinfo) being used to derive the archive context.
+    (e.g., a blog), and the page (or fileinfo), passed as keyword arguments,
+    being used to derive the archive context.
+
+    :param context_list:
+        The context list string, such as "CYM" for Category/Year/Month.
+    :param original_pageset:
+        The pageset used to generate the context. This is typically a blog.
+    :param page:
+    :param fileinfo:
+        Either a page or fileinfo to generate a context for must be provided,
+        as a keyword argument.
     """
+    # TODO: make passing of page/fileinfo actual optional positionals?
 
     original_page, fileinfo = None, None
 
@@ -984,6 +1020,8 @@ def build_pages_fileinfos(pages):
     '''
     Creates fileinfo entries for the template mappings associated with
     an iterable list of Page objects.
+    :param pages:
+        List of page objects to build fileinfos for.
     '''
 
     for n, page in enumerate(pages):
@@ -1025,6 +1063,8 @@ def build_archives_fileinfos(pages):
     '''
     Takes a page (maybe a collection of same) and produces fileinfos
     for the date-based archive entries for each
+    :param pages:
+        List of pages to produce fileinfos for date-based archive entries for.
     '''
 
     counter = 0
@@ -1111,6 +1151,9 @@ def build_indexes_fileinfos(templates):
 
     This will port the code currently found in build_blog_fileinfo, much as the above function did.
 
+    :param templates:
+        A list of templates, typically for main indexes, to rebuild fileinfo entries for.
+
     '''
     for n, template in enumerate(templates):
 
@@ -1178,14 +1221,17 @@ def publish_blog(blog_id):
     '''
     pass
 
-def republish_blog(blog_id):
+def republish_blog(blog):
     '''
     Queues all published pages and index items for a given blog.
+
+    :param blog:
+        The blog object to republish.
     '''
 
     import time
 
-    blog = Blog.load(blog_id)
+    # blog = Blog.load(blog_id)
 
     data = []
     data.extend(["<h3>Queuing <b>{}</b> for republishing</h3><hr>".format(
@@ -1214,6 +1260,11 @@ def process_queue_publish(queue_control, blog):
     Takes in a queue_control entry, and returns an integer of the number of
     jobs remaining in the queue for that blog.
     Typically invoked by the process_queue function.
+
+    :param queue_control:
+        The queue_control entry, from the queue, to use for this publishing queue run.
+    :param blog:
+        The blog object that is in context for this job.
     '''
 
     queue_control.is_running = True
@@ -1276,6 +1327,11 @@ def process_queue_insert(queue_control, blog):
     # Queue for building fileinfo data
     # e.g., when a blog is rebuilt
 
+    # We don't have a front end for this yet?
+    # Why .delete_instance()? Shouldn't we just set to 0?
+
+    # also, why isn't this running inside a transaction?
+
     queue_control.is_running = True
     queue_control.save()
 
@@ -1316,6 +1372,7 @@ def process_queue_insert(queue_control, blog):
 
     if queue_control.data_string == 'ssi_fileinfos':
         pass
+        # TODO: to be added
 
     queue_control.is_running = False
     queue_control.save()
@@ -1488,7 +1545,6 @@ def register_media(filename, path, user, **ka):
     if 'page' in ka:
         page = ka['page']
         media.associate(page)
-
         media.blog = page.blog
         media.site = page.blog.site
         media.url = page.blog.url + "/" + page.blog.media_path + "/" + media.filename
@@ -1496,15 +1552,34 @@ def register_media(filename, path, user, **ka):
 
     return media
 
-def start_queue(blog=None, queue_length=None):
-    if blog is None:
-        raise Exception("You must specify a blog when starting a queue process.")
-    if queue_length is None:
-        queue_length = Queue.job_counts(blog=blog)
+def start_queue(blog=None, queue_length=None, jobtype=job_type.control):
+
+    if jobtype == job_type.control:
+        if blog is None:
+            raise Exception("You must specify a blog when starting a queue process.")
+        if queue_length is None:
+            queue_length = Queue.job_counts(blog=blog)
+    else:
+        pass
+        # handle job_type.insert queue length here
+
     push_to_queue(blog=blog,
         site=blog.site,
-        job_type=job_type.control,
+        job_type=jobtype,
+
+        # TODO: eventually this will include insert jobs as well
+        # Make sure the queue is locked properly when we do that
+        # and when we do the insert, perhaps we should get the total number
+        # of prospective jobs from a model object.
+        # for instance, if we want to push all the insert jobs
+        # for a given template, we can get that directly from the template
+        # likewise, for a whole blog (all template objects)
+        # likewise, for other classes of objects (e.g., all the templates from a page)
+        # easiest to start with just individual templates or whole blogs,
+        # since those are easy to calculate and coalesce
+
         is_control=True,
         data_integer=queue_length
         )
+
     return queue_length
