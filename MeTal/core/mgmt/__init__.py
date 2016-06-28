@@ -19,7 +19,7 @@ def login_verify(email, password):
         user.last_login = datetime.datetime.utcnow()
         user.save()
         return user
-'''
+
 
 # move to Queue.erase?
 # more like blog_ and perhapse site_
@@ -31,6 +31,8 @@ def erase_queue(blog=None):
     else:
         delete_queue = Queue.delete().where(Queue.blog == blog)
     return delete_queue.execute()
+
+'''
 
 def theme_apply_to_blog(theme, blog , user):
 

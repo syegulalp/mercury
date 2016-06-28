@@ -927,8 +927,8 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
 def erase_queue(blog_id):
     blog = Blog.load(blog_id)
-    from core.mgmt import erase_queue
-    erase_queue(blog)
+    from core.models import Queue
+    Queue.clear(blog)
     return "Queue for blog {} cleared".format(blog.id)
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")

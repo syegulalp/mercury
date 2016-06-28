@@ -2323,6 +2323,14 @@ class Queue(BaseModel):
     site = ForeignKeyField(Site, index=True, null=False)
 
     @classmethod
+    def clear(cls, blog=None):
+        if blog is None:
+            delete_queue = cls.delete()
+        else:
+            delete_queue = cls.delete().where(cls.blog == blog)
+        return delete_queue.execute()
+
+    @classmethod
     def for_blog(self, blog=None):
         if blog is None:
             raise Blog.DoesNotExist("You need to supply a blog object to retrive queue information.")
