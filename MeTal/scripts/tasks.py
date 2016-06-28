@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# add cmdline options to suppress emailed reports
+# TODO: add cmdline options to suppress emailed reports
 
 if __name__ == '__main__':
     if __package__ is None:
