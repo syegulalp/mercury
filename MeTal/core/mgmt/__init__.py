@@ -7,7 +7,7 @@ from core.models import (TemplateMapping, Template, System, KeyValue,
 from core.libs.playhouse.dataset import DataSet
 from os.path import join as _join
 
-def theme_apply_to_blog(theme, blog , user):
+def theme_apply_to_blog(theme, blog, user):
 
     from core import cms
     cms.purge_fileinfos(blog.fileinfos)
