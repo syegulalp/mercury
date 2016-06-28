@@ -9,7 +9,7 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
-# from . import template_mapping_index, search_context
+from . import search_context
 
 common_archive_mappings = (
     ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
