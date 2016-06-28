@@ -11,41 +11,11 @@ from core.error import PageNotChanged
 
 def delete(template):
     return template.delete_instance()
-    '''
-    t0 = FileInfo.delete().where(FileInfo.template_mapping << template.mappings)
-    t0.execute()
-    t1 = TemplateMapping.delete().where(TemplateMapping.id << template.mappings)
-    t1.execute()
-    t2 = Template.delete().where(Template.id == template.id)
-    delete_revisions = TemplateRevision.delete().where(
-            TemplateRevision.template_id == template.id)
-    delete_revisions.execute()
-    t2.execute()
-    '''
+
 
 def preview_path(template):
     return template.preview_path
-    '''
-    if template.default_mapping.fileinfos.count() == 0:
-        return None
 
-    from settings import _sep
-    file_path = template.default_mapping.fileinfos[0].file_path
-
-    preview_subpath = file_path.rsplit('/', 1)
-    if len(preview_subpath) > 1:
-        preview_subpath = preview_subpath[0]
-    else:
-        preview_subpath = ''
-
-    preview_path = (template.blog.path + _sep + preview_subpath)
-
-    preview_file = template.preview_file
-
-    return {'subpath':preview_subpath,
-        'path':preview_path,
-        'file':preview_file}
-    '''
 def save(request, user, cms_template, blog=None):
 
     # TODO: move the bulk of this into the actual model
