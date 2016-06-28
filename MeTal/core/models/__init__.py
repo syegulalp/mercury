@@ -505,6 +505,26 @@ class Theme(BaseModel):
     # path = TextField()
 
     @classmethod
+    def theme_install_to_system(cls, theme_path):
+        from settings import THEME_FILE_PATH, _join
+        import json
+
+        theme_dir = _join(THEME_FILE_PATH, theme_path)
+        with open(_join(theme_dir, '__manifest__.json'), 'r') as f:
+            json_data = f.read()
+
+        json_obj = json.loads(json_data)
+
+        new_theme = cls(
+            title=json_obj["title"],
+            description=json_obj["description"],
+            json=theme_path
+            )
+
+        new_theme.save()
+        return new_theme
+
+    @classmethod
     def default_theme(cls):
         try:
             default_theme = cls.get(cls.title == DEFAULT_THEME)

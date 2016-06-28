@@ -6,7 +6,7 @@ from core.models import (TemplateMapping, Template, System, KeyValue,
     Permission, Site, Blog, User, Category, Theme, Tag)
 from core.libs.playhouse.dataset import DataSet
 from os.path import join as _join
-
+'''
 def theme_apply_to_blog(theme, blog, user):
 
     from core import cms
@@ -62,6 +62,7 @@ def theme_apply_to_blog(theme, blog, user):
 
     return
 
+
 def theme_install_to_system(theme_path):
 
     from settings import THEME_FILE_PATH
@@ -82,7 +83,7 @@ def theme_install_to_system(theme_path):
 
     new_theme.save()
     return new_theme
-
+'''
 
 def export_data():
     n = ("Beginning export process. Writing files to {}.".format(APPLICATION_PATH + EXPORT_FILE_PATH))

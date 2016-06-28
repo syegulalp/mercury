@@ -310,7 +310,9 @@ def step_4_pre():
                     new_plugin.name))
 
         from settings.defaults import DEFAULT_THEME
-        new_theme = mgmt.theme_install_to_system(DEFAULT_THEME)
+        from core.models import Theme
+        new_theme = Theme.install(DEFAULT_THEME)
+        # new_theme = mgmt.theme_install_to_system(DEFAULT_THEME)
 
         report.append("Default theme created and installed successfully to system.")
 
