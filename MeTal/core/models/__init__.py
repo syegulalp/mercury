@@ -553,6 +553,17 @@ class Theme(BaseModel):
 class Site(SiteBase, ConnectionBase):
 
     @classmethod
+    def create(cls, **new_site_data):
+        new_site = cls()
+        new_site.name = new_site_data['name']
+        new_site.description = new_site_data['description']
+        new_site.url = new_site_data['url']
+        new_site.path = new_site_data['path']
+        new_site.local_path = new_site.path
+        new_site.save()
+        return new_site
+
+    @classmethod
     def load(cls, site_id=None):
         try:
             site = Site.get(Site.id == site_id)

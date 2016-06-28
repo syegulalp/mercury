@@ -241,7 +241,8 @@ def step_4_pre():
 
     with db.atomic():
 
-        new_site = mgmt.site_create(
+        from core.models import Site
+        new_site = Site.create(
             name="Your first site",
             description="The description for your first site.",
             url=get_ini('main', 'base_url_root'),
