@@ -7,7 +7,8 @@ from core.models import (TemplateMapping, Template, System, KeyValue,
 from core.libs.playhouse.dataset import DataSet
 from os.path import join as _join
 
-# TODO: move to auth
+'''
+# TODO: move to User as a classmethod
 def login_verify(email, password):
     try:
         user = User.get(User.email == email,
@@ -18,37 +19,7 @@ def login_verify(email, password):
         user.last_login = datetime.datetime.utcnow()
         user.save()
         return user
-
-# move this into the theme schema object,
-# or at least the theme module
-
-# for deleting kvs automatically with their attendant object,
-# we should have overload the delete function in the model
-
-def get_kvs_for_theme(theme):
-    from core.theme import json_dump
-    theme_kvs = []
-
-    kv_list = []
-
-    top_kvs = KeyValue.select().where(
-        KeyValue.object == 'Theme',
-        KeyValue.objectid == theme.id,
-        KeyValue.is_schema == True)
-
-    for n in top_kvs:
-        kv_list.append(n)
-
-    while len(kv_list) > 0:
-        theme_kvs.append(kv_list[0].id)
-        next_kvs = KeyValue.select().where(
-            KeyValue.parent == kv_list[0],
-            KeyValue.is_schema == True)
-        for f in next_kvs:
-            kv_list.append(f)
-        del kv_list[0]
-
-    return theme_kvs
+'''
 
 # move to Queue.erase?
 # more like blog_ and perhapse site_

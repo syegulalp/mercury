@@ -364,6 +364,19 @@ class User(BaseModel):
     logout_nonce = CharField(max_length=64, null=True, default=None)
 
     @classmethod
+    def login_verify(cls, email, password):
+        from core.utils import encrypt_password
+        try:
+            user = cls.get(cls.email == email,
+                cls.password == encrypt_password(password))
+        except cls.DoesNotExist:
+            raise cls.DoesNotExist
+        else:
+            user.last_login = datetime.datetime.utcnow()
+            user.save()
+            return user
+
+    @classmethod
     def find(self, user_id=None):
         try:
             user = self.get(User.id == user_id)
@@ -700,15 +713,16 @@ class Blog(SiteBase):
         '''
         Erases a blog's theme in preparation for installing a new one.
         '''
-        # leave these in, we'll need them later
-        # del_kvs = get_kvs_for_theme(self.theme)
-        # kvs_to_delete = KeyValue.delete().where(KeyValue.id << del_kvs)
-        # p = kvs_to_delete.execute()
 
         mappings_to_delete = TemplateMapping.delete().where(TemplateMapping.id << self.template_mappings())
         m = mappings_to_delete.execute()
+
+        revisions_to_delete = TemplateRevision.delete().where(TemplateRevision.template_id << self.templates())
+        t = revisions_to_delete.execute()
+
         templates_to_delete = Template.delete().where(Template.id << self.templates())
         n = templates_to_delete.execute()
+
         return m, n  # , p
 
     def export_theme(self, title, description, user):
@@ -1764,7 +1778,7 @@ class Tag(BaseModel):
 
 
     @property
-    def in_pages(self):
+    def pages(self):
 
         tagged_pages = TagAssociation.select(TagAssociation.page).where(
             TagAssociation.tag == self).tuples()
@@ -1834,15 +1848,20 @@ class Template(BaseModel, DateMod):
     def delete_instance(self, *a, **ka):
         # eventually we shouldn't need these once we have all the proper
         # ID refs set up
+
         t0 = FileInfo.delete().where(FileInfo.template_mapping << self.mappings)
         t0.execute()
+
         t1 = TemplateMapping.delete().where(TemplateMapping.id << self.mappings)
         t1.execute()
-        t2 = Template.delete().where(Template.id == self.id)
+
         delete_revisions = TemplateRevision.delete().where(
                 TemplateRevision.template_id == self.id)
         delete_revisions.execute()
+
+        t2 = Template.delete().where(Template.id == self.id)
         t2.execute()
+
         return BaseModel.delete_instance(self, *a, **ka)
 
     @classmethod

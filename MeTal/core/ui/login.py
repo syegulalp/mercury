@@ -3,8 +3,8 @@ from settings import (BASE_URL, SECRET_KEY)
 from core.libs.bottle import template, request, response, redirect
 from core.models import template_tags, User, Page
 from core.log import logger
-from core import utils, mgmt, auth
-from .ui import search_context
+from core import utils, auth
+from . import search_context
 from core.menu import generate_menu
 
 @transaction
@@ -52,7 +52,7 @@ def login_verify():
 def login_verify_core(email, password):
 
     try:
-        user = mgmt.login_verify(email, password)
+        user = User.login_verify(email, password)
     except User.DoesNotExist:
 
         logger.info("User at {} attempted to log in as '{}'. User not found or password not valid.".format(
