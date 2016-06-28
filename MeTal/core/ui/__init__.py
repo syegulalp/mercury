@@ -2,7 +2,74 @@ from core.models import template_tags
 from core import utils
 from core.libs.bottle import template as _tpl
 from core.menu import generate_menu, colsets, icons
-from .ui import search_context
+from settings import BASE_URL
+
+queue_selections = (
+    ('Remove from queue', '1', ''),
+    ('Change queue priority', '2', '')
+    )
+
+status_badge = ('', 'warning', 'success', 'info')
+
+save_action = (
+    (None),
+    (1, 'Save draft'),
+    (3, 'Save & update live'),
+    (1, 'Save draft')
+    )
+
+
+search_context = (
+    {'blog':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id),
+            'form_description':'Search entries:',
+            'form_placeholder':'Entry title, term in body text'},
+    'blog_media':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/media",
+            'form_description':'Search media:',
+            'form_placeholder':'Media title, term in description, URL, etc.'},
+    'blog_templates':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/templates",
+            'form_description':'Search templates:',
+            'form_placeholder':'Template title or text in template'},
+    'blog_tags':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search tags:',
+            'form_placeholder':'Tag name'},
+    'blog_pages_with_tag':
+            {'form_target': lambda x: "{}/blog/{}/tag/{}/pages".format(
+                BASE_URL, x.blog.id, x.id),
+                # lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search pages with this tag:',
+            'form_placeholder':'Page title or text in description'},
+    'blog_pages_in_category':
+            {'form_target': lambda x: "{}/blog/{}/category/{}/pages".format(
+                BASE_URL, x.blog.id, x.id),
+                # lambda x: BASE_URL + "/blog/" + str(x.id) + "/tags",
+            'form_description':'Search pages in this category:',
+            'form_placeholder':'Page title or text in description'},
+    'site':
+            {'form_target':lambda x: BASE_URL,  # @UnusedVariable
+            'form_description':'Search blogs:',
+            'form_placeholder':'Page title or text in description'},
+    'sites':
+            {'form_target':lambda x: BASE_URL,  # @UnusedVariable
+            'form_description':'Search sites:',
+            'form_placeholder':'Site title or text in description'},
+    'blog_queue':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/queue",
+            'form_description':'Search queue:',
+            'form_placeholder':'Event ID, page title, etc.'},
+    'site_queue':
+            {'form_target':lambda x: BASE_URL + "/site/queue",  # @UnusedVariable
+            'form_description':'Search queue:',
+            'form_placeholder':'Event ID, page title, etc.'},
+     'system_log':
+            {'form_target':lambda x: BASE_URL + "/system/log",  # @UnusedVariable
+            'form_description':'Search log:',
+            'form_placeholder':'Log entry data, etc.'}
+    }
+    )
 
 def listing(request, user, errormsg, context, tags_data):
     '''
