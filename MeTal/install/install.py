@@ -259,8 +259,8 @@ def step_4_pre():
 
         from core.auth import role
 
-        new_user_permissions = mgmt.add_user_permission(
-            new_user,
+        # new_user_permissions = mgmt.add_user_permission(
+        new_user_permissions = new_user.add_permission(
             permission=role.SYS_ADMIN,
             site=new_site
             )

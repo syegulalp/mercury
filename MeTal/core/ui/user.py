@@ -182,9 +182,9 @@ def system_user(user_id, path):
         if request.forms.getunicode('delete_permissions') is not None:
 
             deletes = request.forms.getall('del')
-            from core import mgmt
+            # from core import mgmt
             try:
-                mgmt.remove_user_permissions(user, deletes)
+                user.remove_permissions(deletes)
             except PermissionsException as e:
                 raise e
             status = utils.Status(
@@ -206,8 +206,9 @@ def system_user(user_id, path):
                     target_blog = Blog.load(permission_target[5:])
 
 
-            from core import mgmt
-            mgmt.add_user_permission(user_to_edit,
+            # from core import mgmt
+            # mgmt.add_user_permission(user_to_edit,
+            user_to_edit.add_permission(
                 permission=permission_to_add,
                 site=target_site,
                 blog=target_blog)

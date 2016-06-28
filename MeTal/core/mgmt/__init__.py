@@ -199,6 +199,7 @@ def import_data():
     from core.routes import app
     app.reset()
 
+'''
 def add_user_permission(user, **permission):
 
     new_permission = Permission(
@@ -215,9 +216,9 @@ def add_user_permission(user, **permission):
     new_permission.save()
 
     return new_permission
-
+'''
 # move to User.remove_permission()
-
+'''
 def remove_user_permissions(user, permission_ids):
     from core import auth
     remove_permission = Permission.delete().where(
@@ -231,7 +232,7 @@ def remove_user_permissions(user, permission_ids):
         raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
 
     return done
-
+'''
 # move to Page.delete_preview()
 '''
 def delete_page_preview(page):

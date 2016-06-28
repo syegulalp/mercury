@@ -363,6 +363,36 @@ class User(BaseModel):
     blog = None
     logout_nonce = CharField(max_length=64, null=True, default=None)
 
+    def add_permission(self, **permission):
+        new_permission = Permission(
+            user=self,
+            permission=permission['permission'],
+            site=permission['site'],
+            )
+
+        try:
+            new_permission.blog = permission['blog']
+        except KeyError:
+            pass
+
+        new_permission.save()
+
+        return new_permission
+
+    def remove_permissions(self, permission_ids):
+        from core import auth
+        remove_permission = Permission.delete().where(
+            Permission.user == self,
+            Permission.id << permission_ids)
+        done = remove_permission.execute()
+
+        try:
+            no_sysop = auth.get_users_with_permission(auth.role.SYS_ADMIN)
+        except IndexError:
+            from core.error import PermissionsException
+            raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
+        return done
+
     @classmethod
     def login_verify(cls, email, password):
         from core.utils import encrypt_password
