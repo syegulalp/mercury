@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "790": {
+   "archive_xref": "", 
+   "id": 790, 
+   "is_default": true, 
+   "modified_date": "2015-09-27 20:24:13", 
+   "path_string": "'.htaccess'", 
+   "template": 918
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 918, 
+  "is_include": false, 
+  "modified_date": "2016-06-02 20:07:15", 
+  "publishing_mode": "Manual", 
+  "template_ref": "-htaccess-18.json", 
+  "template_type": "Index", 
+  "theme": 14, 
+  "title": ".htaccess"
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "784": {
+   "archive_xref": "", 
+   "id": 784, 
+   "is_default": true, 
+   "modified_date": "2015-08-14 18:09:22", 
+   "path_string": "'static/js/bootstrap.js'", 
+   "template": 912
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 912, 
+  "is_include": false, 
+  "modified_date": "2016-06-02 20:07:22", 
+  "publishing_mode": "Manual", 
+  "template_ref": "bootstrap-javascript-26.json", 
+  "template_type": "Index", 
+  "theme": 14, 
+  "title": "Bootstrap JavaScript"
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "777": {
+   "archive_xref": "", 
+   "id": 777, 
+   "is_default": true, 
+   "modified_date": "2015-09-23 22:42:12", 
+   "path_string": "$s+'/comments.html'", 
+   "template": 904
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 904, 
+  "is_include": false, 
+  "modified_date": "2016-06-02 20:02:21", 
+  "publishing_mode": "Server-side include", 
+  "template_ref": "comments-13.json", 
+  "template_type": "Include", 
+  "theme": 14, 
+  "title": "Comments"
+ }
+}
