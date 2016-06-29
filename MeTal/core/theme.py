@@ -5,7 +5,8 @@ def default(obj):
     import datetime
 
     if isinstance(obj, datetime.datetime):
-        return datetime.datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
+        from core.utils import DATE_FORMAT
+        return datetime.datetime.strftime(obj, DATE_FORMAT)
 
 # move to utils
 def json_dump(obj):
