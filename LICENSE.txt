@@ -32,6 +32,10 @@ Licenses for software in this project
     Copyright (c) 2003-2009 Stuart Bishop <stuart@stuartbishop.net>
     License: MIT
     
+    Amano theme based on "Blog Home / Blog Post" themes by Start Bootstrap
+    http://startbootstrap.com/
+    License: MIT
+    
     CKEditor
     Copyright (c) 2003-2015, CKSource - Frederico Knabben.
     License: Mozilla Public License Version 1.1 or later (the "MPL")
