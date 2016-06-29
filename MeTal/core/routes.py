@@ -251,16 +251,16 @@ def system_export_data():
     '''
     Route for exporting all data from system to JSON
     '''
-    from core import mgmt
-    return mgmt.export_data()
+    from core import utils
+    return utils.export_data()
 
 @_route(BASE_PATH + '/import')
 def system_import_data():
     '''
     Route for importing all data to system from JSON
     '''
-    from core import mgmt
-    return mgmt.import_data()
+    from core import utils
+    return utils.import_data()
 
 @_route(BASE_PATH + '/login')
 def login():
