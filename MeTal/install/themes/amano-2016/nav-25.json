@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "794": {
+   "archive_xref": "", 
+   "id": 794, 
+   "is_default": true, 
+   "modified_date": "2015-08-21 21:42:03", 
+   "path_string": "None", 
+   "template": 923
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 923, 
+  "is_include": false, 
+  "modified_date": "2016-06-02 20:09:50", 
+  "publishing_mode": "Include", 
+  "template_ref": "nav-28.json", 
+  "template_type": "Include", 
+  "theme": 14, 
+  "title": "Nav"
+ }
+}

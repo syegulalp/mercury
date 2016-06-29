@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "781": {
+   "archive_xref": "", 
+   "id": 781, 
+   "is_default": true, 
+   "modified_date": "2015-10-08 17:04:26", 
+   "path_string": "None", 
+   "template": 909
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 909, 
+  "is_include": false, 
+  "modified_date": "2016-06-24 18:58:19", 
+  "publishing_mode": "Include", 
+  "template_ref": "tags-21.json", 
+  "template_type": "Include", 
+  "theme": 14, 
+  "title": "Tags"
+ }
+}
