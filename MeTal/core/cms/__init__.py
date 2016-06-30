@@ -643,7 +643,7 @@ def add_page_fileinfo(page, template_mapping, file_path,
 
         except IntegrityError:
             from core.error import FileInfoCollision
-            raise FileInfoCollision("Template mapping #{}, {}, for template #{}, yields a path {} that already exists in the system.".format(
+            raise FileInfoCollision("Template mapping #{}, {}, for template #{}, yields a path that already exists in the system: {} ".format(
                 template_mapping.id,
                 template_mapping.path_string,
                 template_mapping.template.id,
