@@ -25,7 +25,6 @@ objmap = {
     }
 
 
-
 from core.libs.bottle import (request)
 from core import auth
 
@@ -59,7 +58,7 @@ def kv_add():
     # return obj_map[kv_object](kv_object_id)
 
 @transaction
-def remove_kv():
+def kv_remove():
 
     user = auth.is_logged_in(request)
 
@@ -85,6 +84,3 @@ def remove_kv():
 
     return kv_response(object_type.object, objmap[object_type.object][0],
         objmap[object_type.object][1], object_instance.id)
-
-
-

@@ -898,7 +898,8 @@ def api_kv_add():
 @_route(BASE_PATH + "/api/1/kv", method='DELETE')
 def api_remove_kv():
     from core.ui import kv
-    return kv.remove_kv()
+    # return kv.remove_kv()
+    return kv.kv_remove()
     # We need to enforce permissions here depending on the object.
 
 # TODO: this routine does not confine its tag to the scope of a blog!

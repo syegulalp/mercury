@@ -158,10 +158,6 @@ class BaseModel(Model):
 
         return kv
 
-    def remove_kv(self, **kw):
-        pass
-
-
     @property
     def n_t(self):
         # TODO: replace this with proxies for name in all fields that need it
