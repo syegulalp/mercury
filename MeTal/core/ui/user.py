@@ -128,7 +128,7 @@ def system_new_user():
     tags = template_tags(user=user)
     tags.status = status
 
-    tpl = template('edit/edit_user_settings',
+    tpl = template('edit/user_settings',
         edit_user=new_user,
         menu=generate_menu('system_create_user', new_user),
         search_context=(search_context['sites'], None),
@@ -313,7 +313,7 @@ def edit_user(edit_user, **ka):
     tags.nav_default = context['nav_default']
     tags.nav_tabs = context['nav_tabs']
 
-    tpl = template('edit/edit_user_settings',
+    tpl = template('edit/user_settings',
 
         edit_user=edit_user,
         menu=generate_menu('system_edit_user', edit_user),

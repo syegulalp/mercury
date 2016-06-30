@@ -3,7 +3,7 @@
 % include('include/header_messages.tpl')
 % include('include/modal.tpl')
 <div class="col-sm-9">
-% include('edit/edit_media_ui_core.tpl')
+% include('edit/media_core.tpl')
 <hr/>
 </div>
 <div id="sidebar" class="col-sm-3">

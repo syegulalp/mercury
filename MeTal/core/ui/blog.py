@@ -210,7 +210,7 @@ def blog_create_user(blog_id):
     edit_user.name = ""
     edit_user.email = ""
 
-    tpl = template('edit/edit_user_settings',
+    tpl = template('edit/user_settings',
         section_title="Create new blog user",
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
@@ -292,7 +292,7 @@ def blog_new_page(blog_id):
     except Template.DoesNotExist:
         from core.static import html_editor_settings
 
-    tpl = template('edit/edit_page_ui',
+    tpl = template('edit/page',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
         search_context=(search_context['blog'], blog),
@@ -432,7 +432,7 @@ def blog_media_edit_save(blog_id, media_id):
 
 def blog_media_edit_output(tags):
 
-    tpl = template('edit/edit_media_ui',
+    tpl = template('edit/media',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
         search_context=(search_context['blog_media'], tags.blog),
@@ -1027,7 +1027,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
             )
     else:
 
-        save_tpl = 'edit/edit_theme_save'
+        save_tpl = 'edit/theme_save'
         status = None
 
     tags.status = status if reason is None else reason

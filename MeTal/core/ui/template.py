@@ -294,7 +294,7 @@ def template_edit_save(template_id):
 
     from core.models import (template_type as template_types)
 
-    tpl = template('edit/edit_template_ajax_response',
+    tpl = template('edit/template_ajax',
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_template',
             publishing_mode=publishing_mode,
@@ -374,7 +374,7 @@ def template_edit_output(tags):
 
     from core.models import template_type as template_types
 
-    tpl = template('edit/edit_template_ui',
+    tpl = template('edit/template',
         icons=icons,
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),

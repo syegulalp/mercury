@@ -32,7 +32,7 @@ def edit_tag(blog_id, tag_id):
     tags = template_tags(
         user=user)
 
-    tpl = template('edit/edit_tag_ui',
+    tpl = template('edit/tag',
         menu=generate_menu('blog_edit_tag', tag),
         search_context=(search_context['sites'], None),
         tag=tag,

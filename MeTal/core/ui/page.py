@@ -70,7 +70,7 @@ def page_edit(page_id):
     from core.ui_kv import kv_ui
     kv_ui_data = kv_ui(page.kv_list())
 
-    tpl = template('edit/edit_page_ui',
+    tpl = template('edit/page',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
@@ -113,7 +113,7 @@ def page_edit_save(page_id):
     # kv_ui_data = kv_ui(page.kvs(no_traverse=True))
     kv_ui_data = kv_ui(page.kv_list())
 
-    tpl = template('edit/edit_page_ajax_response',
+    tpl = template('edit/page_ajax',
         sidebar=ui_mgr.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
@@ -337,7 +337,7 @@ def page_media_upload(page_id):
 
     tags = template_tags(page_id=page_id)
 
-    return template('edit/edit_page_sidebar_media_list.tpl',
+    return template('edit/page_media_list.tpl',
         **tags.__dict__)
 
 @transaction
@@ -356,7 +356,7 @@ def page_media_delete(page_id, media_id):
 
     tags = template_tags(page=page)
 
-    return template('edit/edit_page_sidebar_media_list.tpl',
+    return template('edit/page_media_list.tpl',
         **tags.__dict__)
 
 @transaction
@@ -454,7 +454,7 @@ def page_revision_restore(page_id, revision_id):
 
     # TODO: save action from this doesn't trigger queue run
 
-    tpl = template('edit/edit_page_ui',
+    tpl = template('edit/page',
         status_badge=status_badge,
         save_action=save_action,
         menu=generate_menu('edit_page', page),
@@ -482,7 +482,7 @@ def page_revision_restore_save(page_id):
 
     from core.cms import save_action_list
 
-    tpl = template('edit/edit_page_ajax_response',
+    tpl = template('edit/page_ajax',
         status_badge=status_badge,
         save_action=save_action,
         save_action_list=save_action_list,

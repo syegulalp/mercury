@@ -52,7 +52,7 @@ def new_category(blog_id):
         redirect('{}/blog/{}/category/{}'.format(
             BASE_URL, blog.id, category.id))
 
-    tpl = template('edit/edit_category_ui',
+    tpl = template('edit/category',
         category=category,
         category_list=category_list,
         menu=generate_menu('blog_new_category', category),
@@ -226,7 +226,7 @@ def edit_category(blog_id, category_id):
             kv_objectid=category.id,
             kv_ui=kv_ui_data)
 
-    tpl = template('edit/edit_category_ui',
+    tpl = template('edit/category',
         category=category,
         category_list=category_list,
         menu=generate_menu('blog_edit_category', category),
