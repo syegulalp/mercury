@@ -797,7 +797,9 @@ class Blog(SiteBase):
     @property
     def categories(self):
         '''
-        Lists all categories for this blog in their proper hierarchical order.
+        Lists all categories for this blog.
+        Right now this just returns a flat dump; the hierarchical list will come later,
+        perhaps by way of an option.
         '''
         categories = Category.select().where(
             Category.blog == self)
@@ -1210,6 +1212,7 @@ class Blog(SiteBase):
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
     title = TextField()
+    # description = TextField(default=None, null=True, index=True)
     parent_category = IntegerField(default=None, null=True, index=True)
     default = BooleanField(default=False, index=True)
     sort = IntegerField(default=None, null=True, index=True)
