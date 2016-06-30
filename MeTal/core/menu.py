@@ -256,6 +256,13 @@ menus = {
         'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
         'text':lambda x:'Category #{}'.format(x.id)
         },
+    'blog_delete_category':{
+        'type':'label',
+        'parent':'blog_edit_category_button',
+        'parent_context':lambda x:x,
+        # 'path': lambda x: BASE_URL + '/blog/{}/category/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Delete category #{}'.format(x.id)
+        },
     'blog_pages_in_category':{
         'type':'label',
         'parent':'blog_edit_category_button',

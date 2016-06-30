@@ -129,7 +129,7 @@ def delete_category(blog_id, category_id, confirm='N'):
 
     tpl = template('listing/report',
         category=category,
-        menu=generate_menu('delete_category', category),
+        menu=generate_menu('blog_delete_category', category),
         search_context=(search_context['sites'], None),
         **tags.__dict__)
 
