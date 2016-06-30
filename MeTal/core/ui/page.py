@@ -63,12 +63,11 @@ def page_edit(page_id):
         page.modified_date = datetime.datetime.utcnow()
         page.save(user)
 
-    tags = template_tags(page_id=page_id,
+    tags = template_tags(page_id=page.id,
         user=user,
         status=status)
 
     from core.ui_kv import kv_ui
-    # kv_ui_data = kv_ui(page.kvs(no_traverse=True))
     kv_ui_data = kv_ui(page.kv_list())
 
     tpl = template('edit/edit_page_ui',
