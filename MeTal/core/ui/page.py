@@ -121,6 +121,8 @@ def page_edit_save(page_id):
             save_action=save_action,
             save_action_list=save_action_list,
             kv_ui=kv_ui_data,
+            kv_object='Page',
+            kv_objectid=page.id,
             **tags.__dict__
             ),
         **tags.__dict__)
