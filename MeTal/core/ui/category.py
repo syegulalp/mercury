@@ -76,14 +76,11 @@ def delete_category(blog_id, category_id, confirm='N'):
 
     from core.utils import Status
 
-    # if confirm == 'Y':
     if request.forms.getunicode('confirm') == user.logout_nonce:
         message = 'Category {} successfully deleted'.format(
             category.for_log)
         url = '{}/blog/{}/categories'.format(BASE_URL, blog.id)
         action = 'Return to the category listing'
-
-
 
         reparent_categories = Category.update(
             parent_category=category.parent_category).where(

@@ -281,7 +281,6 @@ def blog_new_page(blog_id):
     from core.cms import save_action_list
 
     from core.ui_kv import kv_ui
-    # kv_ui_data = kv_ui(blog_new_page.kvs())
     kv_ui_data = kv_ui(blog_new_page.kv_list())
 
     try:
@@ -304,6 +303,8 @@ def blog_new_page(blog_id):
             save_action=save_action,
             save_action_list=save_action_list,
             kv_ui=kv_ui_data,
+            kv_object='Page',
+            kv_objectid=None,
             **tags.__dict__),
         **tags.__dict__)
 

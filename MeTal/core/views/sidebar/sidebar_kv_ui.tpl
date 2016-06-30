@@ -1,4 +1,7 @@
 <div id="kv_list">
+% if kv_objectid is None:
+[<i>You must save this object before adding KVs.</i>]
+% else:
 % if len(kv_ui)>0:
 {{!kv_ui}}
 <br/>
@@ -20,4 +23,5 @@
     <button onclick="add_kv();" type="button" class="btn btn-sm btn-primary">Add
     <span id="kv_activity" style="display:none" class=""></span>
     </button>
+% end
 </div>

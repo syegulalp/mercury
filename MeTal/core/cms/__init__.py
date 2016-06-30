@@ -720,7 +720,7 @@ def delete_page(page):
 
     unpublish_page(page, no_save=True)
     # TODO: Move this into page.delete_instance, override by way of BaseModel
-    page.kv_del()
+    # page.kv_del()
     delete_page_fileinfo(page)
     page.delete_instance(recursive=True)
 

@@ -133,6 +133,10 @@ class BaseModel(Model):
     class Meta:
         database = db
 
+    def delete_instance(self, *a, **ka):
+        self.kv_del()
+        super().delete_instance(*a, **ka)
+
     def parent(self):
         try:
             return parent_obj[self.__class__.__name__]
