@@ -608,7 +608,11 @@ def add_page_fileinfo(page, template_mapping, file_path,
         url, sitewide_file_path, mapping_sort=None):
     '''
     Add a given page (could also be an index) to the fileinfo index.
+    If the page already exists, then the existing fileinfo
+    is updated with the new information.
+
     Called by the page builder routines.
+
     :param page:
         The page object to add to the fileinfo index.
     :param template_mapping:

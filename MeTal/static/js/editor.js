@@ -1,4 +1,3 @@
-global.saving = false;
 global.background_save_timer = null;
 var editor = null;
 var editor_resize = function() {}
@@ -58,12 +57,6 @@ function delayed_resize() {
     }
 }
 
-function adjust_error_view() {
-    pos1 = $('#error_header').innerHeight();
-    pos2 = $('#error_scrollable').offset().top;
-    $('#error_scrollable').css('overflow-y', 'scroll');
-    $('#error_scrollable').height(window.innerHeight - pos1 - pos2 - 32);
-}
 
 function save_animation(n) {
     n.css('color', colors[rotate][0])
@@ -113,16 +106,6 @@ function add_template(template_id, media_id) {
     });
 }
 
-function server_failure(xhr, status, error, sorry_message) {
-    if (xhr.readyState == 0) {
-        reason = "Couldn't reach the server.";
-        details = "";
-    } else {
-        reason = xhr.statusText;
-        details = $(xhr.responseText).filter('#error_text').html();
-    }
-    error_report(sorry_message, reason + details);
-}
 
 function open_modal(url) {
     $('#modal').modal();
@@ -137,22 +120,7 @@ function open_modal(url) {
     });
 }
 
-function status_message(type, string, id) {
-    $('#messages_float').append(
-        '<div id="messages-inner" class="col-xs-12">' + '<div id="' +
-        id + '" class="alert alert-' + type + '" role="alert">' +
-        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-        '<span class="glyphicon glyphicon-warning-sign"></span>&nbsp;' +
-        string + '</div></div>');
-    if (type != "danger") {
-        dismiss('#' + id, 2500);
-    }
-}
 
-function error_report(header, reason) {
-    status_message('danger', header + reason, 'server-error');
-    adjust_error_view();
-}
 
 function bind_queue() {
     $('#show_queue').bind('click', function() {});
@@ -426,68 +394,12 @@ function show_local_preview() {
         "preview_" + global.page);
 }
 
-function show_activity(target, icon) {
-    //$(target).removeClass('glyphicon-*').addClass('glyphicon-'+icon);
-    $(target).attr('class', 'glyphicon glyphicon-' + icon)
-    $(target).show();
-}
 
-function hide_activity(target) {
-        $(target).hide();
-        $(target).attr('class', '');
-    }
     //circle-arrow-up
     //refresh
 
-function remove_kv(id) {
-    var fd = new FormData();
-    fd.append('csrf', global.csrf)
-    fd.append('kv', id)
-    show_activity('#kv_activity', 'remove-sign');
-    $.ajax({
-        type: "DELETE",
-        url: global.base + "/api/1/kv",
-        enctype: "multipart/form-data",
-        processData: false,
-        contentType: false,
-        data: fd,
-    }).done(function(data, textStatus, request) {
-        $('#kv_list').replaceWith($(data).filter('#kv_list'));
-    }).fail(function(xhr, status, error) {
-        server_failure(xhr, status, error,
-            "Sorry, an error occurred when trying to remove KV: "
-        );
-    }).always(function() {
-        hide_activity('#kv_activity');
-    });
-}
 
-function add_kv() {
-    var fd = new FormData();
-    fd.append('csrf', global.csrf);
-    fd.append('new_key_name', $('#new_key_name').val());
-    fd.append('new_key_value', $('#new_key_value').val());
-    fd.append('object', 'Page');
-    fd.append('objectid', global.page);
-    show_activity('#kv_activity', 'circle-arrow-up');
-    $.ajax({
-        type: "POST",
-        url: global.base + "/api/1/kv",
-        enctype: "multipart/form-data",
-        processData: false,
-        contentType: false,
-        data: fd,
-    }).done(function(data, textStatus, request) {
-        $('#kv_list').replaceWith($(data).filter('#kv_list'));
-        $('#new_key_name').val('');
-        $('#new_key_value').val('');
-    }).fail(function(xhr, status, error) {
-        server_failure(xhr, status, error,
-            "Sorry, an error occurred when trying to add KV: ");
-    }).always(function() {
-        hide_activity('#kv_activity');
-    });
-}
+
 $(window).load(function() {
     // conditional binding of editor
     // this changes depending on what editor we're using

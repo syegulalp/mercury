@@ -375,6 +375,8 @@ def blog_media_edit(blog_id, media_id, status=None):
     tags.sidebar = ui_mgr.render_sidebar(
             panel_set='edit_media',
             status_badge=status_badge,
+            kv_object='Media',
+            kv_objectid=media.id,
             kv_ui=kv_ui_data)
 
     return blog_media_edit_output(tags)

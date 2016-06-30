@@ -82,6 +82,8 @@ def page_edit(page_id):
             save_action_list=save_action_list,
             save_action=save_action,
             kv_ui=kv_ui_data,
+            kv_object='Page',
+            kv_objectid=page.id,
             **tags.__dict__),
         **tags.__dict__)
 

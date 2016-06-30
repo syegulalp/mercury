@@ -2287,6 +2287,8 @@ class Media(BaseModel, DateMod):
     blog = ForeignKeyField(Blog, null=True)
     site = ForeignKeyField(Site, null=True)
 
+    security = 'is_media_owner'
+
     @classmethod
     def load(cls, media_id=None, blog=None):
         try:
@@ -2641,7 +2643,7 @@ class TemplateTags(object):
     # Class for the template tags that are used in page templates.
     # Also used for building many other things.
 
-    tags_init = ("blog", "page", "authors", "site", "user",
+    tags_init = ("blog", "page", "authors", "site", "user", "media",
         "template", "archive")
 
     def __init__(self, **ka):
@@ -2681,11 +2683,16 @@ class TemplateTags(object):
         self.csrf_token = csrf_tag(token)
         self.csrf = csrf_hash(token)
 
+        if 'media_id' in ka:
+            self.media = Media.load(ka['media_id'])
+            ka['blog_id'] = self.media.blog.id
+        elif 'media' in ka:
+            self.media = ka.get('media', None)
+
         if 'page_id' in ka:
             self.page = Page.load(ka['page_id'])
             ka['page'] = self.page
-
-        if 'page' in ka:
+        elif 'page' in ka:
             self.page = ka['page']
             ka['blog_id'] = self.page.blog.id
             self.pages = (self.page,)
@@ -2754,7 +2761,7 @@ class TemplateTags(object):
             for n in ('year', 'month', 'category', 'author'):
                 setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
 
-        self.media = ka.get('media', None)
+
 
 def template_tags(**ka):
     return TemplateTags(**ka)

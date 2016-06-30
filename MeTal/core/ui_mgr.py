@@ -4,7 +4,7 @@ panels_dict = {
         'panels':
             {
             'kv':{
-                'template':'sidebar/sidebar_page_kv_ui',
+                'template':'sidebar/sidebar_kv_ui',
                 'title':'Key/Value',
                 'label':'kv',
                 'icon':'tasks'
@@ -69,7 +69,7 @@ panels_dict = {
                 'icon':'tags'
                 },
             'kv':{
-                'template':'sidebar/sidebar_page_kv_ui',
+                'template':'sidebar/sidebar_kv_ui',
                 'title':'Key/Value',
                 'label':'kv',
                 'icon':'tasks'
