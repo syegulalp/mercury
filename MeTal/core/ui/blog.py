@@ -1136,8 +1136,8 @@ def blog_import (blog_id):
         for n in json_data:
             id = n['id']
             match = Page().kv_get('legacy_id', id)
-            if match is not None:
-                q.append("Exists: " + format_str.format(n['title'], id))
+            if match.count() > 0:
+                q.append(match.key + "/" + match.value + " / Exists: " + format_str.format(n['title'], id))
             else:
                 q.append("Creating: " + format_str.format(n['title'], id))
 
@@ -1230,7 +1230,15 @@ def blog_import (blog_id):
 
         tpl = '<p>'.join(q)
 
-        # todo: categories, special KVs, etc.
+        # TODO:
+
+        # Import or create categories as needed
+        # Categories in export will need to have parent-child data
+        # categories should have legacy identifiers where possible too
+
+        # Import image files, assign those legacy KV identifiers
+        # Modify URLs for imported images in posts
+        # Make importing of image assets optional
 
     else:
         tpl = template('ui/ui_blog_import',
