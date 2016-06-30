@@ -340,6 +340,7 @@ class BaseModel(Model):
         else:
             return None
 
+
 class Log(BaseModel):
     date = DateTimeField(default=datetime.datetime.utcnow, index=True)
     level = IntegerField()
@@ -1207,11 +1208,18 @@ class Blog(SiteBase):
 
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
+
     title = TextField()
     # description = TextField(default=None, null=True, index=True)
     parent_category = IntegerField(default=None, null=True, index=True)
     default = BooleanField(default=False, index=True)
     sort = IntegerField(default=None, null=True, index=True)
+
+    security = 'is_blog_admin'
+
+    @property
+    def site(self):
+        return self.blog.site
 
     @property
     def pages(self):
@@ -1220,16 +1228,25 @@ class Category(BaseModel):
         pages = Page.select().where(Page.id << categories)
         return pages
 
+    # TODO:
+    # Some invocations of this method pass a blog parameter to ensure
+    # that we are retrieving a valid category for a valid blog.
+    # We may want to streamline this in the future.
+
     @classmethod
-    def load(cls, **kwargs):
-        blog = kwargs.get('blog_id', None)
-        category_id = kwargs.get('category_id', None)
+    def load(cls, category_id=None, **kwargs):
+        if category_id is None:
+            raise Category.DoesNotExist('Category \'None\' does not exist')
+        blog_id = kwargs.get('blog_id', None)
         try:
-            category_to_get = Category.get(
-                Category.blog == blog,
+            category_to_get = Category.select().where(
                 Category.id == category_id)
+            if blog_id is not None:
+                category_to_get = category_to_get.select().where(
+                    Category.blog == blog_id)
+            category_to_get = category_to_get.get()
         except Category.DoesNotExist:
-            raise Category.DoesNotExist('Category #{} does not exist in blog {}'.format(category_id, blog.for_log))
+            raise Category.DoesNotExist('Category #{} does not exist'.format(category_id))
         return category_to_get
 
     @property
@@ -2692,6 +2709,10 @@ class TemplateTags(object):
             self.page = ka['page']
             ka['blog_id'] = self.page.blog.id
             self.pages = (self.page,)
+
+        if 'category_id' in ka:
+            self.category = Category.load(ka['category_id'])
+            ka['blog_id'] = self.category.blog.id
 
         if 'template_id' in ka:
             self.template = Template.load(ka['template_id'])

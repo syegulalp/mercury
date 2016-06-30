@@ -67,7 +67,7 @@ def delete_category(blog_id, category_id, confirm='N'):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    category = Category.load(blog=blog, category_id=category_id)
+    category = Category.load(category_id, blog_id=blog.id)
     auth.check_category_editing_lock(blog)
 
     tags = template_tags(
@@ -141,7 +141,7 @@ def edit_category(blog_id, category_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    category = Category.load(blog_id=blog.id, category_id=category_id)
+    category = Category.load(category_id, blog_id=blog.id)
     auth.check_category_editing_lock(blog)
 
     category_list = [n for n in blog.categories]
@@ -217,6 +217,17 @@ def edit_category(blog_id, category_id):
         tags.status = Status(type='success',
             message=message + '<br/><a href="{}">Purge and republish this blog</a> to make these changes take effect.',
             vals=vals)
+
+    from core.ui_kv import kv_ui
+    kv_ui_data = kv_ui(category.kv_list())
+
+    from core import ui_mgr
+    tags.sidebar = ui_mgr.render_sidebar(
+            panel_set='edit_category',
+            # status_badge=status_badge,
+            kv_object='Category',
+            kv_objectid=category.id,
+            kv_ui=kv_ui_data)
 
     tpl = template('edit/edit_category_ui',
         category=category,

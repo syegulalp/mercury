@@ -573,7 +573,7 @@ def blog_pages_in_category(blog_id, category_id):
     reason = auth.check_category_editing_lock(blog, True)
 
     from core.models import Category
-    category = Category.load(blog_id=blog.id, category_id=category_id)
+    category = Category.load(category_id, blog_id=blog.id)
 
     return listing(
         request, user, None,

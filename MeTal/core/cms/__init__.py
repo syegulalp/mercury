@@ -469,7 +469,7 @@ def save_page(page, user, blog=None):
                 if n not in page_categories:
                     new_page_category = PageCategory.create(
                         page=page,
-                        category=Category.load(blog=page.blog, category_id=n),
+                        category=Category.load(n, blog_id=page.blog.id),
                         primary=False)
 
             if page.categories.count() == 0:
@@ -719,6 +719,7 @@ def delete_page(page):
         raise DeletionError('Page must be unpublished before it can be deleted')
 
     unpublish_page(page, no_save=True)
+    # TODO: Move this into page.delete_instance, override by way of BaseModel
     page.kv_del()
     delete_page_fileinfo(page)
     page.delete_instance(recursive=True)

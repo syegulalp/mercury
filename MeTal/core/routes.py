@@ -389,8 +389,8 @@ def blog_new_category(blog_id):
     '''
     Routes for creating a new blog category
     '''
-    from core.ui import ui
-    return ui.new_category(blog_id)
+    from core.ui import category
+    return category.new_category(blog_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>', method='POST')
@@ -398,8 +398,8 @@ def blog_edit_category(blog_id, category_id):
     '''
     Routes for editing an existing blog category
     '''
-    from core.ui import ui
-    return ui.edit_category(blog_id, category_id)
+    from core.ui import category
+    return category.edit_category(blog_id, category_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete', method='POST')
@@ -407,8 +407,8 @@ def blog_delete_category(blog_id, category_id):
     '''
     Routes for deleting a blog category
     '''
-    from core.ui import ui
-    return ui.delete_category(blog_id, category_id, request.forms.get('confirm'))
+    from core.ui import category
+    return category.delete_category(blog_id, category_id, request.forms.get('confirm'))
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tags')
 def blog_tags(blog_id):

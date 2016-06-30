@@ -21,7 +21,8 @@ def kv_response(object_name, object_type, object_identifier, object_id):
 
 objmap = {
     'Page':('page', 'page_id'),
-    'Media':('media', 'media_id')
+    'Media':('media', 'media_id'),
+    'Category':('category', 'category_id')
     }
 
 
