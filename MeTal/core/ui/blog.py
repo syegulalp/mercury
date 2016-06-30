@@ -1137,7 +1137,7 @@ def blog_import (blog_id):
             id = n['id']
             match = Page().kv_get('legacy_id', id)
             if match.count() > 0:
-                q.append(match.key + "/" + match.value + " / Exists: " + format_str.format(n['title'], id))
+                q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], id))
             else:
                 q.append("Creating: " + format_str.format(n['title'], id))
 
