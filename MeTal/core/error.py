@@ -51,6 +51,13 @@ class UserCreationError(Exception):
 class DeletionError(Exception):
     pass
 
+class FileInfoCollision(Exception):
+    # Used for when we attempt to write a fileinfo that has the same
+    # pathname or URL as some other fileinfo
+    # We should return as many details as we can about the offending fileinfo
+    # and the one it collided with
+    pass
+
 # for earlier Python 3.x backwards compatibility
 
 try:

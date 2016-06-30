@@ -13,6 +13,7 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue)
 
 from settings import MAX_BATCH_OPS, BASE_URL
+from core.libs.peewee import IntegrityError
 
 save_action_list = Struct()
 
@@ -629,14 +630,25 @@ def add_page_fileinfo(page, template_mapping, file_path,
 
     except FileInfo.DoesNotExist:
 
-        new_fileinfo = FileInfo.create(page=page,
-            template_mapping=template_mapping,
-            file_path=file_path,
-            sitewide_file_path=sitewide_file_path,
-            url=url,
-            mapping_sort=mapping_sort)
+        try:
 
-        fileinfo = new_fileinfo
+            new_fileinfo = FileInfo.create(page=page,
+                template_mapping=template_mapping,
+                file_path=file_path,
+                sitewide_file_path=sitewide_file_path,
+                url=url,
+                mapping_sort=mapping_sort)
+
+            fileinfo = new_fileinfo
+
+        except IntegrityError:
+            from core.error import FileInfoCollision
+            raise FileInfoCollision("Template mapping #{}, {}, for template #{}, yields a path {} that already exists in the system.".format(
+                template_mapping.id,
+                template_mapping.path_string,
+                template_mapping.template.id,
+                sitewide_file_path))
+
 
     else:
 
