@@ -165,25 +165,11 @@ def page_delete(page_id, confirm):
             close=False)
 
     else:
-        # if confirm == 'Y':
         if request.forms.getunicode('confirm') == user.logout_nonce:
 
             p = page.for_log
             from core.cms import delete_page
             delete_page(page)
-
-            '''
-
-            page.kv_del()
-
-            delete_query = page.delete_instance(
-                recursive=True,
-                delete_nullable=True)
-
-            from core.cms import delete_orphaned_tags
-
-            delete_orphaned_tags(page.blog)
-            '''
 
             message = 'Page {} successfully deleted'.format(
                 p)
