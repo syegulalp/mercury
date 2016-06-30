@@ -1,47 +1,7 @@
 from core.models.transaction import transaction
 from core.libs.bottle import (template)
 
-# Eventually we'll consolidate all these into a single generic function
-'''
-def kv_page_response(page_id):
-
-    from core.ui_kv import kv_ui
-    from core.models import template_tags
-
-    tags = template_tags(page_id=page_id)
-    kv_ui_data = kv_ui(tags.page.kv_list())
-
-    tpl = template('sidebar/sidebar_kv_ui',
-        kv_ui=kv_ui_data,
-        kv_object='Page',
-        kv_objectid=page_id,
-        **tags.__dict__)
-
-    return tpl
-
-def kv_media_response(media_id):
-
-    from core.ui_kv import kv_ui
-    from core.models import template_tags
-
-    tags = template_tags(media_id=media_id)
-    kv_ui_data = kv_ui(tags.media.kv_list())
-
-    tpl = template('sidebar/sidebar_kv_ui',
-        kv_ui=kv_ui_data,
-        kv_object='Media',
-        kv_objectid=media_id,
-        **tags.__dict__)
-
-    return tpl
-obj_map = {
-    'Page': kv_page_response,
-    'Media':kv_media_response
-    }
-
-'''
-# Page, page, page_id, {page.id}
-def kv_response(object_name, object_type, object_identifier, object_id,):
+def kv_response(object_name, object_type, object_identifier, object_id):
     from core.ui_kv import kv_ui
     from core.models import template_tags
 
