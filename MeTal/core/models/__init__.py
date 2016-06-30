@@ -2709,7 +2709,8 @@ class TemplateTags(object):
         if 'page_id' in ka:
             self.page = Page.load(ka['page_id'])
             ka['page'] = self.page
-        elif 'page' in ka:
+
+        if 'page' in ka:
             self.page = ka['page']
             ka['blog_id'] = self.page.blog.id
             self.pages = (self.page,)
