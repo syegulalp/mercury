@@ -2,7 +2,7 @@
 <div class="container" id="error_text">
 <div id="error_header">
 <h3>Error: {{error.exception.__class__.__name__}}</h3>
-% if error.exception.args:
+% if error.exception:
 {{error.exception.args[0]}}
 % end
 <hr/>
