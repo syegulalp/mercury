@@ -1,12 +1,10 @@
-from core import (auth, mgmt, utils, cms, ui_mgr)
-from core.cms import job_type
+from core import (auth, utils, cms, ui_mgr)
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
 from core.search import (
     blog_search_results, media_search_results,
     tag_search_results, tag_in_blog_search_results,
     blog_pages_in_category_search_results)
-from . import search_context  # , submission_fields, status_badge, save_action
 
 from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
@@ -18,10 +16,7 @@ from core.libs.bottle import (template, request, response)
 
 from settings import (BASE_URL)
 
-import datetime
-from os import remove as _remove
-
-from . import listing, status_badge, save_action
+from . import listing, status_badge, save_action, search_context
 
 submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
@@ -273,6 +268,8 @@ def blog_new_page(blog_id):
         if n in request.query:
             blog_new_page.__setattr__(n, request.query.getunicode(n))
 
+    import datetime
+
     blog_new_page.blog = blog_id
     blog_new_page.user = user
     blog_new_page.publication_date = datetime.datetime.utcnow()
@@ -401,6 +398,8 @@ def blog_media_edit_save(blog_id, media_id):
         changes = True
         media.friendly_name = friendly_name
 
+    import datetime
+
     if changes is True:
         media.modified_date = datetime.datetime.utcnow()
         media.save()
@@ -463,8 +462,10 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
+        from os import remove
+
         try:
-            _remove(media.path)
+            remove(media.path)
         except:
             pass
 
@@ -775,6 +776,8 @@ def blog_purge(blog_id):
 @transaction
 def blog_queue(blog_id):
 
+    from core.cms import job_type
+
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
@@ -1032,6 +1035,8 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 
     tags.status = status if reason is None else reason
 
+    import datetime
+
     tpl = template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
         search_context=(search_context['blog'], blog),
@@ -1060,7 +1065,6 @@ def blog_apply_theme(blog_id, theme_id):
 
         from core.models import db
         with db.transaction() as txn:
-            # mgmt.theme_apply_to_blog(theme, blog, user)
             blog.apply_theme(theme, user)
 
         status = Status(
@@ -1131,18 +1135,18 @@ def blog_import (blog_id):
 
         q = []
 
-        from core.models import KeyValue, page_status, MediaAssociation
+        from core.models import page_status, MediaAssociation
         from core.cms import media_filetypes
 
         format_str = "<b>{}</b> / (<i>{}</i>)"
 
         for n in json_data:
-            id = n['id']
-            match = Page().kv_get('legacy_id', id)
+            n_id = n['id']
+            match = Page().kv_get('legacy_id', n_id)
             if match.count() > 0:
-                q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], id))
+                q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
             else:
-                q.append("Creating: " + format_str.format(n['title'], id))
+                q.append("Creating: " + format_str.format(n['title'], n_id))
 
                 new_entry = Page()
                 new_entry.title = n['title']
