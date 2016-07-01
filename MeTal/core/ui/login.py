@@ -96,7 +96,6 @@ def logout():
 
         response.delete_cookie("login", path="/")
 
-        # redirect(BASE_URL)
         return "You have logged out. <a href='{}/login'>Click here to log in again.</a>".format(BASE_URL)
 
     return "No logout nonce. <a href='{}/logout?_={}'>Click here to log out.</a>".format(
@@ -112,9 +111,10 @@ def main_ui():
     '''
     user = auth.is_logged_in(request)
 
+    # TODO: replace with actual user-centric setting
     try:
         from settings import MAX_RECENT_PAGES
-    except Exception:
+    except ImportError:
         MAX_RECENT_PAGES = 10
 
     recent_pages = Page.select().where(
@@ -130,6 +130,4 @@ def main_ui():
         your_blogs=your_blogs,
         **template_tags(user=user).__dict__)
 
-    # return tpl
-    from core import cms
     return tpl
