@@ -10,7 +10,7 @@ def kv_response(object_name, object_type, object_identifier, object_id):
     tags = template_tags(**tag_args)
     kv_ui_data = kv_ui(tags.__dict__[object_type].kv_list())
 
-    tpl = template('sidebar/sidebar_kv_ui',
+    tpl = template('sidebar/kv',
         kv_ui=kv_ui_data,
         kv_object=object_name,
         kv_objectid=object_id,

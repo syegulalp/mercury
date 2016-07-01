@@ -4,7 +4,7 @@ panels_dict = {
         'panels':
             {
             'kv':{
-                'template':'sidebar/sidebar_kv_ui',
+                'template':'sidebar/kv',
                 'title':'Key/Value',
                 'label':'kv',
                 'icon':'tasks'
@@ -16,7 +16,7 @@ panels_dict = {
         'panels':
             {
             'kv':{
-                'template':'sidebar/sidebar_kv_ui',
+                'template':'sidebar/kv',
                 'title':'Key/Value',
                 'label':'kv',
                 'icon':'tasks'
@@ -27,25 +27,25 @@ panels_dict = {
         {'panel_order':['publishing', 'status', 'files', 'theme'],
         'panels':
             {'publishing':{
-                'template':'sidebar/sidebar_template_publishing_ui',
+                'template':'sidebar/template_publishing',
                 'title':'Publishing',
                 'label':'publishing',
                 'icon':'book',
                 'collapse':' in'},
             'status':{
-                'template':'sidebar/sidebar_template_status_ui',
+                'template':'sidebar/template_status',
                 'title':'Status',
                 'label':'status',
                 'icon':'info-sign'
                 },
             'theme':{
-                'template':'sidebar/sidebar_template_theme_ui',
+                'template':'sidebar/template_theme',
                 'title':'Theme',
                 'label':'theme',
                 'icon':'file'
                 },
             'files':{
-                'template':'sidebar/sidebar_template_output_ui',
+                'template':'sidebar/template_output',
                 'title':'Output files',
                 'label':'output',
                 'icon':'file'
@@ -56,38 +56,38 @@ panels_dict = {
         {'panel_order':['publishing', 'status', 'categories', 'tags', 'media', 'kv'],
         'panels':
             {'publishing':{
-                'template':'sidebar/sidebar_page_publishing_ui',
+                'template':'sidebar/page_publishing',
                 'title':'Publishing',
                 'label':'publishing',
                 'icon':'book',
                 'collapse':' in'
                 },
             'status':{
-                'template':'sidebar/sidebar_page_status_ui',
+                'template':'sidebar/page_status',
                 'title':'Page status',
                 'label':'status',
                 'icon':'info-sign'
                 },
             'categories':{
-                'template':'sidebar/sidebar_page_categories_ui',
+                'template':'sidebar/page_categories',
                 'title':'Categories',
                 'label':'categories',
                 'icon':'th-list'
                 },
             'tags':{
-                'template':'sidebar/sidebar_page_tags_ui',
+                'template':'sidebar/page_tags',
                 'title':'Tags',
                 'label':'tags',
                 'icon':'tags'
                 },
             'kv':{
-                'template':'sidebar/sidebar_kv_ui',
+                'template':'sidebar/kv',
                 'title':'Key/Value',
                 'label':'kv',
                 'icon':'tasks'
                 },
             'media':{
-                'template':'sidebar/sidebar_page_media_ui',
+                'template':'sidebar/page_media',
                 'title':'Media',
                 'label':'media',
                 'icon':'picture'
@@ -110,7 +110,7 @@ def render_sidebar(**k):
         if not 'collapse' in panels_n:
             panels_n['collapse'] = ''
         panel_body = template(panels_n['template'], **k)
-        panel = template('sidebar/sidebar_panel_ui',
+        panel = template('sidebar/panel',
             body=panel_body,
             **panels_n)
         sidebar_panels.append(panel)
