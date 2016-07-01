@@ -12,7 +12,7 @@ from .defaults import *
 __author__ = 'Serdar Yegulalp'
 __version__ = '0.0.1'
 __license__ = 'MIT'
-__copyright_date__ = "2015"
+__copyright_date__ = "2016"
 
 PRODUCT_NAME = "MeTal " + __version__
 
