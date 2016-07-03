@@ -247,7 +247,9 @@ class BaseModel(Model):
 
     def kv_list(self):
         object_name = self.__class__.__name__
-        # original_object_name = object_name
+        # TODO: make this a classmethod and
+        # have it detect whether or not it's being
+        # invoked by a specific class
 
         kv_list = KeyValue.select().where(
             KeyValue.object == object_name,
@@ -268,14 +270,20 @@ class BaseModel(Model):
             )
         return kv.save()
 
+    @classmethod
     def kv_get(self, key=None, value=None, object_type=None, object_id=None):
         '''
         Retrieves one or more KVs for a specific key, value, and object ID.
         If no object_id is supplied, the "id" of the invoking object is used.
+        Right now this method is invoked from a class, e.g., Page.kv_get() will search
+        all page objects.
         '''
 
+        # TODO: check if we're in BaseModel
+        # if so, search encompasses all objects
+
         if object_type is None:
-            object_type = self.__class__.__name__
+            object_type = self.__name__
 
         kv = KeyValue.select().where(
             KeyValue.object == object_type
