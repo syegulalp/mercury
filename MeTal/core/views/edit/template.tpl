@@ -48,6 +48,7 @@ static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}"}
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/codemirror.css">
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/codemirror/xml/xml.js"></script>
+<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/activity.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
 <script>
 var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('template_body'),{
