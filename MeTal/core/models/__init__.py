@@ -6,7 +6,7 @@ from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NA
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
 
 from core.libs.bottle import request, url, _stderr
-from core.libs.peewee import DeleteQuery, fn
+from core.libs.peewee import DeleteQuery, fn  # , BaseModel as _BaseModel
 
 from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check)
@@ -270,20 +270,30 @@ class BaseModel(Model):
             )
         return kv.save()
 
+    def __init__(self, *a, **ka):
+        self.kv_get = self._kv_get
+        super().__init__(*a, **ka)
+
     @classmethod
-    def kv_get(self, key=None, value=None, object_type=None, object_id=None):
+    def kv_get(cls, key=None, value=None, object_type=None, object_id=None):
+        # cls._kv_get(cls(), key, value, None, object_id)
+        return cls().kv_get(key, value, object_type, object_id, special=True)
+
+    def _kv_get(self, key=None, value=None, object_type=None, object_id=None, special=None):
         '''
         Retrieves one or more KVs for a specific key, value, and object ID.
-        If no object_id is supplied, the "id" of the invoking object is used.
-        Right now this method is invoked from a class, e.g., Page.kv_get() will search
-        all page objects.
+
+        If invoked from a class -- e.g., Page.kv_get() -- it returns matches
+        for all objects in that class.
+
+        If invoked from a class instance -- e.g., Page.load(260).kv_get() -- it
+        returns matches only from that one instance.
         '''
 
-        # TODO: check if we're in BaseModel
-        # if so, search encompasses all objects
-
         if object_type is None:
-            object_type = self.__name__
+            object_type = self.__class__.__name__
+        if object_id is None and self.id is not None:
+            object_id = self.id
 
         kv = KeyValue.select().where(
             KeyValue.object == object_type
