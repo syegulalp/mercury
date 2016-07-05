@@ -7,44 +7,24 @@
 {{!csrf_token}}
     <input type="hidden" id="page_id" name="page_id" value="{{page.id}}">
     <input type="hidden" id="blog_id" name="blog_id" value="{{blog.id}}">
-
     <div id="main_bar" class="col-sm-9">
 	    <div class="form-group">
-
-	            <input type="text" class="form-control input-lg entersubmit unsaved" id="page_title" placeholder="Page title"
-	            name="page_title" value="{{page.title}}">
-
+	        <input type="text" class="form-control input-lg entersubmit unsaved" id="page_title" placeholder="Page title" name="page_title" value="{{page.title}}">
 	    </div>
-
 	    <div class="form-group" id="editor_div">
-
-	       <textarea name="page_text" id="page_text" class="form-control unsaved editor">{{page.text}}</textarea>
-
-	    </div>
-
-	    <!--
-	    <div class="form-group">
-	        <label id="page_text_label" for="page_tag_text">Tags</label>
-	        <div name="page_tag_text" id="page_tag_text" class="" contenteditable="true"></div>
-	    </div>
-	    -->
-
+	        <textarea name="page_text" id="page_text" class="form-control unsaved editor">{{page.text}}</textarea>
+        </div>
 	    <div class="form-group resize">
 	        <label id="page_text_label" for="page_excerpt">Excerpt</label>
 	        <textarea name="page_excerpt" id="page_excerpt" class="form-control unsaved" rows="4">{{page.excerpt}}</textarea>
 	    </div>
-
 	    <div id="plugin_zone" class=""></div>
-
     </div>
-
     <div id="sidebar" class="col-sm-3">
         <div id="sidebar_inner">
         {{!sidebar}}
         </div>
     </div>
-
-
 <hr/>
 </form>
 <script>var global={base:"{{settings.BASE_URL}}",page:"{{page.id}}",blog:"{{blog.id}}",

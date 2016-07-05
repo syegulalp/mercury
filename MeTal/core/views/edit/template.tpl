@@ -8,7 +8,6 @@
             <input type="text" class="form-control input-lg" id="template_title" placeholder="Template title"
             name="template_title" value="{{template.title}}">
         </div>
-
         <div class="form-group" id="editor_div">
             <textarea name="template_body" id="template_body" class="form-control" rows="8">{{template.body}}</textarea>
         </div>
@@ -31,15 +30,12 @@
             </div>
         </div>
         % end
-
     </div>
-
     <div id="sidebar" class="col-sm-3">
         <div id="sidebar_inner">
         {{!sidebar}}
         </div>
     </div>
-
 </form>
 <script>var global={base:"{{settings.BASE_URL}}",template:"{{template.id}}",blog:"{{blog.id}}",
 static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}"}
