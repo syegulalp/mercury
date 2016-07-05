@@ -1233,6 +1233,12 @@ def blog_import (blog_id):
 
                     Tag.add_or_create(m['tags'], media=new_media)
 
+                    kvs = m['kvs']
+                    for key in kvs:
+                        value = kvs[key]
+                        new_media.kv_set(key, value)
+                        q.append('KV: {}:{}'.format(key, value))
+
                 cms.build_pages_fileinfos((new_entry,))
 
         tpl = '<p>'.join(q)
