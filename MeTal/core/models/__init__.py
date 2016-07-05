@@ -134,8 +134,42 @@ class BaseModel(Model):
         database = db
 
     def delete_instance(self, *a, **ka):
-        self.kv_del()
+        no_kv_del = ka.pop('no_kv_del', False)
+        if not no_kv_del:
+            self.kv_del()
         super().delete_instance(*a, **ka)
+
+    @classmethod
+    def clean(cls):
+
+        pages = Page.select(Page.id)
+
+        if cls == Page:
+            tags_to_clear = TagAssociation.delete().where(
+                ~(TagAssociation.page << pages)
+                )
+            tags_to_clear.execute()
+
+            categories_to_clear = PageCategory.delete().where(
+                ~(PageCategory.page << pages)
+                )
+            categories_to_clear.execute()
+
+            revisions_to_clear = PageRevision.delete().where(
+                ~(PageRevision.page << pages)
+                )
+            revisions_to_clear.execute()
+
+        if cls == Media:
+            media_to_clear = MediaAssociation.delete().where(
+                MediaAssociation.page.not_in(pages))
+            media_to_clear.execute()
+
+        kvs_to_clear = KeyValue.delete().where(
+            KeyValue.object == cls.__name__,
+            KeyValue.objectid.not_in(cls.select())
+            )
+        kvs_to_clear.execute()
 
     def parent(self):
         try:
