@@ -1455,13 +1455,12 @@ class Page(BaseModel, DateMod):
 
     @property
     def tags_public(self):
-        return self.tags.where(Tag.is_hidden == False)
+        return self.tags().where(Tag.is_hidden == False)
 
     @property
     def tags_private(self):
-        return self.tags.where(Tag.is_hidden == True)
+        return self.tags().where(Tag.is_hidden == True)
 
-    @property
     def tags(self):
         return Tag.select().where(
             Tag.id << TagAssociation.select(TagAssociation.tag).where(
@@ -1469,11 +1468,11 @@ class Page(BaseModel, DateMod):
 
     @property
     def tags_all(self):
-        return self.tags
+        return self.tags()
 
     @property
     def tags_text(self):
-        tags = self.tags
+        tags = self.tags()
         return [x.tag for x in tags]
 
     @property
