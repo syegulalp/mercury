@@ -185,7 +185,17 @@ def html_escape(input_string):
     '''
     return html.escape(str(input_string))
 
+# http://stackoverflow.com/a/517974
+
+def remove_accents(input_str):
+    import unicodedata
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
 def create_basename_core(basename):
+
+    basename = remove_accents(basename)
+
     try:
         basename = basename.casefold()
     except Exception:
@@ -193,8 +203,9 @@ def create_basename_core(basename):
 
     basename = re.sub(r'[ \./]', r'-', basename)
     basename = re.sub(r'<[^>]*>', r'', basename)
-    basename = re.sub(r'[^a-z0-9\-]', r'', basename)
+    basename = re.sub(r'[^a-z0-9\-]*', r'', basename)
     basename = re.sub(r'\-\-', r'-', basename)
+
     basename = urllib.parse.quote_plus(basename)
 
     return basename
@@ -283,7 +294,11 @@ class MetalTemplate(SimpleTemplate):
             Template.title == _name)
         tpl = MetalTemplate(template_to_import.body, tags=self._tags)
         self.includes.append(_name)
-        return tpl.execute(env['_stdout'], env)
+        try:
+            n = tpl.execute(env['_stdout'], env)
+        except Exception as e:
+            raise Exception(e, _name)
+        return n
     def render(self, *args, **kwargs):
         return super(MetalTemplate, self).render(*args, **kwargs)
 
