@@ -534,6 +534,9 @@ def save_page(page, user, blog=None):
 
     return tags
 
+# TODO: Move this to the Blog or Tags methods.
+# Maybe both by way of a proxy
+
 def delete_orphaned_tags(blog):
     '''
     Cleans up tags that no longer have any page associations.
@@ -798,7 +801,7 @@ def generate_file(f, blog):
         else:
 
             archive_pages = generate_archive_context_from_fileinfo(
-                f.xref.archive_xref, blog.published_pages(), f)
+                f.xref.archive_xref, blog.published_pages, f)
 
             # The context object we use
 
@@ -1265,7 +1268,7 @@ def republish_blog(blog):
 
     queue_ssi_actions(blog)
 
-    for p in blog.published_pages():
+    for p in blog.published_pages:
         queue_page_actions(p, no_neighbors=True)
 
     queue_index_actions(blog, include_manual=True)
@@ -1362,7 +1365,7 @@ def process_queue_insert(queue_control, blog):
     result = 0
 
     if queue_control.data_string == 'page_fileinfos':
-        page_list = blog.pages().order_by(Page.id.desc())
+        page_list = blog.pages.order_by(Page.id.desc())
         index = page_list.count() - queue_control.data_integer
         n = 0
         while n < MAX_BATCH_OPS and index < page_list.count():
@@ -1462,10 +1465,10 @@ def build_mapping_xrefs(mapping_list):
     # TODO: make all these actions queueable
 
     if 'Page' in map_types:
-        build_pages_fileinfos(mapping.template.blog.pages())
+        build_pages_fileinfos(mapping.template.blog.pages)
     if 'Archive' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
-        build_archives_fileinfos(mapping.template.blog.published_pages())
+        build_archives_fileinfos(mapping.template.blog.published_pages)
     if 'Index' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
         build_indexes_fileinfos(mapping.template.blog.index_templates)
@@ -1525,14 +1528,14 @@ def purge_blog(blog):
         includes_inserted, ssi_time - erase))
 
 
-    pages_inserted = build_pages_fileinfos(blog.pages())
+    pages_inserted = build_pages_fileinfos(blog.pages)
 
     rebuild = time.clock()
 
     report.append("<hr/>{0} page objects created in {1:.2f} seconds,".format(pages_inserted,
         rebuild - erase))
 
-    f_i = build_archives_fileinfos(blog.published_pages())
+    f_i = build_archives_fileinfos(blog.published_pages)
 
     arch_obj = time.clock()
     report.append("{0} archive page objects created in {1:.2f} seconds.".format(f_i,
@@ -1545,7 +1548,7 @@ def purge_blog(blog):
 
     end = time.clock()
 
-    total_objects = blog.pages().count() + f_i + blog.index_templates.count()
+    total_objects = blog.pages.count() + f_i + blog.index_templates.count()
     report.append("<hr/>Total objects created: <b>{}</b>.".format(total_objects))
     report.append("Total processing time: <b>{0:.2f}</b> seconds.".format(end - begin))
     report.append("<hr/>It is recommended that you <a href='{}'>republish this blog</a>.".format(

@@ -145,6 +145,10 @@ class BaseModel(Model):
         pages = Page.select(Page.id)
 
         if cls == Page:
+            fileinfos_to_clear = FileInfo.delete().where(
+                FileInfo.page << pages)
+            fileinfos_to_clear.execute()
+
             tags_to_clear = TagAssociation.delete().where(
                 ~(TagAssociation.page << pages)
                 )
@@ -847,6 +851,17 @@ class Blog(SiteBase):
     def author_archive(self):
         return self.archive_default(archive_type.author)
 
+    def category(self, category_id=None, title=None):
+        category = self.categories
+
+        if category_id is not None:
+            category = category.where(Category.id == category_id)
+
+        if title is not None:
+            category = category.where(Category.title == title)
+
+        return category.get()
+
     @property
     def categories(self):
         '''
@@ -990,7 +1005,7 @@ class Blog(SiteBase):
         return index_templates_in_blog
 
     def last_n_edited_pages(self, count=5):
-        last_n_edited_pages = self.pages().select().order_by(Page.modified_date.desc()).limit(count)
+        last_n_edited_pages = self.pages.order_by(Page.modified_date.desc()).limit(count)
         return last_n_edited_pages
 
     def last_n_pages(self, count=0):
@@ -999,7 +1014,7 @@ class Blog(SiteBase):
         Set count to zero to retrieve all published pages.
         '''
 
-        last_n_pages = self.published_pages().select().order_by(
+        last_n_pages = self.published_pages.order_by(
             Page.publication_date.desc())
 
         if count > 0:
@@ -1057,51 +1072,55 @@ class Blog(SiteBase):
         '''
         try:
             if title is not None:
-                page = self.pages(titles=(title,))[0]
+                page = self.pages.where(Page.titles == title).get()
             else:
-                page = self.pages((page_id,))[0]
+                page = self.pages.where(Page.id == page_id).get()
         except Exception:
             return None
         else:
             return page
 
-    def pages(self, page_list=None, titles=None):
+    def pages_where(self, page_list=None, titles=None):
         '''
         Select a list of pages in this blog by their IDs or titles
         '''
-        pages = Page.select(Page, PageCategory).where(
+        pages = self.pages
+
+        if page_list is not None:
+            pages = pages.where(Page.id << page_list)
+        if titles is not None:
+            pages = pages.where(Page.title.contains(titles))
+
+        return pages
+
+    @property
+    def pages(self):
+        return Page.select(Page, PageCategory).where(
             Page.blog == self.id).join(
             PageCategory).where(
             PageCategory.primary == True).order_by(
             Page.publication_date.desc(), Page.id.desc())
-
-        if page_list is not None:
-            pages = pages.select().where(Page.id << page_list)
-        if titles is not None:
-            pages = pages.select().where(Page.title.contains(titles))
-
-        return pages
-
 
     @property
     def page_archive(self):
         return self.archive_default(archive_type.page)
 
     @property
-    def parent(self, context=None):
+    def parent(self):
         return self.theme
 
     @property
     def permalink(self):
         return self.url
 
+    @property
     def published_pages(self):
-        published_pages = self.pages().select().where(Page.status == page_status.published)
+        published_pages = self.pages.where(Page.status == page_status.published)
         return published_pages
 
-
+    @property
     def scheduled_pages(self, due=False):
-        scheduled_pages = self.pages().select().where(Page.status == page_status.scheduled)
+        scheduled_pages = self.pages.where(Page.status == page_status.scheduled)
         if due is True:
             scheduled_pages = scheduled_pages.select().where(
                 Page.publication_date >= datetime.datetime.utcnow())
@@ -1154,23 +1173,30 @@ class Blog(SiteBase):
         import urllib
         return urllib.parse.urlparse(self.url)[2] + '/'
 
-    def tags(self, tag_list=None):
+    @property
+    def tags(self):
         '''
         Select all tags that belong to this blog.
         '''
-        tags = Tag.select().where(Tag.blog == self).order_by(Tag.tag.asc())
-        if tag_list is not None:
-            tags = tags.select().where(Tag.id << tag_list)
+        return Tag.select().where(Tag.blog == self).order_by(Tag.tag.asc())
+
+    def tags_where(self, tags_in=None):
+        tags = self.tags
+        if tags_in is not None:
+            tags = tags.select().where(Tag.id << tags_in)
         return tags
 
+    @property
     def tags_all(self):
-        return self.tags(tag_list=None)
+        return self.tags
 
-    def tags_private(self, tag_list=None):
-        return self.tags(tag_list).select().where(Tag.is_hidden == True)
+    @property
+    def tags_private(self):
+        return self.tags.select().where(Tag.is_hidden == True)
 
-    def tags_public(self, tag_list=None):
-        return self.tags(tag_list).select().where(Tag.is_hidden == False)
+    @property
+    def tags_public(self):
+        return self.tags.select().where(Tag.is_hidden == False)
 
     def template(self, template_id):
         template_in_blog = self.templates_in_blog.select().where(Template.id == template_id)
@@ -1276,6 +1302,10 @@ class Category(BaseModel):
     @property
     def site(self):
         return self.blog.site
+
+    # TODO: invoke pages filter, so we can filter as we do for a blog
+    # we may want to make that pages filter generic,
+    # and keep it on the Page object
 
     @property
     def pages(self):
@@ -1455,12 +1485,13 @@ class Page(BaseModel, DateMod):
 
     @property
     def tags_public(self):
-        return self.tags().where(Tag.is_hidden == False)
+        return self.tags.where(Tag.is_hidden == False)
 
     @property
     def tags_private(self):
-        return self.tags().where(Tag.is_hidden == True)
+        return self.tags.where(Tag.is_hidden == True)
 
+    @property
     def tags(self):
         return Tag.select().where(
             Tag.id << TagAssociation.select(TagAssociation.tag).where(
@@ -1468,11 +1499,11 @@ class Page(BaseModel, DateMod):
 
     @property
     def tags_all(self):
-        return self.tags()
+        return self.tags
 
     @property
     def tags_text(self):
-        tags = self.tags()
+        tags = self.tags
         return [x.tag for x in tags]
 
     @property
@@ -1650,7 +1681,7 @@ class Page(BaseModel, DateMod):
         so that it can be filtered by some other method.
         This allows any number of next/previous methods to be built.
         '''
-        next_all = self.blog.published_pages().select().where(
+        next_all = self.blog.published_pages.where(
                 Page.blog == self.blog,
                 Page.publication_date > self.publication_date).order_by(
                 Page.publication_date.asc(), Page.id.asc())
@@ -1663,7 +1694,7 @@ class Page(BaseModel, DateMod):
         Returns all pages in this blog earlier than the current one
         so that it can be filtered by some other method.
         '''
-        prev_all = self.blog.published_pages().select().where(
+        prev_all = self.blog.published_pages.where(
                 Page.blog == self.blog,
                 Page.publication_date < self.publication_date).order_by(
                 Page.publication_date.desc(), Page.id.desc())
@@ -1956,7 +1987,8 @@ class Tag(BaseModel):
         if blog is None:
             if page is not None:
                 blog = page.blog
-                assoc = {'page':page}
+                assoc = {'page':page,
+                    'blog':page.blog}
             elif media is not None:
                 blog = media.blog
                 assoc = {'media':media}
@@ -1991,6 +2023,8 @@ class Tag(BaseModel):
         return (tags_added, tags_existing, all_tags)
 
 
+    # @property
+    # TODO: allow filtering?
     @property
     def pages(self):
 
@@ -2799,9 +2833,12 @@ class TemplateTags(object):
 
         if 'archive' in ka:
             self.archive = Struct()
-            pages = self.blog.pages(ka['archive'])
-            setattr(self.archive, "pages", pages)
-            setattr(self.archive, "context", pages[0].publication_date)
+            # pages = self.blog.pages_where(ka['archive'])
+            # pages = self.blog.pages.where(Page.id << ka['archive'])
+            # setattr(self.archive, "pages", pages)
+            setattr(self.archive, "pages", ka['archive'])
+            # setattr(self.archive, "context", pages[0].publication_date)
+            setattr(self.archive, "context", ka['archive'][0].publication_date)
 
             # TODO: 'tags' should be 'tag' - contexts are singular!
 

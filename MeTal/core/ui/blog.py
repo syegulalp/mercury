@@ -44,7 +44,7 @@ def blog(blog_id, errormsg=None):
             'search_ui':'blog',
             'search_object':blog,
             'search_context':blog_search_results,
-            'item_list_object':blog.pages(),
+            'item_list_object':blog.pages,
             'action_button':action,
             'list_actions':list_actions
         },
@@ -585,7 +585,7 @@ def blog_pages_in_category(blog_id, category_id):
             'search_ui':'blog_pages_in_category',
             'search_object':category,
             'search_context':blog_pages_in_category_search_results,
-            'item_list_object':category.pages.select(),
+            'item_list_object':category.pages,
             # 'action_button':action,
             # 'action_button':action,
             # 'list_actions':list_actions
@@ -612,7 +612,7 @@ def blog_tags(blog_id):
             'search_ui':'blog_tags',
             'search_object':blog,
             'search_context':tag_search_results,
-            'item_list_object':blog.tags()
+            'item_list_object':blog.tags
         },
         {'blog_id':blog.id,
             'status':reason}
@@ -1133,9 +1133,11 @@ def blog_import (blog_id):
         with open(import_path, 'r', encoding='utf8') as f:
             json_data = json.load(f)
 
+        pages_to_build = []
+
         q = []
 
-        from core.models import page_status, MediaAssociation
+        from core.models import page_status, MediaAssociation, Category
         from core.cms import media_filetypes
 
         format_str = "<b>{}</b> / (<i>{}</i>)"
@@ -1168,16 +1170,53 @@ def blog_import (blog_id):
 
                 new_entry.kv_set("legacy_id", n["id"])
 
-                # Set default page category for blog
+                # Category assignments
 
-                saved_page_category = PageCategory.create(
-                    page=new_entry,
-                    category=blog.default_category,
-                    primary=True)
+                categories = n['categories']
+                if categories == []:
+                    saved_page_category = PageCategory.create(
+                        page=new_entry,
+                        category=blog.default_category,
+                        primary=True).save()
+                else:
+                    primary = True
+                    for category in categories:
+                        category_id = category['id']
+                        existing_category = Category.kv_get('legacy_id', category_id)
+                        if existing_category.count() == 0:
+                            q.append('Created new category {}/{}'.format(
+                                category_id, category['name']
+                                ))
+                            new_category = Category.create(
+                                blog=blog,
+                                title=category['name'],
+                                parent_category=getattr(category, 'parent', None)
+                                )
+                            new_category.save()
+
+                            new_category.kv_set('legacy_id',
+                                category_id
+                                )
+                        else:
+                            new_category = Category.load(existing_category[0].objectid)
+                            q.append('Added to existing category {}/{}'.format(
+                                new_category.id, category['name']
+                                ))
+                        saved_page_category = PageCategory.create(
+                            page=new_entry,
+                            category=new_category,
+                            primary=primary
+                            ).save()
+                        primary = False
+
+                # Check to make sure a default category exists for the whole blog.
+                # If not, assign one based on the lowest ID.
+                # This can always be reassigned later.
 
                 # Register tags
 
-                tags_added, tags_existing, _ = Tag.add_or_create(n['tags'], blog=blog)
+                tags_added, tags_existing, _ = Tag.add_or_create(
+                    n['tags'], page=new_entry)
 
                 q.append('Tags added: {}'.format(','.join(n.tag for n in tags_added)))
                 q.append('Tags existing: {}'.format(','.join(n.tag for n in tags_existing)))
@@ -1239,7 +1278,11 @@ def blog_import (blog_id):
                         new_media.kv_set(key, value)
                         q.append('KV: {}:{}'.format(key, value))
 
-                cms.build_pages_fileinfos((new_entry,))
+                # cms.build_pages_fileinfos((new_entry,))
+                pages_to_build.append(new_entry)
+
+        cms.build_pages_fileinfos(pages_to_build)
+        cms.build_archives_fileinfos(pages_to_build)
 
         tpl = '<p>'.join(q)
 
