@@ -315,13 +315,13 @@ def template_preview(template_id):
     if template.template_type == template_type.index:
         tags = template_tags(blog=template.blog)
     if template.template_type == template_type.page:
-        tags = template_tags(page=template.blog.published_pages()[0])
+        tags = template_tags(page=template.blog.published_pages[0])
     if template.template_type == template_type.archive:
         from core.cms import generate_archive_context
         archive_pages = generate_archive_context(
             template.default_mapping.archive_xref,
-            template.blog.published_pages(),
-            page=template.blog.published_pages()[0]
+            template.blog.published_pages,
+            page=template.blog.published_pages[0]
             )
         tags = template_tags(blog=template.blog,
                 archive=archive_pages,
