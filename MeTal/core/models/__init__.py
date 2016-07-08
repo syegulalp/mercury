@@ -146,7 +146,7 @@ class BaseModel(Model):
 
         if cls == Page:
             fileinfos_to_clear = FileInfo.delete().where(
-                FileInfo.page << pages)
+               ~(FileInfo.page << pages))
             fileinfos_to_clear.execute()
 
             tags_to_clear = TagAssociation.delete().where(
@@ -166,8 +166,23 @@ class BaseModel(Model):
 
         if cls == Media:
             media_to_clear = MediaAssociation.delete().where(
-                MediaAssociation.page.not_in(pages))
+                ~(MediaAssociation.page << pages))
             media_to_clear.execute()
+
+        if cls == Tag:
+
+            tags_to_clear = TagAssociation.delete().where(
+                ~(TagAssociation.page << Page.select())
+            ).execute()
+
+            tags_to_clear_2 = TagAssociation.delete().where(
+                ~(TagAssociation.media << Media.select())
+            ).execute()
+
+            tags_to_clear_3 = Tag.delete().where(
+                ~(Tag.id << TagAssociation.select(TagAssociation.tag))
+            ).execute()
+
 
         kvs_to_clear = KeyValue.delete().where(
             KeyValue.object == cls.__name__,
@@ -1611,7 +1626,10 @@ class Page(BaseModel, DateMod):
 
     @property
     def permalink(self):
-
+        '''
+        Returns the permalink or canonical URL associated with the page.
+        Derived from the default fileinfo.
+        '''
         if self.id is not None:
             f_info = self.default_fileinfo
             permalink = self.blog.url + "/" + f_info.file_path
@@ -1621,8 +1639,16 @@ class Page(BaseModel, DateMod):
         return permalink
 
     @property
-    def preview_permalink(self):
+    def permalink_dir(self):
+        '''
+        Returns a version of the page's permalink that leaves off the filename.
+        This is useful if you have pages that build as /index.html
+        in a directory, and want to just permalink to the directory.
+        '''
+        return self.permalink.split(self.blog.index_file, 1)[0]
 
+    @property
+    def preview_permalink(self):
         '''
         TODO: the behavior of this function is wrong
         in both local and remote mode,
@@ -2453,6 +2479,12 @@ class Media(BaseModel, DateMod):
 
         return associated_with
     """
+
+    @property
+    def tags(self):
+        return Tag.select().where(
+            Tag.id << TagAssociation.select(TagAssociation.tag).where(
+                TagAssociation.media == self)).order_by(Tag.tag)
 
     @property
     def preview_for_listing(self):
