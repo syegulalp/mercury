@@ -21,7 +21,13 @@ panels_dict = {
                 'label':'kv',
                 'icon':'tasks'
                 }
-            }
+            },
+            #'tags':{
+            #    'template':'sidebar/tags',
+            #    'title':'Tags',
+            #    'label':'tags',
+            #    'icon':'tags'
+            #},
         },
     'edit_template':
         {'panel_order':['publishing', 'status', 'files', 'theme'],
