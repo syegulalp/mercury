@@ -274,52 +274,55 @@ def tpl_include(tpl):
         tpl)
 
 from core.libs.bottle import SimpleTemplate
-
-
+from functools import partial
 class MetalTemplate(SimpleTemplate):
-    # includes = []
     class TemplateError(Exception):
         pass
     def __init__(self, *args, **kwargs):
         self.includes = {}
         super(MetalTemplate, self).__init__(*args, **kwargs)
-        # translate self.source here for transclusion
         self._tags = kwargs.get('tags', None)
 
-    def _transclude(self):
-        '''
-        Take existing template text and insert contents of other
-        templates *before* execution.
+    def _load_ssi(self, env, ssi_name=None, **kwargs):
+        ssi = self._tags['blog'].ssi(ssi_name)
+        tpl = MetalTemplate(ssi, tags=self._tags, **kwargs)
+        return tpl.execute(env['_stdout'], env)
 
-        What stage should we run this at?
+    def _load_module(self, module_name):
+        from types import ModuleType
+        from core.models import Template
+        my_code = self._tags['blog'].templates().where(
+            Template.title == module_name).get().body
+        m = ModuleType('new_module')
+        m.__dict__.update(self._tags)
+        exec(my_code, m.__dict__)
+        return m
 
-        syntax:
-        .*?\% transclude\(.([^)]*?).\)
-
-        1) get all regex matches for above
-        2) parse each, insert text at line
-        3) pass along
-
-        seems simple enough
-
-        we might also want to use this syntax for transforming ssi includes?
-        two birds, etc.
-
-        '''
-        pass
-
-    # def execute(self, *a, **ka):
-        # self.defaults.update(
-            # {'__builtins__': {}, 'object': object, '__name__': __name__}
-            # )
-        # super().execute(*a, **ka)
+    # Copied from the underlying class.
+    def execute(self, _stdout, kwargs):
+        env = self.defaults.copy()
+        env.update(kwargs)
+        env.update({
+            'module':self._load_module,
+            'ssi': partial(self._load_ssi, env),
+            'include': partial(self._include, env),
+            '_stdout': _stdout, '_printlist': _stdout.extend,
+            'rebase': partial(self._rebase, env), '_rebase': None,
+            '_str': self._str, '_escape': self._escape, 'get': env.get,
+            'setdefault': env.setdefault, 'defined': env.__contains__ })
+        eval(self.co, env)
+        if env.get('_rebase'):
+            subtpl, rargs = env.pop('_rebase')
+            rargs['base'] = ''.join(_stdout)  # copy stdout
+            del _stdout[:]  # clear stdout
+            return self._include(env, subtpl, **rargs)
+        return env
 
     def _include(self, env, _name=None, **kwargs):
         from core.models import Template
-        template_to_import = Template.get(
-            Template.blog == self._tags.get('blog', None),
-            Template.title == _name)
-        tpl = MetalTemplate(template_to_import.body, tags=self._tags)
+        template_to_import = self._tags['blog'].templates().where(
+            Template.title == _name).get().body
+        tpl = MetalTemplate(template_to_import, tags=self._tags, **kwargs)
         self.includes[_name] = template_to_import
         try:
             n = tpl.execute(env['_stdout'], env)
