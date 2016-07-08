@@ -1270,7 +1270,8 @@ def blog_import (blog_id):
 
                     # add tags for media
 
-                    Tag.add_or_create(m['tags'], media=new_media)
+                    q.append('Tags: {}'.format(m['tags']))
+                    new_tags = Tag.add_or_create(m['tags'], media=new_media)
 
                     kvs = m['kvs']
                     for key in kvs:
@@ -1278,7 +1279,6 @@ def blog_import (blog_id):
                         new_media.kv_set(key, value)
                         q.append('KV: {}:{}'.format(key, value))
 
-                # cms.build_pages_fileinfos((new_entry,))
                 pages_to_build.append(new_entry)
 
         cms.build_pages_fileinfos(pages_to_build)
