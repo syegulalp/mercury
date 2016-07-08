@@ -2830,7 +2830,6 @@ class TemplateTags(object):
             self.queue = Queue.select()
             self.queue_count = Queue.job_counts()
 
-
         if 'archive' in ka:
             self.archive = Struct()
             # pages = self.blog.pages_where(ka['archive'])
@@ -2871,7 +2870,8 @@ class TemplateTags(object):
             for n in ('year', 'month', 'category', 'author'):
                 setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
 
-
+        if 'fileinfo' in ka:
+            self.fileinfo = ka['fileinfo']
 
 def template_tags(**ka):
     return TemplateTags(**ka)
