@@ -266,13 +266,6 @@ def breaks(string):
 
     return string
 
-def tpl_oneline(string):
-
-    if string[0] == '%':
-        string = '\\' + string
-
-    return string
-
 def tpl_include(tpl):
     # get absolute path for template relative to blog root
     # get default mapping
@@ -281,11 +274,45 @@ def tpl_include(tpl):
         tpl)
 
 from core.libs.bottle import SimpleTemplate
+
+
 class MetalTemplate(SimpleTemplate):
-    includes = []
+    # includes = []
+    class TemplateError(Exception):
+        pass
     def __init__(self, *args, **kwargs):
+        self.includes = {}
         super(MetalTemplate, self).__init__(*args, **kwargs)
+        # translate self.source here for transclusion
         self._tags = kwargs.get('tags', None)
+
+    def _transclude(self):
+        '''
+        Take existing template text and insert contents of other
+        templates *before* execution.
+
+        What stage should we run this at?
+
+        syntax:
+        .*?\% transclude\(.([^)]*?).\)
+
+        1) get all regex matches for above
+        2) parse each, insert text at line
+        3) pass along
+
+        seems simple enough
+
+        we might also want to use this syntax for transforming ssi includes?
+        two birds, etc.
+
+        '''
+        pass
+
+    # def execute(self, *a, **ka):
+        # self.defaults.update(
+            # {'__builtins__': {}, 'object': object, '__name__': __name__}
+            # )
+        # super().execute(*a, **ka)
 
     def _include(self, env, _name=None, **kwargs):
         from core.models import Template
@@ -293,36 +320,48 @@ class MetalTemplate(SimpleTemplate):
             Template.blog == self._tags.get('blog', None),
             Template.title == _name)
         tpl = MetalTemplate(template_to_import.body, tags=self._tags)
-        self.includes.append(_name)
+        self.includes[_name] = template_to_import
         try:
             n = tpl.execute(env['_stdout'], env)
         except Exception as e:
             raise Exception(e, _name)
         return n
+
     def render(self, *args, **kwargs):
         return super(MetalTemplate, self).render(*args, **kwargs)
 
 def tpl(*args, **ka):
     '''
-    Shim for the template function to force it to use a string that might be
-    ambiguously a filename.
+    Shim/shortcutfor the MetalTemplate function.
     '''
     # TODO: debug handler for errors in submitted user templates here?
-    tp = MetalTemplate('\n' + args[0], tags=ka)
-    x = tp.render(ka)
-    return x[1:]
+    # TODO: allow analysis only to return object with list of includes
 
-tp_cache = {}
-
-def tpl2(template, **ka):
     try:
-        template_to_render = tp_cache[template.blog.id][template.id]
-    except KeyError:
-        template_to_render = MetalTemplate('\n' + template.body, tags=ka)
-        tp_cache[template.blog.id][template.id] = template_to_render
-    x = template_to_render.render(ka)
-    return x[1:]
+        return MetalTemplate(source=args[0], tags=ka).render(ka)
+    except Exception as e:
+        raise Exception("Template error: {} / {}".format(e, ka))
 
+def tplt(template, tags):
+    '''
+    New shim/shortcut for the MetalTemplate function.
+    Provides detailed error information at the exact line of a template
+    '''
+    # TODO: debug handler for errors in submitted user templates here?
+    # TODO: allow analysis only to return object with list of includes
+    context = tags.__dict__
+    try:
+        return MetalTemplate(source=template.body, tags=context).render(context)
+    except Exception as e:
+        import traceback
+        template_error_line = traceback.extract_tb(e.__traceback__.tb_next)[-1][1]
+        raise MetalTemplate.TemplateError(
+            "'{}' at line {}: {}".format(
+                template.title,
+                template_error_line,
+                e
+                )
+            )
 
 def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
 
