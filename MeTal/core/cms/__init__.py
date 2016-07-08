@@ -1,6 +1,6 @@
 import os, datetime
 
-from core.utils import (create_basename, Status, tpl, tpl_oneline, generate_date_mapping, date_format)
+from core.utils import (create_basename, Status, tpl, generate_date_mapping, date_format)
 from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueueError,
     QueueInProgressException, PageTemplateError, DeletionError)
 from core.log import logger
@@ -797,7 +797,8 @@ def generate_file(f, blog):
     if f.page is None:
 
         if f.xref.template.template_type == template_type.index:
-            tags = template_tags(blog_id=blog.id)
+            tags = template_tags(blog_id=blog.id,
+                fileinfo=f)
         else:
 
             archive_pages = generate_archive_context_from_fileinfo(
@@ -807,10 +808,12 @@ def generate_file(f, blog):
 
             tags = template_tags(blog_id=blog.id,
                 archive=archive_pages,
-                archive_context=f)
+                archive_context=f,
+                fileinfo=f)
 
     else:
-        tags = template_tags(page_id=f.page.id)
+        tags = template_tags(page_id=f.page.id,
+            fileinfo=f)
 
     page_text = generate_page_text(f, tags)
     pathname = blog.path + "/" + f.file_path

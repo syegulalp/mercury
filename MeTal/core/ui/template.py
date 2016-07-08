@@ -313,9 +313,11 @@ def template_preview(template_id):
     template = Template.load(template_id)
 
     if template.template_type == template_type.index:
-        tags = template_tags(blog=template.blog)
+        tags = template_tags(blog=template.blog,
+            fileinfo=template.fileinfos[0])
     if template.template_type == template_type.page:
-        tags = template_tags(page=template.blog.published_pages[0])
+        tags = template_tags(page=template.blog.published_pages[0],
+            fileinfo=template.blog.published_pages[0].fileinfos[0])
     if template.template_type == template_type.archive:
         from core.cms import generate_archive_context
         archive_pages = generate_archive_context(
@@ -325,10 +327,10 @@ def template_preview(template_id):
             )
         tags = template_tags(blog=template.blog,
                 archive=archive_pages,
-                archive_context=template.default_mapping.fileinfos[0])
+                archive_context=template.default_mapping.fileinfos[0],
+                fileinfo=template.default_mapping.fileinfos[0])
 
-    tpl_output = utils.tpl(template.body,
-        **tags.__dict__)
+    tpl_output = utils.tplt(template, tags)
 
     preview = template.preview_path
 
