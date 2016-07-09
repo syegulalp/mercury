@@ -190,7 +190,7 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
 
             if next_page is not None:
 
-                fileinfos_next = FileInfo.select().where(FileInfo.page == next_page)
+                fileinfos_next = next_page.fileinfos
 
                 for f in fileinfos_next:
 
@@ -204,8 +204,9 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
                         queue_page_archive_actions(next_page)
 
             if previous_page is not None:
+                # raise Exception(previous_page)
 
-                fileinfos_previous = FileInfo.select().where(FileInfo.page == previous_page)
+                fileinfos_previous = previous_page.fileinfos
 
                 for f in fileinfos_previous:
 
@@ -244,6 +245,10 @@ def queue_page_archive_actions(page):
         The page object whose archives will be pushed to the publishing queue.
     '''
 
+    # f = page.fileinfos
+    # This doesn't work if there's a change where
+    # SOME fileinfos but not all are affected, like changing one template
+
     archive_templates = page.blog.archive_templates
     tags = template_tags(page_id=page.id)
 
@@ -251,6 +256,8 @@ def queue_page_archive_actions(page):
         try:
             if n.publishing_mode != publishing_mode.do_not_publish:
                 for m in n.mappings:
+                    # if n.fileinfos.where(FileInfo.page == page).count() == 0:
+                        # build_archives_fileinfos((page,))
                     path_list = eval_paths(m.path_string, tags.__dict__)
 
                     paths = []
@@ -269,7 +276,14 @@ def queue_page_archive_actions(page):
                                                            p,
                                                            do_eval=False))
 
-                        fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+                        while 1:
+                            try:
+                                fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+                            except FileInfo.DoesNotExist:
+                                build_archives_fileinfos((page,))
+                            else:
+                                break
+
 
                         push_to_queue(job_type=job_type.archive,
                                   blog=page.blog,
@@ -278,9 +292,10 @@ def queue_page_archive_actions(page):
         except Exception as e:
             from core.error import QueueAddError
             raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
-                n.for_log,
+                n,
                 page.for_log,
                 e))
+
 
 
 def queue_ssi_actions(blog):
@@ -379,6 +394,12 @@ def save_page(page, user, blog=None):
         page.created_date = datetime.datetime.utcnow()
 
     else:
+
+        # Queue actions for page BEFORE modification
+
+        if page.status == page_status.published:
+            # build_archives_fileinfos((page,))
+            queue_page_archive_actions(page)
 
         original_page_status = page.status
         original_page_basename = page.basename
@@ -516,11 +537,9 @@ def save_page(page, user, blog=None):
 
     # BUILD FILEINFO IF NO DELETE ACTION
 
-    build_pages_fileinfos((page,))
     if page.status == page_status.published:
-        # TODO: later, run this only if the "mapping dirty bit" is set
-        # e.g., change in publication status
-        build_archives_fileinfos((page,))
+        build_pages_fileinfos((page,))
+        # build_archives_fileinfos((page,))
 
     # QUEUE CHANGES FOR PUBLICATION
 
@@ -1494,7 +1513,8 @@ def build_mapping_xrefs(mapping_list):
     # TODO: make all these actions queueable
 
     if 'Page' in map_types:
-        build_pages_fileinfos(mapping.template.blog.pages)
+        # build_pages_fileinfos(mapping.template.blog.pages)
+        pass
     if 'Archive' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
         pass
@@ -1558,8 +1578,8 @@ def purge_blog(blog):
         includes_inserted, ssi_time - erase))
 
 
-    pages_inserted = build_pages_fileinfos(blog.pages)
-
+    # pages_inserted = build_pages_fileinfos(blog.pages)
+    pages_inserted = 0
     rebuild = time.clock()
 
     report.append("<hr/>{0} page objects created in {1:.2f} seconds,".format(pages_inserted,
