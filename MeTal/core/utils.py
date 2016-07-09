@@ -289,14 +289,9 @@ class MetalTemplate(SimpleTemplate):
         return tpl.execute(env['_stdout'], env)
 
     def _load_module(self, module_name):
-        from types import ModuleType
         from core.models import Template
-        my_code = self._tags['blog'].templates().where(
-            Template.title == module_name).get().body
-        m = ModuleType('new_module')
-        m.__dict__.update(self._tags)
-        exec(my_code, m.__dict__)
-        return m
+        return self._tags['blog'].templates().where(
+            Template.title == module_name).get().as_module(self._tags)
 
     # Copied from the underlying class.
     def execute(self, _stdout, kwargs):
