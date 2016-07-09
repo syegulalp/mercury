@@ -161,66 +161,79 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         Set to True to suppress generation of archive pages associated with this page. Also
         useful for mass-queued actions.
     '''
+    try:
+        if page is None:
+            return
 
-    if page is None:
-        return
+        fileinfos = page.fileinfos
 
-    fileinfos = page.fileinfos
+        blog = page.blog
+        site = page.blog.site
 
-    blog = page.blog
-    site = page.blog.site
+        for f in fileinfos:
+            if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                push_to_queue(job_type=job_type.page,
+                    blog=blog,
+                    site=site,
+                    data_integer=f.id)
 
-    for f in fileinfos:
-        if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
-            push_to_queue(job_type=job_type.page,
-                blog=blog,
-                site=site,
-                data_integer=f.id)
+        if no_archive is False:
+            queue_page_archive_actions(page)
 
-    if no_archive is False:
-        queue_page_archive_actions(page)
+        if no_neighbors is False:
 
-    if no_neighbors is False:
+            next_page = page.next_page
+            previous_page = page.previous_page
 
-        next_page = page.next_page
-        previous_page = page.previous_page
+            # Next and previous across categories should also be done through this
+            # mechanism somehow
 
-        # Next and previous across categories should also be done through this
-        # mechanism somehow
+            if next_page is not None:
 
-        if next_page is not None:
+                fileinfos_next = FileInfo.select().where(FileInfo.page == next_page)
 
-            fileinfos_next = FileInfo.select().where(FileInfo.page == next_page)
+                for f in fileinfos_next:
 
-            for f in fileinfos_next:
+                    if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-                if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                        push_to_queue(job_type=job_type.page,
+                            blog=blog,
+                            site=site,
+                            data_integer=f.id)
 
-                    push_to_queue(job_type=job_type.page,
-                        blog=blog,
-                        site=site,
-                        data_integer=f.id)
+                        queue_page_archive_actions(next_page)
 
-                    queue_page_archive_actions(next_page)
+            if previous_page is not None:
 
-        if previous_page is not None:
+                fileinfos_previous = FileInfo.select().where(FileInfo.page == previous_page)
 
-            fileinfos_previous = FileInfo.select().where(FileInfo.page == previous_page)
+                for f in fileinfos_previous:
 
-            for f in fileinfos_previous:
+                    if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-                if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                        push_to_queue(job_type=job_type.page,
+                            blog=blog,
+                            site=site,
+                            data_integer=f.id)
 
-                    push_to_queue(job_type=job_type.page,
-                        blog=blog,
-                        site=site,
-                        data_integer=f.id)
+                        queue_page_archive_actions(previous_page)
 
-                    queue_page_archive_actions(previous_page)
+    except Exception as e:
+        from core.error import QueueAddError
+        raise QueueAddError('Page {} could not be queued: '.format(
+            page.for_log,
+            e))
 
 def eval_paths(path_string, dict_data):
     path_string = replace_mapping_tags(path_string)
-    paths = eval(path_string, dict_data)
+    try:
+        paths = eval(path_string, dict_data)
+    except Exception as e:
+        paths = None
+        # raise Exception('Invalid path string: {} // Data: {} // Exception: {}'.format(
+            # path_string,
+            # dict_data,
+            # e))
     return paths
 
 def queue_page_archive_actions(page):
@@ -235,31 +248,39 @@ def queue_page_archive_actions(page):
     tags = template_tags(page_id=page.id)
 
     for n in archive_templates:
-        if n.publishing_mode != publishing_mode.do_not_publish:
-            for m in n.mappings:
-                path_list = eval_paths(m.path_string, tags.__dict__)
+        try:
+            if n.publishing_mode != publishing_mode.do_not_publish:
+                for m in n.mappings:
+                    path_list = eval_paths(m.path_string, tags.__dict__)
 
-                paths = []
+                    paths = []
 
-                if type(path_list) == list:
-                    for n in path_list:
-                        paths.append(n[1])
-                else:
-                    paths.append(path_list)
+                    if type(path_list) == list:
+                        for n in path_list:
+                            paths.append(n[1])
+                    else:
+                        paths.append(path_list)
 
-                for p in paths:
-                    file_path = (page.blog.path + '/' +
-                                 generate_date_mapping(page.publication_date_tz.date(),
-                                                       tags,
-                                                       p,
-                                                       do_eval=False))
+                    for p in paths:
 
-                    fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+                        file_path = (page.blog.path + '/' +
+                                     generate_date_mapping(page.publication_date_tz.date(),
+                                                           tags,
+                                                           p,
+                                                           do_eval=False))
 
-                    push_to_queue(job_type=job_type.archive,
-                              blog=page.blog,
-                              site=page.blog.site,
-                              data_integer=fileinfo_mapping.id)
+                        fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
+
+                        push_to_queue(job_type=job_type.archive,
+                                  blog=page.blog,
+                                  site=page.blog.site,
+                                  data_integer=fileinfo_mapping.id)
+        except Exception as e:
+            from core.error import QueueAddError
+            raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
+                n.for_log,
+                page.for_log,
+                e))
 
 
 def queue_ssi_actions(blog):
@@ -1100,6 +1121,10 @@ def build_archives_fileinfos(pages):
     counter = 0
     mapping_list = {}
 
+    # FIXME:
+    # get all the pages, collect all the archive mappings,
+    # coalesce them, then work on the archive mappings as the outer loop
+
     for page in pages:
 
         tags = template_tags(page_id=page.id)
@@ -1126,7 +1151,8 @@ def build_archives_fileinfos(pages):
                     ,)
 
             for page, path in paths:
-                path_string = generate_date_mapping(page.publication_date_tz, tags, path, do_eval=False)
+                path_string = generate_date_mapping(page.publication_date_tz,
+                    tags, path, do_eval=False)
 
                 if path_string == '' or path_string is None:
                     continue
