@@ -1253,7 +1253,11 @@ def blog_import (blog_id):
                         site=blog.site
                         )
 
-                    new_media.save()
+                    # TODO: RBF
+                    try:
+                        new_media.save()
+                    except Exception:
+                        continue
 
                     media_association = MediaAssociation(
                         media=new_media,
