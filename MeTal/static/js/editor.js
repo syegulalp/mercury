@@ -290,10 +290,10 @@ function sidebar_wireup() {
         $(".uploadarea").on("dragover", drag_enter_event);
         $(".uploadarea").on("dragleave", drag_leave_event);
         $(".uploadarea").on("drop", drop_event);
+        
         init_typeahead('tags');
-        $('.typeahead').bind('typeahead:select', function(ev, suggestion) {
-            // console.log('Selection: ' + suggestion);
-        });
+        
+        $('.typeahead').bind('typeahead:select', function(ev, suggestion) {});
         $('.typeahead').on('keypress', function(event) {
             var keyCode = event.which || event.keyCode;
             if (keyCode == 13) {

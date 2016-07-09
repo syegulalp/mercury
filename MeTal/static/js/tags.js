@@ -1,12 +1,29 @@
 function init_typeahead(target_name){
 
     var tags = new Bloodhound({
-      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('tag'),
+      //datumTokenizer: Bloodhound.tokenizers.whitespace,
       queryTokenizer: Bloodhound.tokenizers.whitespace,
-      remote: {
+      //local: {'tag':'Test','id':'1'},
+      //prefetch: global.base+'/api/1/get-tags/blog/'+global.blog,
+      
+      prefetch: {
+          url: global.base+'/api/1/get-tags/blog/'+global.blog+'/100',
+          prepare: function(settings){
+            settings.url = global.base+'/api/1/get-tags/blog/'+global.blog+'/100';
+            $('#tag_activity').show();
+            return settings;
+          },
+          transform: function(response){
+            $('#tag_activity').hide();
+            return response;
+        }
+      },
+      
+      xremote: {
         url: global.base,
         prepare: function(query,settings){
-            settings.url = global.base+'/api/1/get-tag/'+query+'?blog='+global.blog;
+            settings.url = global.base+'/api/1/get-tags/blog/'+global.blog;
             $('#tag_activity').show();
             return settings;
         },
@@ -15,12 +32,17 @@ function init_typeahead(target_name){
             return response;
         }
       }
+      
     });
     
-	$('.typeahead').typeahead(null, {
+	$('.typeahead').typeahead({
+	hint: false,
+	
+	}, {
 		  name: 'tags',
 		  source: tags,
-		  display: 'tag'
+		  display: 'tag',
+		  limit: 999,
 		});	
         
 }

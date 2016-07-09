@@ -912,6 +912,17 @@ def api_get_tag(tag_name):
     from core.ui import ui
     return ui.get_tag(tag_name)
 
+@_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>/<limit>")
+@_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>")
+def api_get_tags(blog_id, limit=None):
+    import json
+    tag_list = Blog.load(blog_id).tags_all
+    if limit:
+        tag_list = tag_list.limit(limit)
+    tag_list_json = json.dumps([{'tag':t.tag,
+                                'id':t.id} for t in tag_list])
+    return tag_list_json
+
 # TODO: make /page/<>/generate-tag when we rewrite the underlying routine
 # no need for an api path here?
 # for apis might want to use a variable, pass that to a control array
