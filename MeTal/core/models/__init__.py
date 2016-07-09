@@ -1624,9 +1624,12 @@ class Page(BaseModel, DateMod):
         Useful if you have pages that have multiple mappings.
         '''
 
-        default_fileinfo = FileInfo.get(
-            FileInfo.page == self,
-            FileInfo.template_mapping == self.default_template.default_mapping)
+        default_fileinfo = self.fileinfos.where(
+            FileInfo.template_mapping == self.default_template.default_mapping).get()
+
+        # default_fileinfo = FileInfo.get(
+            # FileInfo.page == self,
+            # FileInfo.template_mapping == self.default_template.default_mapping)
 
         return default_fileinfo
 
