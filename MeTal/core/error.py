@@ -30,6 +30,9 @@ class EmptyQueueError(Exception):
 class PublicException(Exception):
     pass
 
+class QueueAddError(LoggedException):
+    pass
+
 class QueueInProgressException(PublicException):
     pass
 
