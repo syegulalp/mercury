@@ -2147,6 +2147,14 @@ class Template(BaseModel, DateMod):
 
         return template
 
+    def as_module(self, tags):
+        from types import ModuleType
+        my_code = self.body
+        m = ModuleType('new_module')
+        m.__dict__.update(tags)
+        exec(my_code, m.__dict__)
+        return m
+
     @property
     def modified_date_tz(self):
         return self._date_from_utc(self.blog.timezone, self.modified_date)
@@ -2773,12 +2781,28 @@ class ThemeData(AuxData):
 # We should eventually convert this to a class where the attributes
 # are generated as needed on demand, not all at once. If possible
 
+
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
     # Also used for building many other things.
 
     tags_init = ("blog", "page", "authors", "site", "user", "media",
         "template", "archive")
+
+    def load(self, name):
+        if self.blog:
+            return self.blog.templates.where(
+                Template.name == name).get().as_module(self.__dict__)
+        else:
+            raise Blog.DoesNotExist(
+                'You must have a blog defined in this context to load modules.')
+
+    # def csrf_token(self):
+        # return csrf_tag(self.token)
+    # def csrf(self):
+        # return csrf_hash(self.token)
+    # I'm not too comfortable storing the token
+    # in this object so I'm taking it out for now
 
     def __init__(self, **ka):
 
@@ -2805,8 +2829,6 @@ class TemplateTags(object):
         # we need to bring this into harmony with the other defs
 
         self.status = ka.get('status', None)
-
-        # self.media = ka.get('media', None)
 
         if 'user' in ka:
             self.user = ka['user']
@@ -2843,7 +2865,6 @@ class TemplateTags(object):
         if 'blog_id' in ka:
             self.blog = Blog.load(ka['blog_id'])
             ka['site_id'] = self.blog.site.id
-
         else:
             self.blog = ka.get('blog', self.blog)
 
@@ -2852,9 +2873,11 @@ class TemplateTags(object):
         else:
             self.site = ka.get('site', self.site)
 
+        # Set queue for context
         if self.blog:
             self.queue = Queue.select().where(Queue.blog == self.blog)
             self.queue_count = Queue.job_counts(blog=self.blog)
+
         elif self.site:
             self.queue = Queue.select().where(Queue.site == self.site)
             self.queue_count = Queue.job_counts(site=self.site)
@@ -2864,14 +2887,8 @@ class TemplateTags(object):
 
         if 'archive' in ka:
             self.archive = Struct()
-            # pages = self.blog.pages_where(ka['archive'])
-            # pages = self.blog.pages.where(Page.id << ka['archive'])
-            # setattr(self.archive, "pages", pages)
             setattr(self.archive, "pages", ka['archive'])
-            # setattr(self.archive, "context", pages[0].publication_date)
             setattr(self.archive, "context", ka['archive'][0].publication_date)
-
-            # TODO: 'tags' should be 'tag' - contexts are singular!
 
             for n in (
                 (Tag, 'tag'),
