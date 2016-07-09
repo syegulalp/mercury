@@ -1608,6 +1608,12 @@ class Page(BaseModel, DateMod):
 
         fileinfos = FileInfo.select().where(
             FileInfo.page == self)
+        if fileinfos.count() == 0:
+            from core import cms
+            cms.build_pages_fileinfos((self,))
+            cms.build_archives_fileinfos((self,))
+            fileinfos = FileInfo.select().where(
+                FileInfo.page == self)
 
         return fileinfos
 

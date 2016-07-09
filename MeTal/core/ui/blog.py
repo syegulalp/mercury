@@ -1286,7 +1286,7 @@ def blog_import (blog_id):
                 pages_to_build.append(new_entry)
 
         cms.build_pages_fileinfos(pages_to_build)
-        cms.build_archives_fileinfos(pages_to_build)
+        # cms.build_archives_fileinfos(pages_to_build)
 
         tpl = '<p>'.join(q)
 

@@ -1497,7 +1497,8 @@ def build_mapping_xrefs(mapping_list):
         build_pages_fileinfos(mapping.template.blog.pages)
     if 'Archive' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
-        build_archives_fileinfos(mapping.template.blog.published_pages)
+        pass
+        # build_archives_fileinfos(mapping.template.blog.published_pages)
     if 'Index' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
         build_indexes_fileinfos(mapping.template.blog.index_templates)
@@ -1564,8 +1565,8 @@ def purge_blog(blog):
     report.append("<hr/>{0} page objects created in {1:.2f} seconds,".format(pages_inserted,
         rebuild - erase))
 
-    f_i = build_archives_fileinfos(blog.published_pages)
-
+    # f_i = build_archives_fileinfos(blog.published_pages)
+    f_i = 0
     arch_obj = time.clock()
     report.append("{0} archive page objects created in {1:.2f} seconds.".format(f_i,
         arch_obj - rebuild))
