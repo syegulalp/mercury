@@ -256,10 +256,7 @@ def queue_page_archive_actions(page):
         try:
             if n.publishing_mode != publishing_mode.do_not_publish:
                 for m in n.mappings:
-                    # if n.fileinfos.where(FileInfo.page == page).count() == 0:
-                        # build_archives_fileinfos((page,))
                     path_list = eval_paths(m.path_string, tags.__dict__)
-
                     paths = []
 
                     if type(path_list) == list:
@@ -269,18 +266,23 @@ def queue_page_archive_actions(page):
                         paths.append(path_list)
 
                     for p in paths:
-
                         file_path = (page.blog.path + '/' +
-                                     generate_date_mapping(page.publication_date_tz.date(),
-                                                           tags,
-                                                           p,
-                                                           do_eval=False))
+                                     generate_date_mapping(
+                                         page.publication_date_tz.date(),
+                                         tags,
+                                         p,
+                                         do_eval=False))
 
                         while 1:
                             try:
                                 fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
                             except FileInfo.DoesNotExist:
-                                build_archives_fileinfos((page,))
+                                if build_archives_fileinfos((page,)) == 0:
+                                    from core.error import QueueAddError
+                                    raise QueueAddError(
+                                        'No archive fileinfos could be built for page {} with template {}'.format(
+                                        page.for_log,
+                                        n.template.for_log))
                             else:
                                 break
 
@@ -292,7 +294,7 @@ def queue_page_archive_actions(page):
         except Exception as e:
             from core.error import QueueAddError
             raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
-                n,
+                n.template.for_log,
                 page.for_log,
                 e))
 
