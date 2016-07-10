@@ -2069,7 +2069,7 @@ class Tag(BaseModel):
     def pages(self):
 
         tagged_pages = TagAssociation.select(TagAssociation.page).where(
-            TagAssociation.tag == self).tuples()
+            TagAssociation.tag == self)
 
         in_pages = Page.select().where(
             Page.id << tagged_pages)
