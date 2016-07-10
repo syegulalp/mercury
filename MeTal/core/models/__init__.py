@@ -1606,7 +1606,6 @@ class Page(BaseModel, DateMod):
         Returns any fileinfo objects associated with this page.
         The loop is for the sake of generating fileinfos on-demand.
         '''
-
         while 1:
             try:
                 fileinfos = FileInfo.select().where(
