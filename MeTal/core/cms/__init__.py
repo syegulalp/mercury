@@ -260,12 +260,13 @@ def queue_page_archive_actions(page):
                     paths = []
 
                     if type(path_list) == list:
-                        for n in path_list:
-                            paths.append(n[1])
+                        for pp in path_list:
+                            paths.append(pp[1])
                     else:
                         paths.append(path_list)
 
                     for p in paths:
+                        if p is None: continue
                         file_path = (page.blog.path + '/' +
                                      generate_date_mapping(
                                          page.publication_date_tz.date(),
@@ -294,7 +295,7 @@ def queue_page_archive_actions(page):
         except Exception as e:
             from core.error import QueueAddError
             raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
-                n.template.for_log,
+                n,
                 page.for_log,
                 e))
 
@@ -1319,7 +1320,8 @@ def republish_blog(blog):
 
     queue_ssi_actions(blog)
 
-    for p in blog.published_pages:
+    # for p in blog.published_pages.naive(): # For some reason this doesn't work
+    for p in blog.published_pages.iterator():
         queue_page_actions(p, no_neighbors=True)
 
     queue_index_actions(blog, include_manual=True)
@@ -1350,7 +1352,7 @@ def process_queue_publish(queue_control, blog):
 
     queue = Queue.select().order_by(Queue.priority.desc(),
         Queue.date_touched.desc()).where(Queue.blog == blog,
-        Queue.is_control == False).limit(MAX_BATCH_OPS)
+        Queue.is_control == False).limit(MAX_BATCH_OPS).naive()
 
     queue_length = queue.count()
 
@@ -1365,13 +1367,18 @@ def process_queue_publish(queue_control, blog):
             queue_control.blog.id,
             queue_length))
 
-    for q in queue:
+    removed_jobs = []
+
+    # for q in queue:
+    for q in queue.iterator():
         try:
             job_type.action[q.job_type](q)
         except Exception as e:
             raise e
         else:
-            remove_from_queue((q.id,))
+            removed_jobs.append(q.id)
+
+    remove_from_queue(removed_jobs)
 
     queue_control = Queue.get(Queue.blog == blog,
         Queue.is_control == True)
@@ -1379,6 +1386,7 @@ def process_queue_publish(queue_control, blog):
     queue_control.data_integer -= queue_length
 
     end_queue = time.clock()
+
     total_time = end_queue - start_queue
     if queue_control.data_integer <= 0:
         queue_control.delete_instance()
