@@ -1604,18 +1604,22 @@ class Page(BaseModel, DateMod):
     def fileinfos(self):
         '''
         Returns any fileinfo objects associated with this page.
+        The loop is for the sake of generating fileinfos on-demand.
         '''
 
-        fileinfos = FileInfo.select().where(
-            FileInfo.page == self)
-
-
-        if fileinfos.count() == 0:
-            from core import cms
-            cms.build_pages_fileinfos((self,))
-            cms.build_archives_fileinfos((self,))
-            fileinfos = FileInfo.select().where(
-                FileInfo.page == self)
+        while 1:
+            try:
+                fileinfos = FileInfo.select().where(
+                    FileInfo.page == self)
+                fileinfos.get()
+            except FileInfo.DoesNotExist:
+                from core import cms
+                n = cms.build_pages_fileinfos((self,))
+                m = cms.build_archives_fileinfos((self,))
+                if n + m == 0:
+                    raise Exception('No fileinfos could be built for page {}'.self.for_log)
+            else:
+                break
 
         return fileinfos
 
