@@ -319,12 +319,23 @@ def template_preview(template_id):
         tags = template_tags(page=template.blog.published_pages[0],
             fileinfo=template.blog.published_pages[0].fileinfos[0])
     if template.template_type == template_type.archive:
+        from core import cms
+        cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
         tags = template_tags(blog=template.blog,
                 archive=template.blog.published_pages,
                 archive_context=template.default_mapping.fileinfos[0],
                 fileinfo=template.default_mapping.fileinfos[0])
 
+    import time
+    tc = time.clock
+    start = tc()
     tpl_output = utils.tplt(template, tags)
+    end = tc()
+
+    tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(
+        template.for_log,
+        end - start,
+        tpl_output)
 
     preview = template.preview_path
 
