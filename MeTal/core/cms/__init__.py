@@ -399,8 +399,7 @@ def save_page(page, user, blog=None):
 
         # Queue actions for page BEFORE modification
 
-        if page.status == page_status.published:
-            # build_archives_fileinfos((page,))
+        if page.status == page_status.published and (save_action & save_action_list.UPDATE_LIVE_PAGE):
             queue_page_archive_actions(page)
 
         original_page_status = page.status
@@ -539,14 +538,16 @@ def save_page(page, user, blog=None):
 
     # BUILD FILEINFO IF NO DELETE ACTION
 
-    if page.status == page_status.published:
-        build_pages_fileinfos((page,))
+    # if page.status == page_status.published and (save_action & save_action_list.UPDATE_LIVE_PAGE):
+        # build_pages_fileinfos((page,))
         # build_archives_fileinfos((page,))
 
     # QUEUE CHANGES FOR PUBLICATION
 
     if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
         and (page.status == page_status.published)):
+
+        build_pages_fileinfos((page,))
 
         queue_ssi_actions(page.blog)
         queue_page_actions(page)
