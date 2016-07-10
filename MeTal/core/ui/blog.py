@@ -44,7 +44,7 @@ def blog(blog_id, errormsg=None):
             'search_ui':'blog',
             'search_object':blog,
             'search_context':blog_search_results,
-            'item_list_object':blog.pages,
+            'item_list_object':blog.pages.naive(),
             'action_button':action,
             'list_actions':list_actions
         },
