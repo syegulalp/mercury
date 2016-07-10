@@ -95,6 +95,7 @@ def save(request, user, cms_template, blog=None):
     if int(save_action) in (2, 3):
 
         from core import cms
+        cms.build_archives_fileinfos_by_mappings(cms_template)
 
         for f in cms_template.fileinfos_published:
             cms.push_to_queue(job_type=f.template_mapping.template.template_type,
