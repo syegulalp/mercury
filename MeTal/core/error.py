@@ -9,6 +9,9 @@ class LoggedException(Exception):
 class PermissionsException(LoggedException):
     pass
 
+class NoArchiveForFileInfo(Exception):
+    pass
+
 class ArchiveMappingFormatException(LoggedException):
     pass
 
