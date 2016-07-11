@@ -1064,7 +1064,7 @@ def blog_apply_theme(blog_id, theme_id):
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
         from core.models import db
-        with db.transaction() as txn:
+        with db.atomic() as txn:
             blog.apply_theme(theme, user)
 
         status = Status(
