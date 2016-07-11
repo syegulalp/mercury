@@ -508,7 +508,7 @@ def export_data():
     db = DataSet(DB.dataset_connection())
     if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
         os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
-    with db.transaction() as txn:
+    with db.atomic() as txn:
         for table_name in db.tables:
             if not table_name.startswith("page_search"):
                 table = db[table_name]
@@ -545,7 +545,7 @@ def import_data():
 
     xdb = DataSet(DB.dataset_connection())
 
-    with xdb.transaction() as txn:
+    with xdb.atomic() as txn:
         for table_name in xdb.tables:
             n = ("Loading table " + table_name)
             yield "<p>" + n
