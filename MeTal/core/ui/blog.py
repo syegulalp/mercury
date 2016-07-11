@@ -1126,169 +1126,173 @@ def blog_import (blog_id):
     tags.status = reason
 
     if request.method == "POST":
-        import json
-        from core.utils import string_to_date
+        from core.models import db
+        with db.atomic() as txn:
+            import json
+            from core.utils import string_to_date
 
-        import_path = request.forms.getunicode('import_path')
-        with open(import_path, 'r', encoding='utf8') as f:
-            json_data = json.load(f)
+            import_path = request.forms.getunicode('import_path')
+            with open(import_path, 'r', encoding='utf8') as f:
+                json_data = json.load(f)
 
-        pages_to_build = []
+            from core.models import page_status, MediaAssociation, Category
+            from core.cms import media_filetypes
 
-        q = []
+            format_str = "<b>{}</b> / (<i>{}</i>)"
 
-        from core.models import page_status, MediaAssociation, Category
-        from core.cms import media_filetypes
-
-        format_str = "<b>{}</b> / (<i>{}</i>)"
-
-        for n in json_data:
-            n_id = n['id']
-            match = Page().kv_get('legacy_id', n_id)
-            if match.count() > 0:
-                q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
-            else:
-                q.append("Creating: " + format_str.format(n['title'], n_id))
-
-                new_entry = Page()
-                new_entry.title = n['title']
-                new_entry.text = n['text']
-                new_entry.basename = n['basename']
-                new_entry.excerpt = n['excerpt']
-                new_entry.user = user
-                new_entry.blog = blog
-                new_entry.created_date = string_to_date(n['created_date'])
-                new_entry.publication_date = string_to_date(n['publication_date'])
-                new_entry.modified_date = new_entry.publication_date
-
-                if n['status'] in ('Publish', 'Published', 'Live'):
-                    new_entry.status = page_status.published
-
-                new_entry.save(user)
-
-                # Register a legacy ID for the page
-
-                new_entry.kv_set("legacy_id", n["id"])
-
-                # Category assignments
-
-                categories = n['categories']
-                if categories == []:
-                    saved_page_category = PageCategory.create(
-                        page=new_entry,
-                        category=blog.default_category,
-                        primary=True).save()
+            # TODO: go in chunks of 50 or something?
+            # allow graceful disconnection?
+            for n in json_data:
+                q = []
+                n_id = n['id']
+                match = Page.kv_get('legacy_id', n_id)
+                if match.count() > 0:
+                    q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
                 else:
-                    primary = True
-                    for category in categories:
-                        category_id = category['id']
-                        existing_category = Category.kv_get('legacy_id', category_id)
-                        if existing_category.count() == 0:
-                            q.append('Created new category {}/{}'.format(
-                                category_id, category['name']
-                                ))
-                            new_category = Category.create(
-                                blog=blog,
-                                title=category['name'],
-                                parent_category=getattr(category, 'parent', None)
-                                )
-                            new_category.save()
+                    q.append("Creating: " + format_str.format(n['title'], n_id))
 
-                            new_category.kv_set('legacy_id',
-                                category_id
-                                )
-                        else:
-                            new_category = Category.load(existing_category[0].objectid)
-                            q.append('Added to existing category {}/{}'.format(
-                                new_category.id, category['name']
-                                ))
-                        saved_page_category = PageCategory.create(
-                            page=new_entry,
-                            category=new_category,
-                            primary=primary
-                            ).save()
-                        primary = False
-
-                # Check to make sure a default category exists for the whole blog.
-                # If not, assign one based on the lowest ID.
-                # This can always be reassigned later.
-
-                # Register tags
-
-                tags_added, tags_existing, _ = Tag.add_or_create(
-                    n['tags'], page=new_entry)
-
-                q.append('Tags added: {}'.format(','.join(n.tag for n in tags_added)))
-                q.append('Tags existing: {}'.format(','.join(n.tag for n in tags_existing)))
-
-                # Register KVs
-
-                kvs = n['kvs']
-                for key in kvs:
-                    value = kvs[key]
-                    new_entry.kv_set(key, value)
-                    q.append('KV: {}:{}'.format(key, value))
-
-                # Register media
-
-                media = n['media']
-
-                for m in media:
-
-                    if 'path' not in m:
-                        continue
-
-                    path = os.path.split(m['path'])
-
-                    new_media = Media(
-                        filename=path[1],
-                        path=m['path'],
-                        url=m['url'],
-                        type=media_filetypes.image,
-                        created_date=string_to_date(m['created_date']),
-                        modified_date=string_to_date(m['modified_date']),
-                        friendly_name=m['friendly_name'],
+                    new_entry = Page(
+                        title=n['title'],
+                        text=n['text'],
+                        basename=n['basename'],
+                        excerpt=n['excerpt'],
                         user=user,
                         blog=blog,
-                        site=blog.site
-                        )
+                        created_date=string_to_date(n['created_date']),
+                        publication_date=string_to_date(n['publication_date']),
+                    )
 
-                    # TODO: RBF
-                    try:
-                        new_media.save()
-                    except Exception:
-                        continue
+                    new_entry.modified_date = new_entry.publication_date
 
-                    media_association = MediaAssociation(
-                        media=new_media,
-                        page=new_entry)
+                    if n['status'] in ('Publish', 'Published', 'Live'):
+                        new_entry.status = page_status.published
 
-                    media_association.save()
+                    new_entry.save(user)
 
-                    # Save legacy ID to KV on media
+                    # Register a legacy ID for the page
 
-                    if 'id' in m:
-                        new_media.kv_set('legacy_id', m['id'])
+                    new_entry.kv_set("legacy_id", n["id"])
 
-                    q.append('IMG: {}'.format(new_media.url))
+                    # Category assignments
 
-                    # add tags for media
+                    categories = n['categories']
+                    if categories == []:
+                        saved_page_category = PageCategory.create(
+                            page=new_entry,
+                            category=blog.default_category,
+                            primary=True).save()
+                    else:
+                        primary = True
+                        for category in categories:
+                            category_id = category['id']
+                            existing_category = Category.kv_get('legacy_id', category_id)
+                            if existing_category.count() == 0:
+                                q.append('Created new category {}/{}'.format(
+                                    category_id, category['name']
+                                    ))
+                                new_category = Category.create(
+                                    blog=blog,
+                                    title=category['name'],
+                                    parent_category=getattr(category, 'parent', None)
+                                    )
+                                new_category.save()
 
-                    q.append('Tags: {}'.format(m['tags']))
-                    new_tags = Tag.add_or_create(m['tags'], media=new_media)
+                                new_category.kv_set('legacy_id',
+                                    category_id
+                                    )
+                            else:
+                                new_category = Category.load(existing_category[0].objectid)
+                                q.append('Added to existing category {}/{}'.format(
+                                    new_category.id, category['name']
+                                    ))
+                            saved_page_category = PageCategory.create(
+                                page=new_entry,
+                                category=new_category,
+                                primary=primary
+                                ).save()
+                            primary = False
 
-                    kvs = m['kvs']
+                    # Check to make sure a default category exists for the whole blog.
+                    # If not, assign one based on the lowest ID.
+                    # This can always be reassigned later.
+
+                    # Register tags
+
+                    tags_added, tags_existing, _ = Tag.add_or_create(
+                        n['tags'], page=new_entry)
+
+                    q.append('Tags added: {}'.format(','.join(n.tag for n in tags_added)))
+                    q.append('Tags existing: {}'.format(','.join(n.tag for n in tags_existing)))
+
+                    # Register KVs
+
+                    kvs = n['kvs']
                     for key in kvs:
                         value = kvs[key]
-                        new_media.kv_set(key, value)
+                        new_entry.kv_set(key, value)
                         q.append('KV: {}:{}'.format(key, value))
 
-                pages_to_build.append(new_entry)
+                    # Register media
 
-        # cms.build_pages_fileinfos(pages_to_build)
-        # cms.build_archives_fileinfos(pages_to_build)
+                    media = n['media']
 
-        tpl = '<p>'.join(q)
+                    for m in media:
+
+                        if 'path' not in m:
+                            continue
+
+                        path = os.path.split(m['path'])
+
+                        new_media = Media(
+                            filename=path[1],
+                            path=m['path'],
+                            url=m['url'],
+                            type=media_filetypes.image,
+                            created_date=string_to_date(m['created_date']),
+                            modified_date=string_to_date(m['modified_date']),
+                            friendly_name=m['friendly_name'],
+                            user=user,
+                            blog=blog,
+                            site=blog.site
+                            )
+
+                        # TODO: RBF
+                        try:
+                            new_media.save()
+                        except Exception:
+                            continue
+
+                        media_association = MediaAssociation(
+                            media=new_media,
+                            page=new_entry)
+
+                        media_association.save()
+
+                        # Save legacy ID to KV on media
+
+                        if 'id' in m:
+                            new_media.kv_set('legacy_id', m['id'])
+
+                        q.append('IMG: {}'.format(new_media.url))
+
+                        # add tags for media
+
+                        q.append('Tags: {}'.format(m['tags']))
+                        new_tags = Tag.add_or_create(m['tags'], media=new_media)
+
+                        kvs = m['kvs']
+                        for key in kvs:
+                            value = kvs[key]
+                            new_media.kv_set(key, value)
+                            q.append('KV: {}:{}'.format(key, value))
+
+                    # pages_to_build.append(new_entry)
+
+                    cms.build_pages_fileinfos((new_entry,))
+                    cms.build_archives_fileinfos((new_entry,))
+
+                tpl = ('<p>'.join(q)) + '<hr/>'
+                yield tpl
 
         # TODO:
 
@@ -1307,5 +1311,5 @@ def blog_import (blog_id):
             import_path=import_path,
             **tags.__dict__)
 
-    return tpl
+        yield tpl
 
