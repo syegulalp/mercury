@@ -326,7 +326,7 @@ def template_preview(template_id):
         cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
         tags = template_tags(blog=template.blog,
                 archive=template.blog.published_pages,
-                archive_context=template.default_mapping.fileinfos[0],
+                # archive_context=template.default_mapping.fileinfos[0],
                 fileinfo=template.default_mapping.fileinfos[0])
 
     import time

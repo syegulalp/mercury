@@ -8,9 +8,9 @@ function init_typeahead(target_name){
       //prefetch: global.base+'/api/1/get-tags/blog/'+global.blog,
       
       prefetch: {
-          url: global.base+'/api/1/get-tags/blog/'+global.blog+'/100',
+          url: global.base+'/api/1/get-tags/blog/'+global.blog+'/1000',
           prepare: function(settings){
-            settings.url = global.base+'/api/1/get-tags/blog/'+global.blog+'/100';
+            settings.url = global.base+'/api/1/get-tags/blog/'+global.blog+'/1000';
             $('#tag_activity').show();
             return settings;
           },

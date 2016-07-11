@@ -1614,8 +1614,8 @@ class Page(BaseModel, DateMod):
                 fileinfos[0]
             except IndexError:
                 from core import cms
-                n = cms.build_pages_fileinfos((self,))
                 m = cms.build_archives_fileinfos((self,))
+                n = cms.build_pages_fileinfos((self,))
                 if n + m == 0:
                     raise Exception('No fileinfos could be built for page {}'.self.for_log)
             else:
@@ -2921,16 +2921,24 @@ class TemplateTags(object):
         if 'archive' in ka:
             self.archive = Struct()
             setattr(self.archive, "pages", ka['archive'])
-            setattr(self.archive, "context", ka['archive'][0].publication_date)
+            if self.archive.pages.count() == 0:
+                setattr(self.archive, "context", self.blog.pages.get().publication_date)
+            else:
+                setattr(self.archive, "context", ka['archive'].get().publication_date)
 
             for n in (
                 (Tag, 'tag'),
                 ):
                 item_id = ka['archive_context'].__getattribute__(n[1])
                 if item_id is not None:
+                    try:
+                        tags_in_archive = n[0].get(n[0].id == item_id)
+                    except:
+                        tags_in_archive = Tag()
                     setattr(self.archive,
                         n[1],
-                        n[0].get(n[0].id == item_id),
+                        # n[0].get(n[0].id == item_id),
+                        tags_in_archive
                         )
 
             # archive.pages = a list of pages constrained by the current archive definition

@@ -1,8 +1,8 @@
 import os, datetime
 
-from core.utils import (create_basename, Status, tpl, generate_date_mapping, date_format)
+from core.utils import (create_basename, Status, generate_date_mapping, date_format, MetalTemplate)
 from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueueError,
-    QueueInProgressException, PageTemplateError, DeletionError)
+    QueueInProgressException, PageTemplateError, DeletionError, NoArchiveForFileInfo)
 from core.log import logger
 from core.auth import publishing_lock
 from core.libs.bottle import request
@@ -14,6 +14,10 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
 
 from settings import MAX_BATCH_OPS, BASE_URL
 from core.libs.peewee import IntegrityError
+import time
+
+template_cache = {}
+blog_tag_cache = {}
 
 save_action_list = Struct()
 
@@ -77,8 +81,23 @@ def build_page(queue_entry):
     fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
     try:
         build_file(fileinfo, queue_entry.blog)
-    except BaseException as e:
-        raise e
+    except NoArchiveForFileInfo:
+        logger.info("Fileinfo {} has no corresponding pages. File {} removed.".format(
+            fileinfo.id,
+            fileinfo.file_path)
+            )
+        delete_fileinfo_files((fileinfo,))
+        # FIXME: for now we leave this out
+        # because deletes do not coalesce properly in the queue (I think)
+        # fileinfo.delete_instance(recursive=True)
+    except Exception as e:
+        context_list = [(f.object, f.ref) for f in fileinfo.context]
+        raise Exception('Error building fileinfo {} ({},{},{}): {}'.format(
+            fileinfo.id,
+            fileinfo.page,
+            context_list,
+            fileinfo.file_path,
+            e))
 
 def push_to_queue(**ka):
     '''
@@ -266,6 +285,8 @@ def queue_page_archive_actions(page):
                                          p,
                                          do_eval=False))
 
+                        # FIXME: We may not need this anymore
+
                         while 1:
                             try:
                                 fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
@@ -393,7 +414,7 @@ def save_page(page, user, blog=None):
         # Queue actions for page BEFORE modification
 
         if page.status == page_status.published and (save_action & save_action_list.UPDATE_LIVE_PAGE):
-            queue_page_archive_actions(page)
+            queue_page_actions((page,))
 
         original_page_status = page.status
         original_page_basename = page.basename
@@ -529,18 +550,17 @@ def save_page(page, user, blog=None):
         add_tags_to_page(tag_text, page)
         delete_orphaned_tags(page.blog)
 
-    # BUILD FILEINFO IF NO DELETE ACTION
-
-    # if page.status == page_status.published and (save_action & save_action_list.UPDATE_LIVE_PAGE):
-        # build_pages_fileinfos((page,))
-        # build_archives_fileinfos((page,))
-
-    # QUEUE CHANGES FOR PUBLICATION
-
     if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
         and (page.status == page_status.published)):
 
+        # BUILD FILEINFO IF NO DELETE ACTION
+
+        # clear fileinfos?
+
+        build_archives_fileinfos((page,))
         build_pages_fileinfos((page,))
+
+        # QUEUE CHANGES FOR PUBLICATION
 
         queue_ssi_actions(page.blog)
         queue_page_actions((page,))
@@ -713,15 +733,15 @@ This appears to be a collision with mapping {} in template {}'''.format(
 
     return fileinfo
 
-def delete_page_files(page):
+def delete_fileinfo_files(fileinfos):
     '''
-    Iterates through the fileinfos for a given page
+    Iterates through the fileinfos (e.g.,for a given page)
     and deletes the physical files from disk.
     :param page:
         The page object to remove from the fileinfo index and on disk.
     '''
     _ = []
-    for n in page.fileinfos:
+    for n in fileinfos:
         try:
             if os.path.isfile(n.sitewide_file_path):
                 os.remove(n.sitewide_file_path)
@@ -784,7 +804,8 @@ def unpublish_page(page, no_save=False):
     queue_page_actions((page.next_page, page.previous_page,), no_neighbors=True)
     queue_index_actions(page.blog)
 
-    delete_page_files(page)
+    delete_fileinfo_files(page.fileinfos)
+
 
 
 def generate_page_text(f, tags):
@@ -798,14 +819,24 @@ def generate_page_text(f, tags):
         The tagset to use.
     '''
 
-    # TODO: try to find a way to cache the template for multi-job runs
-    # template = tpl_cached(tp.id), stash that in a dict
-
     tp = f.template_mapping.template
 
     try:
-        return tpl(tp.body,
-            **tags.__dict__)
+        tpx = template_cache[tp.id]
+    except KeyError:
+        try:
+            pre_tags = blog_tag_cache[tp.blog.id]
+        except KeyError:
+            pre_tags = template_tags(blog=tp.blog)
+            blog_tag_cache[tp.blog.id] = pre_tags
+
+        tpx = MetalTemplate(source=tp.body,
+            tags=pre_tags.__dict__)
+        template_cache[f.template_mapping.id] = tpx
+
+    try:
+        return tpx.render(**tags.__dict__)
+
     except BaseException:
         import traceback, sys
         tb = sys.exc_info()[2]
@@ -850,6 +881,11 @@ def generate_file(f, blog):
         tags = template_tags(page_id=f.page.id,
             fileinfo=f)
 
+    if tags.archive is not None:
+        if tags.archive.pages.count() == 0:
+            raise NoArchiveForFileInfo('No archives for page {} using fileinfo {}'.format(
+            f.page, f))
+
     page_text = generate_page_text(f, tags)
     pathname = blog.path + "/" + f.file_path
 
@@ -873,7 +909,7 @@ def build_file(f, blog):
         The blog object to use as the context for the fileinfo.
     '''
 
-    import time
+
 
     report = []
     begin = time.clock()
@@ -947,9 +983,8 @@ def generate_archive_context(context_list, original_pageset, **ka):
         }
 
     for m in context_list:
-        # figure out how to narrow tags here, we're using one tag at a time
-        tag_context, date_counter = archive_functions[m]["context"](fileinfo, original_page, tag_context, date_counter)
-
+        tag_context, date_counter = archive_functions[m]["context"](
+            fileinfo, original_page, tag_context, date_counter)
 
     return tag_context
 
@@ -1119,6 +1154,7 @@ def build_pages_fileinfos(pages):
                 page.blog.path + '/' + master_path_string,
                 str(page.publication_date_tz))
 
+
     try:
         return n + 1
     except Exception:
@@ -1213,13 +1249,10 @@ def build_archives_fileinfos(pages):
 
     for page in pages:
         tags = template_tags(page=page)
-
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
-
         for m in page.archive_mappings:
             paths_list = eval_paths(m.path_string, tags.__dict__)
-
             if type(paths_list) in (list,):
                 paths = []
                 for n in paths_list:
@@ -1367,7 +1400,7 @@ def republish_blog(blog):
         The blog object to republish.
     '''
 
-    import time
+    # import time
 
     # blog = Blog.load(blog_id)
 
@@ -1404,6 +1437,9 @@ def process_queue_publish(queue_control, blog):
         The blog object that is in context for this job.
     '''
 
+    template_cache = {}
+    blog_tag_cache = {}
+
     queue_control.is_running = True
     queue_control.save()
 
@@ -1413,7 +1449,7 @@ def process_queue_publish(queue_control, blog):
 
     queue_length = queue.count()
 
-    import time
+    # import time
 
     start_queue = time.clock()
 
@@ -1426,7 +1462,6 @@ def process_queue_publish(queue_control, blog):
 
     removed_jobs = []
 
-    # for q in queue:
     for q in queue.iterator():
         try:
             job_type.action[q.job_type](q)
@@ -1620,7 +1655,7 @@ def purge_blog(blog):
 
     '''
 
-    import time
+    # import time
 
     report = []
     report.append("<h3>Purging/Recreating <b>{}</b></h3>".format(blog.for_log))

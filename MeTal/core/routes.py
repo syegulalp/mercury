@@ -859,7 +859,8 @@ def api_get_tag(tag_name):
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>")
 def api_get_tags(blog_id, limit=None):
     import json
-    tag_list = Blog.load(blog_id).tags_all
+    from core.models import Tag
+    tag_list = Blog.load(blog_id).tags_all.order_by(Tag.id.desc())
     if limit:
         tag_list = tag_list.limit(limit)
     tag_list_json = json.dumps([{'tag':t.tag,
