@@ -63,7 +63,7 @@ def page_edit(page_id):
         page.modified_date = datetime.datetime.utcnow()
         page.save(user)
 
-    tags = template_tags(page_id=page.id,
+    tags = template_tags(page=page,
         user=user,
         status=status)
 
