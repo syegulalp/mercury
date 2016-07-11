@@ -47,6 +47,7 @@ if total_pages > 0:
     scheduled_page_report = []
     blogs = set()
 
+    # TODO rework this to use proper loop since many functions take list not single page
     for n in scheduled_pages:
 
         try:
@@ -55,7 +56,7 @@ if total_pages > 0:
                 n.status = page_status.published
                 build_pages_fileinfos((n,))
                 build_archives_fileinfos((n,))
-                queue_page_actions(n)
+                queue_page_actions((n,))
                 queue_index_actions(n.blog)
                 blogs.add(n.blog.id)
                 n.save(n.user, no_revision=True)
