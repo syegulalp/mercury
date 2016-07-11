@@ -318,6 +318,9 @@ def template_preview(template_id):
     if template.template_type == template_type.page:
         tags = template_tags(page=template.blog.published_pages[0],
             fileinfo=template.blog.published_pages[0].fileinfos[0])
+    if template.template_type == template_type.include:
+        tags = template_tags(page=template.blog.published_pages[0],
+            fileinfo=template.blog.published_pages[0].fileinfos[0])
     if template.template_type == template_type.archive:
         from core import cms
         cms.build_archives_fileinfos_by_mappings(template, early_exit=True)

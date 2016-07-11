@@ -2214,7 +2214,9 @@ class Template(BaseModel, DateMod):
         # return preview_path(self)
 
         if self.default_mapping.fileinfos.count() == 0:
-            return None
+            return {'subpath':'',
+            'path':self.blog.path,
+            'file':self.preview_file}
 
         from settings import _sep
         file_path = self.default_mapping.fileinfos[0].file_path
