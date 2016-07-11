@@ -144,7 +144,7 @@ def remove_from_queue(queue_deletes):
     deletes = Queue.delete().where(Queue.id << queue_deletes)
     return deletes.execute()
 
-def queue_page_actions(page, no_neighbors=False, no_archive=False):
+def queue_page_actions(pages, no_neighbors=False, no_archive=False):
     '''
     Pushes a Page object along with all its related items into the queue for publication.
     This includes any archive indices associated with the page, and the page's next and
@@ -161,69 +161,65 @@ def queue_page_actions(page, no_neighbors=False, no_archive=False):
         Set to True to suppress generation of archive pages associated with this page. Also
         useful for mass-queued actions.
     '''
-    try:
-        if page is None:
-            return
+    if pages is None:
+        return
 
-        fileinfos = page.fileinfos
+    for page in pages:
 
-        blog = page.blog
-        site = page.blog.site
+        try:
 
-        for f in fileinfos:
-            if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
-                push_to_queue(job_type=job_type.page,
-                    blog=blog,
-                    site=site,
-                    data_integer=f.id)
+            fileinfos, blog, site = page.fileinfos, page.blog, page.blog.site
 
-        if no_archive is False:
-            queue_page_archive_actions(page)
+            for f in fileinfos:
+                if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                    push_to_queue(job_type=job_type.page,
+                        blog=blog,
+                        site=site,
+                        data_integer=f.id)
 
-        if no_neighbors is False:
+            if no_archive is False:
+                queue_page_archive_actions(page)
 
-            next_page = page.next_page
-            previous_page = page.previous_page
+            if no_neighbors is False:
 
-            # Next and previous across categories should also be done through this
-            # mechanism somehow
+                next_page = page.next_page
+                previous_page = page.previous_page
 
-            if next_page is not None:
+                if next_page is not None:
 
-                fileinfos_next = next_page.fileinfos
+                    fileinfos_next = next_page.fileinfos
 
-                for f in fileinfos_next:
+                    for f in fileinfos_next:
 
-                    if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                        if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-                        push_to_queue(job_type=job_type.page,
-                            blog=blog,
-                            site=site,
-                            data_integer=f.id)
+                            push_to_queue(job_type=job_type.page,
+                                blog=blog,
+                                site=site,
+                                data_integer=f.id)
 
-                        queue_page_archive_actions(next_page)
+                            queue_page_archive_actions(next_page)
 
-            if previous_page is not None:
-                # raise Exception(previous_page)
+                if previous_page is not None:
 
-                fileinfos_previous = previous_page.fileinfos
+                    fileinfos_previous = previous_page.fileinfos
 
-                for f in fileinfos_previous:
+                    for f in fileinfos_previous:
 
-                    if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
+                        if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
-                        push_to_queue(job_type=job_type.page,
-                            blog=blog,
-                            site=site,
-                            data_integer=f.id)
+                            push_to_queue(job_type=job_type.page,
+                                blog=blog,
+                                site=site,
+                                data_integer=f.id)
 
-                        queue_page_archive_actions(previous_page)
+                            queue_page_archive_actions(previous_page)
 
-    except Exception as e:
-        from core.error import QueueAddError
-        raise QueueAddError('Page {} could not be queued: '.format(
-            page.for_log,
-            e))
+        except Exception as e:
+            from core.error import QueueAddError
+            raise QueueAddError('Page {} could not be queued: '.format(
+                page.for_log,
+                e))
 
 def eval_paths(path_string, dict_data):
     path_string = replace_mapping_tags(path_string)
@@ -245,12 +241,8 @@ def queue_page_archive_actions(page):
         The page object whose archives will be pushed to the publishing queue.
     '''
 
-    # f = page.fileinfos
-    # This doesn't work if there's a change where
-    # SOME fileinfos but not all are affected, like changing one template
-
     archive_templates = page.blog.archive_templates
-    tags = template_tags(page_id=page.id)
+    tags = template_tags(page=page)
 
     for n in archive_templates:
         try:
@@ -551,7 +543,7 @@ def save_page(page, user, blog=None):
         build_pages_fileinfos((page,))
 
         queue_ssi_actions(page.blog)
-        queue_page_actions(page)
+        queue_page_actions((page,))
         queue_index_actions(page.blog)
 
         msg.append(" Live page updated.")
@@ -566,7 +558,7 @@ def save_page(page, user, blog=None):
 
     # RETURN REPORT
 
-    tags = template_tags(page_id=page.id, user=user)
+    tags = template_tags(page=page, user=user)
 
     status = Status(
         type='success',
@@ -789,8 +781,7 @@ def unpublish_page(page, no_save=False):
     if not no_save:
         page.save(page.user)
 
-    queue_page_actions(page.next_page, no_neighbors=True)
-    queue_page_actions(page.previous_page, no_neighbors=True)
+    queue_page_actions((page.next_page, page.previous_page,), no_neighbors=True)
     queue_index_actions(page.blog)
 
     delete_page_files(page)
@@ -1105,7 +1096,7 @@ def build_pages_fileinfos(pages):
         if template_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for this page.')
 
-        tags = template_tags(page_id=page.id)
+        tags = template_tags(page=page)
 
         for t in template_mappings:
 
@@ -1138,7 +1129,7 @@ def build_archives_fileinfos_by_mappings(template, early_exit=False):
     mapping_list = {}
 
     for page in template.blog.published_pages:
-        tags = template_tags(page_id=page.id)
+        tags = template_tags(page=page)
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
@@ -1221,16 +1212,12 @@ def build_archives_fileinfos(pages):
     # coalesce them, then work on the archive mappings as the outer loop
 
     for page in pages:
-
-        tags = template_tags(page_id=page.id)
+        tags = template_tags(page=page)
 
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
 
         for m in page.archive_mappings:
-
-            # FIXME: do we rebuild the archives whenever tags are changed? I think so.
-
             paths_list = eval_paths(m.path_string, tags.__dict__)
 
             if type(paths_list) in (list,):
@@ -1392,9 +1379,7 @@ def republish_blog(blog):
 
     queue_ssi_actions(blog)
 
-    # for p in blog.published_pages.naive(): # For some reason this doesn't work
-    for p in blog.published_pages.iterator():
-        queue_page_actions(p, no_neighbors=True)
+    queue_page_actions(blog.published_pages.iterator(), no_neighbors=True)
 
     queue_index_actions(blog, include_manual=True)
 
