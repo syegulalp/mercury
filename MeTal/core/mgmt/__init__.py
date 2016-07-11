@@ -14,7 +14,8 @@ def export_data():
     db = DataSet(DB.dataset_connection())
     if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
         os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
-    with db.transaction() as txn:
+    #with db.transaction() as txn:
+    with db.atomic() as txn:
         for table_name in db.tables:
             if not table_name.startswith("page_search"):
                 table = db[table_name]
