@@ -70,26 +70,24 @@ media_filetypes.types = {
     }
 
 def build_page(queue_entry):
-    '''
-    Builds the file for a single fileinfo from a queue entry,
-    based on its fileinfo data.
-
-    :param queue_entry:
-        A single entry from the job queue that will be used to build the page.
-        The data_integer field for the queue entry is the page's fileinfo ID.
-    '''
-    fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
     try:
-        build_file(fileinfo, queue_entry.blog)
+
+        fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
+        blog = queue_entry.blog
+        page_tags = generate_page_tags(fileinfo, blog)
+        file_page_text = generate_page_text(fileinfo, page_tags)
+        write_file(file_page_text, blog.path, fileinfo.file_path)
+
     except NoArchiveForFileInfo:
         logger.info("Fileinfo {} has no corresponding pages. File {} removed.".format(
             fileinfo.id,
             fileinfo.file_path)
             )
         delete_fileinfo_files((fileinfo,))
+        # fileinfo.delete_instance(recursive=True)
         # FIXME: for now we leave this out
         # because deletes do not coalesce properly in the queue (I think)
-        # fileinfo.delete_instance(recursive=True)
+
     except Exception as e:
         context_list = [(f.object, f.ref) for f in fileinfo.context]
         raise Exception('Error building fileinfo {} ({},{},{}): {}'.format(
@@ -98,6 +96,82 @@ def build_page(queue_entry):
             context_list,
             fileinfo.file_path,
             e))
+
+
+def write_file(file_text, blog_path, file_path):
+    '''
+    Builds a single file based on a fileinfo entry f for a given blog.
+    Returns details about the built file.
+
+    This does _not_ perform any checking for the page's publication status,
+    nor does it perform any other higher-level security.
+
+    This should be the action that is pushed to the queue, and consolidated
+    based on the generated filename. (The consolidation should be part of the queue push function)
+
+    :param f:
+        The fileinfo object to use.
+    :param blog:
+        The blog object to use as the context for the fileinfo.
+    '''
+
+    file_pathname = blog_path + "/" + file_path
+
+    encoded_page = file_text.encode('utf8')
+
+    split_path = file_path.rsplit('/', 1)
+
+    if len(split_path) > 1:
+        path_to_check = blog_path + "/" + split_path[0]
+    else:
+        path_to_check = blog_path
+
+    if os.path.isdir(path_to_check) is False:
+        os.makedirs(path_to_check)
+
+    with open(file_pathname, "wb") as output_file:
+        output_file.write(encoded_page)
+
+def generate_page_tags(f, blog):
+    '''
+    Returns the page text and the pathname for a file to generate.
+    Used with build_file but can be used for other things as well.
+
+    :param f:
+        The fileinfo object to use.
+    :param blog:
+        The blog object to use as the context for the fileinfo.
+    '''
+
+    if f.page is None:
+
+        if f.xref.template.template_type == template_type.index:
+            tags = template_tags(blog=blog,
+                fileinfo=f)
+        else:
+
+            archive_pages = generate_archive_context_from_fileinfo(
+                f.xref.archive_xref, blog.published_pages, f)
+
+            # The context object we use
+
+            tags = template_tags(blog=blog,
+                archive=archive_pages,
+                archive_context=f,
+                fileinfo=f)
+
+    else:
+        tags = template_tags(page=f.page,
+            fileinfo=f)
+
+    if tags.archive is not None:
+        if tags.archive.pages.count() == 0:
+            raise NoArchiveForFileInfo('No archives for page {} using fileinfo {}'.format(
+            f.page, f))
+
+    return tags
+    # page_text = generate_page_text(f, tags)
+    # return page_text
 
 def push_to_queue(**ka):
     '''
@@ -705,6 +779,7 @@ def add_page_fileinfo(page, template_mapping, file_path,
             fileinfo = new_fileinfo
 
         except IntegrityError:
+
             from core.error import FileInfoCollision
             collision = FileInfo.get(
                 FileInfo.sitewide_file_path == sitewide_file_path)
@@ -740,7 +815,7 @@ def delete_fileinfo_files(fileinfos):
     :param page:
         The page object to remove from the fileinfo index and on disk.
     '''
-    _ = []
+    deleted_files = []
     for n in fileinfos:
         try:
             if os.path.isfile(n.sitewide_file_path):
@@ -749,7 +824,8 @@ def delete_fileinfo_files(fileinfos):
         except Exception as e:
             raise e
 
-    return ' '.join(_)
+    # return ' '.join(_)
+    return deleted_files
 
 def delete_page_fileinfo(page):
     '''
@@ -849,50 +925,10 @@ def generate_page_text(f, tags):
             line_number
             ))
 
-def generate_file(f, blog):
-    '''
-    Returns the page text and the pathname for a file to generate.
-    Used with build_file but can be used for other things as well.
-
-    :param f:
-        The fileinfo object to use.
-    :param blog:
-        The blog object to use as the context for the fileinfo.
-    '''
-
-    if f.page is None:
-
-        if f.xref.template.template_type == template_type.index:
-            tags = template_tags(blog_id=blog.id,
-                fileinfo=f)
-        else:
-
-            archive_pages = generate_archive_context_from_fileinfo(
-                f.xref.archive_xref, blog.published_pages, f)
-
-            # The context object we use
-
-            tags = template_tags(blog_id=blog.id,
-                archive=archive_pages,
-                archive_context=f,
-                fileinfo=f)
-
-    else:
-        tags = template_tags(page_id=f.page.id,
-            fileinfo=f)
-
-    if tags.archive is not None:
-        if tags.archive.pages.count() == 0:
-            raise NoArchiveForFileInfo('No archives for page {} using fileinfo {}'.format(
-            f.page, f))
-
-    page_text = generate_page_text(f, tags)
-    pathname = blog.path + "/" + f.file_path
-
-    return (page_text, pathname)
 
 
-def build_file(f, blog):
+
+def _build_file(f, blog):
     '''
     Builds a single file based on a fileinfo entry f for a given blog.
     Returns details about the built file.
@@ -908,8 +944,6 @@ def build_file(f, blog):
     :param blog:
         The blog object to use as the context for the fileinfo.
     '''
-
-
 
     report = []
     begin = time.clock()
