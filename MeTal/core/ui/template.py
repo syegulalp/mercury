@@ -43,10 +43,8 @@ template_mapping_index = {
     'System':()
     }
 
-
 def new_template(blog_id, tpl_type):
     with db.atomic() as txn:
-
         user = auth.is_logged_in(request)
         blog = Blog.load(blog_id)
         permission = auth.is_blog_designer(user, blog)
@@ -109,6 +107,7 @@ def template_edit(template_id):
 
     return template_edit_output(tags)
 
+@transaction
 def template_refresh(template_id):
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
@@ -179,8 +178,7 @@ from the theme.
 
     return tplt
 
-
-
+@transaction
 def template_delete(template_id):
 
     user = auth.is_logged_in(request)
@@ -305,58 +303,61 @@ def template_edit_save(template_id):
 
     return tpl
 
+
 def template_preview(template_id):
 
-    from settings import _sep
-    import os
+    with db.atomic() as txn:
+        from settings import _sep
+        import os
 
-    template = Template.load(template_id)
+        template = Template.load(template_id)
 
-    if template.template_type == template_type.index:
-        tags = template_tags(blog=template.blog,
-            fileinfo=template.fileinfos[0])
-    if template.template_type == template_type.page:
-        tags = template_tags(page=template.blog.published_pages[0],
-            fileinfo=template.blog.published_pages[0].fileinfos[0])
-    if template.template_type == template_type.include:
-        tags = template_tags(page=template.blog.published_pages[0],
-            fileinfo=template.blog.published_pages[0].fileinfos[0])
-    if template.template_type == template_type.archive:
-        from core import cms
-        cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
-        tags = template_tags(blog=template.blog,
-                archive=template.blog.published_pages,
-                # archive_context=template.default_mapping.fileinfos[0],
-                fileinfo=template.default_mapping.fileinfos[0])
+        if template.template_type == template_type.index:
+            tags = template_tags(blog=template.blog,
+                fileinfo=template.fileinfos[0])
+        if template.template_type == template_type.page:
+            tags = template_tags(page=template.blog.published_pages[0],
+                fileinfo=template.blog.published_pages[0].fileinfos[0])
+        if template.template_type == template_type.include:
+            tags = template_tags(page=template.blog.published_pages[0],
+                fileinfo=template.blog.published_pages[0].fileinfos[0])
+        if template.template_type == template_type.archive:
+            from core import cms
+            cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
+            tags = template_tags(blog=template.blog,
+                    archive=template.blog.published_pages,
+                    # archive_context=template.default_mapping.fileinfos[0],
+                    fileinfo=template.default_mapping.fileinfos[0])
 
-    import time
-    tc = time.clock
-    start = tc()
-    tpl_output = utils.tplt(template, tags)
-    end = tc()
+        import time
+        tc = time.clock
+        start = tc()
+        tpl_output = utils.tplt(template, tags)
+        end = tc()
 
-    tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(
-        template.for_log,
-        end - start,
-        tpl_output)
+        tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(
+            template.for_log,
+            end - start,
+            tpl_output)
 
-    preview = template.preview_path
+        preview = template.preview_path
 
-    if os.path.isdir(preview['path']) is False:
-        os.makedirs(preview['path'])
+        if os.path.isdir(preview['path']) is False:
+            os.makedirs(preview['path'])
 
-    with open(preview['path'] + _sep + preview['file'], "wb") as output_file:
-        output_file.write(tpl_output.encode('utf8'))
+        with open(preview['path'] + _sep + preview['file'], "wb") as output_file:
+            output_file.write(tpl_output.encode('utf8'))
 
-    import settings
-    if settings.DESKTOP_MODE:
-        url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
-            template.blog.id)
-    else:
-        url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
+        import settings
+        if settings.DESKTOP_MODE:
+            url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
+                template.blog.id)
+        else:
+            url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
 
     redirect (url)
 
+@transaction
 def template_preview_delete(tpl):
 
     try:
