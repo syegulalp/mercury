@@ -27,6 +27,9 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
+    # We may eventually move these into menu
+    # so they can be manipulated separately
+
     action = (
         'Create new page',
         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
@@ -67,7 +70,7 @@ def blog_tag_list_pages(blog_id, tag_id):
             'search_ui':'blog_pages_with_tag',
             'search_object':tag,
             'search_context':tag_in_blog_search_results,
-            'item_list_object':tag.pages,
+            'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
             # 'action_button':action,
             # 'list_actions':list_actions
         },
