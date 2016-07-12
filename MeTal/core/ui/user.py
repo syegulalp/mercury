@@ -154,7 +154,6 @@ def system_user(user_id, path):
 
         if request.forms.getunicode('submit_settings') is not None:
 
-            from core import mgmt
             from core.libs import peewee
 
             user_to_edit.name = request.forms.getunicode('user_name')
@@ -167,13 +166,13 @@ def system_user(user_id, path):
                 status = utils.Status(
                     type='danger',
                     no_sure=True,
-                    message='Error: user <b>{}</b>  cannot be changed to the same name or email as another user.'.format(
+                    message='Error: user <b>{}</b> cannot be changed to the same name or email as another user.'.format(
                         user_to_edit.for_display)
                     )
             else:
                 status = utils.Status(
                     type='success',
-                    message='Data for user <b>{}</b>successfully updated.'.format(
+                    message='Data for user <b>{}</b> successfully updated.'.format(
                         user_to_edit.for_display)
                     )
 
@@ -182,7 +181,6 @@ def system_user(user_id, path):
         if request.forms.getunicode('delete_permissions') is not None:
 
             deletes = request.forms.getall('del')
-            # from core import mgmt
             try:
                 user.remove_permissions(deletes)
             except PermissionsException as e:
@@ -206,8 +204,6 @@ def system_user(user_id, path):
                     target_blog = Blog.load(permission_target[5:])
 
 
-            # from core import mgmt
-            # mgmt.add_user_permission(user_to_edit,
             user_to_edit.add_permission(
                 permission=permission_to_add,
                 site=target_site,
