@@ -14,7 +14,7 @@ def export_data():
     db = DataSet(DB.dataset_connection())
     if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
         os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
-    #with db.transaction() as txn:
+    # with db.transaction() as txn:
     with db.atomic() as txn:
         for table_name in db.tables:
             if not table_name.startswith("page_search"):
@@ -82,65 +82,5 @@ def import_data():
 
     from core.routes import app
     app.reset()
-<<<<<<< HEAD
 
-'''
-def add_user_permission(user, **permission):
 
-    new_permission = Permission(
-        user=user,
-        permission=permission['permission'],
-        site=permission['site'],
-        )
-
-    try:
-        new_permission.blog = permission['blog']
-    except KeyError:
-        pass
-
-    new_permission.save()
-
-    return new_permission
-'''
-# move to User.remove_permission()
-'''
-def remove_user_permissions(user, permission_ids):
-    from core import auth
-    remove_permission = Permission.delete().where(
-        Permission.id << permission_ids)
-    done = remove_permission.execute()
-
-    try:
-        no_sysop = auth.get_users_with_permission(auth.role.SYS_ADMIN)
-    except IndexError:
-        from core.error import PermissionsException
-        raise PermissionsException('You have attempted to delete the last known SYS_ADMIN privilege in the system. There must be at least one user with the SYS_ADMIN privilege.')
-
-    return done
-'''
-# move to Page.delete_preview()
-'''
-def delete_page_preview(page):
-
-    preview_file = page.preview_file
-    preview_fileinfo = page.default_fileinfo
-    split_path = preview_fileinfo.file_path.rsplit('/', 1)
-
-    preview_fileinfo.file_path = preview_fileinfo.file_path = (
-         split_path[0] + "/" +
-         preview_file
-         )
-
-    import os
-
-    try:
-        return os.remove(_join(page.blog.path, preview_fileinfo.file_path))
-    except OSError as e:
-        from core.error import not_found
-        if not_found(e) is False:
-            raise e
-    except Exception as e:
-        raise e
-'''
-=======
->>>>>>> refs/heads/dev
