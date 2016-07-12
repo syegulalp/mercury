@@ -234,7 +234,9 @@ def page_preview(page_id):
          preview_file
          )
 
-    cms.build_file(preview_fileinfo, page.blog)
+    page_tags = cms.generate_page_tags(preview_fileinfo, page.blog)
+    file_page_text = cms.generate_page_text(preview_fileinfo, page_tags)
+    cms.write_file(file_page_text, page.blog.path, preview_fileinfo.file_path)
 
     utils.disable_protection()
 
