@@ -284,9 +284,19 @@ class MetalTemplate(SimpleTemplate):
         self._tags = kwargs.get('tags', None)
 
     def _load_ssi(self, env, ssi_name=None, **kwargs):
-        ssi = self._tags['blog'].ssi(ssi_name)
+        return {'_stdout':self._tags['blog'].ssi(ssi_name)}
+
+        # We don't need to execute the full template,
+        # we just need to return a string
+
+        '''
         tpl = MetalTemplate(ssi, tags=self._tags, **kwargs)
-        return tpl.execute(env['_stdout'], env)
+        try:
+            n = tpl.execute(env['_stdout'], env)
+        except Exception as e:
+            raise Exception(e, ssi_name)
+        return n
+        '''
 
     def _load_module(self, module_name):
         from core.models import Template
