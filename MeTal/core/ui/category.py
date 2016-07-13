@@ -215,11 +215,12 @@ def edit_category(blog_id, category_id):
             message=message + '<br/><a href="{}">Purge and republish this blog</a> to make these changes take effect.',
             vals=vals)
 
-    from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(category.kv_list())
+    # from core.ui_kv import kv_ui
+    from core.ui import kv
+    kv_ui_data = kv.ui(category.kv_list())
 
-    from core import ui_mgr
-    tags.sidebar = ui_mgr.render_sidebar(
+    from core.ui import sidebar
+    tags.sidebar = sidebar.render_sidebar(
             panel_set='edit_category',
             # status_badge=status_badge,
             kv_object='Category',

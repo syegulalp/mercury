@@ -1,4 +1,5 @@
-from core import (auth, utils, cms, ui_mgr)
+from core import (auth, utils, cms)
+from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
 from core.search import (
@@ -280,8 +281,8 @@ def blog_new_page(blog_id):
 
     from core.cms import save_action_list
 
-    from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(blog_new_page.kv_list())
+    from core.ui import kv
+    kv_ui_data = kv.ui(blog_new_page.kv_list())
 
     try:
         html_editor_settings = Template.get(
@@ -297,7 +298,7 @@ def blog_new_page(blog_id):
         parent_path=referer,
         search_context=(search_context['blog'], blog),
         html_editor_settings=html_editor_settings,
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
@@ -364,16 +365,17 @@ def blog_media_edit(blog_id, media_id, status=None):
     media = Media.load(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
-    from core.ui_kv import kv_ui
+    # from core.ui_kv import kv_ui
+    from core.ui import kv
     # kv_ui_data = kv_ui(media.kvs(no_traverse=True))
-    kv_ui_data = kv_ui(media.kv_list())
+    kv_ui_data = kv.ui(media.kv_list())
 
     tags = template_tags(blog_id=blog.id,
          media=media,
          status=status,
          user=user,
         )
-    tags.sidebar = ui_mgr.render_sidebar(
+    tags.sidebar = sidebar.render_sidebar(
             panel_set='edit_media',
             status_badge=status_badge,
             kv_object='Media',
