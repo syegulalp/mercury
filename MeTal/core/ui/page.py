@@ -1,4 +1,5 @@
-from core import (auth, utils, cms, ui_mgr)
+from core import (auth, utils, cms)
+from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu
 from . import search_context, status_badge, save_action
@@ -67,15 +68,16 @@ def page_edit(page_id):
         user=user,
         status=status)
 
-    from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(page.kv_list())
+    # from core.ui_kv import kv_ui
+    from core.ui import kv
+    kv_ui_data = kv.ui(page.kv_list())
 
     tpl = template('edit/page',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
         search_context=(search_context['blog'], page.blog),
         html_editor_settings=html_editor_settings(page.blog),
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
             save_action_list=save_action_list,
@@ -109,12 +111,13 @@ def page_edit_save(page_id):
 
     from core.cms import save_action_list
 
-    from core.ui_kv import kv_ui
+    # from core.ui_kv import kv_ui
     # kv_ui_data = kv_ui(page.kvs(no_traverse=True))
-    kv_ui_data = kv_ui(page.kv_list())
+    from core.ui import kv
+    kv_ui_data = kv.ui(page.kv_list())
 
     tpl = template('edit/page_ajax',
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
@@ -449,8 +452,9 @@ def page_revision_restore(page_id, revision_id):
     referer = BASE_URL + "/blog/" + str(page.blog.id)
 
     from core.cms import save_action_list
-    from core.ui_kv import kv_ui
-    kv_ui_data = kv_ui(page.kv_list())
+    # from core.ui_kv import kv_ui
+    from core.ui import kv
+    kv_ui_data = kv.ui(page.kv_list())
     # TODO: save action from this doesn't trigger queue run
 
     tpl = template('edit/page',
@@ -459,7 +463,7 @@ def page_revision_restore(page_id, revision_id):
         menu=generate_menu('edit_page', page),
         search_context=(search_context['blog'], page.blog),
         html_editor_settings=html_editor_settings(page.blog),
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_page',
             status_badge=status_badge,
             save_action=save_action,
