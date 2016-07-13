@@ -199,3 +199,8 @@ body {
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
     background-color: #f0f0ff;
 }
+
+.media-list-group {
+    overflow-y: scroll;
+    max-height: 400px;
+}

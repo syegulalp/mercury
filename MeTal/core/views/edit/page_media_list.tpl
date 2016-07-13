@@ -1,5 +1,5 @@
 % if page.media.count()>0:
-<ul class="list-group">
+<ul class="list-group media-list-group">
 % for m in page.media:
   <li class="list-group-item wrap-txt" data-toggle="tooltip" data-placement="left"
       data-html="true"
