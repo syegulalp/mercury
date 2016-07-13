@@ -3,7 +3,7 @@ from core.libs.bottle import (request, template, redirect)
 from core import auth, utils
 from core.models import (template_tags, User, Site, Blog)
 from core.menu import generate_menu, colsets
-from .ui import search_context
+from . import search_context
 
 def system_context(user_to_edit=None, path='basic'):
     from core.models import User
