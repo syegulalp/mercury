@@ -1,3 +1,41 @@
+<div id="page_save_group" class="form-group" style="line-height: 2.5em;">
+    <input type="hidden" id="save" name="save" value="{{page.status_id}}">
+    <input type="hidden" id="backup" name="backup" value="N">
+    <div class="btn-group btn-block">
+        <button onclick="page_save({{save_action[page.status_id][0]}})" type="button" accesskey="s"
+            id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}} col-xs-10">
+            {{save_action[page.status_id][1]}}
+            <div id="save_animation"></div>
+            </button>
+        <button type="button" class="btn btn-sm btn-{{status_badge[page.status_id]}} dropdown-toggle col-xs-2"
+        data-toggle="dropdown" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu col-xs-10" role="menu">
+            % if page.status_id == 2:
+            <li><a title="Save this page to a draft, but do not publish it or make its changes live." onclick="page_save({{save_action_list.SAVE_TO_DRAFT}})" href="#">Save draft only</a></li>
+            % else:
+            <li><a title="Save this page to a draft, and make the changes live on the website." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE}})" href="#">Save and publish</a></li>
+            % end
+ <!--
+            <li><a title="Save this page to a draft, release the editing lock, and leave the editor." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.EXIT_EDITOR}})" href="#">Save and exit</a></li>
+            <li><a title="Close the editor without making any further changes to this draft, and release the editing lock." onclick="page_save({{save_action_list.EXIT_EDITOR}})" href="#">Exit without saving</a></li>
+-->
+            % if page.status_id == 2:
+            <li><a title="Remove the live version of this page, and set its status back to Draft." onclick="page_save({{save_action_list.UNPUBLISH_PAGE}})" href="#">Unpublish</a></li>
+            % end
+            <!-- <li><a title="Remove the live version of this page, and delete its draft and all of its versions as well." onclick="page_save({{save_action_list.DELETE_PAGE}})" href="#">Delete</a></li>
+            -->
+        </ul>
+    </div>
+    % if page.id is not None:
+    <div id="preview_group" class="btn-group btn-block">
+        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-12">Preview</button>
+    </div>
+    % end
+</div>
+
 <div id="publication_status_group" class="form-group">
     <label for="publication_status">Publication status:</label>
     <select class="form-control input-sm unsaved" id="publication_status" name="publication_status">
@@ -60,56 +98,6 @@
         name="change_note" value="" />
 </div>
 
-<div id="page_save_group" class="form-group" style="line-height: 2.5em;">
-    <input type="hidden" id="save" name="save" value="{{page.status_id}}">
-    <input type="hidden" id="backup" name="backup" value="N">
-    <div class="btn-group btn-block">
-        <button onclick="page_save({{save_action[page.status_id][0]}})" type="button" accesskey="s"
-            id="save_button" class="btn btn-sm btn-{{status_badge[page.status_id]}} col-xs-10">
-            {{save_action[page.status_id][1]}}
-            <div id="save_animation"></div>
-            </button>
-        <button type="button" class="btn btn-sm btn-{{status_badge[page.status_id]}} dropdown-toggle col-xs-2"
-        data-toggle="dropdown" aria-expanded="false">
-        <span class="caret"></span>
-        <span class="sr-only">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu col-xs-10" role="menu">
-            % if page.status_id == 2:
-            <li><a title="Save this page to a draft, but do not publish it or make its changes live." onclick="page_save({{save_action_list.SAVE_TO_DRAFT}})" href="#">Save draft only</a></li>
-            % else:
-            <li><a title="Save this page to a draft, and make the changes live on the website." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.UPDATE_LIVE_PAGE}})" href="#">Save and publish</a></li>
-            % end
- <!--
-            <li><a title="Save this page to a draft, release the editing lock, and leave the editor." onclick="page_save({{save_action_list.SAVE_TO_DRAFT + save_action_list.EXIT_EDITOR}})" href="#">Save and exit</a></li>
-            <li><a title="Close the editor without making any further changes to this draft, and release the editing lock." onclick="page_save({{save_action_list.EXIT_EDITOR}})" href="#">Exit without saving</a></li>
--->
-            % if page.status_id == 2:
-            <li><a title="Remove the live version of this page, and set its status back to Draft." onclick="page_save({{save_action_list.UNPUBLISH_PAGE}})" href="#">Unpublish</a></li>
-            % end
-            <!-- <li><a title="Remove the live version of this page, and delete its draft and all of its versions as well." onclick="page_save({{save_action_list.DELETE_PAGE}})" href="#">Delete</a></li>
-            -->
-        </ul>
-    </div>
-    % if page.id is not None:
-    <div id="preview_group" class="btn-group btn-block">
-        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-12">Preview</button>
-<!--
-        <button type="button" id="preview_dropdown" class="btn btn-sm btn-primary xdropdown-toggle col-xs-2" xdata-toggle="dropdown" aria-expanded="false">
-
-        <span class="caret"></span>
-        <span class="sr-only">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu col-xs-10" role="menu">
-            <li><a onclick="show_local_preview()" href="#">Local preview</a></li>
-
-            <li><a href="#">Shared preview</a></li>
-
-        </ul>
--->
-    </div>
-    % end
-</div>
 
 <div class='pull-right'><small>
 % if page.status_id==1:
