@@ -71,7 +71,8 @@ search_context = (
     }
     )
 
-def listing(request, user, errormsg, context, tags_data):
+def listing(request, user, errormsg, context, tags_data,
+    colset_source=colsets, search_context_source=search_context):
     '''
     Listing framework.
     Used to present a searchable and sortable list of objects.
@@ -151,10 +152,10 @@ def listing(request, user, errormsg, context, tags_data):
 
     tpl = _tpl('listing/listing_ui',
         paginator=paginator,
-        search_context=(search_context[search_ui], search_object),
+        search_context=(search_context_source[search_ui], search_object),
         menu=generate_menu(menu, search_object),
         rowset=rowset,
-        colset=colsets[colset],
+        colset=colset_source[colset],
         icons=icons,
         action=action_button,
         list_actions=list_actions,
