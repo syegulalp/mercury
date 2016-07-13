@@ -48,7 +48,7 @@ def load():
             },
             {
             'action': 'exec',
-            'module': 'core.ui_mgr',
+            'module': 'core.ui.sidebar',
             'function': 'register_sidebar',
             'kwargs': sidebar
             })
