@@ -1,4 +1,4 @@
-from core import (auth, utils, ui_mgr, template as _template)
+from core import (auth, utils, ui_mgr)
 from core.menu import generate_menu, icons
 
 from core.models import (Blog,
