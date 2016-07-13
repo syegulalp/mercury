@@ -1,4 +1,5 @@
-from core import (auth, utils, ui_mgr)
+from core import (auth, utils)
+from core.ui import sidebar
 from core.menu import generate_menu, icons
 
 from core.models import (Blog,
@@ -293,7 +294,7 @@ def template_edit_save(template_id):
     from core.models import (template_type as template_types)
 
     tpl = template('edit/template_ajax',
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_template',
             publishing_mode=publishing_mode,
             types=template_types,
@@ -308,26 +309,44 @@ def template_preview(template_id):
 
     with db.atomic() as txn:
         from settings import _sep
+        from core.models import Page, FileInfo
         import os
 
         template = Template.load(template_id)
 
+        identifier = ''
+
         if template.template_type == template_type.index:
+            fi = template.default_mapping.fileinfos[0]
             tags = template_tags(blog=template.blog,
-                fileinfo=template.fileinfos[0])
-        if template.template_type == template_type.page:
-            tags = template_tags(page=template.blog.published_pages[0],
-                fileinfo=template.blog.published_pages[0].fileinfos[0])
-        if template.template_type == template_type.include:
-            tags = template_tags(page=template.blog.published_pages[0],
-                fileinfo=template.blog.published_pages[0].fileinfos[0])
-        if template.template_type == template_type.archive:
+                fileinfo=fi
+                )
+
+        elif template.template_type == template_type.page:
+            fi = template.fileinfos.order_by(FileInfo.id.desc()).get()
+            tags = template_tags(
+                page=fi.page,
+                )
+
+        elif template.template_type == template_type.include:
+            if template.publishing_mode != publishing_mode.ssi:
+                raise Exception('You can only preview server-side includes.')
+            page = template.blog.published_pages.order_by(Page.publication_date.desc()).get()
+            fi = page.fileinfos[0]
+            tags = template_tags(
+                page=page,
+                )
+
+        elif template.template_type == template_type.archive:
             from core import cms
             cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
-            tags = template_tags(blog=template.blog,
+            fi = template.fileinfos.order_by(FileInfo.id.desc()).get()
+            tags = template_tags(
+                    blog=template.blog,
                     archive=template.blog.published_pages,
-                    # archive_context=template.default_mapping.fileinfos[0],
-                    fileinfo=template.default_mapping.fileinfos[0])
+                    archive_context=fi,
+                    fileinfo=fi
+                    )
 
         import time
         tc = time.clock
@@ -335,12 +354,13 @@ def template_preview(template_id):
         tpl_output = utils.tplt(template, tags)
         end = tc()
 
-        tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(
+        tpl_output = r'<!-- {} Produced by template {}. Total render time:{} secs -->{}'.format(
+            identifier,
             template.for_log,
             end - start,
             tpl_output)
 
-        preview = template.preview_path
+        preview = template.preview_path(fi)
 
         if os.path.isdir(preview['path']) is False:
             os.makedirs(preview['path'])
@@ -357,11 +377,10 @@ def template_preview(template_id):
 
     redirect (url)
 
-@transaction
 def template_preview_delete(tpl):
 
     try:
-        preview = tpl.preview_path
+        preview = tpl.preview_path()
     except:
         return None
 
@@ -389,7 +408,7 @@ def template_edit_output(tags):
         icons=icons,
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),
-        sidebar=ui_mgr.render_sidebar(
+        sidebar=sidebar.render_sidebar(
             panel_set='edit_template',
             publishing_mode=publishing_mode,
             types=template_types,

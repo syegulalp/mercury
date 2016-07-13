@@ -2208,8 +2208,7 @@ class Template(BaseModel, DateMod):
         # return utils.preview_file(default_file, self.blog.base_extension)
         return utils.preview_file(self.id, self.blog.base_extension)
 
-    @property
-    def preview_path(self):
+    def preview_path(self, fileinfo=None):
         # from core.template import preview_path
         # return preview_path(self)
 
@@ -2219,7 +2218,7 @@ class Template(BaseModel, DateMod):
             'file':self.preview_file}
 
         from settings import _sep
-        file_path = self.default_mapping.fileinfos[0].file_path
+        file_path = self.default_mapping.fileinfos[0].file_path if fileinfo is None else fileinfo.file_path
 
         preview_subpath = file_path.rsplit('/', 1)
         if len(preview_subpath) > 1:
