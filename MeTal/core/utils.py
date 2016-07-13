@@ -26,6 +26,7 @@ def json_dump(obj):
             separators=(', ', ': '),
             indent=1))
 
+# TODO: move this out of here and into a more appropriate place
 def field_error(e):
     _ = re.compile('UNIQUE constraint failed: (.*)$')
     m = _.match(str(e))
@@ -46,24 +47,14 @@ def quote_escape(string):
 def preview_file(identifier, extension):
     file_identifier = "preview-{}".format(identifier)
     import zlib
-    return ('preview-' +
+    return ('mtl-preview-' +
         str(zlib.crc32(file_identifier.encode('utf-8'), 0xFFFF)) +
-        "." + extension)
-
-def preview_file_old(filename, extension):
-    import zlib
-    try:
-        split_path = filename.rsplit('/', 1)[1]
-    except IndexError:
-        split_path = filename
-    return ('preview-' +
-        str(zlib.crc32(split_path.encode('utf-8'), 0xFFFF)) +
         "." + extension)
 
 def verify_path(path):
     '''
     Stub function to ensure a given path
-    a) exists
+    a) exists (create if not)
     b) is writable
     c) is not on top of a path used by the application
     '''
@@ -284,19 +275,13 @@ class MetalTemplate(SimpleTemplate):
         self._tags = kwargs.get('tags', None)
 
     def _load_ssi(self, env, ssi_name=None, **kwargs):
-        return {'_stdout':self._tags['blog'].ssi(ssi_name)}
-
-        # We don't need to execute the full template,
-        # we just need to return a string
-
-        '''
+        ssi = self._tags['blog'].ssi(ssi_name)
         tpl = MetalTemplate(ssi, tags=self._tags, **kwargs)
         try:
             n = tpl.execute(env['_stdout'], env)
         except Exception as e:
             raise Exception(e, ssi_name)
         return n
-        '''
 
     def _load_module(self, module_name):
         from core.models import Template
