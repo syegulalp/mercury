@@ -1,4 +1,5 @@
 global.background_save_timer = null;
+global.run_queue=true;
 var editor = null;
 var editor_resize = function() {}
 var editor_update = function() {}
@@ -127,6 +128,10 @@ function bind_queue() {
 }
 
 function run_queue(blog_id) {
+    if (global.run_queue!=true)
+    {
+        return false;
+    }
     $.get(global.base + "/blog/" + global.blog + "/publish/process").done(
         function(data) {
             $('#queue_counter').replaceWith(data);
@@ -141,6 +146,22 @@ function run_queue(blog_id) {
             'Sorry, an error occurred in the publishing queue:',
             details);
     });;
+}
+
+function toggle_queue_runner(){
+    this.event.stopPropagation();
+    t=$('#auto_queue_run_lbl')
+    if (t.html()=='ON'){
+        t.html('OFF');
+        
+        global.run_queue=false;
+    }
+    else
+    {
+        t.html('ON')
+        global.run_queue=true;
+    }
+    t.toggleClass('label-info label-danger')
 }
 
 function page_save(n) {

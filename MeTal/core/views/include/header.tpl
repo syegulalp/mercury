@@ -62,20 +62,17 @@
             <li class="divider"></li>
             % else:
             <li class="disabled"><a href="#">Queue empty</a></li>
-            <!--
-            <li><a href="#">Disable queue runner</a></li>
-            -->
             <li class="divider"></li> 
             % end
-            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/queue">See publishing queue</a></li>
+            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/queue" target="_blank">See publishing queue</a></li>
             <li><a href="#" onclick="toggle_queue_runner();">Auto run queue: <span id="auto_queue_run_lbl" class="label label-info">ON</span></a></li>
 
             <li class="divider"></li>
             % end
             
             % if blog is not None:
-            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/republish">Republish blog</a></li>
-            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/purge">Purge and republish blog</a></li>
+            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/republish" target="_blank">Republish blog</a></li>
+            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/purge" target="_blank">Purge and republish blog</a></li>
             
             % elif site is not None:
             <li><a href="{{settings.BASE_URL}}/site/{{site.id}}/purge">Purge and republish site</a></li>
