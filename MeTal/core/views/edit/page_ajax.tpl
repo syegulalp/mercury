@@ -10,5 +10,4 @@ run_queue({{blog.id}});
 % end
 {{!sidebar}}
 </div>
-% #queue_count = queue.count()
 % include('queue/queue_counter_include.tpl')
