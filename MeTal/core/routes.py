@@ -782,7 +782,7 @@ if DESKTOP_MODE:
     % if site.blogs.count()>0:
         <ul>
         % for blog in site.blogs:
-        % if blog.published_pages().count()>0:
+        % if blog.published_pages.count()>0:
             <li><a href="/?_={{blog.id}}">{{blog.name}}</a></li>
         % else:
         <li>{{blog.name}} [No published pages on this blog]</li>

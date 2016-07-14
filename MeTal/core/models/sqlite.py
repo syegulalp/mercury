@@ -163,5 +163,6 @@ def post_recreate():
     return ""
 
 def db_warnings():
-    from core.error import LoggedException
-    return LoggedException, "{} ({})"
+    # from core.error import LoggedException
+    # return LoggedException, "{} ({})"
+    return Exception, "{} ({})"

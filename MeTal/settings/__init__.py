@@ -73,6 +73,16 @@ else:
 if INSTALL_STEP is not None:
     NO_SETUP = True
 
+# TODO: this needs to be scrapped and rewritten to use WSGI properly
+# by way of FastCGI or what have you
+# we need to set the mode explicitly somewhere
+
+# APP_MODE = 'cgi','fastcgi','auto'
+
+# just get rid of desktop mode entirely
+
+
+'''
 try:
     DEFAULT_LOCAL_ADDRESS = os.environ["HTTP_HOST"]
 except KeyError:
@@ -93,9 +103,16 @@ if DESKTOP_MODE is True:
 
     USE_WSGI = False
 else:
+
     BASE_PATH = ""
     BASE_URL_ROOT = BASE_URL_PROTOCOL + BASE_URL_NETLOC
     BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
+'''
+SERVER_MODE = 'cgi'
+
+BASE_PATH = ""
+BASE_URL_ROOT = BASE_URL_PROTOCOL + BASE_URL_NETLOC
+BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
 
 try:
     DB_TYPE_NAME

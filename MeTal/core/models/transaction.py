@@ -14,8 +14,8 @@ def transaction(func):
     def wrapper(*a, **ka):
         n = 0
         while n < DATABASE_RETRIES:
-            db.connect()
             try:
+                db.connect()
                 with db.atomic():
                     fn = func(*a, **ka)
             except OperationalError as e:

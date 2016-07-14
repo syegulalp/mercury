@@ -92,10 +92,8 @@ from core.utils import html_escape
 
 blank_item = '''
 <li class="list-group-item wrap-txt">
-{}<a onclick="remove_kv({});" href="#" title="Remove item">
-<span class="pull-right glyphicon glyphicon-remove media-remove"></span></a></li>
+<a onclick="remove_kv({});" href="#" title="Remove item"><span class="pull-right glyphicon glyphicon-remove media-remove"></span></a>{}</li>
 '''
-# <span title="Select {}" class="glyphicon glyphicon-plus-sign media-selector"></span>
 
 media_item = '''
 <li class="list-group-item" data-toggle="tooltip" data-placement="left"
@@ -119,9 +117,9 @@ def ui(keys):
     for n in keys:
 
         kv_ui.append(blank_item.format(
-                # "text",
-                "<b>{}:</b> <i>{}</i>".format(html_escape(n.key), html_escape(n.value)),
-                n.id))
+            n.id,
+            "<b>{}:</b> <i>{}</i>".format(html_escape(n.key), html_escape(n.value))
+            ))
 
         '''
         if n.is_schema is True:

@@ -71,12 +71,15 @@ media_filetypes.types = {
 
 def build_page(queue_entry):
     try:
-
         fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
         blog = queue_entry.blog
         page_tags = generate_page_tags(fileinfo, blog)
         file_page_text = generate_page_text(fileinfo, page_tags)
         write_file(file_page_text, blog.path, fileinfo.file_path)
+
+    except FileInfo.DoesNotExist as e:
+        raise Exception('''Fileinfo {} could not be found in the system.
+It may refer to a fileinfo that was deleted by another action. ({})'''.format(queue_entry.data_integer, e))
 
     except NoArchiveForFileInfo:
         logger.info("Fileinfo {} has no corresponding pages. File {} removed.".format(

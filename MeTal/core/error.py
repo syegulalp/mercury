@@ -11,7 +11,6 @@ class PermissionsException(LoggedException):
 
 class NoArchiveForFileInfo(Exception):
     pass
-
 class ArchiveMappingFormatException(LoggedException):
     pass
 
@@ -36,7 +35,7 @@ class PublicException(Exception):
 class QueueAddError(LoggedException):
     pass
 
-class QueueInProgressException(PublicException):
+class QueueInProgressException(LoggedException):
     pass
 
 class PageTemplateError(LoggedException):

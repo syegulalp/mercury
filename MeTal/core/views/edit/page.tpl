@@ -41,5 +41,5 @@ global.html_editor_settings={{!html_editor_settings}};
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/typeahead/typeahead.bundle.min.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tags.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/activity.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/kv.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
+<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/kv.js"></script>

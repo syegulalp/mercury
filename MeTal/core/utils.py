@@ -62,6 +62,7 @@ def verify_path(path):
     # verify the path exists
     # verify that it is writable
     # verify it is not within the application directory
+    # os.path.abspath may help here
 
     pass
 

@@ -109,6 +109,21 @@ def boot(aux_settings=None):
             settings.DEFAULT_LOCAL_ADDRESS,
             settings.DEFAULT_LOCAL_PORT[1:]))
 
+    if settings.SERVER_MODE == 'wsgi':
+        bottle.run(app,
+            server="flipflop",
+            debug=settings.DEBUG_MODE)
+    elif settings.SERVER_MODE == 'cgi':
+        bottle.run(app,
+            server="cgi",
+            debug=settings.DEBUG_MODE)
+    else:
+        bottle.run(app,
+            server="auto",
+            port=settings.DEFAULT_LOCAL_PORT[1:],
+            debug=settings.DEBUG_MODE)
+
+    '''
     if settings.USE_WSGI:
         bottle.run(app,
             server="cgi",
@@ -119,6 +134,7 @@ def boot(aux_settings=None):
             server="auto",
             port=settings.DEFAULT_LOCAL_PORT[1:],
             debug=settings.DEBUG_MODE)
+    '''
 
 def reboot():
     '''

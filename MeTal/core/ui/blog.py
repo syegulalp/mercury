@@ -1153,6 +1153,25 @@ def blog_import (blog_id):
                 match = Page.kv_get('legacy_id', n_id)
                 if match.count() > 0:
                     q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
+
+                    # Update data
+
+                    existing_page = Page.load(match[0].value)
+
+                    # if n['modified_date']
+
+                    # Check to see if last date is newer
+                    # If so, update:
+                    # the page's data
+                    # the categories for the page (remove, renew)
+                    # the tagset for the page (remove, renew)
+                    # each KV for the page (remove, renew)
+                    # the image list for the page (remove, renew)
+
+                    # We might just be able to remove those properties
+                    # and then re-add them by way of the rest of this function
+                    # If the modified date is the same, we can just skip to the next one
+
                 else:
                     q.append("Creating: " + format_str.format(n['title'], n_id))
 
@@ -1290,8 +1309,6 @@ def blog_import (blog_id):
                             value = kvs[key]
                             new_media.kv_set(key, value)
                             q.append('KV: {}:{}'.format(key, value))
-
-                    # pages_to_build.append(new_entry)
 
                     cms.build_pages_fileinfos((new_entry,))
                     cms.build_archives_fileinfos((new_entry,))
