@@ -6,7 +6,7 @@ from core.error import (ArchiveMappingFormatException, PageNotChanged, EmptyQueu
 from core.log import logger
 from core.auth import publishing_lock
 from core.libs.bottle import request
-from core.libs.peewee import DeleteQuery
+from core.libs.peewee import DeleteQuery, OperationalError
 
 from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Tag, template_type,
     Category, PageCategory, FileInfo, template_tags, User, Blog, Site,
@@ -311,6 +311,8 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
 
                             queue_page_archive_actions(previous_page)
 
+        except OperationalError as e:
+            raise e
         except Exception as e:
             from core.error import QueueAddError
             raise QueueAddError('Page {} could not be queued: '.format(
@@ -1499,6 +1501,8 @@ def process_queue_publish(queue_control, blog):
 
     removed_jobs = []
 
+    start = time.clock()
+
     for q in queue.iterator():
         try:
             job_type.action[q.job_type](q)
@@ -1506,6 +1510,8 @@ def process_queue_publish(queue_control, blog):
             raise e
         else:
             removed_jobs.append(q.id)
+        if time.clock() - start > 5.0:
+            break
 
     remove_from_queue(removed_jobs)
 

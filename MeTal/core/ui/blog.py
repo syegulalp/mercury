@@ -894,7 +894,7 @@ def blog_settings_output(tags):
     return tpl
 
 
-@transaction
+# @transaction
 def blog_publish(blog_id):
 
     user = auth.is_logged_in(request)
@@ -923,7 +923,7 @@ def blog_publish(blog_id):
 
     return tpl
 
-@transaction
+# @transaction
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -945,7 +945,7 @@ def blog_publish_progress(blog_id, original_queue_length):
 
     return tpl
 
-@transaction
+# @transaction
 def blog_publish_process(blog_id):
 
     user = auth.is_logged_in(request)

@@ -1,10 +1,13 @@
+'''
 from core.log import logger
-
 class LoggedException(Exception):
     def __init__(self, msg):
         super().__init__(msg)
         self.msg = msg
         logger.error(msg)
+'''
+class LoggedException(Exception):
+    pass
 
 class PermissionsException(LoggedException):
     pass
