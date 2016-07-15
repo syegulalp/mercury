@@ -629,15 +629,12 @@ def save_page(page, user, blog=None):
         add_tags_to_page(tag_text, page)
         delete_orphaned_tags(page.blog)
 
-    if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
-        and (page.status == page_status.published)):
-
-        # BUILD FILEINFO IF NO DELETE ACTION
-
-        # clear fileinfos?
-
+    if (save_action & save_action_list.SAVE_TO_DRAFT):
         build_archives_fileinfos((page,))
         build_pages_fileinfos((page,))
+
+    if ((save_action & save_action_list.UPDATE_LIVE_PAGE)
+        and (page.status == page_status.published)):
 
         # QUEUE CHANGES FOR PUBLICATION
 
@@ -825,7 +822,7 @@ def delete_fileinfo_files(fileinfos):
         try:
             if os.path.isfile(n.sitewide_file_path):
                 os.remove(n.sitewide_file_path)
-                _.append(n.sitewide_file_path)
+                deleted_files.append(n.sitewide_file_path)
         except Exception as e:
             raise e
 
@@ -1246,6 +1243,7 @@ def build_archives_fileinfos_by_mappings(template, early_exit=False):
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
+        FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
         archive_context = []
         m = mapping_list[n][0][1]
 
@@ -1324,6 +1322,7 @@ def build_archives_fileinfos(pages):
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
+        FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
         archive_context = []
         m = mapping_list[n][0][1]
 
