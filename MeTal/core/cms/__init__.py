@@ -903,17 +903,17 @@ def generate_page_text(f, tags):
     tp = f.template_mapping.template
 
     try:
-        tpx = template_cache[tp.id]
+        pre_tags = blog_tag_cache[tp.blog.id]
     except KeyError:
-        try:
-            pre_tags = blog_tag_cache[tp.blog.id]
-        except KeyError:
-            pre_tags = template_tags(blog=tp.blog)
-            blog_tag_cache[tp.blog.id] = pre_tags
+        pre_tags = template_tags(blog=tp.blog)
+        blog_tag_cache[tp.blog.id] = pre_tags
 
+    try:
+        tpx = template_cache[f.template_mapping.template.id]
+    except KeyError:
         tpx = MetalTemplate(source=tp.body,
             tags=pre_tags.__dict__)
-        template_cache[f.template_mapping.id] = tpx
+        template_cache[f.template_mapping.template.id] = tpx
 
     try:
         return tpx.render(**tags.__dict__)
@@ -1482,13 +1482,14 @@ def process_queue_publish(queue_control, blog):
     queue_control.is_running = True
     queue_control.save()
 
-    queue = Queue.select().order_by(Queue.priority.desc(),
+    queue_original = Queue.select().order_by(Queue.priority.desc(),
         Queue.date_touched.desc()).where(Queue.blog == blog,
-        Queue.is_control == False).limit(MAX_BATCH_OPS).naive()
+        Queue.is_control == False)
 
+    queue = queue_original.limit(MAX_BATCH_OPS).naive()
+
+    queue_original_length = queue_original.count()
     queue_length = queue.count()
-
-    # import time
 
     start_queue = time.clock()
 
@@ -1497,7 +1498,7 @@ def process_queue_publish(queue_control, blog):
             queue_control.id,
             date_format(queue_control.date_touched),
             queue_control.blog.id,
-            queue_length))
+            queue_original_length))
 
     removed_jobs = []
 
@@ -1510,7 +1511,7 @@ def process_queue_publish(queue_control, blog):
             raise e
         else:
             removed_jobs.append(q.id)
-        if time.clock() - start > 5.0:
+        if time.clock() - start > 2.0:
             break
 
     remove_from_queue(removed_jobs)
@@ -1518,7 +1519,9 @@ def process_queue_publish(queue_control, blog):
     queue_control = Queue.get(Queue.blog == blog,
         Queue.is_control == True)
 
-    queue_control.data_integer -= queue_length
+    queue_original_length -= len(removed_jobs)
+    queue_control.data_integer = queue_original_length
+    # queue_control.data_integer -= len(removed_jobs)
 
     end_queue = time.clock()
 
@@ -1534,12 +1537,14 @@ def process_queue_publish(queue_control, blog):
     else:
         queue_control.is_running = False
         queue_control.save()
-        logger.info("Queue job #{} @ {} (blog #{}) continuing with {} items left ({:.4f} secs).".format(
+        logger.info("Queue job #{} @ {} (blog #{}) processed {} items ({:.4f} secs, {} remaining).".format(
             queue_control.id,
             date_format(queue_control.date_touched),
             queue_control.blog.id,
-            queue_length,
-            total_time))
+            len(removed_jobs),
+            total_time,
+            queue_original_length,
+            ))
 
     return queue_control.data_integer
 
