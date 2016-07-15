@@ -497,24 +497,34 @@ def action_button(label, url):
 from core.libs.playhouse.dataset import DataSet
 import os
 
+def _write(string):
+    with open('static/output.html', 'a') as f:
+        f.write(string)
+
+# write to
+# to fetch: http://www.ioncannon.net/programming/1506/range-requests-with-ajax/
+
 def export_data():
     from settings import DB
-    n = ("Beginning export process. Writing files to {}.".format(APPLICATION_PATH + EXPORT_FILE_PATH))
+    n = ("Beginning export process... Writing files to {}.".format(APPLICATION_PATH + EXPORT_FILE_PATH))
     yield ("<p>" + n)
-    db = DataSet(DB.dataset_connection())
+    _write ("<p>" + n)
+    xdb = DataSet(DB.dataset_connection())
     if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
         os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
-    with db.atomic() as txn:
-        for table_name in db.tables:
+    with xdb.transaction():
+        for table_name in xdb.tables:
             if not table_name.startswith("page_search"):
-                table = db[table_name]
+                table = xdb[table_name]
                 n = "Exporting table: " + table_name
-                yield ('<p>' + n)
+                yield ("<p>" + n)
+                _write ('<p>' + n)
                 filename = APPLICATION_PATH + EXPORT_FILE_PATH + '/dump-' + table_name + '.json'
                 table.freeze(format='json', filename=filename)
-    db.close()
+    xdb.close()
     n = "Export process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL)
     yield ("<p>" + n)
+    _write ("<p>" + n)
 
     # TODO: export n rows at a time from each table into a separate file
     # to make the import process more granular
