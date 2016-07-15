@@ -56,7 +56,7 @@ INSTALL_INI_FILE_NAME = 'install.cgi'
 ENFORCED_CHARFIELD_CONSTRAINT = 767
 
 # Number of days to keep log data
-DAYS_TO_KEEP_LOGS = 30
+DAYS_TO_KEEP_LOGS = 5
 
 # Maximum size, in bytes, of files that can be uploaded through the Web interface.
 MAX_FILESIZE = 300000
