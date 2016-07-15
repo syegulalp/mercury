@@ -28,6 +28,7 @@ def transaction(func):
                         sleep(RETRY_INTERVAL)
                         continue
                 else:
+                    db.close()
                     raise e
             except LoggedException as e:
                 raise exc_info()[0](e.msg)
