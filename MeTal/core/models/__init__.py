@@ -1556,7 +1556,7 @@ class Page(BaseModel, DateMod):
     @property
     def archives(self):
         '''
-        Returns all date-based archives for this page.
+        Returns all archive templates for this page.
         '''
         page_templates = Template.select().where(
             Template.blog == self.blog.id,
@@ -1567,7 +1567,7 @@ class Page(BaseModel, DateMod):
     @property
     def archive_mappings(self):
         '''
-        Returns mappings for all date-based archives for this page.
+        Returns mappings for all date-based archive templates for this page.
         '''
         archive_mappings = TemplateMapping.select().where(
             TemplateMapping.template << self.archives.select(Template.id).tuples())
@@ -1577,7 +1577,7 @@ class Page(BaseModel, DateMod):
     @property
     def template_mappings(self):
         '''
-        Returns all template mappings associated with page for this blog.
+        Returns mappings for all page templates for this page.
         '''
 
         template_mappings = TemplateMapping.select().where(
