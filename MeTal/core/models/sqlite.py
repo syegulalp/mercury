@@ -4,6 +4,7 @@ from core.models import init_db, db
 from core.models import Page, TextField, Site
 from core.libs.peewee import OperationalError
 from core.libs import bottle
+from core.error import LoggedException
 _stderr = bottle._stderr
 
 try:
@@ -164,5 +165,5 @@ def post_recreate():
 
 def db_warnings():
     # from core.error import LoggedException
-    # return LoggedException, "{} ({})"
-    return Exception, "{} ({})"
+    return LoggedException, "{} ({})"
+    # return Exception, "{} ({})"
