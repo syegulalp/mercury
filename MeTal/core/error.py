@@ -12,7 +12,7 @@ class LoggedException(Exception):
 class PermissionsException(LoggedException):
     pass
 
-class NoArchiveForFileInfo(Exception):
+class NoArchiveForFileInfo(LoggedException):
     pass
 class ArchiveMappingFormatException(LoggedException):
     pass
@@ -29,10 +29,10 @@ class CSRFTokenNotFound(LoggedException):
 class PageNotChanged(LoggedException):
     pass
 
-class EmptyQueueError(Exception):
+class EmptyQueueError(LoggedException):
     pass
 
-class PublicException(Exception):
+class PublicException(LoggedException):
     pass
 
 class QueueAddError(LoggedException):
@@ -50,16 +50,16 @@ class DatabaseError(LoggedException):
 class TemplateSaveException(LoggedException):
     pass
 
-class MaintenanceModeException(Exception):
+class MaintenanceModeException(LoggedException):
     pass
 
-class UserCreationError(Exception):
+class UserCreationError(LoggedException):
     pass
 
-class DeletionError(Exception):
+class DeletionError(LoggedException):
     pass
 
-class FileInfoCollision(Exception):
+class FileInfoCollision(LoggedException):
     # Used for when we attempt to write a fileinfo that has the same
     # pathname or URL as some other fileinfo
     # We should return as many details as we can about the offending fileinfo
