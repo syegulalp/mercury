@@ -36,8 +36,9 @@ def html_editor_settings(blog):
 
     return html_editor_settings
 
-@transaction
+
 # TODO: page-locking algorithm
+@transaction
 def page_edit(page_id):
     '''
     UI for editing a page in a blog
