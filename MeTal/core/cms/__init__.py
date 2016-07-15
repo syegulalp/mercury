@@ -826,14 +826,12 @@ def delete_fileinfo_files(fileinfos):
         except Exception as e:
             raise e
 
-    # return ' '.join(_)
     return deleted_files
 
 def delete_page_fileinfo(page):
     '''
     Deletes the fileinfo entry associated with a specific page.
-    This does not perform any security checks.
-    This also does not delete anything from the filesystem.
+    This does not delete fileinfos that are general archives.
     :param page:
         The page object remove from the fileinfo index.
     '''
@@ -926,54 +924,6 @@ def generate_page_text(f, tags):
             sys.exc_info()[1],
             line_number
             ))
-
-
-
-
-def _build_file(f, blog):
-    '''
-    Builds a single file based on a fileinfo entry f for a given blog.
-    Returns details about the built file.
-
-    This does _not_ perform any checking for the page's publication status,
-    nor does it perform any other higher-level security.
-
-    This should be the action that is pushed to the queue, and consolidated
-    based on the generated filename. (The consolidation should be part of the queue push function)
-
-    :param f:
-        The fileinfo object to use.
-    :param blog:
-        The blog object to use as the context for the fileinfo.
-    '''
-
-    report = []
-    begin = time.clock()
-    page_text, pathname = generate_file(f, blog)
-    file = time.clock()
-
-    report.append("Output: " + pathname)
-    encoded_page = page_text.encode('utf8')
-
-    split_path = f.file_path.rsplit('/', 1)
-
-    if len(split_path) > 1:
-        path_to_check = blog.path + "/" + split_path[0]
-    else:
-        path_to_check = blog.path
-
-    if os.path.isdir(path_to_check) is False:
-        os.makedirs(path_to_check)
-
-    with open(pathname, "wb") as output_file:
-        output_file.write(encoded_page)
-
-    logger.info("File '{}' built ({} bytes ({:.4f} secs)).".format(
-        f.file_path,
-        len(encoded_page),
-        file - begin))
-
-    return report
 
 
 def generate_archive_context_from_page(context_list, original_pageset, original_page):
