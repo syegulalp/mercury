@@ -349,7 +349,7 @@ def template_preview(template_id):
                     blog=template.blog,
                     archive=template.blog.published_pages,
                     archive_context=fi,
-                    fileinfo=fi
+                    fileinfo=fi,
                     )
 
         import time
@@ -507,6 +507,8 @@ def template_save(request, user, cms_template, blog=None):
 
         if cms_template.template_type == template_type.page:
             cms.build_pages_fileinfos(cms_template.blog.published_pages)
+        if cms_template.template_type == template_type.archive:
+            cms.build_archives_fileinfos(cms_template.blog.published_pages)
         if cms_template.template_type == template_type.include:
             cms.build_archives_fileinfos_by_mappings(cms_template)
 
