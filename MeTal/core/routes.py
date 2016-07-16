@@ -127,7 +127,7 @@ def enable_plugin(plugin_id):
     '''
     # TODO: require a form action
     from core.plugins import enable_plugin
-    enable_plugin(plugin_id)
+    return enable_plugin(plugin_id)
 
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
@@ -136,7 +136,7 @@ def disable_plugin(plugin_id):
     '''
     # TODO: require a form action
     from core.plugins import disable_plugin
-    disable_plugin(plugin_id)
+    return disable_plugin(plugin_id)
 
 @_route(BASE_PATH + "/system/queue")
 def system_queue():
@@ -977,8 +977,14 @@ def delete_theme_from_system(theme_id):
 
 # Unfinished reboot handler
 
-@_route(BASE_PATH + '/reboot', method="POST")
-def reboot():
+# @_route(BASE_PATH + '/reboot', method=('GET', 'POST'))
+# def rbt():
+    # user = auth.is_logged_in(request)
+    # permission = auth.is_sys_admin(user)
+    # setattr(app, 'time_to_die', True)
+
+@_route(BASE_PATH + '/rebootx', method="POST")
+def _reboot():
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
@@ -992,132 +998,3 @@ def reboot():
         settings=_s,
         redirect_to=request.forms.getunicode('redirect_to'))
     return t
-
-
-'''
-
-@_route(BASE_PATH + '/test/<blog_id:int>')
-def test_function(blog_id):
-    with db.atomic():
-        from core.models import Media
-        from os import remove as _remove
-        media_list = Media.select().where(
-            Media.id > 3)
-        n = ""
-        for x in media_list:
-            n += str(x.id) + ","
-            try:
-                _remove(x.path)
-            except:
-                pass
-            x.delete_instance(recursive=True,
-                delete_nullable=True)
-    return n
-'''
-
-
-
-'''
-@_route(BASE_PATH + '/site/<site_id:int>/users')
-def site_list_users(site_id):
-    from core.ui import site
-    return site.site_list_users(site_id)
-
-@_route(BASE_PATH + '/site/<site_id:int>/create-user')
-def site_create_user(site_id):
-    from core.ui import site
-    return site.site_create_user(site_id)
-
-
-@_route(BASE_PATH + '/site/<site_id:int>/create-user', method='POST')
-def site_create_user_save(site_id):
-    from core.ui import site
-    return site.site_create_user_save(site_id)
-
-
-@_route(BASE_PATH + '/site/<site_id:int>/user/<user_id:int>')
-def site_edit_user(site_id, user_id):
-    from core.ui import site
-    return site.site_edit_user(site_id, user_id)
-
-
-@_route(BASE_PATH + '/site/<site_id:int>/user/<user_id:int>', method='POST')
-def site_edit_user_save(site_id, user_id):
-    from core.ui import site
-    return site.site_edit_user_save(site_id, user_id)
-
-
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/create-user')
-def blog_create_user(blog_id):
-    from core.ui import blog
-    return blog.blog_create_user(blog_id)
-
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/create-user', method='POST')
-def blog_create_user_save(blog_id):
-    from core.ui import blog
-    return blog.blog_create_user_save(blog_id)
-
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>')
-def blog_user_edit(blog_id, user_id):
-    from core.ui import blog
-    return blog.blog_user_edit(blog_id, user_id)
-
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/user/<user_id:int>', method='POST')
-def blog_user_edit_save(blog_id, user_id):
-    from core.ui import blog
-    return blog.blog_user_edit_save(blog_id, user_id)
-
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/users')
-def blog_list_users(blog_id):
-    from core.ui import blog
-    return blog.blog_list_users(blog_id)
-
-@_route(BASE_PATH + "/blog/<blog_id:int>/import-theme/<theme_id:int>")
-def import_theme_to_blog(theme_id, blog_id):
-    blog = Blog.load(blog_id)
-    old_theme = get_theme(theme_id)
-    # this needs rewriting.
-    # new_theme = mgmt.theme_install_to_blog(blog)
-    # mgmt.theme_install_to_blog(new_theme, blog)
-    # mgmt.theme_delete(old_theme)
-
-    # when replacing a theme:
-    # all Theme KV objects should be marked and reparented
-    # perhaps we should specify the Theme head KV with a name
-    # so that way we can match the name against the theme itself, too
-    # have an option to force-delete
-
-    # should we create an entirely new instance?
-    # how do we distinguish between multiple instances of the same theme?
-
-    # load in new theme from json in file somewhere, or maybe via a POST
-    # register new theme with site
-    # apply new theme to blog
-
-    # rebuild all fileinfos = purge function
-
-
-@_route(BASE_PATH + "/blog/<blog_id:int>/export-theme")
-def export_theme(blog_id):
-    from core import theme
-    return theme.export_theme_for_blog(blog_id)
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/apply-theme/<theme_id:int>')
-def apply_theme_test(blog_id, theme_id):
-    user = auth.is_logged_in(request)
-    blog = Blog.load(blog_id)
-    theme = get_theme(theme_id)
-    from core import mgmt
-    with db.atomic():
-        n = mgmt.theme_apply_to_blog(theme, blog, user)
-    return n
-
-'''
-
-
-
