@@ -1093,20 +1093,17 @@ import re
 mapping_tags = (
     # Replacing these to allow proper computation of a Python expression
     # for template mappings
-    (re.compile('\$i'), 'blog.index_file'),
-    (re.compile('\$s'), 'blog.ssi_path'),
-    (re.compile('\$f'), 'page.filename'),
+    (re.compile(r'\$i'), 'blog.index_file'),
+    (re.compile(r'\$s'), 'blog.ssi_path'),
+    (re.compile(r'\$f'), 'page.filename'),
+    (re.compile(r'\$[YMDCT]'), '{}'),
+
 )
 
 def replace_mapping_tags(string):
 
     for n in mapping_tags:
         string = re.sub(n[0], n[1], string)
-
-    # temporary shim
-
-    # if string[:1] != "'":
-        # string = "'" + string + "'"
 
     return string
 
@@ -1162,7 +1159,6 @@ def build_archives_fileinfos_by_mappings(template, early_exit=False):
         tags = template_tags(page=page)
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
-
         for mapping in template.mappings:
             paths_list = eval_paths(mapping.path_string, tags.__dict__)
 
@@ -1196,7 +1192,8 @@ def build_archives_fileinfos_by_mappings(template, early_exit=False):
                     )
 
         if early_exit and len(mapping_list) > 0:
-            break
+            return mapping_list
+            # break
 
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
@@ -1246,8 +1243,12 @@ def build_archives_fileinfos(pages):
         tags = template_tags(page=page)
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
+        s = []
         for m in page.archive_mappings:
+            q = replace_mapping_tags(m.path_string)
+            s.append(q)
             paths_list = eval_paths(m.path_string, tags.__dict__)
+            # s.append(paths_list)
             if type(paths_list) in (list,):
                 paths = []
                 for n in paths_list:
@@ -1255,6 +1256,7 @@ def build_archives_fileinfos(pages):
                         continue
                     p = page.proxy(n[0])
                     paths.append((p, n[1]))
+
             else:
                 paths = (
                     (page, paths_list)
@@ -1276,7 +1278,7 @@ def build_archives_fileinfos(pages):
                     ,
                     (page),
                     )
-
+    # raise Exception(s)
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
@@ -1590,10 +1592,13 @@ def build_mapping_xrefs(mapping_list):
         (re.compile('%Y'), 'Y'),
         (re.compile('%m'), 'M'),
         (re.compile('%d'), 'D'),
-        (re.compile('page\.categories.?'), 'C'),
-        (re.compile('page\.user.?'), 'A'),
-        (re.compile('page\.author.?'), 'A'),
-        (re.compile('page\.tags.?'), 'T')
+        (re.compile(r'\$C'), 'C'),
+        # (re.compile('page\.categories.?'), 'C'),
+        (re.compile(r'\$A'), 'A'),
+        # (re.compile('page\.user.?'), 'A'),
+        # (re.compile('page\.author.?'), 'A'),
+        (re.compile(r'\$T'), 'T')
+        # (re.compile('page\.tags.?'), 'T')
         # (re.compile('page\.primary_category.?'), 'P'),
         )
 
