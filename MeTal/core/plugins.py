@@ -206,19 +206,21 @@ def activate_plugins():
 
 
 def enable_plugin(plugin_id):
+
     with db.atomic():
         try:
             plugin_to_enable = Plugin.select().where(Plugin.id == plugin_id).get()
         except BaseException:
             raise ("Plugin not found")
         else:
-            if plugin_to_enable.enabled is True:
-                bottle.redirect(BASE_PATH + "/system/plugins")
-            else:
+            if plugin_to_enable.enabled is False:
                 plugin_to_enable.enabled = True
                 plugin_to_enable.save()
-    from core.boot import reboot
-    reboot()
+
+    yield "OK!"
+    yield ""
+    os._exit(0)
+
 
 def disable_plugin(plugin_id):
     with db.atomic():
@@ -227,10 +229,10 @@ def disable_plugin(plugin_id):
         except BaseException:
             raise ("Plugin not found")
         else:
-            if plugin_to_disable.enabled is False:
-                bottle.redirect(BASE_PATH + "/system/plugins")
-            else:
+            if plugin_to_disable.enabled is True:
                 plugin_to_disable.enabled = False
                 plugin_to_disable.save()
-    from core.boot import reboot
-    reboot()
+
+    yield "OK!"
+    yield ""
+    os._exit(0)
