@@ -248,11 +248,11 @@ def page_preview(page_id):
     else:
         page_url = preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file
 
-    tpl = template('ui/ui_preview',
-        page=page,
-        page_url=page_url)
-
-    return tpl
+    response.add_header('Refresh', "0,{}?_={}".format(
+        page_url,
+        page.modified_date.microsecond
+        ))
+    return response
 
 @transaction
 def delete_page_preview(page_id):
