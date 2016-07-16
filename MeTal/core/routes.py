@@ -989,21 +989,33 @@ def republish_blog(blog_id, pass_id=1, item_id=0):
     from core.libs.bottle import HTTPResponse
     r = HTTPResponse()
 
-    data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
-        blog.for_log,
-        pass_id,
-        item_id))
-
     if pass_id == 1:
         cms.queue_ssi_actions(blog)
         item_id = 0
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            item_id))
+
     elif pass_id == 2:
         cms.queue_index_actions(blog, include_manual=True)
         item_id = 0
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            item_id))
+
     elif pass_id == 3:
+        total = blog.published_pages.count()
         pages = blog.published_pages.offset(item_id)[:20]
-        # select()[item_id:item_id + 20]
-        data.append("Pages: {}".format(len(pages)))
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            total - item_id))
+
         if len(pages) > 0:
             cms.queue_page_actions(pages, no_neighbors=True)
             item_id += 20
