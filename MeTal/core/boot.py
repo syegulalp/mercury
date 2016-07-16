@@ -90,9 +90,6 @@ def boot(aux_settings=None):
         except Exception as e:
             _stderr("Could not make DB connection: {}".format(e))
 
-        # TODO: problem - on loss of DB for /import this will fail,
-        # so we need more robust exception handling in that case
-
         from core import plugins
         try:
             plugins.activate_plugins()
@@ -123,24 +120,4 @@ def boot(aux_settings=None):
             port=settings.DEFAULT_LOCAL_PORT[1:],
             debug=settings.DEBUG_MODE)
 
-    '''
-    if settings.USE_WSGI:
-        bottle.run(app,
-            server="cgi",
-            debug=settings.DEBUG_MODE)
 
-    else:
-        bottle.run(app,
-            server="auto",
-            port=settings.DEFAULT_LOCAL_PORT[1:],
-            debug=settings.DEBUG_MODE)
-    '''
-
-def reboot():
-    '''
-    Resets the Web server. Used after committing system changes (e.g., activating plugins).
-    '''
-    import os, sys
-    sys.stderr.close()
-    python = sys.executable
-    os.execl(python, python, * sys.argv)
