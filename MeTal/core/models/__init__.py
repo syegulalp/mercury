@@ -2350,7 +2350,7 @@ class TemplateRevision(Template, RevisionMixin):
             template_changed = False
 
             for name in last_revision._meta.fields:
-                if name not in ("modified_date", "id", "template_id", "is_backup", "change_note", "saved_by"):
+                if name not in ("modified_date", "id", "template_id", "theme", "is_backup", "change_note", "saved_by"):
                     value = getattr(current_revision, name)
                     new_value = getattr(last_revision, name)
 
