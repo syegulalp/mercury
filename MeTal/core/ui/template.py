@@ -235,6 +235,7 @@ def template_delete(template_id):
     return tplt
 
 
+@transaction
 def template_edit_save(template_id):
     '''
     UI for saving a blog template
@@ -310,7 +311,10 @@ def template_preview(template_id):
     with db.atomic() as txn:
         from settings import _sep
         from core.models import Page, FileInfo
+        from core import cms
         import os
+
+        cms.invalidate_cache()
 
         template = Template.load(template_id)
 
@@ -491,6 +495,8 @@ def template_save(request, user, cms_template, blog=None):
             n.id,
             n.path_string)
     cms.build_mapping_xrefs(mappings)
+
+    cms.invalidate_cache()
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
     # tags = template_tags(template_id=cms_template.id, user=user)
