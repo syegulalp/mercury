@@ -12,12 +12,20 @@ from core.models import (db, Page, Template, TemplateMapping, TagAssociation, Ta
     Category, PageCategory, FileInfo, template_tags, User, Blog, Site,
     FileInfoContext, Media, MediaAssociation, Struct, page_status, publishing_mode, Queue)
 
+from core.models.transaction import transaction
+
 from settings import MAX_BATCH_OPS, BASE_URL
 from core.libs.peewee import IntegrityError
 import time
 
-template_cache = {}
-blog_tag_cache = {}
+class Cache():
+    template_cache = {}
+    blog_tag_cache = {}
+
+    @classmethod
+    def clear(self):
+        self.template_cache = {}
+        self.blog_tag_cache = {}
 
 save_action_list = Struct()
 
@@ -898,17 +906,17 @@ def generate_page_text(f, tags):
     tp = f.template_mapping.template
 
     try:
-        pre_tags = blog_tag_cache[tp.blog.id]
+        pre_tags = Cache.blog_tag_cache[tp.blog.id]
     except KeyError:
         pre_tags = template_tags(blog=tp.blog)
-        blog_tag_cache[tp.blog.id] = pre_tags
+        Cache.blog_tag_cache[tp.blog.id] = pre_tags
 
     try:
-        tpx = template_cache[f.template_mapping.template.id]
+        tpx = Cache.template_cache[f.template_mapping.template.id]
     except KeyError:
         tpx = MetalTemplate(source=tp.body,
             tags=pre_tags.__dict__)
-        template_cache[f.template_mapping.template.id] = tpx
+        Cache.template_cache[f.template_mapping.template.id] = tpx
 
     try:
         return tpx.render(**tags.__dict__)
@@ -1399,9 +1407,7 @@ def republish_blog(blog):
     begin = time.clock()
 
     queue_ssi_actions(blog)
-
     queue_page_actions(blog.published_pages.iterator(), no_neighbors=True)
-
     queue_index_actions(blog, include_manual=True)
 
     end = time.clock()
@@ -1411,6 +1417,9 @@ def republish_blog(blog):
         BASE_URL,
         blog.id))
     return data
+
+def invalidate_cache():
+    Cache.clear()
 
 def process_queue_publish(queue_control, blog):
     '''
@@ -1425,8 +1434,7 @@ def process_queue_publish(queue_control, blog):
         The blog object that is in context for this job.
     '''
 
-    template_cache = {}
-    blog_tag_cache = {}
+    invalidate_cache()
 
     queue_control.is_running = True
     queue_control.save()
@@ -1463,6 +1471,7 @@ def process_queue_publish(queue_control, blog):
         if time.clock() - start > 2.0:
             break
 
+    # with db.atomic():
     remove_from_queue(removed_jobs)
 
     queue_control = Queue.get(Queue.blog == blog,
@@ -1504,8 +1513,6 @@ def process_queue_insert(queue_control, blog):
 
     # We don't have a front end for this yet?
     # Why .delete_instance()? Shouldn't we just set to 0?
-
-    # also, why isn't this running inside a transaction?
 
     queue_control.is_running = True
     queue_control.save()
@@ -1554,24 +1561,25 @@ def process_queue_insert(queue_control, blog):
 
     return result
 
+@transaction
 def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
     '''
 
-    with db.atomic():
+    # @with db.atomic():
 
-        q_c = publishing_lock(blog, True)
+    q_c = publishing_lock(blog, True)
 
-        if q_c is None:
-            return 0
+    if q_c is None:
+        return 0
 
-        queue_control = q_c[0]
+    queue_control = q_c[0]
 
-        if queue_control.job_type == job_type.control:
-            process_queue_publish(queue_control, blog)
-        elif queue_control.job_type == job_type.insert:
-            process_queue_insert(queue_control, blog)
+    if queue_control.job_type == job_type.control:
+        process_queue_publish(queue_control, blog)
+    elif queue_control.job_type == job_type.insert:
+        process_queue_insert(queue_control, blog)
 
     return Queue.job_counts(blog=blog)
 
