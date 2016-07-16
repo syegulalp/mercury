@@ -75,9 +75,9 @@ MAX_BASENAME_LENGTH = 128
 # Maximum number of revisions for pages
 MAX_PAGE_REVISIONS = 20
 
-DATABASE_TIMEOUT = 600000
-DATABASE_RETRIES = 50
-RETRY_INTERVAL = 0.2
+DATABASE_TIMEOUT = 10
+DATABASE_RETRIES = 100
+RETRY_INTERVAL = 0.1
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
