@@ -379,7 +379,10 @@ def template_preview(template_id):
         else:
             url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
 
-    redirect (url)
+    redirect ("{}?_={}".format(
+        url,
+        template.modified_date.microsecond
+        ))
 
 def template_preview_delete(tpl):
 
