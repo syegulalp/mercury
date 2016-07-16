@@ -26,10 +26,10 @@ html, body {
 % include('include/header_min.tpl')
 <div id="preview_header">
 <a class="close_preview" href="#"><span id="close_preview_sp" class="label label-info">Click here or press X to delete preview file</span></a>
-<a class="pull-right" target="_blank" href="{{page_url}}"><span class="label label-info">Launch preview in its own window</span></a>
+<a class="pull-right" target="_blank" href="{{page_url}}?_={{page.modified_date.microsecond}}"><span class="label label-info">Launch preview in its own window</span></a>
 </div>
 <div id="preview_body">
-<iframe src="{{page_url}}" id="preview_frame" scrolling="auto">
+<iframe src="{{page_url}}?_={{page.modified_date.microsecond}}" id="preview_frame" scrolling="auto">
  <p>Your browser does not support iframes.</p>
 </iframe>
 </div>
