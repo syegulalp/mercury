@@ -104,16 +104,12 @@ def page_edit_save(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    # from core.mgmt import delete_page_preview
-    # delete_page_preview(page)
     page.delete_preview()
 
     tags = cms.save_page(page, user, page.blog)
 
     from core.cms import save_action_list
 
-    # from core.ui_kv import kv_ui
-    # kv_ui_data = kv_ui(page.kvs(no_traverse=True))
     from core.ui import kv
     kv_ui_data = kv.ui(page.kv_list())
 
