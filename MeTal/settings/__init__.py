@@ -126,8 +126,7 @@ if DB_TYPE_NAME == 'sqlite':
         threadlocals=True,
         timeout=DATABASE_TIMEOUT)
     from core.models import sqlite as DB
-
-if DB_TYPE_NAME == 'mysql':
+elif DB_TYPE_NAME == 'mysql':
     from core.libs.playhouse.sqlite_ext import MySQLDatabase
     DB_TYPE = MySQLDatabase(DB_ID, user=DB_USER, passwd=DB_PASSWORD)
     from core.models import mysql as DB
