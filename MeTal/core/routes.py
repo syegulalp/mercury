@@ -975,26 +975,56 @@ def delete_theme_from_system(theme_id):
     return system.system_delete_theme(theme_id)
     # you can only do this from the system menu
 
-# Unfinished reboot handler
+from core.models.transaction import transaction
 
-# @_route(BASE_PATH + '/reboot', method=('GET', 'POST'))
-# def rbt():
-    # user = auth.is_logged_in(request)
-    # permission = auth.is_sys_admin(user)
-    # setattr(app, 'time_to_die', True)
+@_route(BASE_PATH + '/blog/<blog_id:int>/q')
+@_route(BASE_PATH + '/blog/<blog_id:int>/q/<pass_id:int>/<item_id:int>')
+@transaction
+def republish_blog(blog_id, pass_id=1, item_id=0):
+    blog = Blog.load(blog_id)
 
-@_route(BASE_PATH + '/rebootx', method="POST")
-def _reboot():
-    user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
+    data = []
 
-    if user.logout_nonce != request.forms.getunicode('token'):
-        from core.error import PermissionsException
-        raise PermissionsException('Nonce not provided for reboot action')
+    from core import cms
+    from core.libs.bottle import HTTPResponse
+    r = HTTPResponse()
 
-    from core.libs.bottle import template
-    import settings as _s
-    t = template('reboot.tpl',
-        settings=_s,
-        redirect_to=request.forms.getunicode('redirect_to'))
-    return t
+    data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+        blog.for_log,
+        pass_id,
+        item_id))
+
+    if pass_id == 1:
+        cms.queue_ssi_actions(blog)
+        item_id = 0
+    elif pass_id == 2:
+        cms.queue_index_actions(blog, include_manual=True)
+        item_id = 0
+    elif pass_id == 3:
+        pages = blog.published_pages.offset(item_id)[:20]
+        # select()[item_id:item_id + 20]
+        data.append("Pages: {}".format(len(pages)))
+        if len(pages) > 0:
+            cms.queue_page_actions(pages, no_neighbors=True)
+            item_id += 20
+        else:
+            item_id = 0
+
+    if item_id == 0:
+        pass_id += 1
+
+    r.body = ''.join(data)
+
+    if pass_id < 4:
+        r.add_header('Refresh', "0;{}/blog/{}/q/{}/{}".format(
+        BASE_PATH,
+        blog_id,
+        pass_id,
+        item_id))
+    else:
+        r.body = "Queue insertion finished."
+        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
+        BASE_PATH,
+        blog_id))
+
+    return r
