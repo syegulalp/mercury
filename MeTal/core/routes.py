@@ -977,6 +977,54 @@ def delete_theme_from_system(theme_id):
 
 from core.models.transaction import transaction
 
+# Let's make this generic to all template types if we can
+# this does not actually confine itself to a single page template type yet
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/qpt/<template_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/qpt/<template_id:int>/<item_id:int>')
+@transaction
+def republish_page_template(blog_id, template_id, item_id=0):
+    from core.models import Template
+    blog = Blog.load(blog_id)
+
+    template = Template.load(template_id)
+
+    from core import cms
+    from core.libs.bottle import HTTPResponse
+    r = HTTPResponse()
+
+    total = blog.published_pages.count()
+    pages = blog.published_pages.offset(item_id)[:20]
+
+    if len(pages) > 0:
+
+        r.body = "Adding {}".format(item_id)
+
+        fileinfos = []
+
+        fileinfos.append(cms.build_pages_fileinfos(pages, template.mappings))
+
+        for f in fileinfos:
+            for ff in f:
+                cms.push_to_queue(job_type=cms.job_type.page,
+                        blog=blog,
+                        site=blog.site,
+                        data_integer=ff.id)
+        item_id += 50
+
+        r.add_header('Refresh', "0;{}/blog/{}/qpt/{}/{}".format(
+            BASE_PATH,
+            blog_id,
+            template_id,
+            item_id))
+    else:
+        r.body = "Queue insertion finished."
+        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
+        BASE_PATH,
+        blog_id))
+
+    return r
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/q')
 @_route(BASE_PATH + '/blog/<blog_id:int>/q/<pass_id:int>/<item_id:int>')
 @transaction
