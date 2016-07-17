@@ -1025,6 +1025,52 @@ def republish_page_template(blog_id, template_id, item_id=0):
 
     return r
 
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/qat/<template_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/qat/<template_id:int>/<item_id:int>')
+@transaction
+def republish_archive_template(blog_id, template_id, item_id=0):
+    from core.models import Template
+    blog = Blog.load(blog_id)
+
+    template = Template.load(template_id)
+
+    from core import cms
+    from core.libs.bottle import HTTPResponse
+    r = HTTPResponse()
+
+    total = blog.published_pages.count()
+    pages = blog.published_pages.offset(item_id)[:20]
+
+    if len(pages) > 0:
+
+        r.body = "Adding {}".format(item_id)
+
+        fileinfos = []
+
+        fileinfos.append(cms.build_archives_fileinfos_by_mappings(template, pages))
+
+        for f in fileinfos:
+            for ff in f:
+                cms.push_to_queue(job_type=cms.job_type.archive,
+                        blog=blog,
+                        site=blog.site,
+                        data_integer=ff.id)
+        item_id += 50
+
+        r.add_header('Refresh', "0;{}/blog/{}/qat/{}/{}".format(
+            BASE_PATH,
+            blog_id,
+            template_id,
+            item_id))
+    else:
+        r.body = "Queue insertion finished."
+        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
+        BASE_PATH,
+        blog_id))
+
+    return r
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/q')
 @_route(BASE_PATH + '/blog/<blog_id:int>/q/<pass_id:int>/<item_id:int>')
 @transaction
