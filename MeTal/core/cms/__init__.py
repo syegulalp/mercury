@@ -1200,8 +1200,10 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
                     )
 
         if early_exit and len(mapping_list) > 0:
-            return mapping_list
-            # break
+            # return mapping_list
+            break
+
+    fileinfo_list = []
 
     for counter, n in enumerate(mapping_list):
         # TODO: we should bail if there is already a fileinfo for this page?
@@ -1226,6 +1228,9 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
 
         new_fileinfo.mapping_sort = archive_context
         new_fileinfo.save()
+        fileinfo_list.append(new_fileinfo)
+
+    return fileinfo_list
 
     try:
         return counter + 1
