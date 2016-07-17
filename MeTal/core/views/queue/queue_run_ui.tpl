@@ -9,6 +9,7 @@
 </div>
 % include('include/footer.tpl')
 <script async src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
+<script async src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/notify.js"></script>
 <script>
 function update(){
 

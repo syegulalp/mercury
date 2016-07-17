@@ -13,6 +13,7 @@
     </div>
     % if percentage_complete>=100:
     <p>Publishing job finished. You may now close this tab or window.
+    <script>notify('Publishing job finished.');</script>
     % else:
     <p>Working ...
     % end
