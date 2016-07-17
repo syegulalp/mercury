@@ -342,11 +342,12 @@ def template_preview(template_id):
                 )
 
         elif template.template_type == template_type.archive:
-            from core import cms
             fi = cms.build_archives_fileinfos_by_mappings(template, early_exit=True)[0]
+            archive_pages = cms.generate_archive_context_from_fileinfo(
+                fi.xref.archive_xref, template.blog.published_pages, fi)
             tags = template_tags(
                     blog=template.blog,
-                    archive=template.blog.published_pages,
+                    archive=archive_pages,
                     archive_context=fi,
                     fileinfo=fi,
                     )
