@@ -18,6 +18,7 @@ from core.libs.bottle import (template, request, response)
 from settings import (BASE_URL)
 
 from . import listing, status_badge, save_action, search_context
+from core.models import TemplateRevision
 
 submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
@@ -1012,6 +1013,9 @@ def blog_save_theme(blog_id):
         os.makedirs(dir_name_final)
         theme.json = dir_name_full
         theme.save()
+
+        Template.update(theme=theme).where(Template.theme == blog.theme).execute()
+        TemplateRevision.update(theme=theme).where(TemplateRevision.theme == blog.theme).execute()
 
         blog.theme = theme
         blog.theme_modified = False
