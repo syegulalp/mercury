@@ -1014,8 +1014,8 @@ def blog_save_theme(blog_id):
         theme.json = dir_name_full
         theme.save()
 
-        Template.update(theme=theme).where(Template.theme == blog.theme).execute()
-        TemplateRevision.update(theme=theme).where(TemplateRevision.theme == blog.theme).execute()
+        Template.update(theme=theme).where(Template.blog == blog).execute()
+        TemplateRevision.update(theme=theme).where(TemplateRevision.blog == blog).execute()
 
         blog.theme = theme
         blog.theme_modified = False
