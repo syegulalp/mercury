@@ -343,8 +343,7 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.archive:
             from core import cms
-            cms.build_archives_fileinfos_by_mappings(template, early_exit=True)
-            fi = template.fileinfos.order_by(FileInfo.id.desc()).get()
+            fi = cms.build_archives_fileinfos_by_mappings(template, early_exit=True)[0]
             tags = template_tags(
                     blog=template.blog,
                     archive=template.blog.published_pages,
