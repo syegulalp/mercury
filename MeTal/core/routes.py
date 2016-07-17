@@ -993,12 +993,12 @@ def republish_page_template(blog_id, template_id, item_id=0):
     from core.libs.bottle import HTTPResponse
     r = HTTPResponse()
 
-    total = blog.published_pages.count()
-    pages = blog.published_pages.offset(item_id)[:50]
+    total = blog.published_pages.naive().count()
+    pages = blog.published_pages.paginate(item_id, 50)
 
-    if len(pages) > 0:
+    if pages.count() > 0:
 
-        r.body = "Adding {}".format(item_id)
+        r.body = "Adding {} of {}".format(item_id * 50, total)
 
         fileinfos = []
 
@@ -1010,7 +1010,7 @@ def republish_page_template(blog_id, template_id, item_id=0):
                         blog=blog,
                         site=blog.site,
                         data_integer=ff.id)
-        item_id += 50
+        item_id += 1
 
         r.add_header('Refresh', "0;{}/blog/{}/qpt/{}/{}".format(
             BASE_PATH,
@@ -1039,12 +1039,12 @@ def republish_archive_template(blog_id, template_id, item_id=0):
     from core.libs.bottle import HTTPResponse
     r = HTTPResponse()
 
-    total = blog.published_pages.count()
-    pages = blog.published_pages.offset(item_id)[:50]
+    total = blog.published_pages.naive().count()
+    pages = blog.published_pages.paginate(item_id, 50)
 
-    if len(pages) > 0:
+    if pages.count() > 0:
 
-        r.body = "Adding {}".format(item_id)
+        r.body = "Adding {}".format(item_id * 50)
 
         fileinfos = []
 
@@ -1056,7 +1056,7 @@ def republish_archive_template(blog_id, template_id, item_id=0):
                         blog=blog,
                         site=blog.site,
                         data_integer=ff.id)
-        item_id += 50
+        item_id += 1
 
         r.add_header('Refresh', "0;{}/blog/{}/qat/{}/{}".format(
             BASE_PATH,
@@ -1103,16 +1103,17 @@ def republish_blog(blog_id, pass_id=1, item_id=0):
 
     elif pass_id == 3:
         total = blog.published_pages.count()
-        pages = blog.published_pages.offset(item_id)[:20]
+        pages = blog.published_pages.paginate(item_id, 20)
 
-        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {} of {}</h3><hr>".format(
             blog.for_log,
             pass_id,
-            total - item_id))
+            item_id * 20,
+            total))
 
-        if len(pages) > 0:
+        if pages.count() > 0:
             cms.queue_page_actions(pages, no_neighbors=True)
-            item_id += 20
+            item_id += 1
         else:
             item_id = 0
 
