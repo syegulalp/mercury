@@ -2928,7 +2928,7 @@ class TemplateTags(object):
             for n in (
                 (Tag, 'tag'),
                 ):
-                item_id = ka['archive_context'].__getattribute__(n[1])
+                item_id = getattr(ka['archive_context'], n[1], None)
                 if item_id is not None:
                     try:
                         tags_in_archive = n[0].get(n[0].id == item_id)
@@ -2957,7 +2957,7 @@ class TemplateTags(object):
 
             # These are taken from the fileinfo for the underlying object
             for n in ('year', 'month', 'category', 'author'):
-                setattr(self.archive, n, ka['archive_context'].__getattribute__(n))
+                setattr(self.archive, n, getattr(ka['archive_context'], n, None))
 
         if 'fileinfo' in ka:
             self.fileinfo = ka['fileinfo']
