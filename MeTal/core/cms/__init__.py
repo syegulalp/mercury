@@ -1107,7 +1107,7 @@ def replace_mapping_tags(string):
 
     return string
 
-def build_pages_fileinfos(pages):
+def build_pages_fileinfos(pages, template_mappings=None):
     '''
     Creates fileinfo entries for the template mappings associated with
     an iterable list of Page objects.
@@ -1115,16 +1115,21 @@ def build_pages_fileinfos(pages):
         List of page objects to build fileinfos for.
     '''
 
+    fileinfos = []
+
     for n, page in enumerate(pages):
 
-        template_mappings = page.template_mappings
+        if template_mappings is None:
+            mappings = page.template_mappings
+        else:
+            mappings = template_mappings
 
-        if template_mappings.count() == 0:
+        if mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for this page.')
 
         tags = template_tags(page=page)
 
-        for t in template_mappings:
+        for t in mappings:
 
             path_string = replace_mapping_tags(t.path_string)
             path_string = generate_date_mapping(page.publication_date_tz.date(), tags, path_string)
@@ -1140,22 +1145,25 @@ def build_pages_fileinfos(pages):
             # TODO: eventually, this will be None, not ''
 
             master_path_string = path_string
-            add_page_fileinfo(page, t, master_path_string,
-                page.blog.url + "/" + master_path_string,
-                page.blog.path + '/' + master_path_string,
-                str(page.publication_date_tz))
+
+            fileinfos.append(
+                add_page_fileinfo(page, t, master_path_string,
+                    page.blog.url + "/" + master_path_string,
+                    page.blog.path + '/' + master_path_string,
+                    str(page.publication_date_tz))
+                )
 
 
-    try:
-        return n + 1
-    except Exception:
-        return 0
+    return fileinfos
 
-def build_archives_fileinfos_by_mappings(template, early_exit=False):
+def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False):
     counter = 0
     mapping_list = {}
 
-    for page in template.blog.published_pages:
+    if pages is None:
+        pages = template.blog.published_pages
+
+    for page in pages:
         tags = template_tags(page=page)
         if page.archive_mappings.count() == 0:
             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
@@ -1206,7 +1214,7 @@ def build_archives_fileinfos_by_mappings(template, early_exit=False):
             archive_context.append(
                 archive_functions[r]["format"](
                     archive_functions[r]["mapping"](mapping_list[n][1])
-                    )
+                   )
                 )
 
         for t, r in zip(archive_context, m.archive_xref):

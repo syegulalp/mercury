@@ -1615,7 +1615,7 @@ class Page(BaseModel, DateMod):
             except IndexError:
                 from core import cms
                 m = cms.build_archives_fileinfos((self,))
-                n = cms.build_pages_fileinfos((self,))
+                n = len(cms.build_pages_fileinfos((self,)))
                 if n + m == 0:
                     raise Exception('No fileinfos could be built for page {}'.self.for_log)
             else:
