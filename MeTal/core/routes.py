@@ -994,7 +994,7 @@ def republish_page_template(blog_id, template_id, item_id=0):
     r = HTTPResponse()
 
     total = blog.published_pages.count()
-    pages = blog.published_pages.offset(item_id)[:20]
+    pages = blog.published_pages.offset(item_id)[:50]
 
     if len(pages) > 0:
 
@@ -1040,7 +1040,7 @@ def republish_archive_template(blog_id, template_id, item_id=0):
     r = HTTPResponse()
 
     total = blog.published_pages.count()
-    pages = blog.published_pages.offset(item_id)[:20]
+    pages = blog.published_pages.offset(item_id)[:50]
 
     if len(pages) > 0:
 
