@@ -45,11 +45,18 @@ def quote_escape(string):
     return string
 
 def preview_file(identifier, extension):
-    file_identifier = "preview-{}".format(identifier)
     import zlib
-    return ('mtl-preview-' +
-        str(zlib.crc32(file_identifier.encode('utf-8'), 0xFFFF)) +
-        "." + extension)
+    filename = "{}.preview-{}.{}".format(
+        identifier,
+        str(zlib.crc32(identifier.encode('utf-8'), 0xFFFF)),
+        extension
+        )
+    return filename
+    # file_identifier = "preview-{}".format(identifier)
+    # import zlib
+    # return ('mtl-preview-' +
+        # str(zlib.crc32(file_identifier.encode('utf-8'), 0xFFFF)) +
+        # "." + extension)
 
 def verify_path(path):
     '''

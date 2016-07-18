@@ -1475,7 +1475,7 @@ class Page(BaseModel, DateMod):
     @property
     def preview_file(self):
         from core import utils
-        return utils.preview_file(self.id, self.blog.base_extension)
+        return utils.preview_file(self.basename, self.blog.base_extension)
 
     @property
     def filename(self):
@@ -2206,7 +2206,7 @@ class Template(BaseModel, DateMod):
         # from settings import _sep
         # default_file = self.default_mapping.fileinfos[0].file_path
         # return utils.preview_file(default_file, self.blog.base_extension)
-        return utils.preview_file(self.id, self.blog.base_extension)
+        return utils.preview_file(str(self.id), self.blog.base_extension)
 
     def preview_path(self, fileinfo=None):
         # from core.template import preview_path
