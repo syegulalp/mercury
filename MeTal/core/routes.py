@@ -980,10 +980,10 @@ from core.models.transaction import transaction
 # Let's make this generic to all template types if we can
 # this does not actually confine itself to a single page template type yet
 
-@_route(BASE_PATH + '/blog/<blog_id:int>/qpt/<template_id:int>')
-@_route(BASE_PATH + '/blog/<blog_id:int>/qpt/<template_id:int>/<item_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-page-template/<template_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-page-template/<template_id:int>/<pass_id:int>')
 @transaction
-def republish_page_template(blog_id, template_id, item_id=0):
+def republish_page_template(blog_id, template_id, pass_id=0):
     from core.models import Template
     blog = Blog.load(blog_id)
 
@@ -994,11 +994,11 @@ def republish_page_template(blog_id, template_id, item_id=0):
     r = HTTPResponse()
 
     total = blog.published_pages.naive().count()
-    pages = blog.published_pages.paginate(item_id, 50)
+    pages = blog.published_pages.paginate(pass_id, 50)
 
     if pages.count() > 0:
 
-        r.body = "Adding {} of {}".format(item_id * 50, total)
+        r.body = "Adding {} of {}".format(pass_id * 50, total)
 
         fileinfos = []
 
@@ -1010,13 +1010,13 @@ def republish_page_template(blog_id, template_id, item_id=0):
                         blog=blog,
                         site=blog.site,
                         data_integer=ff.id)
-        item_id += 1
+        pass_id += 1
 
-        r.add_header('Refresh', "0;{}/blog/{}/qpt/{}/{}".format(
+        r.add_header('Refresh', "0;{}/blog/{}/queue-page-template/{}/{}".format(
             BASE_PATH,
             blog_id,
             template_id,
-            item_id))
+            pass_id))
     else:
         r.body = "Queue insertion finished."
         r.add_header('Refresh', "0;{}/blog/{}/publish".format(
@@ -1026,10 +1026,10 @@ def republish_page_template(blog_id, template_id, item_id=0):
     return r
 
 
-@_route(BASE_PATH + '/blog/<blog_id:int>/qat/<template_id:int>')
-@_route(BASE_PATH + '/blog/<blog_id:int>/qat/<template_id:int>/<item_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-archive-template/<template_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-archive-template/<template_id:int>/<pass_id:int>')
 @transaction
-def republish_archive_template(blog_id, template_id, item_id=0):
+def republish_archive_template(blog_id, template_id, pass_id=0):
     from core.models import Template
     blog = Blog.load(blog_id)
 
@@ -1040,11 +1040,11 @@ def republish_archive_template(blog_id, template_id, item_id=0):
     r = HTTPResponse()
 
     total = blog.published_pages.naive().count()
-    pages = blog.published_pages.paginate(item_id, 50)
+    pages = blog.published_pages.paginate(pass_id, 50)
 
     if pages.count() > 0:
 
-        r.body = "Adding {}".format(item_id * 50)
+        r.body = "Adding {}".format(pass_id * 50)
 
         fileinfos = []
 
@@ -1056,13 +1056,13 @@ def republish_archive_template(blog_id, template_id, item_id=0):
                         blog=blog,
                         site=blog.site,
                         data_integer=ff.id)
-        item_id += 1
+        pass_id += 1
 
-        r.add_header('Refresh', "0;{}/blog/{}/qat/{}/{}".format(
+        r.add_header('Refresh', "0;{}/blog/{}/queue-archive-template/{}/{}".format(
             BASE_PATH,
             blog_id,
             template_id,
-            item_id))
+            pass_id))
     else:
         r.body = "Queue insertion finished."
         r.add_header('Refresh', "0;{}/blog/{}/publish".format(
@@ -1071,8 +1071,8 @@ def republish_archive_template(blog_id, template_id, item_id=0):
 
     return r
 
-@_route(BASE_PATH + '/blog/<blog_id:int>/q')
-@_route(BASE_PATH + '/blog/<blog_id:int>/q/<pass_id:int>/<item_id:int>')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-all')
+@_route(BASE_PATH + '/blog/<blog_id:int>/queue-all/<pass_id:int>/<item_id:int>')
 @transaction
 def republish_blog(blog_id, pass_id=1, item_id=0):
     blog = Blog.load(blog_id)
@@ -1123,7 +1123,7 @@ def republish_blog(blog_id, pass_id=1, item_id=0):
     r.body = ''.join(data)
 
     if pass_id < 4:
-        r.add_header('Refresh', "0;{}/blog/{}/q/{}/{}".format(
+        r.add_header('Refresh', "0;{}/blog/{}/queue-all/{}/{}".format(
         BASE_PATH,
         blog_id,
         pass_id,
