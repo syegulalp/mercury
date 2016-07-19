@@ -172,12 +172,10 @@ from the theme.
 
 
     tags.status = status
-    tplt = template('listing/report',
+    return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
         search_context=(search_context['blog'], blog),
         **tags.__dict__)
-
-    return tplt
 
 @transaction
 def template_delete(template_id):
@@ -227,12 +225,10 @@ def template_delete(template_id):
 
 
     tags.status = status
-    tplt = template('listing/report',
+    return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
         search_context=(search_context['blog'], blog),
         **tags.__dict__)
-
-    return tplt
 
 
 @transaction
@@ -294,7 +290,7 @@ def template_edit_save(template_id):
 
     from core.models import (template_type as template_types)
 
-    tpl = template('edit/template_ajax',
+    return template('edit/template_ajax',
         sidebar=sidebar.render_sidebar(
             panel_set='edit_template',
             publishing_mode=publishing_mode,
@@ -302,8 +298,6 @@ def template_edit_save(template_id):
             **tags.__dict__
             ),
         **tags.__dict__)
-
-    return tpl
 
 
 def template_preview(template_id):
@@ -409,21 +403,18 @@ def template_preview_delete(tpl):
 
 def template_edit_output(tags):
 
-    from core.models import template_type as template_types
-
-    tpl = template('edit/template',
+    return template('edit/template',
         icons=icons,
         search_context=(search_context['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),
         sidebar=sidebar.render_sidebar(
             panel_set='edit_template',
             publishing_mode=publishing_mode,
-            types=template_types,
+            types=template_type,
             **tags.__dict__
             ),
         **tags.__dict__)
 
-    return tpl
 
 def template_save(request, user, cms_template, blog=None):
 
@@ -439,7 +430,7 @@ def template_save(request, user, cms_template, blog=None):
     from core.error import TemplateSaveException, PageNotChanged
     import datetime
 
-    status = ''
+    status = []
 
     _forms = request.forms
 
@@ -462,7 +453,7 @@ def template_save(request, user, cms_template, blog=None):
     try:
         cms_template.save(user)
     except PageNotChanged as e:
-        status += "(Template unchanged.)"
+        status.append("(Template unchanged.)")
     except BaseException as e:
         raise e
 
@@ -494,9 +485,9 @@ def template_save(request, user, cms_template, blog=None):
 
     for n in mappings:
         n.save()
-        status += " Mapping #{} ({}) rebuilt.".format(
+        status.append("Mapping #{} ({}) rebuilt.".format(
             n.id,
-            n.path_string)
+            n.path_string))
     cms.build_mapping_xrefs(mappings)
 
     cms.invalidate_cache()
@@ -521,7 +512,7 @@ def template_save(request, user, cms_template, blog=None):
                 site=cms_template.blog.site,
                 data_integer=f.id)
 
-        status += " {} files regenerated from template and sent to publishing queue.".format(
+        status += "{} files regenerated from template and sent to publishing queue.".format(
             cms_template.fileinfos_published.count())
 
     if blog is not None:
@@ -533,5 +524,5 @@ def template_save(request, user, cms_template, blog=None):
         cms_template.for_log,
         user.for_log))
 
-    return status
+    return ' '.join(status)
 
