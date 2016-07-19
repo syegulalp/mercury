@@ -14,9 +14,12 @@ def transaction(func):
     def wrapper(*a, **ka):
         n = 0
         while n < DATABASE_RETRIES:
-            db.connect()
+            # conn = db.get_conn()
+            # db.connect()
             try:
-                with db.atomic():
+                # with db.atomic():
+                with db.execution_context():
+                    # x=db.get_conn()
                     fn = func(*a, **ka)
             except OperationalError as e:
                 if str(e).startswith(DB.db_is_locked()):
