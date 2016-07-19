@@ -9,7 +9,8 @@ from core.search import (
 
 from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
-    PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode)
+    PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
+    TemplateRevision)
 
 from core.models.transaction import transaction
 
@@ -18,9 +19,8 @@ from core.libs.bottle import (template, request, response)
 from settings import (BASE_URL)
 
 from . import listing, status_badge, save_action, search_context
-from core.models import TemplateRevision
 
-submission_fields = ('title', 'text', 'tag_text', 'excerpt')
+new_page_submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
 @transaction
 def blog(blog_id, errormsg=None):
@@ -102,7 +102,7 @@ def blog_create(site_id):
 
     themes = Theme.select()
 
-    tpl = template('ui/ui_blog_settings',
+    return template('ui/ui_blog_settings',
         section_title="Create new blog",
         search_context=(search_context['sites'], None),
         menu=generate_menu('site_create_blog', site),
@@ -112,7 +112,6 @@ def blog_create(site_id):
         ** tags.__dict__
         )
 
-    return tpl
 
 @transaction
 def blog_create_save(site_id):
@@ -161,7 +160,8 @@ def blog_create_save(site_id):
         tags.status = status
         tags.blog = new_blog
         themes = Theme.select()
-        tpl = template('ui/ui_blog_settings',
+
+        return template('ui/ui_blog_settings',
             section_title="Create new blog",
             search_context=(search_context['sites'], None),
             menu=generate_menu('site_create_blog', site),
@@ -170,7 +170,7 @@ def blog_create_save(site_id):
             timezones=pytz.all_timezones,
             ** tags.__dict__
             )
-        return tpl
+
 
     else:
         tags = template_tags(user=user, site=site,
@@ -184,13 +184,12 @@ Blog <b>{}</b> was successfully created. You can <a href="{}/blog/{}/newpage">st
                 BASE_URL, new_blog.id)
             )
         tags.status = status
-        tpl = template('listing/report',
+        return template('listing/report',
             search_context=(search_context['sites'], None),
             menu=generate_menu('site_create_blog', site),
             ** tags.__dict__
             )
 
-        return tpl
 
 # TODO: make this universal to create a user for both a blog and a site
 # use ka
@@ -210,14 +209,12 @@ def blog_create_user(blog_id):
     edit_user.name = ""
     edit_user.email = ""
 
-    tpl = template('edit/user_settings',
+    return template('edit/user_settings',
         section_title="Create new blog user",
         search_context=(search_context['sites'], None),
         edit_user=edit_user,
         **tags.__dict__
         )
-
-    return tpl
 
 
 @transaction
@@ -233,7 +230,7 @@ def blog_list_users(blog_id):
 
     paginator, rowset = utils.generate_paginator(user_list, request)
 
-    tpl = template('listing/listing_ui',
+    return template('listing/listing_ui',
         section_title="List blog users",
         search_context=(search_context['sites'], None),
         menu=generate_menu('blog_list_users', blog),
@@ -242,9 +239,6 @@ def blog_list_users(blog_id):
         rowset=rowset,
         user_list=user_list,
         **tags.__dict__)
-
-    return tpl
-
 
 
 @transaction
@@ -268,7 +262,7 @@ def blog_new_page(blog_id):
 
     blog_new_page = tags.page
 
-    for n in submission_fields:
+    for n in new_page_submission_fields:
         blog_new_page.__setattr__(n, "")
         if n in request.query:
             blog_new_page.__setattr__(n, request.query.getunicode(n))
@@ -294,7 +288,7 @@ def blog_new_page(blog_id):
     except Template.DoesNotExist:
         from core.static import html_editor_settings
 
-    tpl = template('edit/page',
+    return template('edit/page',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
         search_context=(search_context['blog'], blog),
@@ -310,7 +304,6 @@ def blog_new_page(blog_id):
             **tags.__dict__),
         **tags.__dict__)
 
-    return tpl
 
 @transaction
 def blog_new_page_save(blog_id):
@@ -437,13 +430,12 @@ def blog_media_edit_save(blog_id, media_id):
 
 def blog_media_edit_output(tags):
 
-    tpl = template('edit/media',
+    return template('edit/media',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
         search_context=(search_context['blog_media'], tags.blog),
         **tags.__dict__)
 
-    return tpl
 
 # TODO: be able to process multiple media at once via a list
 # using the list framework
@@ -533,14 +525,13 @@ any such links will break. Proceed with caution.
             no=no
             )
 
-    tpl = template('listing/report',
+    return template('listing/report',
         menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
         search_context=(search_context['blog_media'], blog),
         **tags.__dict__)
 
-    return tpl
 
 @transaction
 def blog_categories(blog_id):
@@ -689,15 +680,13 @@ def blog_templates(blog_id):
         'data':system_templates},
         ]
 
-    tpl = template('ui/ui_blog_templates',
+    return template('ui/ui_blog_templates',
         icons=icons,
         section_title="Templates",
         publishing_mode=publishing_mode,
         search_context=(search_context['blog_templates'], blog),
         menu=generate_menu('blog_manage_templates', blog),
         ** tags.__dict__)
-
-    return tpl
 
 @transaction
 def blog_select_themes(blog_id):
@@ -746,14 +735,12 @@ def blog_republish(blog_id):
     permission = auth.is_blog_publisher(user, blog)
     report = cms.republish_blog(blog)
 
-    tpl = template('listing/report',
+    return template('listing/report',
         report=report,
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_republish', blog),
         **template_tags(blog_id=blog.id,
             user=user).__dict__)
-
-    return tpl
 
 @transaction
 def blog_purge(blog_id):
@@ -770,14 +757,13 @@ def blog_purge(blog_id):
 
     report = cms.purge_blog(blog)
 
-    tpl = template('listing/report',
+    return template('listing/report',
         report=report,
         search_context=(search_context['blog'], blog),
         menu=generate_menu('blog_purge', blog),
         **template_tags(blog_id=blog.id,
             user=user).__dict__)
 
-    return tpl
 
 @transaction
 def blog_queue(blog_id):
@@ -793,15 +779,13 @@ def blog_queue(blog_id):
 
     paginator, queue_list = utils.generate_paginator(tags.queue, request)
 
-    tpl = template('queue/queue_ui',
+    return template('queue/queue_ui',
         queue_list=queue_list,
         paginator=paginator,
         job_type=job_type.description,
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
-
-    return tpl
 
 
 @transaction
@@ -882,7 +866,8 @@ def blog_settings_output(tags):
     from core.libs import pytz
     timezones = pytz.all_timezones
     path = '/blog/{}/settings/'.format(tags.blog.id)
-    tpl = template('ui/ui_blog_settings',
+
+    return template('ui/ui_blog_settings',
         search_context=(search_context['blog'], tags.blog),
         timezones=timezones,
         menu=generate_menu('blog_settings', tags.blog),
@@ -892,10 +877,6 @@ def blog_settings_output(tags):
             ),
         **tags.__dict__)
 
-    return tpl
-
-
-# @transaction
 def blog_publish(blog_id):
 
     user = auth.is_logged_in(request)
@@ -915,16 +896,13 @@ def blog_publish(blog_id):
     tags = template_tags(blog_id=blog.id,
             user=user)
 
-    tpl = template('queue/queue_run_ui',
+    return template('queue/queue_run_ui',
         original_queue_length=queue_length,
         start_message=start_message,
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
-    return tpl
-
-# @transaction
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -940,13 +918,10 @@ def blog_publish_progress(blog_id, original_queue_length):
 
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
 
-    tpl = template('queue/queue_run_include',
+    return template('queue/queue_run_include',
             queue_count=queue_count,
             percentage_complete=percentage_complete)
 
-    return tpl
-
-# @transaction
 def blog_publish_process(blog_id):
 
     user = auth.is_logged_in(request)
@@ -966,10 +941,8 @@ def blog_publish_process(blog_id):
         else:
             queue_count = 0
 
-    tpl = template('queue/queue_counter_include',
+    return template('queue/queue_counter_include',
             queue_count=queue_count)
-
-    return tpl
 
 
 @transaction
@@ -1046,15 +1019,13 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 
     import datetime
 
-    tpl = template(save_tpl,
+    return template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
         search_context=(search_context['blog'], blog),
         theme_title=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
         theme_description=blog.theme.description,
         ** tags.__dict__)
 
-    # TODO: also get theme description
-    return tpl
 
 @transaction
 def blog_apply_theme(blog_id, theme_id):
@@ -1108,12 +1079,10 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 
     tags.status = status if reason is None else reason
 
-    tpl = template('listing/report',
+    return template('listing/report',
         menu=generate_menu('blog_apply_theme', [blog, theme]),
         search_context=(search_context['blog'], blog),
         **tags.__dict__)
-
-    return tpl
 
 
 @transaction
@@ -1156,21 +1125,22 @@ def blog_import (blog_id):
                 n_id = n['id']
                 match = Page.kv_get('legacy_id', n_id)
                 if match.count() > 0:
+
                     q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
-
-                    # Update data
-
                     existing_page = Page.load(match[0].value)
+                    if string_to_date(n['modified_date']) > existing_page.modified_date:
 
-                    # if n['modified_date']
+                        existing_page.title = n['title']
+                        existing_page.text = n['text']
+                        existing_page.basename = n['basename']
+                        existing_page.excerpt = n['excerpt']
+                        existing_page.modified_date = string_to_date(n['modified_date']),
+                        existing_page.publication_date = string_to_date(n['publication_date']),
 
-                    # Check to see if last date is newer
-                    # If so, update:
-                    # the page's data
-                    # the categories for the page (remove, renew)
-                    # the tagset for the page (remove, renew)
-                    # each KV for the page (remove, renew)
-                    # the image list for the page (remove, renew)
+                        # the categories for the page (remove, renew)
+                        # the tagset for the page (remove, renew)
+                        # each KV for the page (remove, renew)
+                        # the image list for the page (remove, renew)
 
                     # We might just be able to remove those properties
                     # and then re-add them by way of the rest of this function
