@@ -772,6 +772,7 @@ class Site(SiteBase, ConnectionBase):
         '''
         pass
 
+
 class Blog(SiteBase):
     site = ForeignKeyField(Site, null=False, index=True)
     theme = ForeignKeyField(Theme, null=True, index=True)
@@ -1329,6 +1330,11 @@ class Category(BaseModel):
         pages = Page.select().where(Page.id << categories)
         return pages
 
+    @property
+    def published_pages(self):
+        published_pages = self.pages.where(Page.status == page_status.published)
+        return published_pages
+
     # TODO:
     # Some invocations of this method pass a blog parameter to ensure
     # that we are retrieving a valid category for a valid blog.
@@ -1415,6 +1421,20 @@ class Page(BaseModel, DateMod):
     author = user
 
     security = 'is_page_editor'
+
+    def clear_categories(self):
+        return PageCategory.delete().where(PageCategory.page == self).execute()
+
+    def clear_tags(self):
+        return TagAssociation.delete().where(
+                TagAssociation.page == self).execute()
+
+    def clear_media(self):
+        return MediaAssociation.delete().where(
+            MediaAssociation.page == self).execute()
+
+    def clear_kvs(self):
+        return self.kv_del()
 
     def delete_preview(self):
 
@@ -1517,7 +1537,7 @@ class Page(BaseModel, DateMod):
         return self.tags
 
     @property
-    def tags_text(self):
+    def tags_list(self):
         tags = self.tags
         return [x.tag for x in tags]
 
@@ -1796,25 +1816,27 @@ class Page(BaseModel, DateMod):
         return previous_page
 
     @property
-    def next_in_category(self, category=None):
+    def next_in_category(self, category=None, _all=False):
         '''
         Returns the next entry in the blog under the category in question.
         The default category choice is the blog's default category.
+        If all is true, then iterate through all categories for the page
+        and return the next in each category.
         '''
         # determine if page is in category
         # if not, just return first next
         # if so:
         # get all next pages
         # join by category (look up the exclusive join function)
-
-
+        pass
 
     @property
-    def previous_in_category(self, category=None):
+    def previous_in_category(self, category=None, _all=False):
         '''
         This returns the previous entry in the blog under the category in question.
         The default category choice is the blog's default category.
         '''
+        pass
 
     def save(self, user, no_revision=False, backup_only=False, change_note=None, force_update=False):
 
@@ -1847,7 +1869,6 @@ class Page(BaseModel, DateMod):
         return (page_save_result, revision_save_result)
 
     revision_fields = {'id':'page'}
-
 
 class RevisionMixin(object):
     @classmethod
