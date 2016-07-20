@@ -18,7 +18,7 @@ def transaction(func):
             # db.connect()
             try:
                 # with db.atomic():
-                with db.execution_context():
+                with db.execution_context() as dbx:
                     # x=db.get_conn()
                     fn = func(*a, **ka)
             except OperationalError as e:
@@ -30,16 +30,19 @@ def transaction(func):
                         sleep(RETRY_INTERVAL)
                         continue
                 else:
-                    db.close()
+                    # $dbx.close()
                     raise e
             except LoggedException as e:
+                # dbx.close()
                 raise exc_info()[0](e.msg)
             except DBError as e:
+                # dbx.close()
                 raise LoggedException(error_text.format(e, request.url))
             except BaseException as e:
+                # dbx.close()
                 raise e
             else:
-                db.commit()
+                # dbx.close()
                 break
         return fn
 
