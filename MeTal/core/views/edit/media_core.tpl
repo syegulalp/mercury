@@ -27,7 +27,7 @@
             <input type="text" class="form-control" aria-describedby="media_friendly_name_help"
             value="{{media.friendly_name}}"
             id="media_friendly_name" name="media_friendly_name">
-            <span id="media_friendly_name_help" class="help-block">Used to describe the image ("Last week's lunch")</span>
+            <span id="media_friendly_name_help" class="help-block">Used to describe the image ("Last Friday's lunch")</span>
         </div>
     </div>
     <!--
