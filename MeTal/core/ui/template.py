@@ -315,18 +315,21 @@ def template_preview(template_id):
         identifier = ''
 
         if template.template_type == template_type.index:
+            # TODO: only rebuild mappings if the dirty bit is set
             fi = template.default_mapping.fileinfos[0]
             tags = template_tags(blog=template.blog,
                 fileinfo=fi
                 )
 
         elif template.template_type == template_type.page:
-            fi = template.fileinfos.order_by(FileInfo.id.desc()).get()
+            # TODO: only rebuild mappings if the dirty bit is set
+            fi = template.fileinfos.select().join(Page).where(FileInfo.page == Page.id).order_by(Page.publication_date.desc()).get()
             tags = template_tags(
                 page=fi.page,
                 )
 
         elif template.template_type == template_type.include:
+            # TODO: only rebuild mappings if the dirty bit is set
             if template.publishing_mode != publishing_mode.ssi:
                 raise Exception('You can only preview server-side includes.')
             page = template.blog.published_pages.order_by(Page.publication_date.desc()).get()
@@ -336,7 +339,10 @@ def template_preview(template_id):
                 )
 
         elif template.template_type == template_type.archive:
-            fi = cms.build_archives_fileinfos_by_mappings(template, early_exit=True)[0]
+            # TODO: only rebuild mappings if the dirty bit is set
+            fi = cms.build_archives_fileinfos_by_mappings(
+                template, pages=template.blog.pages_published.order_by(Page.publication_date.desc()),
+                early_exit=True)[0]
             archive_pages = cms.generate_archive_context_from_fileinfo(
                 fi.xref.archive_xref, template.blog.published_pages, fi)
             tags = template_tags(
@@ -512,8 +518,8 @@ def template_save(request, user, cms_template, blog=None):
                 site=cms_template.blog.site,
                 data_integer=f.id)
 
-        status += "{} files regenerated from template and sent to publishing queue.".format(
-            cms_template.fileinfos_published.count())
+        status.append("{} files regenerated from template and sent to publishing queue.".format(
+            cms_template.fileinfos_published.count()))
 
     if blog is not None:
         blog.theme_modified = True
