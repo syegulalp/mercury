@@ -1096,7 +1096,8 @@ mapping_tags = (
     (re.compile(r'\$i'), 'blog.index_file'),
     (re.compile(r'\$s'), 'blog.ssi_path'),
     (re.compile(r'\$f'), 'page.filename'),
-    (re.compile(r'\$[YMDCT]'), '{}'),
+    (re.compile(r'\$([Ymd])'), '\%\1'),
+    (re.compile(r'\$[CT]'), '{}'),
 
 )
 
@@ -1131,8 +1132,10 @@ def build_pages_fileinfos(pages, template_mappings=None):
 
         for t in mappings:
 
-            path_string = replace_mapping_tags(t.path_string)
-            path_string = generate_date_mapping(page.publication_date_tz.date(), tags, path_string)
+            # path_string = replace_mapping_tags(t.path_string)
+            path_string = generate_date_mapping(
+                page.publication_date_tz.date(), tags,
+                replace_mapping_tags(t.path_string))
 
             # for tag archives, we need to return a list from the date mapping
             # in the event that we have a tag present that's an iterable like the tag list
@@ -1142,14 +1145,12 @@ def build_pages_fileinfos(pages, template_mappings=None):
             if path_string == '' or path_string is None:
                 continue
 
-            # TODO: eventually, this will be None, not ''
-
-            master_path_string = path_string
+            # master_path_string = path_string
 
             fileinfos.append(
-                add_page_fileinfo(page, t, master_path_string,
-                    page.blog.url + "/" + master_path_string,
-                    page.blog.path + '/' + master_path_string,
+                add_page_fileinfo(page, t, path_string,
+                    page.blog.url + "/" + path_string,
+                    page.blog.path + '/' + path_string,
                     str(page.publication_date_tz))
                 )
 
