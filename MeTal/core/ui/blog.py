@@ -1084,8 +1084,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
         search_context=(search_context['blog'], blog),
         **tags.__dict__)
 
-
-@transaction
+# @transaction
 def blog_import (blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
@@ -1114,8 +1113,10 @@ def blog_import (blog_id):
                 json_data = json.load(f)
 
             from core.models import page_status, MediaAssociation, Category
+            from core.error import PageNotChanged
+            from core.libs.peewee import InterfaceError
             from core.cms import media_filetypes
-
+            from core.libs import pytz
             format_str = "<b>{}</b> / (<i>{}</i>)"
 
             # TODO: go in chunks of 50 or something?
@@ -1123,32 +1124,50 @@ def blog_import (blog_id):
             for n in json_data:
                 q = []
                 n_id = n['id']
+                q.append("Checking {}".format(n_id))
+                changed = False
                 match = Page.kv_get('legacy_id', n_id)
                 if match.count() > 0:
-
                     q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
-                    existing_page = Page.load(match[0].value)
-                    if string_to_date(n['modified_date']) > existing_page.modified_date:
+                    existing_entry = Page.load(match[0].objectid)
+                    update = existing_entry.kv_get('update').count()
+                    # raise Exception(update)
+                    q.append('{} / {}'.format(string_to_date(n['modified_date']).replace(tzinfo=None), existing_entry.modified_date
+                        ))
+                    if string_to_date(n['modified_date']).replace(tzinfo=None) <= existing_entry.modified_date and update == 0:
+                        q.append('Existing page {} not changed.'.format(existing_entry.id))
+                    else:
+                        changed = True
+                        q.append('Updating data for existing page {}.'.format(existing_entry.id))
+                        existing_entry.title = n['title']
+                        existing_entry.text = n['text']
+                        existing_entry.basename = n['basename']
+                        existing_entry.excerpt = n['excerpt']
 
-                        existing_page.title = n['title']
-                        existing_page.text = n['text']
-                        existing_page.basename = n['basename']
-                        existing_page.excerpt = n['excerpt']
-                        existing_page.modified_date = string_to_date(n['modified_date']),
-                        existing_page.publication_date = string_to_date(n['publication_date']),
+                        existing_entry.created_date = string_to_date(n['created_date']).replace(tzinfo=None)
+                        existing_entry.modified_date = string_to_date(n['modified_date']).replace(tzinfo=None)
+                        existing_entry.publication_date = string_to_date(n['publication_date']).replace(tzinfo=None)
 
-                        # the categories for the page (remove, renew)
-                        # the tagset for the page (remove, renew)
-                        # each KV for the page (remove, renew)
-                        # the image list for the page (remove, renew)
+                        try:
+                            existing_entry.save(user, False, False, 'New revision from import')
+                        except PageNotChanged:
+                            pass
+                        except InterfaceError:
+                            raise Exception("Error saving {}. Check the JSON to make sure it's valid.".format(n_id))
 
-                    # We might just be able to remove those properties
-                    # and then re-add them by way of the rest of this function
-                    # If the modified date is the same, we can just skip to the next one
+                        for media in existing_entry.media:
+                            media.kv_del()
+
+                        existing_entry.clear_categories()
+                        existing_entry.clear_kvs()
+                        existing_entry.clear_tags()
+                        existing_entry.clear_media()
+
+                        entry = existing_entry
 
                 else:
                     q.append("Creating: " + format_str.format(n['title'], n_id))
-
+                    changed = True
                     new_entry = Page(
                         title=n['title'],
                         text=n['text'],
@@ -1158,6 +1177,7 @@ def blog_import (blog_id):
                         blog=blog,
                         created_date=string_to_date(n['created_date']),
                         publication_date=string_to_date(n['publication_date']),
+                        modified_date=string_to_date(n['modified_date']),
                     )
 
                     new_entry.modified_date = new_entry.publication_date
@@ -1167,16 +1187,22 @@ def blog_import (blog_id):
 
                     new_entry.save(user)
 
+                    entry = new_entry
+
+                    # Everything from here on out is
+
+                if changed:
+
                     # Register a legacy ID for the page
 
-                    new_entry.kv_set("legacy_id", n["id"])
+                    entry.kv_set("legacy_id", n["id"])
 
                     # Category assignments
 
                     categories = n['categories']
                     if categories == []:
                         saved_page_category = PageCategory.create(
-                            page=new_entry,
+                            page=entry,
                             category=blog.default_category,
                             primary=True).save()
                     else:
@@ -1204,7 +1230,7 @@ def blog_import (blog_id):
                                     new_category.id, category['name']
                                     ))
                             saved_page_category = PageCategory.create(
-                                page=new_entry,
+                                page=entry,
                                 category=new_category,
                                 primary=primary
                                 ).save()
@@ -1217,7 +1243,7 @@ def blog_import (blog_id):
                     # Register tags
 
                     tags_added, tags_existing, _ = Tag.add_or_create(
-                        n['tags'], page=new_entry)
+                        n['tags'], page=entry)
 
                     q.append('Tags added: {}'.format(','.join(n.tag for n in tags_added)))
                     q.append('Tags existing: {}'.format(','.join(n.tag for n in tags_existing)))
@@ -1226,9 +1252,10 @@ def blog_import (blog_id):
 
                     kvs = n['kvs']
                     for key in kvs:
-                        value = kvs[key]
-                        new_entry.kv_set(key, value)
-                        q.append('KV: {}:{}'.format(key, value))
+                        if key != "":
+                            value = kvs[key]
+                            entry.kv_set(key, value)
+                            q.append('KV: {}:{}'.format(key, value))
 
                     # Register media
 
@@ -1241,18 +1268,21 @@ def blog_import (blog_id):
 
                         path = os.path.split(m['path'])
 
-                        new_media = Media(
-                            filename=path[1],
-                            path=m['path'],
-                            url=m['url'],
-                            type=media_filetypes.image,
-                            created_date=string_to_date(m['created_date']),
-                            modified_date=string_to_date(m['modified_date']),
-                            friendly_name=m['friendly_name'],
-                            user=user,
-                            blog=blog,
-                            site=blog.site
-                            )
+                        try:
+                            new_media = Media.get(Media.url == m['url'])
+                        except:
+                            new_media = Media(
+                                filename=path[1],
+                                path=m['path'],
+                                url=m['url'],
+                                type=media_filetypes.image,
+                                created_date=string_to_date(m['created_date']),
+                                modified_date=string_to_date(m['modified_date']),
+                                friendly_name=m['friendly_name'],
+                                user=user,
+                                blog=blog,
+                                site=blog.site
+                                )
 
                         # TODO: RBF
                         try:
@@ -1262,7 +1292,7 @@ def blog_import (blog_id):
 
                         media_association = MediaAssociation(
                             media=new_media,
-                            page=new_entry)
+                            page=entry)
 
                         media_association.save()
 
@@ -1284,8 +1314,8 @@ def blog_import (blog_id):
                             new_media.kv_set(key, value)
                             q.append('KV: {}:{}'.format(key, value))
 
-                    cms.build_pages_fileinfos((new_entry,))
-                    cms.build_archives_fileinfos((new_entry,))
+                    cms.build_pages_fileinfos((entry,))
+                    cms.build_archives_fileinfos((entry,))
 
                 tpl = ('<p>'.join(q)) + '<hr/>'
                 yield tpl
