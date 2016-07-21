@@ -21,11 +21,13 @@ import time
 class Cache():
     template_cache = {}
     blog_tag_cache = {}
+    path_cache = {}
 
     @classmethod
     def clear(self):
         self.template_cache = {}
         self.blog_tag_cache = {}
+        self.path_cache = {}
 
 save_action_list = Struct()
 
@@ -328,9 +330,17 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                 e))
 
 def eval_paths(path_string, dict_data):
-    path_string = replace_mapping_tags(path_string)
+    '''
     try:
-        paths = eval(path_string, dict_data)
+        path_obj = Cache.path_cache[path_string]
+    except KeyError:
+        path_string = replace_mapping_tags(path_string)
+        path_obj = compile(path_string, path_string, 'eval')
+        Cache.path_cache[path_string] = path_obj
+    '''
+    path_obj = replace_mapping_tags(path_string)
+    try:
+        paths = eval(path_obj, dict_data)
     except Exception as e:
         paths = None
         # raise Exception('Invalid path string: {} // Data: {} // Exception: {}'.format(
@@ -349,6 +359,8 @@ def queue_page_archive_actions(page):
 
     archive_templates = page.blog.archive_templates
     tags = template_tags(page=page)
+
+    # Cache.path_cache = {}
 
     for n in archive_templates:
         try:
@@ -1158,8 +1170,17 @@ def build_pages_fileinfos(pages, template_mappings=None):
     return fileinfos
 
 def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False):
+
+    # build list of mappings if not supplied
+    # if the list has no dirty mappings, exit
+
+    # also check to make sure we're not using a do-not-publish template
+
     counter = 0
     mapping_list = {}
+
+    # Cache.path_cache = {}
+
 
     if pages is None:
         pages = template.blog.published_pages
@@ -1248,6 +1269,8 @@ def build_archives_fileinfos(pages):
 
     counter = 0
     mapping_list = {}
+
+    # Cache.path_cache = {}
 
     # FIXME:
     # get all the pages, collect all the archive mappings,
