@@ -1196,6 +1196,7 @@ def blog_import (blog_id):
                     # Register a legacy ID for the page
 
                     entry.kv_set("legacy_id", n["id"])
+                    entry.kv_set("legacy_user", n["user_id"])
 
                     # Category assignments
 
