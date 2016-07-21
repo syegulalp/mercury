@@ -323,13 +323,19 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.page:
             # TODO: only rebuild mappings if the dirty bit is set
-            fi = template.fileinfos.select().join(Page).where(FileInfo.page == Page.id).order_by(Page.publication_date.desc()).get()
+            #cms.invalidate_cache()
+            # from core.cms import page_status
+            fi = template.fileinfos.select().join(Page).where(FileInfo.page == Page.id,
+                Page.blog == template.blog,
+                Page.status == cms.page_status.published,
+                ).order_by(Page.publication_date.desc()).get()
             tags = template_tags(
                 page=fi.page,
                 )
 
         elif template.template_type == template_type.include:
             # TODO: only rebuild mappings if the dirty bit is set
+            #cms.invalidate_cache()
             if template.publishing_mode != publishing_mode.ssi:
                 raise Exception('You can only preview server-side includes.')
             page = template.blog.published_pages.order_by(Page.publication_date.desc()).get()
@@ -340,8 +346,9 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.archive:
             # TODO: only rebuild mappings if the dirty bit is set
+            #cms.invalidate_cache()
             fi = cms.build_archives_fileinfos_by_mappings(
-                template, pages=template.blog.pages_published.order_by(Page.publication_date.desc()),
+                template, pages=template.blog.published_pages.order_by(Page.publication_date.desc()),
                 early_exit=True)[0]
             archive_pages = cms.generate_archive_context_from_fileinfo(
                 fi.xref.archive_xref, template.blog.published_pages, fi)
