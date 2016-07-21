@@ -1000,6 +1000,8 @@ def republish_page_template(blog_id, template_id, pass_id=0):
 
         r.body = "Adding {} of {}".format(pass_id * 50, total)
 
+        # check for dirty templates?
+
         fileinfos = []
 
         fileinfos.append(cms.build_pages_fileinfos(pages, template.mappings))
@@ -1046,6 +1048,8 @@ def republish_archive_template(blog_id, template_id, pass_id=0):
 
         r.body = "Adding {}".format(pass_id * 50)
 
+        # check for dirty templates?
+
         fileinfos = []
 
         fileinfos.append(cms.build_archives_fileinfos_by_mappings(template, pages))
@@ -1078,6 +1082,8 @@ def republish_blog(blog_id, pass_id=1, item_id=0):
     blog = Blog.load(blog_id)
 
     data = []
+
+    # check for dirty templates?
 
     from core import cms
     from core.libs.bottle import HTTPResponse
