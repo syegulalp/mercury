@@ -9,7 +9,8 @@
             <input type="text" class="form-control" aria-describedby="tag_name_help"
             value="{{tag.tag}}"
             id="tag_name" name="tag_name">
-            <span id="tag_name_help" class="help-block">You can rename this tag globally.</span>
+            <span id="tag_name_help" class="help-block">You can rename this tag globally.
+            <a href="{{tag.id}}/pages">See all pages that use this tag.</a></span>
         </div>
     </div>
     
