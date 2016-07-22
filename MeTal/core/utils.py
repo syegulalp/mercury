@@ -272,13 +272,19 @@ def tpl_include(tpl):
     return '<!--#include virtual="{}" -->'.format(
         tpl)
 
-from core.libs.bottle import SimpleTemplate
+from core.libs.bottle import SimpleTemplate, cached_property
 from functools import partial
 class MetalTemplate(SimpleTemplate):
     class TemplateError(Exception):
         pass
+
+    @cached_property
+    def co(self):
+        return compile(self.code, self.filename or self.template_name or '<string>', 'exec')
+
     def __init__(self, *args, **kwargs):
         self.includes = {}
+        self.template_name = kwargs.pop('template_name', None)
         super(MetalTemplate, self).__init__(*args, **kwargs)
         self._tags = kwargs.get('tags', None)
 
