@@ -33,21 +33,23 @@ function remove_kv(id) {
 }
 
 function add_kv() {
+    /*
     var fd = new FormData();
     fd.append('csrf', global.csrf);
     fd.append('kv_new_key_name', $('#kv_new_key_name').val());
     fd.append('kv_new_key_value', $('#kv_new_key_value').val());
     fd.append('kv_object', $('#kv_object').val());
     fd.append('kv_objectid', $('#kv_objectid').val());
+    */
+    
     show_activity('#kv_activity', 'circle-arrow-up');
-    $.ajax({
-        type: "POST",
-        url: global.base + "/api/1/kv",
-        enctype: "multipart/form-data",
-        processData: false,
-        contentType: false,
-        data: fd,
-    }).done(function(data, textStatus, request) {
+    $.post(global.base + "/api/1/kv",
+        {'csrf': global.csrf,
+        'kv_new_key_name': $('#kv_new_key_name').val(),
+        'kv_new_key_value': $('#kv_new_key_value').val(),
+        'kv_object': $('#kv_object').val(),
+        'kv_objectid': $('#kv_objectid').val()}
+        ).done(function(data, textStatus, request) {
         $('#kv_list').replaceWith($(data).filter('#kv_list'));
         $('#kv_new_key_name').val('');
         $('#kv_new_key_value').val('');
