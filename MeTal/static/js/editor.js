@@ -377,9 +377,11 @@ function add_tag(e) {
     }
     $('.typeahead').typeahead('val', '');
     $('.typeahead').typeahead('close');
+    
     var fd = new FormData();
     fd.append('csrf', global.csrf);
     fd.append('tag', tag)
+    
     if (global.page == "None") {
         url_link = "blog/" + global.blog;
     } else {
@@ -388,14 +390,19 @@ function add_tag(e) {
     $('#tag_activity').removeClass('glyphicon-refresh').addClass(
         'glyphicon-circle-arrow-up');
     $('#tag_activity').show();
-    $.ajax({
+    
+    /*$.ajax({
         type: "POST",
         url: global.base + "/api/1/make-tag-for-page/" + url_link,
         enctype: "multipart/form-data",
         processData: false,
         contentType: false,
-        data: fd,
-    }).done(function(data, textStatus, request) {
+        data: fd,*/
+    
+    $.post(global.base + "/api/1/make-tag-for-page/" + url_link,
+        {'csrf': global.csrf,
+        'tag':tag}
+    ).done(function(data, textStatus, request) {
         $('#tag_list').append($(data));
         activate_tags();
         editor_set_dirty();
