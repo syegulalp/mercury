@@ -20,10 +20,10 @@ function init_typeahead(target_name){
         }
       },
       
-      xremote: {
+      remote: {
         url: global.base,
         prepare: function(query,settings){
-            settings.url = global.base+'/api/1/get-tags/blog/'+global.blog;
+            settings.url = global.base+'/api/1/match-tag/blog/'+global.blog;
             $('#tag_activity').show();
             return settings;
         },
