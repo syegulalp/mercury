@@ -14,7 +14,7 @@ __version__ = '0.0.1'
 __license__ = 'MIT'
 __copyright_date__ = "2016"
 
-PRODUCT_NAME = "MeTal " + __version__
+PRODUCT_NAME = "Mercury " + __version__
 
 # Relative path for static content used by MeTal itself.
 # Leave this as-is for most functionality.
