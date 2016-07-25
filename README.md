@@ -1,10 +1,12 @@
 # Mercury ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
-(or, Mercury CMS for SEO's sake)
+##(or, Mercury CMS for SEO's sake)
+
 A pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
-<a href="http://metal.genjipress.com/media/metal-ui-april-2016.png" target="_blank"><img src="http://metal.genjipress.com/media/metal-ui-april-2016.png" style="margin: auto;width:80%"></a>
+<a href="http://metal.genjipress.com/media/metal-ui-april-2016.png" target="_blank">
+<img src="http://metal.genjipress.com/media/metal-ui-april-2016.png" style="margin: auto;width:80%"></a>
 
-## Features
+### Features
 * Open source (MIT license)
 * Pure Python; no binaries or external dependencies save for the Python interpreter (and whatever libraries it uses internally)
 * Static HTML publishing
@@ -15,7 +17,7 @@ A pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 * Key/value store for metadata on objects
 * Drag-and-drop media management included but optional
 
-## Planned additions
+### Planned additions
 * Multiple edit format support (e.g., Markdown)
 * Multiple template type support (e.g., Jinja)
 * Publishing from external files rather than in-DB data
@@ -26,4 +28,5 @@ A pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 ... more to come ...
 
 This project is still very raw; it won't work yet if you try to deploy it. It's being
-committed publicly to show that progress is taking place on it. We are, however, getting close to providing an alpha-test version that can be manually installed.
+committed publicly to show that progress is taking place on it. We are, however,
+getting close to providing an alpha-test version that can be manually installed.
