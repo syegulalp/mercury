@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from core.libs.bottle import (request, template, redirect)
 from core.boot import settings as _s
 from settings import DESKTOP_MODE
@@ -1405,4 +1404,3 @@ def step(step):
     # if 'finished' in results:
         # from core.boot import reboot
         # reboot()
->>>>>>> refs/heads/dev
