@@ -1,5 +1,6 @@
-# MeTal ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
-Pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
+# Mercury ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
+(or, Mercury CMS for SEO's sake)
+A pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
 <a href="http://metal.genjipress.com/media/metal-ui-april-2016.png" target="_blank"><img src="http://metal.genjipress.com/media/metal-ui-april-2016.png" style="margin: auto;width:80%"></a>
 

@@ -1,7 +1,7 @@
 TL;DR:
 ------
 
-MeTal is MIT-licensed, as are all its components save for:
+Mercury is MIT-licensed, as are all its components save for:
 CKEditor, which is licensed under the MPL v.1.1.
 flipflip, which is licensed under a two-clause license detailed below.
 
@@ -9,7 +9,7 @@ flipflip, which is licensed under a two-clause license detailed below.
 Licenses for software in this project
 -------------------------------------
 
-    MeTal Copyright (c) 2015 Serdar Yegulalp.
+    Mercury Copyright (c) 2015 Serdar Yegulalp.
     License: MIT
     
     Bootstrap Copyright 2011-2015 Twitter, Inc.
