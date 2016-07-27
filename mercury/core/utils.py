@@ -547,11 +547,12 @@ def export_data():
 
 def import_data():
     from settings import DB
-    n = ("Beginning import process.")
-    yield "<p>" + n
+    n = []
+    n.append("Beginning import process.")
+    # yield "<p>" + n
 
-    n = ("Cleaning DB.")
-    yield "<p>" + n
+    n.append("Cleaning DB.")
+    # yield "<p>" + n
     try:
         DB.clean_database()
     except:
@@ -559,39 +560,43 @@ def import_data():
         init_db.recreate_database()
         DB.remove_indexes()
 
-    n = ("Clearing tables.")
-    yield "<p>" + n
+    n.append("Clearing tables.")
+    # yield "<p>" + n
 
     xdb = DataSet(DB.dataset_connection())
 
-    with xdb.atomic() as txn:
-        for table_name in xdb.tables:
-            n = ("Loading table " + table_name)
-            yield "<p>" + n
-            try:
-                table = xdb[table_name]
-            except:
-                yield ("<p>Sorry, couldn't create table ", table_name)
-            else:
-                filename = (APPLICATION_PATH + EXPORT_FILE_PATH +
-                    '/dump-' + table_name + '.json')
-                if os.path.exists(filename):
-                    try:
-                        table.thaw(format='json',
-                            filename=filename,
-                            strict=True)
-                    except Exception as e:
-                        yield("<p>Sorry, error:{}".format(e))
-
+    # with xdb.atomic() as txn:
+    try:
+        with xdb.transaction():
+            for table_name in xdb.tables:
+                n.append("Loading table " + table_name)
+                # yield "<p>" + n
+                try:
+                    table = xdb[table_name]
+                except:
+                    n.append("<p>Sorry, couldn't create table ", table_name)
                 else:
-                    n = ("No data for table " + table_name)
-                    yield "<p>" + n
+                    filename = (APPLICATION_PATH + EXPORT_FILE_PATH +
+                        '/dump-' + table_name + '.json')
+                    if os.path.exists(filename):
+                        try:
+                            table.thaw(format='json',
+                                filename=filename,
+                                strict=True)
+                        except Exception as e:
+                            n.append("<p>Sorry, error:{}".format(e))
 
-    xdb.query(DB.post_import())
-    xdb.close()
-    DB.recreate_indexes()
-    n = "Import process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL)
-    yield "<p>" + n
+                    else:
+                        n.append("No data for table " + table_name)
+                        # yield "<p>" + n
+    except Exception as e:
+        n.append('Ooops: {}'.e)
+    else:
+        xdb.query(DB.post_import())
+        xdb.close()
+        DB.recreate_indexes()
+        n.append("Import process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL))
+    return '<p>'.join(n)
 
-    from core.routes import app
-    app.reset()
+    # from core.routes import app
+    # app.reset()
