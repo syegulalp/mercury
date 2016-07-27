@@ -1510,7 +1510,6 @@ def process_queue_publish(queue_control, blog):
         if time.clock() - start > 2.0:
             break
 
-    # with db.atomic():
     remove_from_queue(removed_jobs)
 
     queue_control = Queue.get(Queue.blog == blog,
