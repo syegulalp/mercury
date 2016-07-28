@@ -646,7 +646,7 @@ class Theme(BaseModel):
     # path = TextField()
 
     @classmethod
-    def theme_install_to_system(cls, theme_path):
+    def install_to_system(cls, theme_path):
         from settings import THEME_FILE_PATH, _join
         import json
 
