@@ -1069,7 +1069,7 @@ class Blog(SiteBase):
         Set count to zero to retrieve all published pages.
         '''
 
-        last_n_pages = self.published_pages.order_by(
+        last_n_pages = self.pages.published.order_by(
             Page.publication_date.desc())
 
         if count > 0:
@@ -1366,16 +1366,18 @@ class Category(BaseModel):
     # and keep it on the Page object
 
     @property
-    def pages(self):
+    def _pages(self):
         categories = PageCategory.select(PageCategory.page).where(
             PageCategory.category == self)
         pages = Page.select().where(Page.id << categories)
         return pages
 
+    """
     @property
     def published_pages(self):
         published_pages = self.pages.where(Page.status == page_status.published)
         return published_pages
+    """
 
     # TODO:
     # Some invocations of this method pass a blog parameter to ensure
@@ -1800,7 +1802,7 @@ class Page(BaseModel, DateMod):
         so that it can be filtered by some other method.
         This allows any number of next/previous methods to be built.
         '''
-        next_all = self.blog.published_pages.where(
+        next_all = self.blog.pages.published.where(
                 Page.blog == self.blog,
                 Page.publication_date > self.publication_date).order_by(
                 Page.publication_date.asc(), Page.id.asc())
@@ -1813,7 +1815,7 @@ class Page(BaseModel, DateMod):
         Returns all pages in this blog earlier than the current one
         so that it can be filtered by some other method.
         '''
-        prev_all = self.blog.published_pages.where(
+        prev_all = self.blog.pages.published.where(
                 Page.blog == self.blog,
                 Page.publication_date < self.publication_date).order_by(
                 Page.publication_date.desc(), Page.id.desc())

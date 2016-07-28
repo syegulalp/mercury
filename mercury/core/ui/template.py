@@ -323,7 +323,7 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.page:
             # TODO: only rebuild mappings if the dirty bit is set
-            #cms.invalidate_cache()
+            # cms.invalidate_cache()
             # from core.cms import page_status
             fi = template.fileinfos.select().join(Page).where(FileInfo.page == Page.id,
                 Page.blog == template.blog,
@@ -335,10 +335,10 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.include:
             # TODO: only rebuild mappings if the dirty bit is set
-            #cms.invalidate_cache()
+            # cms.invalidate_cache()
             if template.publishing_mode != publishing_mode.ssi:
                 raise Exception('You can only preview server-side includes.')
-            page = template.blog.published_pages.order_by(Page.publication_date.desc()).get()
+            page = template.blog.pages.published.order_by(Page.publication_date.desc()).get()
             fi = page.fileinfos[0]
             tags = template_tags(
                 page=page,
@@ -346,12 +346,12 @@ def template_preview(template_id):
 
         elif template.template_type == template_type.archive:
             # TODO: only rebuild mappings if the dirty bit is set
-            #cms.invalidate_cache()
+            # cms.invalidate_cache()
             fi = cms.build_archives_fileinfos_by_mappings(
-                template, pages=template.blog.published_pages.order_by(Page.publication_date.desc()),
+                template, pages=template.blog.pages.published.order_by(Page.publication_date.desc()),
                 early_exit=True)[0]
             archive_pages = cms.generate_archive_context_from_fileinfo(
-                fi.xref.archive_xref, template.blog.published_pages, fi)
+                fi.xref.archive_xref, template.blog.pages.published, fi)
             tags = template_tags(
                     blog=template.blog,
                     archive=archive_pages,
@@ -513,9 +513,9 @@ def template_save(request, user, cms_template, blog=None):
     if int(save_action) in (2, 3):
 
         if cms_template.template_type == template_type.page:
-            cms.build_pages_fileinfos(cms_template.blog.published_pages)
+            cms.build_pages_fileinfos(cms_template.blog.pages.published)
         if cms_template.template_type == template_type.archive:
-            cms.build_archives_fileinfos(cms_template.blog.published_pages)
+            cms.build_archives_fileinfos(cms_template.blog.pages.published)
         if cms_template.template_type == template_type.include:
             cms.build_archives_fileinfos_by_mappings(cms_template)
 

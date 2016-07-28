@@ -164,7 +164,7 @@ def generate_page_tags(f, blog):
         else:
 
             archive_pages = generate_archive_context_from_fileinfo(
-                f.xref.archive_xref, blog.published_pages, f)
+                f.xref.archive_xref, blog.pages.published, f)
 
             # The context object we use
 
@@ -1183,7 +1183,7 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
 
 
     if pages is None:
-        pages = template.blog.published_pages
+        pages = template.blog.pages.published
 
     for page in pages:
         tags = template_tags(page=page)
@@ -1446,7 +1446,7 @@ def republish_blog(blog):
     begin = time.clock()
 
     queue_ssi_actions(blog)
-    queue_page_actions(blog.published_pages.iterator(), no_neighbors=True)
+    queue_page_actions(blog.pages.published.iterator(), no_neighbors=True)
     queue_index_actions(blog, include_manual=True)
 
     end = time.clock()
