@@ -1,5 +1,5 @@
 # Mercury ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
-##(or, "Mercury Blogging" for SEO's sake)
+##(or, "Mercury Blogging" for SEO's sake) (formerly "MeTal")
 
 A pure Python (3.2+) CMS and blogging solution with a friendly WordPress-like UI
 
