@@ -132,6 +132,23 @@ function run_queue(blog_id) {
     {
         return false;
     }
+    
+    global.remote_window = window.open(global.base + "/blog/" + global.blog + "/publish",
+        "_blank").blur();
+    window.focus();
+    
+    /*
+    
+    window.open(window.location+'#_','_self');
+    
+    var my_url = global.base + "/blog/" + global.blog + "/publish";
+    
+    xref = $("<a>").attr("href", my_url).attr("target", "_blank")[0].click();
+    console.log(xref);
+    
+        
+    setTimeout(function() { window.focus() },500);        
+    
     $.get(global.base + "/blog/" + global.blog + "/publish/process").done(
         function(data) {
             $('#queue_counter').replaceWith(data);
@@ -145,7 +162,8 @@ function run_queue(blog_id) {
         error_report(
             'Sorry, an error occurred in the publishing queue:',
             details);
-    });;
+    });
+    */
 }
 
 function toggle_queue_runner(){
