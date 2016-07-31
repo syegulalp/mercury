@@ -22,12 +22,14 @@ class Cache():
     template_cache = {}
     blog_tag_cache = {}
     path_cache = {}
+    module_cache = {}
 
     @classmethod
     def clear(self):
         self.template_cache = {}
         self.blog_tag_cache = {}
         self.path_cache = {}
+        self.module_cache = {}
 
 save_action_list = Struct()
 
@@ -281,6 +283,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                     push_to_queue(job_type=job_type.page,
                         blog=blog,
                         site=site,
+                        priority=8,
                         data_integer=f.id)
 
             if no_archive is False:
@@ -302,6 +305,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                             push_to_queue(job_type=job_type.page,
                                 blog=blog,
                                 site=site,
+                                priority=8,
                                 data_integer=f.id)
 
                             queue_page_archive_actions(next_page)
@@ -317,6 +321,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                             push_to_queue(job_type=job_type.page,
                                 blog=blog,
                                 site=site,
+                                priority=8,
                                 data_integer=f.id)
 
                             queue_page_archive_actions(previous_page)
@@ -403,6 +408,7 @@ def queue_page_archive_actions(page):
                         push_to_queue(job_type=job_type.archive,
                                   blog=page.blog,
                                   site=page.blog.site,
+                                  priority=7,
                                   data_integer=fileinfo_mapping.id)
         except Exception as e:
             from core.error import QueueAddError
@@ -1604,8 +1610,6 @@ def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
     '''
-
-    # @with db.atomic():
 
     q_c = publishing_lock(blog, True)
 
