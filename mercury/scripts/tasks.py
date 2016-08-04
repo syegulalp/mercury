@@ -54,12 +54,13 @@ if total_pages > 0:
             with db.atomic() as txn:
                 scheduled_page_report.append('{} -- on {}'.format(n.title, n.publication_date))
                 n.status = page_status.published
+                n.save(n.user, no_revision=True)
+
                 build_pages_fileinfos((n,))
                 build_archives_fileinfos((n,))
                 queue_page_actions((n,))
                 queue_index_actions(n.blog)
                 blogs.add(n.blog.id)
-                n.save(n.user, no_revision=True)
 
         except Exception as e:
             problem = 'Problem with page {}: {}'.format(n.title, e)
@@ -68,7 +69,6 @@ if total_pages > 0:
 
     for n in blogs:
         blog = Blog.load(n)
-        # waiting = queue_jobs_waiting(blog=blog)
         waiting = Queue.job_counts(blog=blog)
         start_queue(blog)
 
