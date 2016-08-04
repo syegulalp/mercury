@@ -594,8 +594,6 @@ def save_page(page, user, blog=None):
 
         if blog_new_page:
 
-            # TODO: setting default category should be done on object creation
-
             saved_page_category = PageCategory.create(
                 page=page,
                 category=blog.default_category,
