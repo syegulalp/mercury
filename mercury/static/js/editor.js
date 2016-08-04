@@ -134,7 +134,7 @@ function run_queue(blog_id) {
     }
     
     global.remote_window = window.open(global.base + "/blog/" + global.blog + "/publish",
-        "_blank").blur();
+        "publishing").blur();
     window.focus();
     
     /*
