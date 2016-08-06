@@ -3035,5 +3035,8 @@ class TemplateTags(object):
         if 'fileinfo' in ka:
             self.fileinfo = ka['fileinfo']
 
+
+        self.modules = self.load('Modules') if self.blog else None
+
 def template_tags(**ka):
     return TemplateTags(**ka)
