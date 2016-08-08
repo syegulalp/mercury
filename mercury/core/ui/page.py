@@ -378,7 +378,7 @@ def page_media_add(page_id):
 
     return template('modal/modal_images.tpl',
         media_list=media_list,
-        title="Select image",
+        title="Select media",
         buttons='',
         **tags.__dict__)
 

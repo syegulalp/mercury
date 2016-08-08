@@ -1,22 +1,18 @@
 % rebase('modal/modal_contents.tpl', title=title)
 <form id="media_list" action="">
-<ul>
-% for t in media_list:
-<li>
-<a
-data-toggle="tooltip" data-placement="bottom"
-data-html="true"
-title="<div style='background-color:white'><img style='max-height:50px;' src='{{t.preview_url}}'></div>"
-href="#" 
-onclick="fetch_img({{t.id}})"
-id="t-{{t.id}}">{{t.friendly_name}}</a></li>
-% end
-</ul>
+<div class="form-group">
+<input name="media_id" class="form-control" id="media_id" placeholder="Media ID #">
+</div>
+<div class="form-group">
+<button type="button" onclick="fetch_img();" class="btn btn-default">Load</button>
+</div>
 <input type="hidden" name="page" id="page" value="{{page.id}}">
 </form>
+<a href="{{settings.BASE_URL}}/blog/{{blog.id}}/media" target="_blank">See all media for this blog</a>
 <script>
-function fetch_img(img)
+function fetch_img()
 {
+    img = $('#media_id').val();
     open_modal(global.base + "/page/" + global.page + "/get-media-templates/"+img);
 }
 $('[data-toggle="tooltip"]').tooltip({
