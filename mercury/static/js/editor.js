@@ -283,6 +283,10 @@ function template_save(action) {
             window.location = xhr.getResponseHeader('X-Redirect');
             return 0;
         }
+        if (xhr.getResponseHeader('X-Open')) {
+            global.remote_window = window.open(xhr.getResponseHeader('X-Open')).blur();
+            window.focus();
+        }
         $('#messages_float').empty();
         $('#messages_float').append($(data).filter('#messages'));
         $('#sidebar_inner').empty();
