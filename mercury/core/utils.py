@@ -39,6 +39,10 @@ URLs for blogs must be unique.
 '''}[m.group(1)]
     return error
 
+def xml_escape(string):
+    string = string.replace("&", "&amp;")
+    return string
+
 def quote_escape(string):
     string = string.replace("'", "&#39")
     string = string.replace('"', "&#34")
