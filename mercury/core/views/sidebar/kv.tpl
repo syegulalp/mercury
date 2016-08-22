@@ -25,3 +25,8 @@
     </button>
 % end
 </div>
+<script>
+function edit_kv(kv_id){
+    open_modal(global.base+"/kv/"+kv_id+"/edit");
+}
+</script>

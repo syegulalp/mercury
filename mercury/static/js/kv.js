@@ -60,3 +60,23 @@ function add_kv() {
         hide_activity('#kv_activity');
     });
 }
+
+function save_kv_changes(){
+    $.post(global.base + "/kv/"+global.kv_edit_id+"/edit/",
+        {
+        
+        'key': $('#key').val(),
+        'value':$('#value').val(),
+        'csrf': global.csrf
+        }
+    ).done(function(data, textStatus, request) {
+        $('#kv_list').replaceWith($(data).filter('#kv_list'));
+        $('#modal_close_button').click();
+        
+    }).fail(function(xhr, status, error) {
+        
+        server_failure(xhr, status, error,
+            "Sorry, an error occurred when trying to edit KV: "
+        );        
+    });
+}

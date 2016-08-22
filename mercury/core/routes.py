@@ -8,6 +8,7 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep, BASE_URL_PROTOCOL)
+from core.ui import kv
 
 app = Bottle()
 _route = app.route
@@ -674,6 +675,10 @@ def page_delete(page_id):
     from core.ui import page
     return page.page_delete(page_id, request.forms.get('confirm'))
 
+@_route(BASE_PATH + '/kv/<kv_id:int>/edit', method=('GET', 'POST'))
+def kv_edit_ui(kv_id):
+    from core.ui import kv as kv_
+    return kv_.kv_edit(kv_id)
 
 '''
 STATIC ROUTING FUNCTIONS
