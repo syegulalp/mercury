@@ -70,9 +70,7 @@ def kv_edit(kv_id):
         )
 
     # save button formatting is odd, fix that
-
     return tpl
-
 
 @transaction
 def kv_add():
