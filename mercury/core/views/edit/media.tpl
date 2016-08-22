@@ -17,5 +17,6 @@ blog_media_path:"{{blog.media_path}}",
 max_filesize:{{settings.MAX_FILESIZE}}};
 </script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/activity.js"></script>
+<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/modal.js"></script>
 <script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/kv.js"></script>
 % include('include/footer.tpl')

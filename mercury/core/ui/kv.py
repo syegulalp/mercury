@@ -31,6 +31,48 @@ from core.libs.bottle import (request)
 from core import auth
 
 @transaction
+def kv_edit(kv_id):
+    user = auth.is_logged_in(request)
+
+    from core import models
+
+    kv = models.KeyValue.get(
+        models.KeyValue.id == kv_id)
+
+    object_with_kv = models.__dict__[kv.object]
+
+    object_instance = object_with_kv.get(
+        object_with_kv.id == kv.objectid)
+
+    security = auth.__dict__[object_with_kv.security](user, object_instance)
+
+    if request.method == 'POST':
+        kv.key = request.forms.getunicode('key')
+        kv.value = request.forms.getunicode('value')
+        kv.save()
+        return kv_response(kv.object, objmap[kv.object][0],
+            objmap[kv.object][1], object_instance.id)
+
+        # return kv_list from kv_response above
+
+    from core.ui.page import media_buttons
+    buttons = media_buttons.format(
+        'onclick="save_kv_changes();"',
+        'Save changes')
+
+    tpl = template('modal/modal_kv_edit',
+        key=kv.key,
+        value=kv.value,
+        kv=kv,
+        title='Edit KV #{} (on {} #{})'.format(kv.id,
+            kv.object, kv.objectid),
+        buttons=buttons
+        )
+
+    # save button formatting is odd, fix that
+    return tpl
+
+@transaction
 def kv_add():
 
     user = auth.is_logged_in(request)
@@ -83,6 +125,7 @@ def kv_remove():
 
     kv_deleted = kv_delete.execute()
 
+
     return kv_response(object_type.object, objmap[object_type.object][0],
         objmap[object_type.object][1], object_instance.id)
 
@@ -91,7 +134,7 @@ from core.utils import html_escape
 
 blank_item = '''
 <li class="list-group-item wrap-txt">
-<a onclick="remove_kv({});" href="#" title="Remove item"><span class="pull-right glyphicon glyphicon-remove media-remove"></span></a>{}</li>
+<a onclick="remove_kv({});" href="#" title="Remove key/value pair"><span class="pull-right glyphicon glyphicon-remove media-remove"></span></a>{}</li>
 '''
 
 media_item = '''
@@ -117,7 +160,9 @@ def ui(keys):
 
         kv_ui.append(blank_item.format(
             n.id,
-            "<b>{}:</b> <i>{}</i>".format(html_escape(n.key), html_escape(n.value))
+            "<b><a title=\"Edit\" onclick=\"edit_kv({});\" href=\"#\">{}</a>:</b> <i>{}</i>".format(
+                n.id,
+                html_escape(n.key), html_escape(n.value))
             ))
 
         '''

@@ -108,21 +108,6 @@ function add_template(template_id, media_id) {
 }
 
 
-function open_modal(url) {
-    $('#modal').modal();
-    $('#modal_content').empty().append(
-        '<div class="modal-body"><p>Loading... </p></div>');
-    $.get(url).done(function(data) {
-        $('#modal_content').empty().append($(data));
-    }).fail(function(xhr, status, error) {
-        server_failure(xhr, status, error,
-            "Sorry, an error occurred when trying to load the list of page revisions: "
-        );
-    });
-}
-
-
-
 function bind_queue() {
     $('#show_queue').bind('click', function() {});
 }
@@ -132,6 +117,23 @@ function run_queue(blog_id) {
     {
         return false;
     }
+    
+    global.remote_window = window.open(global.base + "/blog/" + global.blog + "/publish",
+        "publishing").blur();
+    window.focus();
+    
+    /*
+    
+    window.open(window.location+'#_','_self');
+    
+    var my_url = global.base + "/blog/" + global.blog + "/publish";
+    
+    xref = $("<a>").attr("href", my_url).attr("target", "_blank")[0].click();
+    console.log(xref);
+    
+        
+    setTimeout(function() { window.focus() },500);        
+    
     $.get(global.base + "/blog/" + global.blog + "/publish/process").done(
         function(data) {
             $('#queue_counter').replaceWith(data);
@@ -145,7 +147,8 @@ function run_queue(blog_id) {
         error_report(
             'Sorry, an error occurred in the publishing queue:',
             details);
-    });;
+    });
+    */
 }
 
 function toggle_queue_runner(){
@@ -264,6 +267,10 @@ function template_save(action) {
         if (xhr.getResponseHeader('X-Redirect')) {
             window.location = xhr.getResponseHeader('X-Redirect');
             return 0;
+        }
+        if (xhr.getResponseHeader('X-Open')) {
+            global.remote_window = window.open(xhr.getResponseHeader('X-Open')).blur();
+            window.focus();
         }
         $('#messages_float').empty();
         $('#messages_float').append($(data).filter('#messages'));

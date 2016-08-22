@@ -6,7 +6,7 @@ from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NA
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
 
 from core.libs.bottle import request, url, _stderr
-from core.libs.peewee import DeleteQuery, fn  # , BaseModel as _BaseModel
+from core.libs.peewee import DeleteQuery, fn, SelectQuery  # , BaseModel as _BaseModel
 
 from core.libs.playhouse.sqlite_ext import (Model, PrimaryKeyField, CharField,
    TextField, IntegerField, BooleanField, ForeignKeyField, DateTimeField, Check)
@@ -105,7 +105,6 @@ for n in page_status_list:
     page_status.modes[n[2]] = n[1]
     page_status.id[n[1]] = n[2]
 
-
 class EnforcedCharField(CharField):
     def __init__(self, max_length=255, *args, **kwargs):
         self.max_length = max_length
@@ -128,6 +127,7 @@ class EnforcedCharField(CharField):
                 request.url))
         return super(CharField, self).db_value(value)
 
+
 class BaseModel(Model):
 
     class Meta:
@@ -138,6 +138,45 @@ class BaseModel(Model):
         if not no_kv_del:
             self.kv_del()
         super().delete_instance(*a, **ka)
+
+    # We will eventually also provide tags
+    # Add to : Fileinfo, maybe also User? anywhere that seems logical
+
+    @property
+    def pages(self):
+        try:
+            n = self._pages
+        except KeyError as e:
+            raise KeyError('This object does not have pages. ({})'.format(e))
+
+        '''
+        def with_title(n, titles):
+            return n.where(Page.title.contains(titles))
+        def with_id(n, page_list):
+            return n.where(Page.id << page_list)
+        def has(n, prop, value):
+            return n.where(getattr(Page, prop).contains(value))
+
+        # n.with_title = lambda x: with_title(n, x)
+        # n.with_id = lambda x: with_id(n, x)
+        # n.has = lambda x, y:has(n, x, y)
+
+        '''
+
+        def published(n):
+            return n.where(Page.status == page_status.published)
+
+        def scheduled(n, due=False):
+            scheduled_pages = n.pages.where(Page.status == page_status.scheduled)
+            if due is True:
+                scheduled_pages = scheduled_pages.select().where(
+                    Page.publication_date >= datetime.datetime.utcnow())
+            return scheduled_pages
+
+        n.published = published(n)
+        n.scheduled = lambda x: scheduled(n, x)
+
+        return n
 
     @classmethod
     def clean(cls):
@@ -607,7 +646,7 @@ class Theme(BaseModel):
     # path = TextField()
 
     @classmethod
-    def theme_install_to_system(cls, theme_path):
+    def install_to_system(cls, theme_path):
         from settings import THEME_FILE_PATH, _join
         import json
 
@@ -1030,7 +1069,7 @@ class Blog(SiteBase):
         Set count to zero to retrieve all published pages.
         '''
 
-        last_n_pages = self.published_pages.order_by(
+        last_n_pages = self.pages.published.order_by(
             Page.publication_date.desc())
 
         if count > 0:
@@ -1096,6 +1135,28 @@ class Blog(SiteBase):
         else:
             return page
 
+    @property
+    def page_archive(self):
+        return self.archive_default(archive_type.page)
+
+    @property
+    def _pages(self):
+        return Page.select(Page, PageCategory).where(
+            Page.blog == self.id).join(
+            PageCategory).where(
+            PageCategory.primary == True).order_by(
+            Page.publication_date.desc(), Page.id.desc())
+
+
+    @property
+    def parent(self):
+        return self.theme
+
+    @property
+    def permalink(self):
+        return self.url
+
+    """
     def pages_where(self, page_list=None, titles=None):
         '''
         Select a list of pages in this blog by their IDs or titles
@@ -1110,26 +1171,6 @@ class Blog(SiteBase):
         return pages
 
     @property
-    def pages(self):
-        return Page.select(Page, PageCategory).where(
-            Page.blog == self.id).join(
-            PageCategory).where(
-            PageCategory.primary == True).order_by(
-            Page.publication_date.desc(), Page.id.desc())
-
-    @property
-    def page_archive(self):
-        return self.archive_default(archive_type.page)
-
-    @property
-    def parent(self):
-        return self.theme
-
-    @property
-    def permalink(self):
-        return self.url
-
-    @property
     def published_pages(self):
         published_pages = self.pages.where(Page.status == page_status.published)
         return published_pages
@@ -1141,6 +1182,7 @@ class Blog(SiteBase):
             scheduled_pages = scheduled_pages.select().where(
                 Page.publication_date >= datetime.datetime.utcnow())
         return scheduled_pages
+    """
 
     def setup(self, user, theme=None):
         '''
@@ -1324,16 +1366,18 @@ class Category(BaseModel):
     # and keep it on the Page object
 
     @property
-    def pages(self):
+    def _pages(self):
         categories = PageCategory.select(PageCategory.page).where(
             PageCategory.category == self)
         pages = Page.select().where(Page.id << categories)
         return pages
 
+    """
     @property
     def published_pages(self):
         published_pages = self.pages.where(Page.status == page_status.published)
         return published_pages
+    """
 
     # TODO:
     # Some invocations of this method pass a blog parameter to ensure
@@ -1758,7 +1802,7 @@ class Page(BaseModel, DateMod):
         so that it can be filtered by some other method.
         This allows any number of next/previous methods to be built.
         '''
-        next_all = self.blog.published_pages.where(
+        next_all = self.blog.pages.published.where(
                 Page.blog == self.blog,
                 Page.publication_date > self.publication_date).order_by(
                 Page.publication_date.asc(), Page.id.asc())
@@ -1771,7 +1815,7 @@ class Page(BaseModel, DateMod):
         Returns all pages in this blog earlier than the current one
         so that it can be filtered by some other method.
         '''
-        prev_all = self.blog.published_pages.where(
+        prev_all = self.blog.pages.published.where(
                 Page.blog == self.blog,
                 Page.publication_date < self.publication_date).order_by(
                 Page.publication_date.desc(), Page.id.desc())
@@ -1970,6 +2014,7 @@ class PageCategory(BaseModel):
 
 
 class System(BaseModel):
+    # we can consolidate this
     def scheduled_pages(self, due=False):
         scheduled_pages = (
             Page.select().where(Page.status == page_status.scheduled).order_by(
@@ -2103,9 +2148,9 @@ class Tag(BaseModel):
 
     # @property
     # TODO: allow filtering?
-    @property
-    def pages(self):
 
+    @property
+    def _pages(self):
         tagged_pages = TagAssociation.select(TagAssociation.page).where(
             TagAssociation.tag == self)
 
@@ -2113,6 +2158,13 @@ class Tag(BaseModel):
             Page.id << tagged_pages)
 
         return in_pages
+
+
+    """
+    @property
+    def published_pages(self):
+        return self.pages.where(Page.status == page_status.published)
+    """
 
 
     @property
@@ -2520,7 +2572,7 @@ class Media(BaseModel, DateMod):
             return self.url
 
     @property
-    def pages(self):
+    def _pages(self):
         '''
         Returns a listing of all pages this media is associated with.
         '''
@@ -2982,6 +3034,9 @@ class TemplateTags(object):
 
         if 'fileinfo' in ka:
             self.fileinfo = ka['fileinfo']
+
+
+        self.modules = self.load('Modules') if self.blog else None
 
 def template_tags(**ka):
     return TemplateTags(**ka)

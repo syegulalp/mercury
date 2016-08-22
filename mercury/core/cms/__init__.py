@@ -22,12 +22,14 @@ class Cache():
     template_cache = {}
     blog_tag_cache = {}
     path_cache = {}
+    module_cache = {}
 
     @classmethod
     def clear(self):
         self.template_cache = {}
         self.blog_tag_cache = {}
         self.path_cache = {}
+        self.module_cache = {}
 
 save_action_list = Struct()
 
@@ -164,7 +166,7 @@ def generate_page_tags(f, blog):
         else:
 
             archive_pages = generate_archive_context_from_fileinfo(
-                f.xref.archive_xref, blog.published_pages, f)
+                f.xref.archive_xref, blog.pages.published, f)
 
             # The context object we use
 
@@ -281,6 +283,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                     push_to_queue(job_type=job_type.page,
                         blog=blog,
                         site=site,
+                        priority=8,
                         data_integer=f.id)
 
             if no_archive is False:
@@ -302,6 +305,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                             push_to_queue(job_type=job_type.page,
                                 blog=blog,
                                 site=site,
+                                priority=8,
                                 data_integer=f.id)
 
                             queue_page_archive_actions(next_page)
@@ -317,6 +321,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                             push_to_queue(job_type=job_type.page,
                                 blog=blog,
                                 site=site,
+                                priority=8,
                                 data_integer=f.id)
 
                             queue_page_archive_actions(previous_page)
@@ -403,6 +408,7 @@ def queue_page_archive_actions(page):
                         push_to_queue(job_type=job_type.archive,
                                   blog=page.blog,
                                   site=page.blog.site,
+                                  priority=7,
                                   data_integer=fileinfo_mapping.id)
         except Exception as e:
             from core.error import QueueAddError
@@ -587,8 +593,6 @@ def save_page(page, user, blog=None):
         msg.append("Page <b>{}</b> saved successfully.")
 
         if blog_new_page:
-
-            # TODO: setting default category should be done on object creation
 
             saved_page_category = PageCategory.create(
                 page=page,
@@ -1183,7 +1187,7 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
 
 
     if pages is None:
-        pages = template.blog.published_pages
+        pages = template.blog.pages.published
 
     for page in pages:
         tags = template_tags(page=page)
@@ -1446,7 +1450,7 @@ def republish_blog(blog):
     begin = time.clock()
 
     queue_ssi_actions(blog)
-    queue_page_actions(blog.published_pages.iterator(), no_neighbors=True)
+    queue_page_actions(blog.pages.published.iterator(), no_neighbors=True)
     queue_index_actions(blog, include_manual=True)
 
     end = time.clock()
@@ -1510,7 +1514,6 @@ def process_queue_publish(queue_control, blog):
         if time.clock() - start > 2.0:
             break
 
-    # with db.atomic():
     remove_from_queue(removed_jobs)
 
     queue_control = Queue.get(Queue.blog == blog,
@@ -1605,8 +1608,6 @@ def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
     '''
-
-    # @with db.atomic():
 
     q_c = publishing_lock(blog, True)
 

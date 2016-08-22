@@ -25,9 +25,23 @@ function update(){
             
             $('#messages_float').append($(data).filter('#messages'));
             
+            if (window.opener)
+            {
+                window.opener.$('#queue_counter').empty().append($(data).filter('#queue_counter'));
+            }
+            
             if (progress<100){
                 update();
             }
+            else
+            {
+                if (window.opener)
+                {
+                    window.close();
+                }
+            }
+                        
+            
         }).fail(function(xhr, status, error) {
             reason = xhr.statusText;
             details = $(xhr.responseText).filter('#error_text').html();

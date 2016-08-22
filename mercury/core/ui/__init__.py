@@ -116,22 +116,19 @@ def listing(request, user, errormsg, context, tags_data,
     except (KeyError, ValueError, TypeError):
         items_searched, search = None, None
 
-    if items_searched is not None:
-        item_list = item_list_object.select().where(item_list_object.model_class.id << items_searched)
-    else:
-        item_list = item_list_object.select()
+    item_list = item_list_object.select()
 
-    '''
-    # For future use: sorting
-    try:
-        sort_terms = request.query['order_by']
-    except KeyError:
-        pass
-    else:
-        item_list = item_list.select().order_by(
-            getattr(Page, sort_terms).asc()
+    if items_searched is not None:
+        item_list = item_list.where(item_list_object.model_class.id << items_searched)
+
+    # basic ordering functionality
+
+    if 'order_by' in request.query:
+        item_list = item_list.order_by(
+            getattr(item_list_object.model_class, request.query['order_by']).desc()
             )
-    '''
+
+    # TODO: pass on the pagination parameters
 
     paginator, rowset = utils.generate_paginator(item_list, request)
 
