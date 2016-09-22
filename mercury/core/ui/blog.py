@@ -344,7 +344,7 @@ def blog_media(blog_id):
             'search_ui':'blog_media',
             'search_object':blog,
             'search_context':media_search_results,
-            'item_list_object':blog.media
+            'item_list_object':blog.media.order_by(Media.id.desc())
         },
         {'blog_id':blog.id}
         )
