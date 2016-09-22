@@ -5,6 +5,7 @@ from core.menu import generate_menu, colsets, icons
 from core.search import (
     blog_search_results, media_search_results,
     tag_search_results, tag_in_blog_search_results,
+    media_in_blog_search_results,
     blog_pages_in_category_search_results)
 
 from core.models import (Struct, Site,
@@ -436,6 +437,34 @@ def blog_media_edit_output(tags):
         search_context=(search_context['blog_media'], tags.blog),
         **tags.__dict__)
 
+def blog_media_pages(blog_id, media_id):
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    is_member = auth.is_blog_member(user, blog)
+    media = Media.load(media_id, blog)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'blog',
+            'menu':'blog_media_pages',
+            'search_ui':'blog',
+            'search_object':media,
+            'search_context': media_in_blog_search_results,
+            'item_list_object':media.pages  # .order_by(Page.publication_date.desc()),
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id}
+        )
+
+
+        # 'colset':'blog',
+        # 'menu':'blog_pages_for_tag',
+        # 'search_ui':'blog_pages_with_tag',
+        # 'search_object':tag,
+        # 'search_context':tag_in_blog_search_results,
+        # 'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
 
 # TODO: be able to process multiple media at once via a list
 # using the list framework

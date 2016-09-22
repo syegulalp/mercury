@@ -413,6 +413,15 @@ def blog_media_edit_save(blog_id, media_id):
     from core.ui import blog
     return blog.blog_media_edit_save(blog_id, media_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/pages')
+def blog_media_pages(blog_id, media_id):
+    '''
+    Routes for listing media in a blog
+    '''
+    from core.ui import blog
+    return blog.blog_media_pages(blog_id, media_id)
+
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete', method="POST")
 def blog_media_delete(blog_id, media_id):

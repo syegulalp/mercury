@@ -2576,10 +2576,14 @@ class Media(BaseModel, DateMod):
         '''
         Returns a listing of all pages this media is associated with.
         '''
-        pages = MediaAssociation.select().where(
+        pages = MediaAssociation.select(MediaAssociation.page).where(
             MediaAssociation.media == self)
 
         return pages
+
+    @property
+    def pages(self):
+        return Page.select().where(Page.id << self._pages)
 
     """
     @property
@@ -2896,8 +2900,8 @@ class TemplateTags(object):
 
     def load(self, name):
         if self.blog:
-            return self.blog.templates.where(
-                Template.name == name).get().as_module(self.__dict__)
+            return self.blog.templates().where(
+                Template.title == name).get().as_module(self.__dict__)
         else:
             raise Blog.DoesNotExist(
                 'You must have a blog defined in this context to load modules.')
