@@ -7,6 +7,9 @@ def blog_pages_in_category_search_results(request, category):
 def tag_in_blog_search_results(request, tag):
     return blog_search_results(request, tag.blog)
 
+def media_in_blog_search_results(request, media):
+    return blog_search_results(request, media.blog)
+
 def blog_search_results(request, blog=None):
 
     try:

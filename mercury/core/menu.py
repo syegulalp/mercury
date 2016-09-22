@@ -305,6 +305,20 @@ menus = {
         # 'text': lambda x:'Edit tag #{}'.format(x.id)},
         'text': lambda x:'Pages with {}'.format(x.for_log),
         },
+    'blog_edit_media_button':{
+        'type':'button',
+        'parent':'blog_manage_media',
+        'parent_context':lambda x:x.blog,
+        'path': lambda x: BASE_URL + '/blog/{}/media/{}/edit'.format(x.blog.id, x.id),
+        'text':lambda x:'Edit media #{}'.format(x.id)},
+    'blog_media_pages':{
+        'type':'label',
+        'parent':'blog_edit_media_button',
+        'parent_context':lambda x:x,
+        # 'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
+        # 'text': lambda x:'Edit tag #{}'.format(x.id)},
+        'text': lambda x:'Pages with media #{}'.format(x.id),
+        },
     'media_div':{
         'type':'divider',
         'text':lambda x:'Media'},
@@ -712,7 +726,10 @@ colsets = {
              {'field': 'pages',
              'label': 'Used in',
              'colwidth': '1%',
-             'format': lambda x: x.pages.count()
+             'format_raw': lambda x: '<a target="_blank" href="{}">{}</a>'.format(
+                 "/blog/{}/media/{}/pages".format(x.blog.id, x.id),
+                 x.pages.count()
+                 )
              },
 
         )

@@ -68,6 +68,12 @@
         </div>
     </div>
     
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <p><a target="_blank" href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/pages">See all {{media.pages.count()}} page(s) that use this media</a></p>
+        </div>
+    </div>  
+    
     
 </form>
 

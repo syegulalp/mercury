@@ -124,7 +124,8 @@ if DB_TYPE_NAME == 'sqlite':
     DB_TYPE = SqliteExtDatabase(
         FULL_SQLITE_DATABASE_PATH,
         threadlocals=True,
-        timeout=DATABASE_TIMEOUT)
+        timeout=DATABASE_TIMEOUT,
+        )
     from core.models import sqlite as DB
 elif DB_TYPE_NAME == 'mysql':
     from core.libs.playhouse.sqlite_ext import MySQLDatabase
