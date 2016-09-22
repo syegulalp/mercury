@@ -28,6 +28,10 @@ search_context = (
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/media",
             'form_description':'Search media:',
             'form_placeholder':'Media title, term in description, URL, etc.'},
+    'blog_media_pages':
+            {'form_target':lambda x: BASE_URL + "/blog/" + str(x.blog.id) + "/media/" + str(x.id),
+            'form_description':'Search pages associated with media:',
+            'form_placeholder':'Media title, term in description, URL, etc.'},
     'blog_templates':
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id) + "/templates",
             'form_description':'Search templates:',

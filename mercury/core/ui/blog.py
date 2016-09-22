@@ -448,10 +448,11 @@ def blog_media_pages(blog_id, media_id):
         {
             'colset':'blog',
             'menu':'blog_media_pages',
-            'search_ui':'blog',
+            'search_ui':'blog_media_pages',
             'search_object':media,
-            'search_context': media_in_blog_search_results,
-            'item_list_object':media.pages  # .order_by(Page.publication_date.desc()),
+            'search_context': media_search_results,
+            'item_list_object':media.pages.order_by(Page.publication_date.desc()),
+
             # 'action_button':action,
             # 'list_actions':list_actions
         },
