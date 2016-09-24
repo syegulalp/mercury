@@ -3040,7 +3040,10 @@ class TemplateTags(object):
             self.fileinfo = ka['fileinfo']
 
 
-        self.modules = self.load('Modules') if self.blog else None
+        try:
+            self.modules = self.load('Modules') if self.blog else None
+        except Template.DoesNotExist:
+            self.modules = None
 
 def template_tags(**ka):
     return TemplateTags(**ka)
