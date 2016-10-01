@@ -14,6 +14,9 @@ class PermissionsException(LoggedException):
 
 class NoArchiveForFileInfo(LoggedException):
     pass
+class PreviewException(LoggedException):
+    pass
+
 class ArchiveMappingFormatException(LoggedException):
     pass
 

@@ -12,6 +12,7 @@ from core.libs.bottle import (template, request, redirect)
 
 from . import search_context
 
+
 common_archive_mappings = (
     ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
     ('%Y/{{blog.index_file}}', 'Yearly archive'),
@@ -299,6 +300,12 @@ def template_edit_save(template_id):
             ),
         **tags.__dict__)
 
+def test_preview_mapping(fi, t):
+    if fi == 0:
+        from core.error import PreviewException
+        raise PreviewException(
+            'Template {} has no mapping associated with it and cannot be previewed.'.format(
+            t.for_log))
 
 def template_preview(template_id):
 
@@ -316,16 +323,19 @@ def template_preview(template_id):
 
         if template.template_type == template_type.index:
             # TODO: only rebuild mappings if the dirty bit is set
-            fi = template.default_mapping.fileinfos[0]
+            fi = template.default_mapping.fileinfos
+            test_preview_mapping(fi.count(), template)
             tags = template_tags(blog=template.blog,
-                fileinfo=fi
+                fileinfo=fi[0]
                 )
 
         elif template.template_type == template_type.page:
             # TODO: only rebuild mappings if the dirty bit is set
             # cms.invalidate_cache()
             # from core.cms import page_status
-            fi = template.fileinfos.select().join(Page).where(FileInfo.page == Page.id,
+            fi = template.fileinfos
+            test_preview_mapping(fi.count(), template)
+            fi = fi.select().join(Page).where(FileInfo.page == Page.id,
                 Page.blog == template.blog,
                 Page.status == cms.page_status.published,
                 ).order_by(Page.publication_date.desc()).get()
@@ -337,7 +347,8 @@ def template_preview(template_id):
             # TODO: only rebuild mappings if the dirty bit is set
             # cms.invalidate_cache()
             if template.publishing_mode != publishing_mode.ssi:
-                raise Exception('You can only preview server-side includes.')
+                from core.error import PreviewException
+                raise PreviewException('You can only preview server-side includes.')
             page = template.blog.pages.published.order_by(Page.publication_date.desc()).get()
             fi = page.fileinfos[0]
             tags = template_tags(
@@ -349,7 +360,9 @@ def template_preview(template_id):
             # cms.invalidate_cache()
             fi = cms.build_archives_fileinfos_by_mappings(
                 template, pages=template.blog.pages.published.order_by(Page.publication_date.desc()),
-                early_exit=True)[0]
+                early_exit=True)
+            test_preview_mapping(len(fi), template)
+            fi = fi[0]
             archive_pages = cms.generate_archive_context_from_fileinfo(
                 fi.xref.archive_xref, template.blog.pages.published, fi)
             tags = template_tags(
@@ -358,6 +371,11 @@ def template_preview(template_id):
                     archive_context=fi,
                     fileinfo=fi,
                     )
+
+        elif template.template_type in (template_type.media, template_type.system):
+            from core.error import PreviewException
+            raise PreviewException('Template {} is of a type that cannot yet be previewed.'.format(
+                template.for_log))
 
         import time
         tc = time.clock

@@ -82,6 +82,9 @@ if total_pages > 0:
             if remaining == 0:
                 break
 
+    # Clear control instances now that we're done
+    Queue.control_jobs(blog).get().delete_instance()
+
     message_text = '''
 This is a scheduled-tasks report from the installation of {}.
 

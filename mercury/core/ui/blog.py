@@ -344,7 +344,7 @@ def blog_media(blog_id):
             'search_ui':'blog_media',
             'search_object':blog,
             'search_context':media_search_results,
-            'item_list_object':blog.media
+            'item_list_object':blog.media.order_by(Media.id.desc())
         },
         {'blog_id':blog.id}
         )
@@ -360,9 +360,7 @@ def blog_media_edit(blog_id, media_id, status=None):
     media = Media.load(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
-    # from core.ui_kv import kv_ui
     from core.ui import kv
-    # kv_ui_data = kv_ui(media.kvs(no_traverse=True))
     kv_ui_data = kv.ui(media.kv_list())
 
     tags = template_tags(blog_id=blog.id,
@@ -422,10 +420,20 @@ def blog_media_edit_save(blog_id, media_id):
         media.for_log,
         user.for_log))
 
+    from core.ui import kv
+    kv_ui_data = kv.ui(media.kv_list())
+
     tags = template_tags(blog_id=blog.id,
          media=media,
          status=status,
          user=user)
+
+    tags.sidebar = sidebar.render_sidebar(
+        panel_set='edit_media',
+        status_badge=status_badge,
+        kv_object='Media',
+        kv_objectid=media.id,
+        kv_ui=kv_ui_data)
 
     return blog_media_edit_output(tags)
 
@@ -448,10 +456,11 @@ def blog_media_pages(blog_id, media_id):
         {
             'colset':'blog',
             'menu':'blog_media_pages',
-            'search_ui':'blog',
+            'search_ui':'blog_media_pages',
             'search_object':media,
-            'search_context': media_in_blog_search_results,
-            'item_list_object':media.pages  # .order_by(Page.publication_date.desc()),
+            'search_context': media_search_results,
+            'item_list_object':media.pages.order_by(Page.publication_date.desc()),
+
             # 'action_button':action,
             # 'list_actions':list_actions
         },
