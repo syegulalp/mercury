@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1362": {
+   "archive_xref": "", 
+   "id": 1362, 
+   "is_default": true, 
+   "modified_date": "2016-08-01 00:04:42", 
+   "path_string": "'untitled-template-1568'", 
+   "template": 1568
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1568, 
+  "is_include": false, 
+  "modified_date": "2016-08-01 00:14:10", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "recursively-clear-out-previews-57.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Recursively clear out previews"
+ }
+}

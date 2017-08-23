@@ -1,5 +1,5 @@
 from core import (auth, utils)
-from core.cms import job_type
+from core.cms.queue import job_type
 from core.menu import generate_menu, colsets
 # from core.search import site_search_results
 
@@ -15,6 +15,10 @@ from . import listing
 
 @transaction
 def system_info():
+
+    # alt. implementation, less boilerplate
+    # user, permission = auth.is_sys_admin()
+
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
@@ -81,6 +85,8 @@ def system_queue():
 
     paginator, queue_list = utils.generate_paginator(queue, request)
 
+    # TODO: replace with listing framework
+
     tpl = template('queue/queue_ui',
         queue_list=queue_list,
         paginator=paginator,
@@ -106,6 +112,7 @@ def system_log():
         paginator=paginator,
         menu=generate_menu('system_log', None),
         search_context=(search_context['system_log'], None),
+        action=None,
         **tags.__dict__)
 
     return tpl
@@ -132,7 +139,7 @@ def plugin_settings(plugin_id, errormsg=None):
         user=user)
 
     tpl = template('system/plugin',
-        plugin=plugin,
+        plugin_ui=plugin.ui(),
         search_context=(search_context['sites'], None),
         menu=generate_menu('system_plugin_data', plugin),
         **tags.__dict__)
@@ -159,6 +166,7 @@ def system_plugins(errormsg=None):
         menu=generate_menu('system_plugins', None),
         rowset=rowset,
         colset=colsets['plugins'],
+        action=None,
         **tags.__dict__)
 
     return tpl
@@ -203,6 +211,7 @@ def system_list_themes():
         menu=generate_menu('system_manage_themes', None),
         rowset=rowset,
         colset=colsets['themes_site'],
+        action=None,
         **tags.__dict__)
 
     return tpl

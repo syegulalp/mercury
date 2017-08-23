@@ -8,7 +8,7 @@
 <div id="media_list">
     % include('edit/page_media_list.tpl')
 </div>
-<small><a id="insert_media_link" href="#">Add other media</a></small>
+<small><a id="insert_media_link" href="#">Add existing media</a></small>
 % else:
 <p>[<i>You must save this page before you can add media to it</i>]</p>
 % end

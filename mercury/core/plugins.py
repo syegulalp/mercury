@@ -1,9 +1,8 @@
 from functools import wraps
-from settings import PLUGIN_PATH, PLUGIN_FILE_PATH, BASE_PATH, _sep
+from settings import PLUGIN_PATH, PLUGIN_FILE_PATH  # , BASE_PATH, _sep
 from os.path import join as _join
 import os, importlib
 
-from core.libs import bottle
 from core.error import PluginImportError
 from core.models import Plugin, db
 
@@ -12,23 +11,35 @@ _stddebug = _stddebug_()
 
 '''
 class Plugin(object):
-    __plugin_name__ = None
-    __short_name__ = None
-    __plugin_description__ = None
-    __author__ = None
-    __version__ = None
-    __license__ = None
-    __compatibility__ = None
+#     __plugin_name__ = None
+#     __short_name__ = None
+#     __plugin_description__ = None
+#     __author__ = None
+#     __version__ = None
+#     __license__ = None
+#     __compatibility__ = None
 
     def __init__(self):
+        # Executed on app startup when plugin is first loaded.
         raise NotImplementedError
 
+    @classmethod
     def install(self):
+        # Install plugin
+        # maybe we can call _install (not a classmethod) and override that
+        # in the actual plugin?
         raise NotImplementedError
 
+    @classmethod
     def uninstall(self):
+        # Uninstall plugin
         raise NotImplementedError
 '''
+
+def reset_plugin(plugin_id):
+    existing_plugin = Plugin.load(plugin_id, 'reset')
+    existing_plugin.reset()
+
 
 def plugin_before(plugin_function):
 
@@ -61,20 +72,18 @@ def plugin_after(plugin_function):
 
     return decorate
 
-def unregister_plugin(plugin):
-    pass
-    # remove data for plugin
-    # remove plugin itself
-    # don't reboot, that's for the handler
+def unregister_plugin(plugin_id):
+    existing_plugin = Plugin.load(plugin_id, 'remove')
+    existing_plugin.clear_data()
+    existing_plugin.delete_instance()
+
 
 def register_plugin(path_to_plugin, **ka):
 
-    # if os.path.isfile(PLUGIN_PATH + _sep + path_to_plugin + _sep + "__init__.py"):
     if os.path.isfile(_join(PLUGIN_PATH, path_to_plugin, "__init__.py")):
         try:
             added_plugin = importlib.import_module("data.plugins." + path_to_plugin)
         except SystemError:
-            # raise PluginImportError("Plugin at " + PLUGIN_PATH + _sep +
             raise PluginImportError("Plugin at " +
                 _join(PLUGIN_PATH, path_to_plugin) + " could not be registered.")
         else:
@@ -158,12 +167,10 @@ def activate_plugins():
             added_plugin = importlib.import_module("data.plugins." + n.path)
         except ImportError as e:
             plugin_errors.append("\nPlugin " + n.friendly_name +
-                # " could not be activated. The path '" + PLUGIN_FILE_PATH + _sep + n.path +
                 " could not be activated. The path '" + _join(PLUGIN_FILE_PATH, n.path) +
                 "' may be wrong. ({})".format(str(e)))
             continue
         except SystemError as e:
-            # plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
             plugin_errors.append("\nPlugin at '" + _join(PLUGIN_FILE_PATH , n.path) +
                 "' could not be activated. The plugin may be improperly installed.".format(e))
             continue
@@ -172,12 +179,11 @@ def activate_plugins():
             for m in plugin_attributes:
                 p_a = added_plugin.__getattribute__(m)
         except AttributeError as e:
-            # plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
             plugin_errors.append("\nPlugin at '" + _join(PLUGIN_FILE_PATH , n.path) +
                 "' is missing one or more of its configuration attributes. The plugin may be damaged or improperly installed. ({})".format(e))
             continue
 
-        plugin_list[added_plugin.__short_name__] = added_plugin
+        plugin_list[n.id] = added_plugin
 
         try:
             plugin_loader = added_plugin.load()
@@ -193,7 +199,6 @@ def activate_plugins():
                     module.__dict__[func['function']] = action(func_wrapper)(func_to_wrap)
 
         except BaseException as e:
-            # plugin_errors.append("\nPlugin at '" + PLUGIN_FILE_PATH + _sep + n.path +
             plugin_errors.append("\nPlugin at '" + _join(PLUGIN_FILE_PATH, n.path) +
                 "' could not be activated. Its source may be damaged. ({})".format(e))
             continue
@@ -217,10 +222,6 @@ def enable_plugin(plugin_id):
                 plugin_to_enable.enabled = True
                 plugin_to_enable.save()
 
-    yield "OK!"
-    yield ""
-    os._exit(0)
-
 
 def disable_plugin(plugin_id):
     with db.atomic():
@@ -233,6 +234,3 @@ def disable_plugin(plugin_id):
                 plugin_to_disable.enabled = False
                 plugin_to_disable.save()
 
-    yield "OK!"
-    yield ""
-    os._exit(0)

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1314": {
+   "archive_xref": "", 
+   "id": 1314, 
+   "is_default": true, 
+   "modified_date": "2016-07-03 22:33:18", 
+   "path_string": "'static/js/actions.js'", 
+   "template": 1514
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1514, 
+  "is_include": false, 
+  "modified_date": "2016-07-03 22:51:10", 
+  "publishing_mode": "Manual", 
+  "template_ref": "actions-js-35.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Actions.js"
+ }
+}

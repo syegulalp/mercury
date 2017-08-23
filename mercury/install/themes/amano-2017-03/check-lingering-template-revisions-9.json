@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "949": {
+   "archive_xref": "", 
+   "id": 949, 
+   "is_default": true, 
+   "modified_date": "2016-04-05 00:40:39", 
+   "path_string": "'t_r'", 
+   "template": 1100
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1100, 
+  "is_include": false, 
+  "modified_date": "2016-06-02 21:11:11", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "check-lingering-template-revisions-9.tpl", 
+  "template_type": "Index", 
+  "theme": 87, 
+  "title": "!Check lingering template revisions"
+ }
+}

@@ -5,9 +5,9 @@
 % if error.exception:
 {{error.exception.args[0]}}
 % end
-<hr/>
 </div>
 % if settings.DEBUG_MODE:
+<hr/>
 <div id='error_scrollable'>
 <h4>Exception details:</h4>
 <pre>{{error.exception}}</pre>

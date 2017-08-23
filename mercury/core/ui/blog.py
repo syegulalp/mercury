@@ -1,11 +1,11 @@
-from core import (auth, utils, cms)
+from core import (auth, utils)
+from core.cms import cms, queue, fileinfo
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
 from core.search import (
     blog_search_results, media_search_results,
     tag_search_results, tag_in_blog_search_results,
-    media_in_blog_search_results,
     blog_pages_in_category_search_results)
 
 from core.models import (Struct, Site,
@@ -30,16 +30,16 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-    # We may eventually move these into menu
-    # so they can be manipulated separately
-
     action = (
-        'Create new page',
-        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)
+        ('Create new page',
+        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
         )
 
+    # TODO: replace this with 'actions' in colset
+    # we already have that in there!
+
     list_actions = [
-        ['Republish', '{}/api/1/republish'],
+        ['Republish', '{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)],
     ]
 
     return listing(
@@ -50,7 +50,7 @@ def blog(blog_id, errormsg=None):
             'search_ui':'blog',
             'search_object':blog,
             'search_context':blog_search_results,
-            'item_list_object':blog.pages.naive(),
+            'item_list_object':blog.pages,
             'action_button':action,
             'list_actions':list_actions
         },
@@ -529,7 +529,7 @@ def blog_media_delete(blog_id, media_id, confirm='N'):
         used_in = []
 
         for n in media.pages:
-            used_in.append("<li>{}</li>".format(n.page.for_display))
+            used_in.append("<li>{}</li>".format(n.for_display))
 
         if len(used_in) > 0:
             s2 = ('''<p>Note that the following pages use this media object.
@@ -580,8 +580,8 @@ def blog_categories(blog_id):
     reason = auth.check_category_editing_lock(blog, True)
 
     action = (
-        'Create new category',
-        '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)
+        ('Create new category',
+        '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)),
         )
 
     return listing(
@@ -696,17 +696,21 @@ def blog_templates(blog_id):
     system_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.system)
 
+    from core.models import archive_defaults
 
-    tags.list_items = [
+    tags.list_items = (
         {'title':'Index Templates',
         'type': template_type.index,
-        'data':index_templates},
+        'data':index_templates,
+        'defaults': archive_defaults[template_type.index]},
         {'title':'Page Templates',
         'type': template_type.page,
-        'data':page_templates},
+        'data':page_templates,
+        'defaults':archive_defaults[template_type.page]},
         {'title':'Archive Templates',
         'type': template_type.archive,
-        'data':archive_templates},
+        'data':archive_templates,
+        'defaults': archive_defaults[template_type.archive]},
         {'title':'Includes',
         'type': template_type.include,
         'data':template_includes},
@@ -716,7 +720,7 @@ def blog_templates(blog_id):
         {'title':'System Templates',
         'type': template_type.system,
         'data':system_templates},
-        ]
+        )
 
     return template('ui/ui_blog_templates',
         icons=icons,
@@ -724,6 +728,7 @@ def blog_templates(blog_id):
         publishing_mode=publishing_mode,
         search_context=(search_context['blog_templates'], blog),
         menu=generate_menu('blog_manage_templates', blog),
+        templates_with_defaults=('Index', 'Page', 'Archive'),
         ** tags.__dict__)
 
 @transaction
@@ -734,8 +739,8 @@ def blog_select_themes(blog_id):
     reason = auth.check_template_lock(blog, True)
 
     action = (
-        'Save blog templates to new theme',
-        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)
+        ('Save blog templates to new theme',
+        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)),
         )
 
 
@@ -761,24 +766,92 @@ def blog_select_themes(blog_id):
             }
         )
 
-
 @transaction
-def blog_republish(blog_id):
-    '''
-    UI for republishing an entire blog
-    Eventually to be reworked
-    '''
+def blog_republish(blog_id, pass_id=1, item_id=0):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
-    report = cms.republish_blog(blog)
 
-    return template('listing/report',
-        report=report,
-        search_context=(search_context['blog_queue'], blog),
-        menu=generate_menu('blog_republish', blog),
-        **template_tags(blog_id=blog.id,
-            user=user).__dict__)
+    data = []
+
+    # check for dirty templates?
+
+    from core import cms
+    from core.libs.bottle import HTTPResponse
+    from settings import BASE_PATH
+    r = HTTPResponse()
+
+    if pass_id == 1:
+        cms.queue.queue_ssi_actions(blog)
+        item_id = 0
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            item_id))
+
+    elif pass_id == 2:
+        cms.queue.queue_index_actions(blog, include_manual=True)
+        item_id = 0
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            item_id))
+
+    elif pass_id == 3:
+        total = blog.pages.published.count()
+        pages = blog.pages.published.paginate(item_id, 20)
+
+        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {} of {}</h3><hr>".format(
+            blog.for_log,
+            pass_id,
+            item_id * 20,
+            total))
+
+        if pages.count() > 0:
+            cms.queue.queue_page_actions(pages, no_neighbors=True)
+            item_id += 1
+        else:
+            item_id = 0
+
+    if item_id == 0:
+        pass_id += 1
+
+    r.body = ''.join(data)
+
+    if pass_id < 4:
+        r.add_header('Refresh', "0;{}/blog/{}/republish/{}/{}".format(
+        BASE_PATH,
+        blog_id,
+        pass_id,
+        item_id))
+    else:
+        r.body = "Queue insertion finished."
+        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
+        BASE_PATH,
+        blog_id))
+
+    return r
+
+@transaction
+def blog_republish_batch(blog_id):
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    pages_to_queue = request.forms.getall('check')
+    pages_that_can_be_queued = blog.pages.published.select().where(
+        Page.id << pages_to_queue)
+    page_count = pages_that_can_be_queued.count()
+    response.add_header('X-Page-Count', page_count)
+    if page_count > 0:
+        queue.queue_page_actions(pages_that_can_be_queued)
+        msg = '<b>OK:</b> {} pages queued for publication.'.format(page_count)
+    else:
+        msg = '<b>NOTE:</b> No pages queued for publication.'
+
+    return msg
 
 @transaction
 def blog_purge(blog_id):
@@ -802,29 +875,71 @@ def blog_purge(blog_id):
         **template_tags(blog_id=blog.id,
             user=user).__dict__)
 
+@transaction
+def blog_queue_clear(blog_id):
+    '''
+    Clear all pending jobs out of the queue
+    '''
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    Queue.clear(blog)
 
 @transaction
-def blog_queue(blog_id):
-
-    from core.cms import job_type
+def blog_queue(blog_id, status=None):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
 
     tags = template_tags(blog_id=blog.id,
+            user=user,
+            status=status)
+
+    action = (
+        ('Clear queue',
+        '{}/blog/{}/queue/clear'.format(BASE_URL, blog.id)),
+        )
+
+    return listing(
+        request, user, status,
+        {
+            'colset':'queue',
+            'menu':'blog_menu',
+            'search_ui':'blog',
+            'search_object':blog,
+            'search_context':(search_context['blog_queue'], blog),
+            'item_list_object':tags.queue,
+            'action_button':action,
+            'list_actions':None
+        },
+        {'blog_id':blog.id}
+        )
+
+@transaction
+def blog_break_queue(blog_id):
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    Queue.stop(blog)
+
+    tags = template_tags(blog=blog,
             user=user)
 
-    paginator, queue_list = utils.generate_paginator(tags.queue, request)
-
-    return template('queue/queue_ui',
-        queue_list=queue_list,
-        paginator=paginator,
-        job_type=job_type.description,
+    return template('queue/queue_run_ui',
+        start=None,
+        action_url='',
+        start_message='''
+<p>Queue publishing stopped. Note that queued items are still in the queue,
+and may still be processed on the next queue run.</p>
+<p><a href="{}/blog/{}/queue/clear"><button class="btn">Clear the queue</button></a> to remove them entirely.</p>
+'''.format(BASE_URL, blog_id),
+        title='Publishing queue progress',
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
-
 
 @transaction
 def blog_settings(blog_id, nav_setting):
@@ -915,6 +1030,7 @@ def blog_settings_output(tags):
             ),
         **tags.__dict__)
 
+@transaction
 def blog_publish(blog_id):
 
     user = auth.is_logged_in(request)
@@ -926,21 +1042,29 @@ def blog_publish(blog_id):
     if queue_length > 0:
         start_message = template('queue/queue_run_include',
             queue=Queue.jobs(blog),
-            percentage_complete=0)
-        cms.start_queue(blog, queue_length)
+            percentage_complete=0,
+            blog=blog,
+            break_path='{}/blog/{}/publish/break'.format(BASE_URL, blog.id)
+            )
+        Queue.start(blog, queue_length)
     else:
         start_message = "Queue empty."
 
     tags = template_tags(blog_id=blog.id,
             user=user)
 
+    #
     return template('queue/queue_run_ui',
-        original_queue_length=queue_length,
+        start=queue_length,
         start_message=start_message,
+        action_url="../../blog/{}/publish/progress/{}".format(blog.id,
+                                                              queue_length),
+        title='Publishing queue progress',
         search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
+@transaction
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -952,14 +1076,20 @@ def blog_publish_progress(blog_id, original_queue_length):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-        queue_count = cms.process_queue(blog)
+        queue_count = queue.process_queue(blog)
+    else:
+        queue_count = 0
 
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
-
+    import settings
     return template('queue/queue_run_include',
             queue_count=queue_count,
+            blog=blog,
+            break_path='{}/blog/{}/publish/break'.format(BASE_URL, blog.id),
+            settings=settings,
             percentage_complete=percentage_complete)
 
+@transaction
 def blog_publish_process(blog_id):
 
     user = auth.is_logged_in(request)
@@ -969,17 +1099,20 @@ def blog_publish_process(blog_id):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-        queue_count = cms.process_queue(blog)
+        queue_count = queue.process_queue(blog)
     else:
         jobs = Queue.jobs(blog)
         if jobs.count() > 0:
             queue_count = jobs.count()
-            cms.start_queue(blog, queue_count)
-            queue_count = cms.process_queue(blog)
+            Queue.start(blog, queue_count)
+            queue_count = queue.process_queue(blog)
         else:
             queue_count = 0
-
+            # Queue.clear(blog)
+    import settings
     return template('queue/queue_counter_include',
+            blog=blog,
+            settings=settings,
             queue_count=queue_count)
 
 
@@ -1142,6 +1275,7 @@ def blog_import (blog_id):
 
     if request.method == "POST":
         from core.models import db
+        tpl = ''
         with db.atomic() as txn:
             import json
             from core.utils import string_to_date
@@ -1154,7 +1288,6 @@ def blog_import (blog_id):
             from core.error import PageNotChanged
             from core.libs.peewee import InterfaceError
             from core.cms import media_filetypes
-            from core.libs import pytz
             format_str = "<b>{}</b> / (<i>{}</i>)"
 
             # TODO: go in chunks of 50 or something?
@@ -1164,46 +1297,49 @@ def blog_import (blog_id):
                 n_id = n['id']
                 q.append("Checking {}".format(n_id))
                 changed = False
+                found = False
                 match = Page.kv_get('legacy_id', n_id)
                 if match.count() > 0:
-                    q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
-                    existing_entry = Page.load(match[0].objectid)
-                    update = existing_entry.kv_get('update').count()
-                    # raise Exception(update)
-                    q.append('{} / {}'.format(string_to_date(n['modified_date']).replace(tzinfo=None), existing_entry.modified_date
-                        ))
-                    if string_to_date(n['modified_date']).replace(tzinfo=None) <= existing_entry.modified_date and update == 0:
-                        q.append('Existing page {} not changed.'.format(existing_entry.id))
-                    else:
-                        changed = True
-                        q.append('Updating data for existing page {}.'.format(existing_entry.id))
-                        existing_entry.title = n['title']
-                        existing_entry.text = n['text']
-                        existing_entry.basename = n['basename']
-                        existing_entry.excerpt = n['excerpt']
+                    if match[0].object_ref.blog == blog:
+                        found = True
+                        q.append(match[0].key + "/" + match[0].value + " / Exists: " + format_str.format(n['title'], n_id))
+                        existing_entry = Page.load(match[0].objectid)
+                        update = existing_entry.kv_get('update').count()
+                        # raise Exception(update)
+                        q.append('{} / {}'.format(string_to_date(n['modified_date']).replace(tzinfo=None), existing_entry.modified_date
+                            ))
+                        if string_to_date(n['modified_date']).replace(tzinfo=None) <= existing_entry.modified_date and update == 0:
+                            q.append('Existing page {} not changed.'.format(existing_entry.id))
+                        else:
+                            changed = True
+                            q.append('Updating data for existing page {}.'.format(existing_entry.id))
+                            existing_entry.title = n['title']
+                            existing_entry.text = n['text']
+                            existing_entry.basename = n['basename']
+                            existing_entry.excerpt = n['excerpt']
 
-                        existing_entry.created_date = string_to_date(n['created_date']).replace(tzinfo=None)
-                        existing_entry.modified_date = string_to_date(n['modified_date']).replace(tzinfo=None)
-                        existing_entry.publication_date = string_to_date(n['publication_date']).replace(tzinfo=None)
+                            existing_entry.created_date = string_to_date(n['created_date']).replace(tzinfo=None)
+                            existing_entry.modified_date = string_to_date(n['modified_date']).replace(tzinfo=None)
+                            existing_entry.publication_date = string_to_date(n['publication_date']).replace(tzinfo=None)
 
-                        try:
-                            existing_entry.save(user, False, False, 'New revision from import')
-                        except PageNotChanged:
-                            pass
-                        except InterfaceError:
-                            raise Exception("Error saving {}. Check the JSON to make sure it's valid.".format(n_id))
+                            try:
+                                existing_entry.save(user, False, False, 'New revision from import')
+                            except PageNotChanged:
+                                pass
+                            except InterfaceError:
+                                raise Exception("Error saving {}. Check the JSON to make sure it's valid.".format(n_id))
 
-                        for media in existing_entry.media:
-                            media.kv_del()
+                            for media in existing_entry.media:
+                                media.kv_del()
 
-                        existing_entry.clear_categories()
-                        existing_entry.clear_kvs()
-                        existing_entry.clear_tags()
-                        existing_entry.clear_media()
+                            existing_entry.clear_categories()
+                            existing_entry.clear_kvs()
+                            existing_entry.clear_tags()
+                            existing_entry.clear_media()
 
-                        entry = existing_entry
+                            entry = existing_entry
 
-                else:
+                if found is False:
                     q.append("Creating: " + format_str.format(n['title'], n_id))
                     changed = True
                     new_entry = Page(
@@ -1227,6 +1363,8 @@ def blog_import (blog_id):
 
                     entry = new_entry
 
+                    q.append("New ID: {}".format(entry.id))
+
                     # Everything from here on out is
 
                 if changed:
@@ -1247,9 +1385,16 @@ def blog_import (blog_id):
                     else:
                         primary = True
                         for category in categories:
+                            cat_exists = False
+
                             category_id = category['id']
                             existing_category = Category.kv_get('legacy_id', category_id)
-                            if existing_category.count() == 0:
+                            if existing_category.count() > 0:
+                                if existing_category[0].object_ref.blog == blog:
+                                    cat_exists = True
+
+                            if cat_exists is False:
+
                                 q.append('Created new category {}/{}'.format(
                                     category_id, category['name']
                                     ))
@@ -1268,6 +1413,7 @@ def blog_import (blog_id):
                                 q.append('Added to existing category {}/{}'.format(
                                     new_category.id, category['name']
                                     ))
+
                             saved_page_category = PageCategory.create(
                                 page=entry,
                                 category=new_category,
@@ -1353,11 +1499,11 @@ def blog_import (blog_id):
                             new_media.kv_set(key, value)
                             q.append('KV: {}:{}'.format(key, value))
 
-                    cms.build_pages_fileinfos((entry,))
-                    cms.build_archives_fileinfos((entry,))
+                    fileinfo.build_pages_fileinfos((entry,))
+                    fileinfo.build_archives_fileinfos((entry,))
 
-                tpl = ('<p>'.join(q)) + '<hr/>'
-                yield tpl
+                tpl += ('<p>'.join(q)) + '<hr/>'
+        return tpl
 
         # TODO:
 
@@ -1376,5 +1522,5 @@ def blog_import (blog_id):
             import_path=import_path,
             **tags.__dict__)
 
-        yield tpl
+        return tpl
 

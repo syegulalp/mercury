@@ -53,6 +53,15 @@ publishing_mode.do_not_publish = "Do not publish"
 publishing_mode.include = "Include"
 publishing_mode.ssi = "Server-side include"
 
+archive_defaults = {
+    template_type.index:(archive_type.index,),
+    template_type.page:(archive_type.page,),
+    template_type.archive:(archive_type.category,
+                           archive_type.archive,
+                           archive_type.author)
+}
+
+
 publishing_mode.description = {
         publishing_mode.immediate:{
             'label':'primary',
@@ -128,6 +137,24 @@ class EnforcedCharField(CharField):
         return super(CharField, self).db_value(value)
 
 
+class Pages(SelectQuery):
+    @property
+    def published(self):
+        return self.where(Page.status == page_status.published)
+    def scheduled(self, due=False):
+        scheduled_pages = self.where(Page.status == page_status.scheduled)
+        if due is True:
+            scheduled_pages = scheduled_pages.select().where(
+                Page.publication_date >= datetime.datetime.utcnow())
+        return scheduled_pages
+
+#         def with_title(n, titles):
+#             return n.where(Page.title.contains(titles))
+#         def with_id(n, page_list):
+#             return n.where(Page.id << page_list)
+#         def has(n, prop, value):
+#             return n.where(getattr(Page, prop).contains(value))
+
 class BaseModel(Model):
 
     class Meta:
@@ -146,36 +173,9 @@ class BaseModel(Model):
     def pages(self):
         try:
             n = self._pages
-        except KeyError as e:
-            raise KeyError('This object does not have pages. ({})'.format(e))
-
-        '''
-        def with_title(n, titles):
-            return n.where(Page.title.contains(titles))
-        def with_id(n, page_list):
-            return n.where(Page.id << page_list)
-        def has(n, prop, value):
-            return n.where(getattr(Page, prop).contains(value))
-
-        # n.with_title = lambda x: with_title(n, x)
-        # n.with_id = lambda x: with_id(n, x)
-        # n.has = lambda x, y:has(n, x, y)
-
-        '''
-
-        def published(n):
-            return n.where(Page.status == page_status.published)
-
-        def scheduled(n, due=False):
-            scheduled_pages = n.pages.where(Page.status == page_status.scheduled)
-            if due is True:
-                scheduled_pages = scheduled_pages.select().where(
-                    Page.publication_date >= datetime.datetime.utcnow())
-            return scheduled_pages
-
-        n.published = published(n)
-        n.scheduled = lambda x: scheduled(n, x)
-
+            n.__class__ = Pages
+        except Exception:
+            return None
         return n
 
     @classmethod
@@ -235,6 +235,7 @@ class BaseModel(Model):
         except KeyError:
             return 'System'
 
+    '''
     def kv_add(self, **kw):
 
         # TODO: deprecate
@@ -253,6 +254,7 @@ class BaseModel(Model):
         kv.save()
 
         return kv
+    '''
 
     @property
     def n_t(self):
@@ -350,16 +352,22 @@ class BaseModel(Model):
         return kv_list
 
     def kv_set(self, key=None, value=None, **kw):
-        kv = KeyValue(
-            object=self.__class__.__name__,
-            objectid=self.id,
-            key=key,
-            value=value,
-            parent=kw['parent'] if 'parent' in kw else None,
-            is_schema=kw['is_schema'] if 'is_schema' in kw else False,
-            is_unique=kw['is_unique'] if 'is_unique' in kw else False,
-            value_type=kw['value_type'] if 'value_type' in kw else ''
+        # TODO: Default action should be to check for existing key
+        try:
+            kv = self.kv_get(key=key, value=None).get()
+        except Exception:
+            kv = KeyValue(
+                object=self.__class__.__name__,
+                objectid=self.id,
+                key=key,
+                value=value
             )
+
+        kv.parent = kw['parent'] if 'parent' in kw else None
+        kv.is_schema = kw['is_schema'] if 'is_schema' in kw else False
+        kv.is_unique = kw['is_unique'] if 'is_unique' in kw else False
+        kv.value_type = kw['value_type'] if 'value_type' in kw else ''
+
         return kv.save()
 
     def __init__(self, *a, **ka):
@@ -368,12 +376,18 @@ class BaseModel(Model):
 
     @classmethod
     def kv_get(cls, key=None, value=None, object_type=None, object_id=None):
-        # cls._kv_get(cls(), key, value, None, object_id)
-        return cls().kv_get(key, value, object_type, object_id, special=True)
+        if key is None:
+            raise KeyError('You must provide a key name')
+        try:
+            return cls().kv_get(key, value, object_type, object_id, special=True)
+        except Exception as e:
+            raise e
 
-    def _kv_get(self, key=None, value=None, object_type=None, object_id=None, special=None):
+    def _kv_get(self, key=None, value=None, object_type=None,
+                object_id=None, special=None):
         '''
         Retrieves one or more KVs for a specific key, value, and object ID.
+        This is a "master" function -- other KV functions will use it in some form.
 
         If invoked from a class -- e.g., Page.kv_get() -- it returns matches
         for all objects in that class.
@@ -414,23 +428,40 @@ class BaseModel(Model):
         If no specific key is provided, all keys on
         the current object are purged.
         '''
-        kv = KeyValue.delete().where(
-            KeyValue.object == self.__class__.__name__,
-            KeyValue.objectid == self.id,
-            )
         if key is not None:
-            kv = kv.delete().where(
+            kv = KeyValue.delete().where(
                 KeyValue.key == key)
+        else:
+            kv = KeyValue.delete().where(
+                KeyValue.object == self.__class__.__name__,
+                KeyValue.objectid == self.id,
+                )
 
         return kv.execute()
 
-    def kv(self, key=None, value=None, all=False):
+    def kv_val(self, key=None):
+        if key is None:
+            raise KeyError('You must provide a key name')
+        try:
+            kv_to_check = self.kv(key=key)
+        except Exception as e:
+            raise e
+        return getattr(kv_to_check, 'value', None)
+        # FIXME: How do we know this is a key with a NoneType setting?
+        # If the key doesn't exist at all, we should raise a KeyError?
+
+    def kv(self, key=None, value=None, _all=False):
+        # TODO: base this off _kv_get or get rid of it
         '''
         Retrieves a KV for a given object in context.
         E.g., if you call this from an instance of Page,
         it will fetch any KVs attached to that page.
         Set 'all' to True if you are expecting to retrieve
         multiple keys with the same name.
+        It's never a good idea to have multiple keys
+        with the same name stored on an object, but we
+        do want to make sure we have a way to handle that
+        case.
         '''
         # TODO: Use kv_get
 
@@ -447,7 +478,7 @@ class BaseModel(Model):
         if kv.count() == 0:
             return None
         if kv is not None:
-            if all:
+            if _all:
                 return kv
             else:
                 return kv[0]
@@ -491,6 +522,9 @@ class User(BaseModel):
         return new_permission
 
     def remove_permissions(self, permission_ids):
+        # TODO: Rewrite this!
+        # Test FIRST, and THEN do the delete.
+        # Don't depend on this being inside a transaction!!
         from core import auth
         remove_permission = Permission.delete().where(
             Permission.user == self,
@@ -623,7 +657,7 @@ class SiteBase(BaseModel):
     base_index = CharField(null=False, default='index')
     base_extension = CharField(null=False, default='html')
     description = TextField()
-    media_path = TextField(default='media')
+    media_path = TextField(default="'media/%Y'")
     ssi_path = TextField(default='_include')
     editor_css = TextField(null=True)
 
@@ -746,6 +780,7 @@ class Site(SiteBase, ConnectionBase):
         return Blog.select().where(Blog.site == self)
 
     def pages(self, page_list=None):
+        raise Exception('Use _pages!')
 
         blogs = Blog.select(Blog.id).where(
             Blog.site == self).tuples()
@@ -822,9 +857,9 @@ class Blog(SiteBase):
     # def theme_apply_to_blog(theme, blog, user):
     def apply_theme(self, theme, user):
 
-        from core import cms
+        from core.cms import fileinfo, cms
 
-        cms.purge_fileinfos(self.fileinfos)
+        fileinfo.purge_fileinfos(self.fileinfos)
         self.erase_theme()
 
         from settings import THEME_FILE_PATH, _join
@@ -891,7 +926,6 @@ class Blog(SiteBase):
         archive_default = self.templates().select().where(
             Template.default_type == default_type).get()
         return archive_default
-
 
     @property
     def archive_templates(self):
@@ -1106,10 +1140,29 @@ class Blog(SiteBase):
             media=media_object,
             blog=self)
 
-        template = tpl(self.media_path,
-            **tags)
+        try:
+            template = tpl(self.media_path,
+                           **tags)
+        except Exception:
+            template = None
 
         # TODO: strip all newlines for a multi-line template?
+
+        return template
+
+    @property
+    def media_path_generated(self):
+
+        tags = template_tags(blog=self)
+        from core.utils import generate_date_mapping
+
+        try:
+            template = generate_date_mapping(
+                datetime.datetime.now(),
+                tags,
+                self.media_path)
+        except Exception:
+            return None
 
         return template
 
@@ -1141,13 +1194,18 @@ class Blog(SiteBase):
 
     @property
     def _pages(self):
-        return Page.select(Page, PageCategory).where(
-            Page.blog == self.id).join(
-            PageCategory).where(
-            PageCategory.primary == True).order_by(
+        return Page.select().where(
+            Page.blog == self.id).order_by(
             Page.publication_date.desc(), Page.id.desc())
 
+#         return Page.select(Page, PageCategory).where(
+#             Page.blog == self.id).join(
+#             PageCategory).where(
+#             PageCategory.primary == True).order_by(
+#             Page.publication_date.desc(), Page.id.desc())
 
+
+    # TODO: I don't think we need this anymore
     @property
     def parent(self):
         return self.theme
@@ -1183,6 +1241,11 @@ class Blog(SiteBase):
                 Page.publication_date >= datetime.datetime.utcnow())
         return scheduled_pages
     """
+
+    def set_default_archive_template(self, tpl, a_type):
+        pass
+        # clear all other templates associated with blog
+        # set a_type
 
     def setup(self, user, theme=None):
         '''
@@ -1341,6 +1404,10 @@ class Blog(SiteBase):
                 self.timezone = pytz.all_timezones[int(self.set_timezone)]
             except Exception:
                 errors.append('You must choose a valid timezone.')
+
+        if self.media_path_generated is None:
+            errors.append('Invalid media path. Path must be a mapping expression.')
+
         if len(errors) > 0:
             raise Exception(errors)
         else:
@@ -1351,38 +1418,45 @@ class Category(BaseModel):
 
     title = TextField()
     # description = TextField(default=None, null=True, index=True)
+    basename = TextField()
     parent_category = IntegerField(default=None, null=True, index=True)
     default = BooleanField(default=False, index=True)
     sort = IntegerField(default=None, null=True, index=True)
 
     security = 'is_blog_admin'
 
+    def save(self, *a, **ka):
+        if self.basename is None:
+            self.basename = create_basename_core(self.title)
+        super().save(*a, **ka)
+
+    @property
+    def basename_path(self):
+        if self.parent_category is None:
+            return self.basename
+        else:
+            path = [self.basename, ]
+            s = self.parent_category
+            while s is not None:
+                path.insert(0, s.basename)
+                if s.parent_category is not None:
+                    s = s.parent_category
+                else:
+                    s = None
+            return '/'.join(path)
+
+
     @property
     def site(self):
         return self.blog.site
-
-    # TODO: invoke pages filter, so we can filter as we do for a blog
-    # we may want to make that pages filter generic,
-    # and keep it on the Page object
 
     @property
     def _pages(self):
         categories = PageCategory.select(PageCategory.page).where(
             PageCategory.category == self)
-        pages = Page.select().where(Page.id << categories)
+        pages = Page.select().where(Page.id << categories).order_by(Page.publication_date.desc(),
+                                                                    Page.id.desc())
         return pages
-
-    """
-    @property
-    def published_pages(self):
-        published_pages = self.pages.where(Page.status == page_status.published)
-        return published_pages
-    """
-
-    # TODO:
-    # Some invocations of this method pass a blog parameter to ensure
-    # that we are retrieving a valid category for a valid blog.
-    # We may want to streamline this in the future.
 
     @classmethod
     def load(cls, category_id=None, **kwargs):
@@ -1400,6 +1474,8 @@ class Category(BaseModel):
             raise Category.DoesNotExist('Category #{} does not exist'.format(category_id))
         return category_to_get
 
+    # TODO: convert manual links to link_format,
+    # both here and for other models where it's appropriate
     @property
     def link_format(self):
         if self.id is None:
@@ -1408,6 +1484,10 @@ class Category(BaseModel):
         return "{}/blog/{}/category/{}".format(
             BASE_URL, self.blog.id, self.id)
 
+    # TODO: Add archive_default based on what Blog uses
+    @property
+    def archive_default(self):
+        return None
 
     @property
     def next_category(self):
@@ -1505,7 +1585,7 @@ class Page(BaseModel, DateMod):
 
     def proxy(self, object_map):
         page_proxy = Page.load(self.id)
-        iterables = {Tag:'tag', Category:'category'}
+        iterables = {Tag:'tag', PageCategory:'category'}
         page_proxy.context = lambda:None
         for n in object_map:
             if type(n) in iterables:
@@ -1659,6 +1739,8 @@ class Page(BaseModel, DateMod):
         t = TemplateMapping.get(TemplateMapping.is_default == True,
             TemplateMapping.template << self.templates.select(Template.id).where(
                 Template.default_type == "P").tuples())
+        # FIXME: I think the "P" here is the old, old default_type signifier.
+        # Look into this.
 
         default_template_mapping = self.publication_date.date().strftime(t.path_string)
 
@@ -1677,9 +1759,9 @@ class Page(BaseModel, DateMod):
             try:
                 fileinfos[0]
             except IndexError:
-                from core import cms
-                m = cms.build_archives_fileinfos((self,))
-                n = len(cms.build_pages_fileinfos((self,)))
+                from core.cms import fileinfo
+                m = fileinfo.build_archives_fileinfos((self,))
+                n = len(fileinfo.build_pages_fileinfos((self,)))
                 if n + m == 0:
                     raise Exception('No fileinfos could be built for page {}'.self.for_log)
             else:
@@ -1744,12 +1826,6 @@ class Page(BaseModel, DateMod):
 
     @property
     def preview_permalink(self):
-        '''
-        TODO: the behavior of this function is wrong
-        in both local and remote mode,
-        it should specify a link to a temporary file
-        generated from the current draft for the sake of a preview.
-        '''
 
         if self.status_id == page_status.published:
 
@@ -1803,8 +1879,9 @@ class Page(BaseModel, DateMod):
         This allows any number of next/previous methods to be built.
         '''
         next_all = self.blog.pages.published.where(
-                Page.blog == self.blog,
-                Page.publication_date > self.publication_date).order_by(
+                Page.blog == self.blog, Page.id != self.id,
+                ((Page.publication_date > self.publication_date) |
+                ((Page.publication_date == self.publication_date) & (Page.id > self.id)))).order_by(
                 Page.publication_date.asc(), Page.id.asc())
 
         return next_all
@@ -1816,9 +1893,11 @@ class Page(BaseModel, DateMod):
         so that it can be filtered by some other method.
         '''
         prev_all = self.blog.pages.published.where(
-                Page.blog == self.blog,
-                Page.publication_date < self.publication_date).order_by(
+Page.blog == self.blog, Page.id != self.id,
+                ((Page.publication_date < self.publication_date) |
+                ((Page.publication_date == self.publication_date) & (Page.id < self.id)))).order_by(
                 Page.publication_date.desc(), Page.id.desc())
+
         return prev_all
 
     @property
@@ -1860,7 +1939,7 @@ class Page(BaseModel, DateMod):
         return previous_page
 
     @property
-    def next_in_category(self, category=None, _all=False):
+    def next_in_categories(self, categories=None, _all=False):
         '''
         Returns the next entry in the blog under the category in question.
         The default category choice is the blog's default category.
@@ -1875,7 +1954,7 @@ class Page(BaseModel, DateMod):
         pass
 
     @property
-    def previous_in_category(self, category=None, _all=False):
+    def previous_in_categories(self, categories=None, _all=False):
         '''
         This returns the previous entry in the blog under the category in question.
         The default category choice is the blog's default category.
@@ -2038,6 +2117,10 @@ class KeyValue(BaseModel):
     is_unique = BooleanField(default=False)
     value_type = CharField(max_length=64)
 
+    @property
+    def object_ref(self):
+        obj = globals()[self.object]
+        return obj.select().where(obj.id == self.objectid).get()
 
     @property
     def key_parent(self):
@@ -2078,9 +2161,9 @@ class Tag(BaseModel):
     is_hidden = BooleanField(default=False, index=True)
 
     tag_template = '''
-    <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See tag details"
+    <span class='tag-block'><button {new} data-tag="{id}" id="tag_{id}" title="See details for tag '{tag_esc}'"
     type="button" class="btn btn-{btn_type} btn-xs tag-title">{tag}</button><button id="tag_del_{id}"
-    data-tag="{id}" title="Remove tag" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
+    data-tag="{id}" title="Remove tag '{tag_esc}'" type="button" class="btn btn-{btn_type} btn-xs tag-remove"><span class="glyphicon glyphicon-remove"></span></button></span>
     '''
     tag_link_template = '''
     <a class="tag_link" target="_blank" href="{url}">{tag}</a>'''
@@ -2183,6 +2266,7 @@ class Tag(BaseModel):
         btn_type = 'warning' if self.tag[0] == "@" else 'info'
 
         template = self.tag_template.format(
+            tag_esc=self.tag.replace('"', "''"),
             id=self.id,
             btn_type=btn_type,
             new='',
@@ -2204,6 +2288,7 @@ class Tag(BaseModel):
             tag=self.new_tag_template.format(
                 tag=html_escape(self.tag)),
             btn_type=btn_type,
+            tag_esc=self.tag.replace('"', "''"),
             new='data-new-tag="{}" '.format(html_escape(self.tag))
             )
 
@@ -2686,7 +2771,7 @@ class FileInfo(BaseModel):
     @property
     def category(self):
         try:
-            category = self.context.select().where(FileInfoContext.object == "C").get()
+            category = self.context.select().where(FileInfoContext.object == "c").get()
             category = category.ref
         except FileInfoContext.DoesNotExist:
             category = None
@@ -2720,14 +2805,165 @@ class Queue(BaseModel):
     date_touched = DateTimeField(default=datetime.datetime.utcnow)
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
+    # status = CharField(max_length=1, null=True, default=None)
+    # processing = P
+    # failed = F
+    # .set_processing
+    # .set_failed
+    # .clear_completed
+
+    @classmethod
+    def push(cls, **ka):
+        '''
+        Inserts a single job item into the work queue.
+
+        :param job_type:
+            A string representing the type of job to be inserted.
+            One of a list of strings from the job_type object in core.cms.
+
+        :param data_integer:
+            Any integer data passed along with the job. For a job control item, this
+            is the number of items remaining for that particular job.
+            For a regular publishing job, this is the id of the fileinfo.
+
+        :param blog:
+            The blog object associated with the job.
+
+        :param site:
+            The site object associated with the job.
+
+        :param priority:
+            An integer, from 0-9, representing the processing priority associated with the job.
+            Higher-priority jobs are processed first. Most individual pages are given a high
+            priority; indexes are lower.
+        '''
+
+        try:
+            queue_job = cls.get(
+                cls.job_type == ka['job_type'],
+                cls.data_integer == ka['data_integer'],
+                cls.blog == ka['blog'],
+                cls.site == ka['site']
+                )
+        except cls.DoesNotExist:
+            queue_job = cls()
+        else:
+            return False
+
+        queue_job.job_type = ka['job_type']
+        queue_job.data_integer = int(ka.get('data_integer', None))
+        queue_job.blog = ka.get('blog', Blog()).id
+        queue_job.site = ka.get('site', Site()).id
+        queue_job.priority = ka.get('priority', 9)
+        queue_job.is_control = ka.get('is_control', False)
+
+        if queue_job.is_control:
+            queue_job.data_string = ka.get('data_string', (queue_job.job_type + ": Blog {}".format(
+                queue_job.blog.for_log)))
+        else:
+            queue_job.data_string = (queue_job.job_type + ": " +
+                FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
+
+        queue_job.date_touched = datetime.datetime.utcnow()
+        queue_job.save()
+        return True
+
+    # TODO: MOVE THIS TO THE QUEUE MODEL
+    @classmethod
+    def remove(cls, queue_deletes):
+        '''
+        Removes jobs from the queue.
+        :param queue_deletes:
+            A list of queue items, represented by their IDs, to be deleted.
+        '''
+        deletes = cls.delete().where(cls.id << queue_deletes)
+        return deletes.execute()
+
+    @classmethod
+    def stop(cls, blog=None):
+        delete_queue = cls.delete().where(cls.is_control == True)
+        if blog is not None:
+            delete_queue = delete_queue.where(cls.blog == blog)
+        return delete_queue.execute()
+
+    @classmethod
+    def start(cls, blog=None, queue_length=None, jobtype=None):
+        from core.cms.queue import job_type
+
+        if blog is None:
+            raise Exception("You must specify a blog when starting a queue process.")
+
+        if jobtype == None:
+            jobtype = job_type.control
+
+        if queue_length is None:
+            queue_length = Queue.job_counts(blog=blog)
+
+        cls.push(blog=blog,
+            site=blog.site,
+            job_type=jobtype,
+            is_control=True,
+            data_integer=queue_length
+            )
+
+        return queue_length
+
+        # TODO: eventually this will include insert jobs as well?
+        # Make sure the queue is locked properly when we do that
+        # and when we do the insert, perhaps we should get the total number
+        # of prospective jobs from a model object.
+        # for instance, if we want to push all the insert jobs
+        # for a given template, we can get that directly from the template
+        # likewise, for a whole blog (all template objects)
+        # likewise, for other classes of objects (e.g., all the templates from a page)
+        # easiest to start with just individual templates or whole blogs,
+        # since those are easy to calculate and coalesce
 
     @classmethod
     def clear(cls, blog=None):
-        if blog is None:
-            delete_queue = cls.delete()
-        else:
-            delete_queue = cls.delete().where(cls.blog == blog)
+        delete_queue = cls.delete()
+        if blog is not None:
+            delete_queue = delete_queue.where(cls.blog == blog)
         return delete_queue.execute()
+
+    def lock(self):
+        if self.is_running:
+            from core.error import QueueInProgressException
+            raise QueueInProgressException("Publishing job currently running for blog {}".format(
+                self.blog.for_log))
+        self.is_running = True
+        self.save()
+
+    def unlock(self):
+        if not self.is_running:
+            from core.error import QueueInProgressException
+            raise QueueInProgressException("Publishing job not currently running for blog {}".format(
+                self.blog.for_log))
+        self.is_running = False
+        self.save()
+
+    # we may want to make a context manager at some point
+    # we may also want to auto-acquire the lock as a default
+    @classmethod
+    def acquire(cls, blog, return_queue=False):
+        '''
+        Checks to see if a publishing job for a given blog is currently running.
+        If it is, it raises an exception.
+        If the return_queue flag is set, it returns the queue_control object instead.
+        If no job is locked, then it returns None.
+        '''
+        try:
+            queue_control = cls.select().where(cls.blog == blog,
+                cls.is_control == True).order_by(cls.id.asc()).get()
+        except cls.DoesNotExist:
+            return None
+
+        if return_queue is True:
+            return queue_control
+        else:
+            from core.error import QueueInProgressException
+            raise QueueInProgressException("Publishing job currently running for blog {}".format(
+                blog.for_log))
 
     @classmethod
     def for_blog(self, blog=None):
@@ -2740,12 +2976,16 @@ class Queue(BaseModel):
         return cls.for_blog(blog).where(Queue.is_control == True)
 
     @classmethod
+    def control_job(cls, blog=None):
+        return cls.control_jobs(blog).get()
+
+    @classmethod
     def jobs(cls, blog=None):
         return cls.for_blog(blog).where(Queue.is_control == False)
 
     @classmethod
     def job_counts(cls, blog=None, site=None):
-        from core.cms import job_type as jt
+        from core.cms.queue import job_type as jt
 
         # all_jobs = all_queue_jobs(blog, site)
 
@@ -2798,6 +3038,16 @@ class Plugin(BaseModel):
     def n_t(self):
         return self.friendly_name
 
+    # move to model definition
+    @classmethod
+    def load(cls, plugin_id, action_text='initialize'):
+        try:
+            existing_plugin = cls.select().where(
+                cls.id == plugin_id).get()
+        except cls.DoesNotExist:
+            from core.error import PluginImportError
+            raise PluginImportError("Plugin {} not found to {}.".format(plugin_id, action_text))
+        return existing_plugin
 
     @property
     def link_format(self):
@@ -2808,9 +3058,48 @@ class Plugin(BaseModel):
         from core.plugins import plugin_list
         return plugin_list
 
+    def ui(self):
+        return self.plugin.ui(self)
+
+    def data(self, blog=None, site=None, user=None):
+        return PluginData.select().where(PluginData.plugin == self.id)
+
+    def clear_data(self):
+        data_del = PluginData.delete().where(PluginData.plugin == self)
+        data_del.execute()
+
+    def reset(self):
+        self.clear_data()
+
+        try:
+            plugin_settings = self.plugin.install()['settings']
+        except (AttributeError, TypeError) as e:
+            raise e
+        except Exception as e:
+            raise e
+        else:
+            for n in plugin_settings:
+                settings_data = PluginData(
+                    plugin=self,
+                    key=n.get('key', None),
+                    # text_value=n.get('text_value', None),
+                    int_value=n.get('int_value', None),
+                    )
+
+                    # blog=n.get('blog', None),
+                    # site=n.get('site', None),
+                    # parent=n.get('parent', None)
+                    # )
+                settings_data.save()
+
+
+    @property
+    def plugin(self):
+        return self._plugin_list[self.id]
+
     def _get_plugin_property(self, plugin_property, deactivated_message):
         if self.enabled is True:
-            return self._plugin_list[self.name].__dict__[plugin_property]
+            return self.plugin.__dict__[plugin_property]
         else:
             return deactivated_message
 
@@ -2834,17 +3123,17 @@ class AuxData(BaseModel):
     key = TextField(null=False)
     text_value = TextField(null=True)
     int_value = IntegerField(null=True)
-    parent = IntegerField(null=True)
-
-    @property
-    def children(self):
-        return self.select().where(
-            self.parent == self.id)
-
-    @property
-    def parent(self):
-        return self.select().where(
-            self.id == self.parent)
+#     parent = IntegerField(null=True)
+#
+#     @property
+#     def children(self):
+#         return self.select().where(
+#             self.parent == self.id)
+#
+#     @property
+#     def parent(self):
+#         return self.select().where(
+#             self.id == self.parent)
 
 class PluginData(AuxData):
 
@@ -2859,11 +3148,11 @@ class PluginData(AuxData):
             self.plugin == plugin)
         return settings_to_remove.execute()
 
-    @property
-    def plugin(self, plugin_name):
-        return self.select().where(
-            PluginData.plugin == Plugin.get().where(
-                Plugin.name == plugin_name))
+#     @property
+#     def plugin(self, plugin_name):
+#         return self.select().where(
+#             PluginData.plugin == Plugin.get().where(
+#                 Plugin.name == plugin_name))
 
 class ThemeData(AuxData):
 
@@ -2890,6 +3179,7 @@ class ThemeData(AuxData):
 # We should eventually convert this to a class where the attributes
 # are generated as needed on demand, not all at once. If possible
 
+from core import utils as _utils
 
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
@@ -2898,45 +3188,26 @@ class TemplateTags(object):
     tags_init = ("blog", "page", "authors", "site", "user", "media",
         "template", "archive")
 
-    def load(self, name):
-        if self.blog:
-            return self.blog.templates().where(
-                Template.title == name).get().as_module(self.__dict__)
-        else:
-            raise Blog.DoesNotExist(
-                'You must have a blog defined in this context to load modules.')
-
-    # def csrf_token(self):
-        # return csrf_tag(self.token)
-    # def csrf(self):
-        # return csrf_hash(self.token)
-    # I'm not too comfortable storing the token
-    # in this object so I'm taking it out for now
-
     def __init__(self, **ka):
-
-        from core import utils as _utils
 
         for key in self.tags_init:
             setattr(self, key, None)
 
-        self.search_query, self.search_terms = '', ''
         self.request = request
         self.settings = _settings
         self.utils = _utils
         self.sites = Site.select()
         self.status_modes = page_status
-        self.tags = template_tags
-        # self.media = get_media
 
+        self.tags = template_tags
+
+        self.search_query, self.search_terms = '', ''
         if 'search' in ka:
             if ka['search'] is not None:
                 self.search_terms = ka['search']
                 self.search_query = "&search=" + self.search_terms
 
         self.pages = ka.get('pages', None)
-        # we need to bring this into harmony with the other defs
-
         self.status = ka.get('status', None)
 
         if 'user' in ka:
@@ -2970,6 +3241,9 @@ class TemplateTags(object):
         if 'template_id' in ka:
             self.template = Template.load(ka['template_id'])
             ka['blog_id'] = self.template.blog.id
+        elif 'template' in ka:
+            self.template = ka['template']
+            ka['blog_id'] = self.template.blog.id
 
         if 'blog_id' in ka:
             self.blog = Blog.load(ka['blog_id'])
@@ -2995,12 +3269,26 @@ class TemplateTags(object):
             self.queue_count = Queue.job_counts()
 
         if 'archive' in ka:
-            self.archive = Struct()
-            setattr(self.archive, "pages", ka['archive'])
-            if self.archive.pages.count() == 0:
-                setattr(self.archive, "context", self.blog.pages.get().publication_date)
+            # this whole thing is no good we need to rethink it
+            # what's the point?
+
+            # TODO: make archive into its own class
+            # This is already being done in cms
+            # we just need to fully populate all the objects there
+            # and have proper next/prev support, etc.
+
+            # ?? Shouldn't archive just be the page proxy??
+
+            archive = Struct()
+            setattr(archive, "pages", ka['archive'])
+
+            if archive.pages.count() == 0:
+                setattr(archive, "context", self.blog.pages.get().publication_date)
             else:
-                setattr(self.archive, "context", ka['archive'].get().publication_date)
+                setattr(archive, "context", ka['archive'].get().publication_date)
+
+            # do we even use this anywhere?
+            # would this even be the right metaphor? archive.tag?
 
             for n in (
                 (Tag, 'tag'),
@@ -3011,7 +3299,7 @@ class TemplateTags(object):
                         tags_in_archive = n[0].get(n[0].id == item_id)
                     except:
                         tags_in_archive = Tag()
-                    setattr(self.archive,
+                    setattr(archive,
                         n[1],
                         # n[0].get(n[0].id == item_id),
                         tags_in_archive
@@ -3034,16 +3322,20 @@ class TemplateTags(object):
 
             # These are taken from the fileinfo for the underlying object
             for n in ('year', 'month', 'category', 'author'):
-                setattr(self.archive, n, getattr(ka['archive_context'], n, None))
+                setattr(archive, n, getattr(ka['archive_context'], n, None))
+            # eventually we'll handle these more elegantly
+            # convert each one to their respective objects
+            if archive.category is not None:
+                setattr(archive, 'category', Category.load(archive.category))
+            if archive.author is not None:
+                setattr(archive, 'author', User.get(User.id == archive.author))
+
+            self.archive = archive
+
 
         if 'fileinfo' in ka:
             self.fileinfo = ka['fileinfo']
 
-
-        try:
-            self.modules = self.load('Modules') if self.blog else None
-        except Template.DoesNotExist:
-            self.modules = None
 
 def template_tags(**ka):
     return TemplateTags(**ka)

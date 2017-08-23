@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "959": {
+   "archive_xref": "YM", 
+   "id": 959, 
+   "is_default": true, 
+   "modified_date": "2015-02-07 03:50:34", 
+   "path_string": "'%Y/%m/'+$i ", 
+   "template": 1111
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1111, 
+  "is_include": false, 
+  "modified_date": "2016-06-24 19:07:38", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "monthly-archive-20.tpl", 
+  "template_type": "Archive", 
+  "theme": 87, 
+  "title": "Monthly Archive"
+ }
+}

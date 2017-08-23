@@ -1,35 +1,25 @@
 <div class="row">
     <div class="col-sm-6">
     <span class="dropdown">
-      <button class="btn btn-default dropdown-toggle btn-sm" type="button" id="checked_action_menu" data-toggle="dropdown" aria-expanded="true">
-        Action on checked items:
-        <span class="caret"></span>
+      <button class="btn btn-default dropdown-toggle btn-xs" type="button" id="checked_action_menu" data-toggle="dropdown" aria-expanded="true">
+        <span class="caret"></span> Select action for checked items <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu btn-sm" role="menu" aria-labelledby="checked_action_menu">
+      <ul class="dropdown-menu btn-xs" role="menu" aria-labelledby="checked_action_menu">
       % try:
       % for n in list_actions:
-      <li role="presentation"><a onclick="submit_to_api();" role="menuitem" tabindex="-1" href="#">{{n[0]}}</a></li>
+      <li role="presentation"><a onclick="submit_to_api('{{n[1]}}');" role="menuitem" tabindex="-1" href="#">{{n[0]}}</a></li>
       % end
       % except:
         <li role="presentation"><a role="menuitem" tabindex="-1" href="#">[<i>Not implemented yet</i>]</a></li>
       % end
       </ul>
     </span>
+    </div>
     
-    <span id="list_nav_action" class="">
-    % try:
-    {{!action}}
-    % except:
-    
-    % end
-    </span>
-    </div>    
-
-
     <div class="col-sm-6">
     <span class="pull-right pull-conditional">
     
-        <ul class="pagination pagination-sm" style="display:inline;">
+        <ul class="pagination pagination-xs" style="display:inline;">
             <li>
 %# eventually use proper URL parameter processing w/a function passed to change page ID & add search query
                 <a href="?page=1{{search_query}}" aria-label="First">

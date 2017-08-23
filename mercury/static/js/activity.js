@@ -1,17 +1,32 @@
+function dismiss(object, timeout) {
+    setTimeout(function() {
+        $(object).fadeOut(function() {
+            $(object).remove();
+        });
+    }, timeout);
+}
+
 function adjust_error_view() {
     pos1 = $('#error_header').innerHeight();
-    pos2 = $('#error_scrollable').offset().top;
-    $('#error_scrollable').css('overflow-y', 'scroll');
-    $('#error_scrollable').height(window.innerHeight - pos1 - pos2 - 32);
+    try
+    {
+        pos2 = $('#error_scrollable').offset().top;
+        $('#error_scrollable').css('overflow-y', 'scroll');
+        $('#error_scrollable').height(window.innerHeight - pos1 - pos2 - 32);
+    }
+    catch (e) {
+        if (e instanceof TypeError) {}
+        else {throw e;}
+    }
 }
 
 
-function status_message(type, string, id) {
+function status_message(type, string, id, sign='warning-sign') {
     $('#messages_float').append(
         '<div id="messages-inner" class="col-xs-12">' + '<div id="' +
         id + '" class="alert alert-' + type + '" role="alert">' +
         '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-        '<span class="glyphicon glyphicon-warning-sign"></span>&nbsp;' +
+        '<span class="glyphicon glyphicon-'+sign+'"></span>&nbsp;' +
         string + '</div></div>');
     if (type != "danger") {
         dismiss('#' + id, 2500);
@@ -24,7 +39,7 @@ function error_report(header, reason) {
 }
 
 function server_failure(xhr, status, error, sorry_message) {
-    if (xhr.readyState == 0) {
+    if (xhr.readyState === 0) {
         reason = "Couldn't reach the server.";
         details = "";
     } else {

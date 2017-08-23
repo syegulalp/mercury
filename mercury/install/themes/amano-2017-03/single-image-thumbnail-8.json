@@ -1,0 +1,16 @@
+{
+ "mappings": {}, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1099, 
+  "is_include": false, 
+  "modified_date": "2015-09-27 19:12:08", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "single-image-thumbnail-8.tpl", 
+  "template_type": "Media", 
+  "theme": 87, 
+  "title": "Single-image thumbnail"
+ }
+}

@@ -1,0 +1,1 @@
+<p class="article-description"><b>{{!_.patreon(n)}}<a class="article-title" href="{{n.permalink_dir}}">{{!n.title}}</a></b>&nbsp;<span class="article-date">{{_.date(n.publication_date_tz)}}</span><br/><span class="article-excerpt">{{!n.excerpt}}<br/><span class="badge yellow-link"><a href="{{n.permalink_dir}}#disqus_thread">0 comments</a></span></span></p>

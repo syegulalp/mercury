@@ -77,6 +77,9 @@ def make_db_connection():
 
         init_db.recreate_database()
 
+
+
+
 def create_index_table():
     _stderr ("Creating SQLite index tables.\n")
     try:

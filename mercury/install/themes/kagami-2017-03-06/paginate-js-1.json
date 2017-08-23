@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1279": {
+   "archive_xref": "", 
+   "id": 1279, 
+   "is_default": true, 
+   "modified_date": "2016-07-03 22:56:29", 
+   "path_string": "'static/js/paginate.js'", 
+   "template": 1475
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1475, 
+  "is_include": false, 
+  "modified_date": "2017-01-11 02:21:32", 
+  "publishing_mode": "Manual", 
+  "template_ref": "paginate-js-1.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Paginate.js"
+ }
+}

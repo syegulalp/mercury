@@ -96,11 +96,13 @@ body {
 #tag_list {
     line-height: 2em;
     margin-bottom: 1em;
+    overflow-x: hidden;
 }
 
 .tag-title {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  white-space: normal;
 }
 
 .tag-title a {
@@ -203,4 +205,8 @@ body {
 .media-list-group {
     overflow-y: scroll;
     max-height: 400px;
+}
+
+.pagination-xs {
+    zoom: 80%;
 }

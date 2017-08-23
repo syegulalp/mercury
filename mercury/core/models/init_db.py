@@ -1,3 +1,5 @@
+# TODO: programmatically iterate through all tables
+
 import settings
 def recreate_database():
 

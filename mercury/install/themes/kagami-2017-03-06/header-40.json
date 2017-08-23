@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1319": {
+   "archive_xref": "", 
+   "id": 1319, 
+   "is_default": true, 
+   "modified_date": "2016-07-16 22:42:02", 
+   "path_string": "None", 
+   "template": 1519
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1519, 
+  "is_include": false, 
+  "modified_date": "2016-12-22 01:07:51", 
+  "publishing_mode": "Include", 
+  "template_ref": "header-40.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Header"
+ }
+}

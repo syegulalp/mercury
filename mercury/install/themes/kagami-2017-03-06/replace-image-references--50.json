@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1355": {
+   "archive_xref": "", 
+   "id": 1355, 
+   "is_default": true, 
+   "modified_date": "2016-07-25 21:16:44", 
+   "path_string": "'untitled-template-1561'", 
+   "template": 1561
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1561, 
+  "is_include": false, 
+  "modified_date": "2016-07-31 00:26:21", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "replace-image-references--50.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Replace image references "
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1407": {
+   "archive_xref": "", 
+   "id": 1407, 
+   "is_default": true, 
+   "modified_date": "2016-12-21 17:12:41", 
+   "path_string": "'untitled-template-1618'", 
+   "template": 1618
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1618, 
+  "is_include": false, 
+  "modified_date": "2017-01-19 22:30:54", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "-relocate-images-63.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "# Relocate images"
+ }
+}

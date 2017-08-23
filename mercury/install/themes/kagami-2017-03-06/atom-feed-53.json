@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1358": {
+   "archive_xref": "", 
+   "id": 1358, 
+   "is_default": true, 
+   "modified_date": "2016-07-29 02:35:45", 
+   "path_string": "None # 'atom.xml'", 
+   "template": 1564
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1564, 
+  "is_include": false, 
+  "modified_date": "2016-07-29 02:39:56", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "atom-feed-53.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Atom Feed"
+ }
+}

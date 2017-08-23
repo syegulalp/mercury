@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1321": {
+   "archive_xref": "", 
+   "id": 1321, 
+   "is_default": true, 
+   "modified_date": "2016-07-11 04:38:46", 
+   "path_string": "$s+'/crossroads-alpha.html'", 
+   "template": 1522
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1522, 
+  "is_include": false, 
+  "modified_date": "2016-12-27 04:14:21", 
+  "publishing_mode": "Server-side include", 
+  "template_ref": "crossroads-alpha-43.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Crossroads Alpha"
+ }
+}

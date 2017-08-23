@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1300": {
+   "archive_xref": "", 
+   "id": 1300, 
+   "is_default": true, 
+   "modified_date": "2016-07-07 14:16:40", 
+   "path_string": "$s+'/nav.html'", 
+   "template": 1497
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1497, 
+  "is_include": false, 
+  "modified_date": "2017-01-11 01:38:18", 
+  "publishing_mode": "Server-side include", 
+  "template_ref": "nav-2-20.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Nav 2"
+ }
+}

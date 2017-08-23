@@ -1,4 +1,6 @@
-from core import (auth, utils, cms)
+from core import (auth, utils)
+from core.cms import fileinfo, generate_page_text, queue
+from core.cms.cms import register_media, save_page
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu
@@ -106,9 +108,10 @@ def page_edit_save(page_id):
 
     page.delete_preview()
 
-    tags = cms.save_page(page, user, page.blog)
-
     from core.cms import save_action_list
+    from core.cms.cms import save_page
+
+    tags = save_page(page, user, page.blog)
 
     from core.ui import kv
     kv_ui_data = kv.ui(page.kv_list())
@@ -167,7 +170,7 @@ def page_delete(page_id, confirm):
         if request.forms.getunicode('confirm') == user.logout_nonce:
 
             p = page.for_log
-            from core.cms import delete_page
+            from core.cms.cms import delete_page
             delete_page(page)
 
             message = 'Page {} successfully deleted'.format(
@@ -234,9 +237,9 @@ def page_preview(page_id):
          preview_file
          )
 
-    page_tags = cms.generate_page_tags(preview_fileinfo, page.blog)
-    file_page_text = cms.generate_page_text(preview_fileinfo, page_tags)
-    cms.write_file(file_page_text, page.blog.path, preview_fileinfo.file_path)
+    page_tags = fileinfo.generate_page_tags(preview_fileinfo, page.blog)
+    file_page_text = generate_page_text(preview_fileinfo, page_tags)
+    queue.write_file(file_page_text, page.blog.path, preview_fileinfo.file_path)
 
     utils.disable_protection()
 
@@ -255,7 +258,6 @@ def page_preview(page_id):
         ))
 
 
-
 @transaction
 def delete_page_preview(page_id):
 
@@ -263,8 +265,6 @@ def delete_page_preview(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    # from core.mgmt import delete_page_preview
-    # delete_page_preview(page)
     page.delete_preview()
 
 
@@ -310,7 +310,7 @@ def page_media_upload_confirm(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        file_path = page.blog.path + _sep + page.blog.media_path + _sep + x.filename
+        file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
         if _exists(file_path):
             pass
         else:
@@ -327,14 +327,14 @@ def page_media_upload(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        media_path = page.blog.path + _sep + page.blog.media_path
+        media_path = page.blog.path + _sep + page.blog.media_path_generated
         file_path = media_path + _sep + x.filename
         if _exists(file_path):
             from core.error import FileExistsError
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
-            cms.register_media(x.filename, file_path, user, page=page)
+            register_media(x.filename, file_path, user, page=page)
             if not _exists(media_path):
                 makedirs(media_path)
             x.save(file_path)
@@ -420,6 +420,7 @@ def page_add_media_with_template(page_id, media_id, template_id):
         Template.id == template_id)
 
     generated_template = utils.tpl(media_template.body,
+        blog=page.blog,
         media=media)
 
     if media not in page.media:
@@ -482,7 +483,7 @@ def page_revision_restore_save(page_id):
     user = auth.is_logged_in(request)
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
-    tags = cms.save_page(page, user, page.blog)
+    tags = save_page(page, user, page.blog)
 
     from core.cms import save_action_list
 

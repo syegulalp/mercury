@@ -1,8 +1,10 @@
 <div class="col-xs-12">
+% top_line = False
+% include('listing/list_nav_buttons.tpl')
 % include('listing/list_nav.tpl')
 <div style="width:100%; padding-bottom:8px;border-bottom: 1px solid rgb(221,221,221)">
 </div>
-    <fieldset>
+    <fieldset><form id="listing_form">{{!csrf_token}}
         <table id="listing_table" class="table table-condensed table-striped table-hover" style="margin-bottom:0px">
             <colgroup>
             <col width="1%">
@@ -39,8 +41,8 @@
                 % for row in rowset:
                 % rowclass = " class={}".format(colset['rowclass']) if 'rowclass' in colset else ''
                 <tr{{rowclass}}>
-                    <td><input type="checkbox" id="check-{{row.id}}" name="check-{{row.id}}">
-                    <td><xlabel for="check-{{row.id}}">{{row.id}}</xlabel></td>
+                    <td><input type="checkbox" id="check-{{row.id}}" name="check" value="{{row.id}}">
+                    <td><label for="check-{{row.id}}">{{row.id}}</label></td>
                     % for col in cols:
                         % colclass = ' class="{}"'.format(col['colclass']) if 'colclass' in col else ''
                         % if 'format_raw' in col:
@@ -57,10 +59,12 @@
                 </tr>
                 %end
             %end
-        </table>
+        </table></form>
     </fieldset>
 <div style="width:100%; padding-top:8px;border-top: 1px solid rgb(221,221,221)">
 </div>
+% top_line = True
 % include('listing/list_nav.tpl')
+% include('listing/list_nav_buttons.tpl')
 <br>    
 </div>

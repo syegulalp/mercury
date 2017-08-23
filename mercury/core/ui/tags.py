@@ -6,6 +6,7 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
 from . import search_context
 import json
+from core.utils import url_unescape
 
 @transaction
 def edit_tag(blog_id, tag_id):
@@ -41,22 +42,44 @@ def edit_tag(blog_id, tag_id):
     return tpl
 
 @transaction
-def get_tag(tag_name):
+def get_tag(blog_id, tag_name):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_member(user, blog)
+
+    tag_name = url_unescape(tag_name)
 
     tag_list = Tag.select().where(
-        Tag.tag.contains(tag_name))
-
-    try:
-        blog = request.query['blog']
-    except KeyError:
-        blog = None
-
-    if blog:
-        tag_list = tag_list.select().where(Tag.blog == blog)
+        Tag.tag.contains(tag_name),
+        Tag.blog == blog)
 
     tag_list_json = json.dumps([{'tag':t.tag,
                                 'id':t.id} for t in tag_list])
 
+    return tag_list_json
+
+@transaction
+def get_tags(blog_id, limit, page_limit):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_member(user, blog)
+
+    from core.models import TagAssociation
+
+    blog_pages = blog.pages.published.select(Page.id).order_by(Page.publication_date.desc()).limit(page_limit)
+    tag_assc = TagAssociation.select(TagAssociation.tag).where(TagAssociation.page << blog_pages)
+    tag_list = Tag.select(Tag.tag, Tag.id).where(Tag.id << tag_assc)
+
+    # tag_list = Blog.load(blog_id).tags_all.order_by(Tag.id.desc())
+
+    if limit:
+        tag_list = tag_list.limit(limit)
+
+    import json
+    tag_list_json = json.dumps([{'tag':t.tag,
+                                'id':t.id} for t in tag_list])
     return tag_list_json
 
 @transaction

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "951": {
+   "archive_xref": "T", 
+   "id": 951, 
+   "is_default": true, 
+   "modified_date": "2016-06-02 22:22:49", 
+   "path_string": "[((x,),'tags/$T/index.html'.format(x.as_basename)) for x in page.tags_public]", 
+   "template": 1102
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1102, 
+  "is_include": false, 
+  "modified_date": "2016-07-16 15:55:22", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "tag-archive-11.tpl", 
+  "template_type": "Archive", 
+  "theme": 87, 
+  "title": "Tag Archive"
+ }
+}

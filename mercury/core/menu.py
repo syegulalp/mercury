@@ -1,7 +1,8 @@
-from core import cms
+from core.cms import cms
 from core.models import Page, page_status
 from core.utils import date_format, html_escape, breaks, utf8_escape
-from settings import BASE_URL, PLUGIN_FILE_PATH  # , _sep
+from core.cms.queue import job_type
+from settings import BASE_URL, PLUGIN_FILE_PATH
 from os.path import join as _join
 
 _self = lambda x: x
@@ -157,8 +158,9 @@ menus = {
         'parent': 'system_menu',
         'parent_path': lambda x: x.site,
         'parent_context': lambda x:None,
-        'menu': ('site_users_div', 'site_manage_users', 'site_create_user',
-                 'blogs_div', 'site_manage_blogs', 'site_create_blog')
+        'menu': (
+            # 'site_users_div', 'site_manage_users', 'site_create_user',
+             'blogs_div', 'site_manage_blogs', 'site_create_blog')
         },
     'site_users_div': {
         'type': 'divider',
@@ -205,7 +207,8 @@ menus = {
                 'blog_manage_tags', 'media_div',
                 'blog_manage_media', 'design_div', 'blog_manage_templates',
                 'blog_manage_themes', 'blog_settings',
-                 'blog_users_div', 'blog_manage_users', 'blog_create_user')
+                 # 'blog_users_div', 'blog_manage_users', 'blog_create_user'
+                 )
                  },
     'pages_div': {
         'type': 'divider',
@@ -445,66 +448,6 @@ menus = {
         },
 }
 
-
-
-def generate_menu(context, context_object):
-    menu = []
-    segment = menus[context]
-
-    while True:
-        type = segment['type']
-        if type == 'menu':
-            _ = []
-            for l in segment['menu']:
-                g = menus[l]
-
-                if g['type'] == 'divider':
-                    str = divider_string.format(g['text'](context_object))
-                elif g['type'] == 'button':
-                    str = str = submenu_string.format(
-                        g.get('hover', ''),
-                        g['path'](context_object),
-                        g['text'](context_object))
-                elif g['type'] == 'label':
-                    str = submenu_string.format(
-                        g.get('hover', ''),
-                        g['path'](context_object),
-                        g['text'](context_object))
-
-                _.append(str)
-
-            m2 = segment_string.format(
-                segment['text'](context_object),
-                segment['path'](context_object),
-                segment['text'](context_object),
-                ''.join(_))
-
-            menu.insert(0, m2)
-
-        elif type == 'label':
-            menu.insert(0, label_string.format(segment['text'](context_object)))
-        elif type == 'button':
-            menu.insert(0, button_string.format(
-
-                segment['text'](context_object),
-                segment['path'](context_object),
-                segment['text'](context_object),
-
-                ))
-
-        if segment['parent'] is None:
-            break
-
-        try:
-            new_context = segment['parent_context'](context_object)
-        except:
-            new_context = None
-        context_object = new_context
-        segment = menus[segment['parent']]
-
-    return ''.join(menu)
-
-
 colsets = {
     'plugins': {
         'none':'No plugins found',
@@ -620,6 +563,30 @@ colsets = {
              }
         ]
     },
+    'queue':{
+        'none':'No items pending in queue',
+        'colset':[
+            {'field':'priority',
+             'label':'Priority',
+             'colwidth': '1%',
+             'format':lambda x:x.priority
+             },
+            {'field':'job_type',
+             'label':'Job type',
+             'colwidth': '10%',
+             'colclass': 'overflow',
+             'format':lambda x: job_type.description[x.job_type]
+             },
+            {'field':'data_string',
+             'label':'Description',
+             'colclass': 'overflow',
+             'format_raw':lambda x: x.data_string
+             },
+            {'field':'date',
+             'label':'Date inserted',
+             'format_raw':lambda x: date_format(x.date_touched)
+             }
+            ]},
     'categories': {
         'none': 'No categories found',
         'colset': [
@@ -758,14 +725,14 @@ colsets = {
                 'label': 'Delete',
                 'action': lambda x: cms.delete_page(Page.load(x))}
              },
-            {'add_tags': {
-                'label': 'Add tags',
-                'action': lambda x, tag_ids: cms.page_add_tags(Page.load(x), tag_ids)}
-             },
-            {'remove_tags': {
-                'label': 'Remove tags',
-                'action': lambda x, tag_ids: cms.page_remove_tags(Page.load(x), tag_ids)}
-             }
+#             {'add_tags': {
+#                 'label': 'Add tags',
+#                 'action': lambda x, tag_ids: cms.page_add_tags(Page.load(x), tag_ids)}
+#              },
+#             {'remove_tags': {
+#                 'label': 'Remove tags',
+#                 'action': lambda x, tag_ids: cms.page_remove_tags(Page.load(x), tag_ids)}
+#              }
         ),
         'colset': (
             {'field': 'status',
@@ -796,8 +763,8 @@ colsets = {
              'label': 'Category',
              'colwidth': '1%',
              'xlabel_style': 'width:1%',
-             'colclass': 'overflow',
-             'format': lambda x: x.primary_category.title
+             'colclass': 'overflow max-width',
+             'format_raw': lambda x: x.primary_category.for_listing
              },
             {'field': 'publication_date_tz',
              'label': 'Publish date',
@@ -810,6 +777,64 @@ colsets = {
     }
 
 }
+
+
+def generate_menu(context, context_object):
+    menu = []
+    segment = menus[context]
+
+    while True:
+        stype = segment['type']
+        if stype == 'menu':
+            _ = []
+            for l in segment['menu']:
+                g = menus[l]
+
+                if g['type'] == 'divider':
+                    sstr = divider_string.format(g['text'](context_object))
+                elif g['type'] == 'button':
+                    sstr = submenu_string.format(
+                        g.get('hover', ''),
+                        g['path'](context_object),
+                        g['text'](context_object))
+                elif g['type'] == 'label':
+                    sstr = submenu_string.format(
+                        g.get('hover', ''),
+                        g['path'](context_object),
+                        g['text'](context_object))
+
+                _.append(sstr)
+
+            m2 = segment_string.format(
+                segment['text'](context_object),
+                segment['path'](context_object),
+                segment['text'](context_object),
+                ''.join(_))
+
+            menu.insert(0, m2)
+
+        elif stype == 'label':
+            menu.insert(0, label_string.format(segment['text'](context_object)))
+        elif stype == 'button':
+            menu.insert(0, button_string.format(
+
+                segment['text'](context_object),
+                segment['path'](context_object),
+                segment['text'](context_object),
+
+                ))
+
+        if segment['parent'] is None:
+            break
+
+        try:
+            new_context = segment['parent_context'](context_object)
+        except:
+            new_context = None
+        context_object = new_context
+        segment = menus[segment['parent']]
+
+    return ''.join(menu)
 
 
 def _add_colset(item, obj, predecessor):

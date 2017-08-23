@@ -23,7 +23,8 @@ function init_typeahead(target_name){
       remote: {
         url: global.base,
         prepare: function(query,settings){
-            settings.url = global.base+'/api/1/match-tag/blog/'+global.blog;
+            settings.url = global.base+'/api/1/get-tag/blog/'+global.blog+'/tag/'+
+                encodeURIComponent(query);
             $('#tag_activity').show();
             return settings;
         },

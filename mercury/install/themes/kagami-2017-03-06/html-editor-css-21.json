@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1302": {
+   "archive_xref": "", 
+   "id": 1302, 
+   "is_default": true, 
+   "modified_date": "2015-10-23 19:09:57", 
+   "path_string": "None", 
+   "template": 1499
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1499, 
+  "is_include": false, 
+  "modified_date": "2016-09-26 22:40:32", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "html-editor-css-21.tpl", 
+  "template_type": "System", 
+  "theme": 99, 
+  "title": "HTML Editor CSS"
+ }
+}

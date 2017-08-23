@@ -40,10 +40,21 @@
             <option value="{{c.id}}"{{!selected}}{{!disabled}}>{{c.title}}{{num}}</option>
             % end
         </select>
-            <span id="category_parent_help" class="help-block">Choose the category that this category is organized under(if any).</span>
+            <span id="category_parent_help" class="help-block">Choose the category that this category is organized under (if any).</span>
         </div>
     </div>
-
+    
+    <div class="form-group">
+        <label for="category_basename" class="col-sm-2 control-label">Category basename</label>
+        <div class="col-sm-9">
+            <input type="text" class="form-control" aria-describedby="category_basename_help"
+            value="{{category.basename}}"
+            id="category_basename" name="category_basename">
+            <span id="category_basename_help" class="help-block">Basename for this category. This is set automatically if left blank.</span>
+            <p><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/category/{{category.id}}/pages">See all pages in this category.</a></p>
+        </div>
+    </div>
+    
     <hr/>
 
     <div class="form-group">

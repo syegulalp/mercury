@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1329": {
+   "archive_xref": "", 
+   "id": 1329, 
+   "is_default": true, 
+   "modified_date": "2016-07-20 21:44:15", 
+   "path_string": "None", 
+   "template": 1531
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1531, 
+  "is_include": false, 
+  "modified_date": "2017-01-11 01:56:36", 
+  "publishing_mode": "Include", 
+  "template_ref": "article-series-48.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Article Series"
+ }
+}

@@ -1,0 +1,1 @@
+<figure class="fullwidth"><img class="img-responsive" src="{{media.url}}" /><figcaption>Caption</figcaption></figure>

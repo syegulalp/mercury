@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1322": {
+   "archive_xref": "", 
+   "id": 1322, 
+   "is_default": true, 
+   "modified_date": "2016-07-08 13:44:54", 
+   "path_string": "None", 
+   "template": 1523
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1523, 
+  "is_include": false, 
+  "modified_date": "2017-01-11 02:28:31", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "modules-44.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Modules"
+ }
+}

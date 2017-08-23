@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1317": {
+   "archive_xref": "Y", 
+   "id": 1317, 
+   "is_default": true, 
+   "modified_date": "2015-02-07 03:50:34", 
+   "path_string": "[ ( (x,),'archive/{}/%Y/index.html'.format(x)) for x in ('article','news')]  ", 
+   "template": 1517
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1517, 
+  "is_include": false, 
+  "modified_date": "2016-07-28 01:20:23", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "yearly-archive-38.tpl", 
+  "template_type": "Archive", 
+  "theme": 99, 
+  "title": "Yearly Archive"
+ }
+}

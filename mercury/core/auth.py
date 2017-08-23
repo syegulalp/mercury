@@ -164,6 +164,7 @@ def get_permissions(user, level=None, blog=None, site=None):
 
     return permissions
 
+# def is_sys_admin(user=is_logged_in(request)):
 def is_sys_admin(user):
     '''Determines if the given user has sysadmin privileges.'''
     try:
@@ -321,32 +322,12 @@ def _user(func):
     return wrapper
 
 
-def publishing_lock(blog, return_queue=False):
-    '''
-    Checks to see if a publishing job for a given blog is currently running.
-    If it is, it raises an exception.
-    If the return_queue flag is set, it returns the queue_control object instead.
-    If no job is locked, then it returns None.
-    '''
-    try:
-        queue_control = Queue.select().where(Queue.blog == blog,
-            Queue.is_control == True).order_by(Queue.id.asc())
-        qc = queue_control.get()
-    except Queue.DoesNotExist:
-        return None
-
-    if return_queue is True:
-        return queue_control
-    else:
-        raise QueueInProgressException("Publishing job currently running for blog {}".format(
-            blog.for_log))
-
 def check_publishing_lock(blog, action_description, warn_only=False):
     '''
     Checks for a publishing lock and returns a status message if busy.
     '''
     try:
-        publishing_lock(blog)
+        Queue.acquire(blog)
     except QueueInProgressException as e:
         msg = "{} is not available right now. Proceed with caution. Reason: {}".format(
             action_description, e)

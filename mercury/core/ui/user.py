@@ -5,13 +5,22 @@ from core.models import (template_tags, User, Site, Blog)
 from core.menu import generate_menu, colsets
 from . import search_context
 
+def site_context():
+    pass
+def blog_context():
+    pass
+
+def self_context(user_to_edit=None, path='basic'):
+    return master_context(user_to_edit, path, '/me')
+
 def system_context(user_to_edit=None, path='basic'):
-    from core.models import User
-    users = User.select()
     try:
         root_path = '/system/user/{}'.format(user_to_edit.id)
     except AttributeError:
         root_path = ''
+    return master_context(User.select(), path, root_path)
+
+def master_context(users, path, root_path):
     return {
         'users':users,
         'search_context':(search_context['sites'], None),
@@ -22,15 +31,8 @@ def system_context(user_to_edit=None, path='basic'):
         'nav_tabs': (
             ('basic', root_path + '/basic', 'Basic',),
             ('permissions', root_path + '/permissions', 'Permissions')
-        ),
+        )
         }
-
-def site_context():
-    pass
-def blog_context():
-    pass
-def self_context():
-    pass
 
 '''
 # todo: move all this to user stuff in core.mgmt
@@ -141,10 +143,18 @@ def system_new_user():
 
 @transaction
 def system_user(user_id, path):
+    return user_edit(user_id, path, context=system_context, permission=auth.is_sys_admin)
+
+@transaction
+def self_edit(path):
+    return user_edit(None, path, context=self_context, permission=auth.is_sys_admin)
+    # Not sure how to handle permission set here
+
+def user_edit(user_id, path, context, permission):
     # Obtains user edit in system context.
     user = auth.is_logged_in(request)
-    permission = auth.is_sys_admin(user)
-    user_to_edit = User.find(user_id=user_id)
+    permission = permission(user)
+    user_to_edit = User.find(user_id=user_id) if user_id is not None else user
 
     status = None
 
@@ -238,7 +248,7 @@ def system_user(user_id, path):
         tags.permissions = []
     tags.editor_permissions = auth.get_permissions(user)
     return edit_user(user_to_edit, editing_user=user,
-        context=system_context(user_to_edit, path),
+        context=context(user_to_edit, path),
         tags=tags)
 
 @transaction
@@ -291,10 +301,19 @@ def blog_user(user_id, blog_id):
     return edit_user(user_to_edit, editing_user=user, context=blog_context, blog=blog)
 
 @transaction
-def self_edit():
-    # Obtains user edit when a user is editing his or her own properties.
+def self_setting():
     user = auth.is_logged_in(request)
-    return edit_user(user, context=self_context)
+    setting_key = request.forms.getunicode('key')
+    setting_value = request.forms.getunicode('value')
+
+    kv_to_set = user.kv(setting_key)
+    if kv_to_set is None:
+        user.kv_set(setting_key, setting_value)
+    else:
+        kv_to_set.value = setting_value
+        kv_to_set.save()
+
+    return
 
 # blog_user_edit et al will eventually be moved into this context
 

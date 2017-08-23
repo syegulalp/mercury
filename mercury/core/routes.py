@@ -8,11 +8,67 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, _sep, BASE_URL_PROTOCOL)
-from core.ui import kv
+# from core.ui import kv
 
 app = Bottle()
 _route = app.route
 _hook = app.hook
+
+@_route(BASE_PATH + '/dbnew')
+def dbnew():
+    import importlib
+    table = importlib.import_module('PluginData', 'core.models')
+
+    db.connect()
+    with db.atomic():
+        db.drop_tables((table,),
+            safe=True)
+        db.create_tables((table,),
+            safe=False)
+    db.close()
+
+@_route(BASE_PATH + '/vacuum')
+def vacuum_db():
+    try:
+        db.close()
+    except AttributeError:
+        pass
+    db.execute_sql('VACUUM;')
+    return "Vacuumed."
+
+@_route(BASE_PATH + '/backupdb')
+def backup_db(filename='database-backup.cgi'):
+    '''
+    Copy database file to backup (for SQLite only)
+    '''
+    try:
+        db.close()
+    except AttributeError:
+        pass
+    import shutil
+    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
+    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
+
+    with open(FULL_SQLITE_DATABASE_PATH, 'rb') as sourcefile, open(backup_path, 'wb') as destfile:
+        shutil.copyfileobj(sourcefile, destfile, length=-1)
+
+    return "Backed up"
+
+@_route(BASE_PATH + '/restoredb')
+def restore_db(filename='database-backup.cgi'):
+    '''
+    Restore database file from backup (for SQLite only)
+    '''
+    if db is not None:
+        db.close()
+    import shutil
+    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
+    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
+
+    with open(FULL_SQLITE_DATABASE_PATH, 'wb') as destfile, open(backup_path, 'rb') as sourcefile:
+        shutil.copyfileobj(sourcefile, destfile, length=-1)
+
+    return "Restored"
 
 # Setup routine
 
@@ -70,12 +126,21 @@ def server_static(filepath):
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
 @_route(BASE_PATH + "/me", method=('GET', 'POST'))
-def me():
+@_route(BASE_PATH + "/me/<path>", method=('GET', 'POST'))
+def me(path='basic'):
     '''
     Route for user to edit their own account
     '''
     from core.ui import user
-    return user.self_edit()
+    return user.self_edit(path)
+
+@_route(BASE_PATH + "/me/setting", method='POST')
+def me_setting():
+    '''
+    Route to change a user setting by way of a POST action
+    '''
+    from core.ui import user
+    return user.self_setting()
 
 @_route(BASE_PATH + "/system/sites")
 def site_list():
@@ -121,6 +186,15 @@ def register_plugin(plugin_path):
     from core.ui import system
     return system.register_plugin(plugin_path)
 
+@_route(BASE_PATH + "/system/plugin/<plugin_id:int>/reset")
+def reset_plugin(plugin_id):
+    '''
+    Route to reset a plugin's settings
+    '''
+    # TODO: require a form action
+    from core.plugins import reset_plugin
+    reset_plugin(plugin_id)
+
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
     '''
@@ -128,7 +202,9 @@ def enable_plugin(plugin_id):
     '''
     # TODO: require a form action
     from core.plugins import enable_plugin
-    return enable_plugin(plugin_id)
+    yield (enable_plugin(plugin_id))
+    os._exit(0)
+
 
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/disable")
 def disable_plugin(plugin_id):
@@ -137,7 +213,8 @@ def disable_plugin(plugin_id):
     '''
     # TODO: require a form action
     from core.plugins import disable_plugin
-    return disable_plugin(plugin_id)
+    yield (disable_plugin(plugin_id))
+    os._exit(0)
 
 @_route(BASE_PATH + "/system/queue")
 def system_queue():
@@ -456,12 +533,15 @@ def template_new(blog_id, template_type):
     return template.new_template(blog_id, template_type)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish')
-def blog_republish(blog_id):
-    '''
-    Route for queuing a blog to be republished
-    '''
+@_route(BASE_PATH + '/blog/<blog_id:int>/republish/<pass_id:int>/<item_id:int>')
+def republish_blog(blog_id, pass_id=1, item_id=0):
     from core.ui import blog
-    return blog.blog_republish(blog_id)
+    return blog.blog_republish(blog_id, pass_id, item_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/republish-batch', method='POST')
+def republish_blog_batch(blog_id):
+    from core.ui import blog
+    return blog.blog_republish_batch(blog_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/purge')
 def blog_purge(blog_id):
@@ -479,6 +559,14 @@ def blog_queue(blog_id):
     '''
     from core.ui import blog
     return blog.blog_queue(blog_id)
+
+@_route(BASE_PATH + '/blog/<blog_id:int>/publish/break')
+def break_queue(blog_id):
+    '''
+    Route for interrupting a queue publishing operation
+    '''
+    from core.ui.blog import blog_break_queue
+    return blog_break_queue(blog_id)
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings/<nav_setting>")
@@ -537,6 +625,14 @@ def template_edit(template_id):
     '''
     from core.ui import template
     return template.template_edit(template_id)
+
+@_route(BASE_PATH + '/template/<template_id:int>/set-default')
+def template_set_default(template_id):
+    '''
+    Route for setting a template as an archive default
+    '''
+    from core.ui import template
+    return template.template_set_default(template_id)
 
 @_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
 def template_edit_save(template_id):
@@ -859,31 +955,17 @@ def api_remove_kv():
     return kv.kv_remove()
     # We need to enforce permissions here depending on the object.
 
-# TODO: this routine does not confine its tag to the scope of a blog!
-# the URL parameters do this, but that's not how we should do it
-# rewrite as:
-# @_route(BASE_PATH + "/blog<>/get-tag/<tag_name>")
 
-@_route(BASE_PATH + "/api/1/get-tag/<tag_name>")
-def api_get_tag(tag_name):
+@_route(BASE_PATH + "/api/1/get-tag/blog/<blog_id:int>/tag/<tag_name>")
+def api_get_tag(blog_id, tag_name):
     from core.ui import tags
-    return tags.get_tag(tag_name)
+    return tags.get_tag(blog_id, tag_name)
 
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>/<limit>")
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>")
-def api_get_tags(blog_id, limit=None):
-    import json
-    from core.models import Tag
-    tag_list = Blog.load(blog_id).tags_all.order_by(Tag.id.desc())
-    if limit:
-        tag_list = tag_list.limit(limit)
-    tag_list_json = json.dumps([{'tag':t.tag,
-                                'id':t.id} for t in tag_list])
-    return tag_list_json
-
-# TODO: make /page/<>/generate-tag when we rewrite the underlying routine
-# no need for an api path here?
-# for apis might want to use a variable, pass that to a control array
+def api_get_tags(blog_id, limit=None, page_limit=250):
+    from core.ui import tags
+    return tags.get_tags(blog_id, limit, page_limit)
 
 @_route(BASE_PATH + "/api/1/make-tag-for-page/blog/<blog_id:int>", method='POST')
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
@@ -891,15 +973,18 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
     from core.ui import tags
     return tags.make_tag_for_page(blog_id, page_id)
 
-
 ### Everything after this is experimental/provisional #############################
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
-def erase_queue(blog_id):
-    blog = Blog.load(blog_id)
-    from core.models import Queue
-    Queue.clear(blog)
-    return "Queue for blog {} cleared".format(blog.id)
+def queue_clear(blog_id):
+    from core.ui.blog import blog_queue_clear, blog_queue
+    blog_queue_clear(blog_id)
+    from core.utils import Status
+    status = Status(
+            type='success',
+            no_sure=True,
+            message='Blog {}\'s queue has been successfully cleared.'.format(blog_id))
+    return blog_queue(blog_id, status)
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
 def delete_blog(blog_id):
@@ -991,167 +1076,108 @@ def delete_theme_from_system(theme_id):
 
 from core.models.transaction import transaction
 
-# Let's make this generic to all template types if we can
-# this does not actually confine itself to a single page template type yet
+# this is our entry point for the template rebuilds
 
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-page-template/<template_id:int>')
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-page-template/<template_id:int>/<pass_id:int>')
+# PUSH: push only to queue
+# PUBLISH: push to queue, run queue after push
+# FAST: iterate known fileinfos only
+# ALL: iterate all pages, genrate all archives, push all indices
+
+action_re = BASE_PATH + "/template/<template_id:int>/<action:re:(publish|queue)>"
+
+@_route('{}'.format(action_re))
+@_route('{}/fast'.format(action_re))
+@_route('{}/fast/<pass_id:int>'.format(action_re))
 @transaction
-def republish_page_template(blog_id, template_id, pass_id=0):
-    from core.models import Template
-    blog = Blog.load(blog_id)
-
+def queue_archive_template_fast(template_id, action, pass_id=0):
+    from core.models import Template, Queue
     template = Template.load(template_id)
+    blog = template.blog
 
     from core import cms
     from core.libs.bottle import HTTPResponse
     r = HTTPResponse()
 
-    total = blog.pages.published.naive().count()
-    pages = blog.pages.published.paginate(pass_id, 50)
+    fileinfos = FileInfo.select().where(FileInfo.template_mapping << template.mappings).paginate(pass_id, 50)
 
-    if pages.count() > 0:
+    # TODO: if action is fast and no fileinfos present, redirect to full rebuild?
 
-        r.body = "Adding {} of {}".format(pass_id * 50, total)
+    if fileinfos.count() > 0:
 
-        # check for dirty templates?
-
-        fileinfos = []
-
-        fileinfos.append(cms.build_pages_fileinfos(pages, template.mappings))
+        r.body = "Adding {}".format(pass_id * 50)
 
         for f in fileinfos:
-            for ff in f:
-                cms.push_to_queue(job_type=cms.job_type.page,
-                        blog=blog,
-                        site=blog.site,
-                        data_integer=ff.id)
+            Queue.push(job_type=cms.queue.job_type.archive,
+                    blog=blog,
+                    site=blog.site,
+                    data_integer=f.id)
+
         pass_id += 1
 
-        r.add_header('Refresh', "0;{}/blog/{}/queue-page-template/{}/{}".format(
+        r.add_header('Refresh', "0;{}/template/{}/{}/fast/{}".format(
             BASE_PATH,
-            blog_id,
             template_id,
+            action,
             pass_id))
+
+
     else:
         r.body = "Queue insertion finished."
-        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
-        BASE_PATH,
-        blog_id))
+        if action == 'publish':
+            redir = 'publish'
+        else:
+            redir = 'queue'
+        r.add_header('Refresh', "0;{}/blog/{}/{}".format(
+            BASE_PATH,
+            blog.id,
+            redir))
 
     return r
 
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-archive-template/<template_id:int>')
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-archive-template/<template_id:int>/<pass_id:int>')
+@_route('{}/all'.format(action_re))
+@_route('{}/all/<pass_id:int>'.format(action_re))
 @transaction
-def republish_archive_template(blog_id, template_id, pass_id=0):
-    from core.models import Template
-    blog = Blog.load(blog_id)
-
+def queue_archive_template_all(template_id, action, pass_id=0):
+    from core.models import Template, Queue
     template = Template.load(template_id)
+    blog = template.blog
 
-    from core import cms
+    from core.cms import fileinfo, queue
     from core.libs.bottle import HTTPResponse
     r = HTTPResponse()
 
-    total = blog.pages.published.naive().count()
     pages = blog.pages.published.paginate(pass_id, 50)
 
     if pages.count() > 0:
 
         r.body = "Adding {}".format(pass_id * 50)
 
-        # check for dirty templates?
+        for f in fileinfo.build_archives_fileinfos_by_mappings(template, pages):
+            Queue.push(job_type=queue.job_type.archive,
+                    blog=blog,
+                    site=blog.site,
+                    data_integer=f.id)
 
-        fileinfos = []
-
-        fileinfos.append(cms.build_archives_fileinfos_by_mappings(template, pages))
-
-        for f in fileinfos:
-            for ff in f:
-                cms.push_to_queue(job_type=cms.job_type.archive,
-                        blog=blog,
-                        site=blog.site,
-                        data_integer=ff.id)
         pass_id += 1
 
-        r.add_header('Refresh', "0;{}/blog/{}/queue-archive-template/{}/{}".format(
+        r.add_header('Refresh', "0;{}/template/{}/{}/all/{}".format(
             BASE_PATH,
-            blog_id,
             template_id,
+            action,
             pass_id))
+
+
     else:
         r.body = "Queue insertion finished."
-        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
-        BASE_PATH,
-        blog_id))
-
-    return r
-
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-all')
-@_route(BASE_PATH + '/blog/<blog_id:int>/queue-all/<pass_id:int>/<item_id:int>')
-@transaction
-def republish_blog(blog_id, pass_id=1, item_id=0):
-    blog = Blog.load(blog_id)
-
-    data = []
-
-    # check for dirty templates?
-
-    from core import cms
-    from core.libs.bottle import HTTPResponse
-    r = HTTPResponse()
-
-    if pass_id == 1:
-        cms.queue_ssi_actions(blog)
-        item_id = 0
-
-        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
-            blog.for_log,
-            pass_id,
-            item_id))
-
-    elif pass_id == 2:
-        cms.queue_index_actions(blog, include_manual=True)
-        item_id = 0
-
-        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {}</h3><hr>".format(
-            blog.for_log,
-            pass_id,
-            item_id))
-
-    elif pass_id == 3:
-        total = blog.pages.published.count()
-        pages = blog.pages.published.paginate(item_id, 20)
-
-        data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {} of {}</h3><hr>".format(
-            blog.for_log,
-            pass_id,
-            item_id * 20,
-            total))
-
-        if pages.count() > 0:
-            cms.queue_page_actions(pages, no_neighbors=True)
-            item_id += 1
+        if action == 'publish':
+            redir = 'publish'
         else:
-            item_id = 0
-
-    if item_id == 0:
-        pass_id += 1
-
-    r.body = ''.join(data)
-
-    if pass_id < 4:
-        r.add_header('Refresh', "0;{}/blog/{}/queue-all/{}/{}".format(
-        BASE_PATH,
-        blog_id,
-        pass_id,
-        item_id))
-    else:
-        r.body = "Queue insertion finished."
-        r.add_header('Refresh', "0;{}/blog/{}/publish".format(
-        BASE_PATH,
-        blog_id))
+            redir = 'queue'
+        r.add_header('Refresh', "0;{}/blog/{}/{}".format(
+            BASE_PATH,
+            blog.id,
+            redir))
 
     return r
+
+

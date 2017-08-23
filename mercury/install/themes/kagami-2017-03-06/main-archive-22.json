@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1303": {
+   "archive_xref": "", 
+   "id": 1303, 
+   "is_default": true, 
+   "modified_date": "2015-08-15 16:13:04", 
+   "path_string": "[ ( (x,),'{}/index.html'.format(x)) for x in ('article','news')]  ", 
+   "template": 1500
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": "Archive", 
+  "external_path": null, 
+  "id": 1500, 
+  "is_include": false, 
+  "modified_date": "2016-12-16 18:05:55", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "main-archive-22.tpl", 
+  "template_type": "Archive", 
+  "theme": 99, 
+  "title": "Main Archive"
+ }
+}

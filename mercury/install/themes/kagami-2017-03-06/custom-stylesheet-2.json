@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1280": {
+   "archive_xref": "", 
+   "id": 1280, 
+   "is_default": true, 
+   "modified_date": "2015-08-14 18:10:46", 
+   "path_string": "'static/css/custom.css'", 
+   "template": 1476
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1476, 
+  "is_include": false, 
+  "modified_date": "2016-07-06 14:47:11", 
+  "publishing_mode": "Manual", 
+  "template_ref": "custom-stylesheet-2.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Custom Stylesheet"
+ }
+}

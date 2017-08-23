@@ -177,6 +177,14 @@ def edit_category(blog_id, category_id):
         except ValueError:
             new_parent_category = None
 
+        new_basename = request.forms.getunicode('category_basename')
+        if category.basename != new_basename:
+            category.basename = new_basename
+            category.save()
+
+            status.append(['Category basename was changed.',
+                []])
+
         if old_parent_category != new_parent_category:
             category.parent_category = new_parent_category
             category.save()

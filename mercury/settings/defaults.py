@@ -26,7 +26,7 @@ SECRET_KEY = "change_this_key_please"
 # This temporary key is only used during the setup process.
 PASSWORD_KEY = "also_change_this_key_please"
 
-# Set this to True if you are running MeTal as an WSGI application,
+# Set this to True if you are running as an WSGI application,
 # for instance on a shared webhost.
 # Desktop mode overrides this to False.
 USE_WSGI = True
@@ -75,9 +75,9 @@ MAX_BASENAME_LENGTH = 128
 # Maximum number of revisions for pages
 MAX_PAGE_REVISIONS = 20
 
-DATABASE_TIMEOUT = 10
-DATABASE_RETRIES = 10000
+DATABASE_TIMEOUT = 10.0
 RETRY_INTERVAL = 0.01
+# DATABASE_RETRIES = 10000
 
 APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
 
@@ -87,6 +87,6 @@ MAX_REQUEST = 409600
 
 INSTALL_SRC_PATH = 'install'
 
-DEFAULT_THEME = 'amano-2016'
+DEFAULT_THEME = 'amano-2017-03'
 
 BASE_URL_PROTOCOL = "http://"

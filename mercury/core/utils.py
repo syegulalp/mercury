@@ -27,6 +27,8 @@ def json_dump(obj):
             indent=1))
 
 # TODO: move this out of here and into a more appropriate place
+# also, use a proper exception catching mechanism!
+
 def field_error(e):
     _ = re.compile('UNIQUE constraint failed: (.*)$')
     m = _.match(str(e))
@@ -287,14 +289,24 @@ class MetalTemplate(SimpleTemplate):
         return compile(self.code, self.filename or self.template_name or '<string>', 'exec')
 
     def __init__(self, *args, **kwargs):
-        self.includes = {}
         self.template_name = kwargs.pop('template_name', None)
         super(MetalTemplate, self).__init__(*args, **kwargs)
         self._tags = kwargs.get('tags', None)
+        self.blog = self._tags['blog']
+        self.blog_id = '{}_'.format(self.blog.id)
+        from core.models import Template
+        self.T = Template
+        from core.cms import Cache
+        self.M = Cache.module_cache
+        self.I = Cache.include_cache
 
     def _load_ssi(self, env, ssi_name=None, **kwargs):
-        ssi = self._tags['blog'].ssi(ssi_name)
-        tpl = MetalTemplate(ssi, tags=self._tags, **kwargs)
+        try:
+            tpl = self.I[self.blog_id + ssi_name]
+        except KeyError:
+            ssi = self.blog.ssi(ssi_name)
+            tpl = MetalTemplate(ssi, tags=self._tags, **kwargs)
+            self.I[self.blog_id + ssi_name] = tpl
         try:
             n = tpl.execute(env['_stdout'], env)
         except Exception as e:
@@ -302,9 +314,18 @@ class MetalTemplate(SimpleTemplate):
         return n
 
     def _load_module(self, module_name):
-        from core.models import Template
-        return self._tags['blog'].templates().where(
-            Template.title == module_name).get().as_module(self._tags)
+        try:
+            return self.M[self.blog_id + module_name]
+        except KeyError:
+            module = self.blog.templates().where(
+                self.T.title == module_name).get().as_module(self._tags)
+            self.M[self.blog_id + module_name] = module
+            return module
+
+
+    def test(self, env):
+        env['_stdout'] += 'is a test'
+        return env
 
     # Copied from the underlying class.
     def execute(self, _stdout, kwargs):
@@ -312,6 +333,7 @@ class MetalTemplate(SimpleTemplate):
         env.update(kwargs)
         env.update({
             'module':self._load_module,
+            'test':partial(self.test, env),
             'ssi': partial(self._load_ssi, env),
             'include': partial(self._include, env),
             '_stdout': _stdout, '_printlist': _stdout.extend,
@@ -327,11 +349,13 @@ class MetalTemplate(SimpleTemplate):
         return env
 
     def _include(self, env, _name=None, **kwargs):
-        from core.models import Template
-        template_to_import = self._tags['blog'].templates().where(
-            Template.title == _name).get().body
-        tpl = MetalTemplate(template_to_import, tags=self._tags, **kwargs)
-        self.includes[_name] = template_to_import
+        try:
+            tpl = self.I[self.blog_id + _name]
+        except KeyError:
+            template_to_import = self.blog.templates().where(
+                self.T.title == _name).get().body
+            tpl = MetalTemplate(template_to_import, tags=self._tags, **kwargs)
+            self.I[self.blog_id + _name] = tpl
         try:
             n = tpl.execute(env['_stdout'], env)
         except Exception as e:
@@ -355,11 +379,10 @@ def tpl(*args, **ka):
 
 def tplt(template, tags):
     '''
-    New shim/shortcut for the MetalTemplate function.
-    Provides detailed error information at the exact line of a template
+    Shim/shortcut for the MetalTemplate function.
+    Provides detailed error information at the exact line of a template.
     '''
-    # TODO: debug handler for errors in submitted user templates here?
-    # TODO: allow analysis only to return object with list of includes
+
     context = tags.__dict__
     try:
         return MetalTemplate(source=template.body, tags=context).render(context)
@@ -367,10 +390,11 @@ def tplt(template, tags):
         import traceback
         template_error_line = traceback.extract_tb(e.__traceback__.tb_next)[-1][1]
         raise MetalTemplate.TemplateError(
-            "'{}' at line {}: {}".format(
+            "{} in '{}' at line {}: {}".format(
+                e.__class__.__name__,
                 template.title,
                 template_error_line,
-                e
+                e,
                 )
             )
 
@@ -379,11 +403,13 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     '''
     Generates a paginator block for browsing lists, for instance in the blog or site view.
     '''
+    # obj = obj.naive()
+
     page_num = page_list_id(request)
 
     paginator = {}
 
-    paginator['page_count'] = obj.count()
+    paginator['page_count'] = obj.tuples().count()
 
     paginator['max_pages'] = int((paginator['page_count'] / items_per_page) + (paginator['page_count'] % items_per_page > 0))
 
@@ -399,7 +425,7 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     paginator['page_num'] = page_num
     paginator['items_per_page'] = items_per_page
 
-    obj_list = obj.paginate(page_num, ITEMS_PER_PAGE)
+    obj_list = obj.naive().paginate(page_num, ITEMS_PER_PAGE)
 
     return paginator, obj_list
 
@@ -503,7 +529,7 @@ def disable_protection():
     # response.set_header('Content-Security-Policy', '')
 
 def action_button(label, url):
-    action = "<a href='{}'><button type='button' class='btn btn-sm'>{}</button></a>".format(
+    action = "<a href='{}'><button type='button' class='btn btn-xs'>{}</button></a>".format(
         url,
         label
         )

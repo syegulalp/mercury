@@ -13,7 +13,7 @@
 	% end
 
 	</div>
-
+	
     % if nav_default=='basic':
         <div class="form-group">
             <label for="user_name" class="col-sm-2 control-label">User name</label>
@@ -79,8 +79,8 @@
               </tr>
           % end
           </table>
-
-          <div class="form-group">
+        <hr/>
+          <p>
               <button name="submit_permissions" id="submit_permissions" class="btn btn-sm" type="submit">Add</button>
               <select class="input-sm" name="permission_list" id="permission_list">
                   % for n in settable()[editor_permissions[0].permission]:
@@ -100,14 +100,15 @@
                       % end
                   </select>
               </span>
-          </div>
-            <div class="form-group">
-            <button name="delete_permissions" id="delete_permissions" class="btn btn-sm" type="submit">Delete</button> selected permissions
-            </div>
+            </p>
+              
+          <p>
+              <button name="delete_permissions" id="delete_permissions" class="btn btn-sm" type="submit">Delete</button> selected permissions
+          </p>
       </div>
 
       % end
-
+      
     </form>
 
 </div>

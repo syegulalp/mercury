@@ -30,9 +30,19 @@
         </ul>
     </div>
     % if page.id is not None:
+    
     <div id="preview_group" class="btn-group btn-block">
-        <button type="button" onclick="show_local_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-12">Preview</button>
-    </div>
+        <button type="button" onclick="save_draft_and_preview()" accesskey="p" id="preview_button" class="btn btn-sm btn-primary col-xs-10">Save draft and preview</button>
+        <button type="button" class="btn btn-sm btn-primary dropdown-toggle col-xs-2"
+        data-toggle="dropdown" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu col-xs-10" role="menu">
+            <li><a title="Render preview of existing saved draft." onclick="show_preview_only()"
+            href="#">Preview only (no save)</a></li>
+        </ul>
+    </div>    
     % end
 </div>
 

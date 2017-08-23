@@ -16,7 +16,7 @@ __copyright_date__ = "2016"
 
 PRODUCT_NAME = "Mercury " + __version__
 
-# Relative path for static content used by MeTal itself.
+# Relative path for static content used by Mercury itself.
 # Leave this as-is for most functionality.
 
 DATA_FILE_PATH = _sep + 'data'
@@ -121,11 +121,24 @@ except:
 
 if DB_TYPE_NAME == 'sqlite':
     from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
-    DB_TYPE = SqliteExtDatabase(
+
+    class SqliteDB(SqliteExtDatabase):
+        def initialize_connection(self, conn):
+            pass
+            # self.execute_sql('PRAGMA read_uncommitted = True;PRAGMA busy_timeout = 30000;PRAGMA schema.journal_mode=WAL;')
+
+    DB_TYPE = SqliteDB(
         FULL_SQLITE_DATABASE_PATH,
+        # pragmas=[('read_uncommited', 'true'), ('busy_timeout', '30000')],
         threadlocals=True,
-        timeout=DATABASE_TIMEOUT,
+        timeout=30000
+        # DATABASE_TIMEOUT,
         )
+
+
+    DB_TYPE.initialize_connection
+
+
     from core.models import sqlite as DB
 elif DB_TYPE_NAME == 'mysql':
     from core.libs.playhouse.sqlite_ext import MySQLDatabase

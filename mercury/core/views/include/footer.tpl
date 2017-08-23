@@ -20,7 +20,7 @@
 
 		<div class="">
 	        <img style="display:inline" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/images/metal_logo_sm.png">
-	        <a href="https://github.com/syegulalp/MeTal"><b>{{settings.PRODUCT_NAME}}</b></a> | &copy; {{settings.__copyright_date__}} {{settings.__author__}}
+	        <a href="https://github.com/syegulalp/Mercury"><b>{{settings.PRODUCT_NAME}}</b></a> | &copy; {{settings.__copyright_date__}} {{settings.__author__}}
         </div>
     </div>
 </footer>

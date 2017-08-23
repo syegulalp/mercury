@@ -12,12 +12,13 @@
       </div>
     </div>
     % if percentage_complete>=100:
-    <p>Publishing job finished. You may now close this tab or window.
+    <p>Publishing job finished. You may now close this tab or window.</p>
     <script>notify('Publishing job finished.');</script>
     % else:
-    <p>Working ...
+    <p>Working ...</p>
+    <a href="{{break_path}}"><button class="btn">Stop publishing</button></a>
     % end
 </div>
 % if percentage_complete>0:
-% include('queue/queue_counter_include.tpl')
+% include('queue/queue_counter_include2.tpl')
 % end

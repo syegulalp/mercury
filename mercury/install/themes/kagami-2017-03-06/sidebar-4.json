@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1282": {
+   "archive_xref": "", 
+   "id": 1282, 
+   "is_default": true, 
+   "modified_date": "2016-07-11 04:09:41", 
+   "path_string": "None", 
+   "template": 1478
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1478, 
+  "is_include": false, 
+  "modified_date": "2017-01-23 15:26:27", 
+  "publishing_mode": "Include", 
+  "template_ref": "sidebar-4.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Sidebar"
+ }
+}

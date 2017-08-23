@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1402": {
+   "archive_xref": "", 
+   "id": 1402, 
+   "is_default": true, 
+   "modified_date": "2016-12-04 16:43:00", 
+   "path_string": "'untitled-template-1613'", 
+   "template": 1613
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1613, 
+  "is_include": false, 
+  "modified_date": "2016-12-04 17:00:57", 
+  "publishing_mode": "Include", 
+  "template_ref": "archive-page-description-full-32.tpl", 
+  "template_type": "Include", 
+  "theme": 87, 
+  "title": "Archive page description (full)"
+ }
+}

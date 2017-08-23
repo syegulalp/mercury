@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "953": {
+   "archive_xref": "", 
+   "id": 953, 
+   "is_default": true, 
+   "modified_date": "2015-09-03 04:58:11", 
+   "path_string": "None", 
+   "template": 1104
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1104, 
+  "is_include": false, 
+  "modified_date": "2016-07-05 18:44:33", 
+  "publishing_mode": "Include", 
+  "template_ref": "hed-dek-13.tpl", 
+  "template_type": "Include", 
+  "theme": 87, 
+  "title": "Hed/Dek"
+ }
+}

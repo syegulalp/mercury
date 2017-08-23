@@ -16,8 +16,8 @@ def site(site_id, errormsg=None):
     permission = auth.is_site_member(user, site)
 
     action = (
-        'Create new blog',
-        '{}/site/{}/blog/new'.format(BASE_URL, site.id)
+        ('Create new blog',
+        '{}/site/{}/blog/new'.format(BASE_URL, site.id)),
         )
 
     return listing(

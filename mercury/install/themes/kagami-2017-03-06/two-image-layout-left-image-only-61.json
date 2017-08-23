@@ -1,0 +1,16 @@
+{
+ "mappings": {}, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1572, 
+  "is_include": false, 
+  "modified_date": "2016-09-13 00:08:17", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "two-image-layout-left-image-only-61.tpl", 
+  "template_type": "Media", 
+  "theme": 99, 
+  "title": "Two-image layout (Left image only)"
+ }
+}

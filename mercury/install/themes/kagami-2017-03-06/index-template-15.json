@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1296": {
+   "archive_xref": "", 
+   "id": 1296, 
+   "is_default": true, 
+   "modified_date": "2015-02-07 03:50:34", 
+   "path_string": "$i", 
+   "template": 1492
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": "Index", 
+  "external_path": null, 
+  "id": 1492, 
+  "is_include": false, 
+  "modified_date": "2017-01-11 01:41:48", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "index-template-15.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Index Template"
+ }
+}

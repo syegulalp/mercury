@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1318": {
+   "archive_xref": "", 
+   "id": 1318, 
+   "is_default": true, 
+   "modified_date": "2015-02-07 03:50:34", 
+   "path_string": "None", 
+   "template": 1518
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": "Category", 
+  "external_path": null, 
+  "id": 1518, 
+  "is_include": false, 
+  "modified_date": "2016-07-17 03:44:01", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "category-archive-39.tpl", 
+  "template_type": "Archive", 
+  "theme": 99, 
+  "title": "Category Archive"
+ }
+}

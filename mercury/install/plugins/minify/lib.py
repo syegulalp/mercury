@@ -8,11 +8,9 @@ minifications = (
     (re.compile(r'>\s(<[^>]*?>)\s(\S)', re.M), r'>\1 \2'),
     )
 
-def minify(text):
-
-    n = text
+def minify(file_text, blog_path, file_path):
 
     for rgx, rpl in minifications:
-        n = re.sub(rgx, rpl, n)
+        file_text = re.sub(rgx, rpl, file_text)
 
-    return n
+    return (file_text, blog_path, file_path), {}

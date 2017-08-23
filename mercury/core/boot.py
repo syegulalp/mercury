@@ -7,7 +7,7 @@ def setup_args():
     '''
     import argparse
 
-    parser = argparse.ArgumentParser(description='MeTal command line options.')
+    parser = argparse.ArgumentParser(description='Mercury command line options.')
 
     parser.add_argument('--debug', action="store_true", default=settings.DEBUG_MODE, help='enable debug mode')
     parser.add_argument('--reset', action="store_true", default=settings.RESET,

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1361": {
+   "archive_xref": "", 
+   "id": 1361, 
+   "is_default": true, 
+   "modified_date": "2016-07-31 17:29:19", 
+   "path_string": "$s+'/patreon-inline.html'", 
+   "template": 1567
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1567, 
+  "is_include": false, 
+  "modified_date": "2016-07-31 17:29:49", 
+  "publishing_mode": "Server-side include", 
+  "template_ref": "patreon-inline-56.tpl", 
+  "template_type": "Include", 
+  "theme": 99, 
+  "title": "Patreon Inline"
+ }
+}

@@ -1,6 +1,6 @@
 % include('include/header.tpl')
 <div class="col-xs-12">
-<h3>Publishing Queue Progress</h3>
+<h3>{{!title}}</h3>
 <hr>
 <div id="queue_progress">
 {{!start_message}}
@@ -15,11 +15,11 @@ function update(){
 
     console.log("Update");
 
-    $.get("../../blog/"+blog_id+"/publish/progress/"+original_queue_length)
+    $.get(action_url)
         .done(function(data){
             
             $("#queue_progress").empty().append($(data).filter('#progress_inner'));
-            $('#queue_counter').empty().append($(data).filter('#queue_counter'));
+            $('#queue_counter').replaceWith($(data).filter('#queue_counter'));
             
             progress = parseInt($("#progress_bar").attr("aria-valuenow"));
             
@@ -27,7 +27,7 @@ function update(){
             
             if (window.opener)
             {
-                window.opener.$('#queue_counter').empty().append($(data).filter('#queue_counter'));
+                window.opener.$('#queue_counter').replaceWith($(data).filter('#queue_counter'));
             }
             
             if (progress<100){
@@ -54,11 +54,12 @@ function update(){
 $(window).bind("load",function(){
 
     blog_id = {{blog.id}}
-    original_queue_length = {{original_queue_length}}
+    start = {{start}}
+    action_url="{{!action_url}}"
     
     console.log("Start");
     
-    if (original_queue_length > 0)
+    if (start > 0)
     {   
         update();
     }    

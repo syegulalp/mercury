@@ -10,4 +10,4 @@ run_queue({{blog.id}});
 % end
 {{!sidebar}}
 </div>
-% include('queue/queue_counter_include.tpl')
+% include('queue/queue_counter_include2.tpl')

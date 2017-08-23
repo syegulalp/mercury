@@ -90,19 +90,20 @@ def listing(request, user, errormsg, context, tags_data,
     # Example: blog_search_results
     search_ui = context['search_ui']
     # The description of the search context to use for the search UI.
-    # 'blog'
+    # Example: 'blog'
     colset = context['colset']
     # The column set to use for the listing.
-    # 'blog'
+    # Example: 'blog'
     menu = context['menu']
     # The menu set to use for the listing page.
     # 'blog_menu'
     search_object = context['search_object']
     # The object to be passed to the search context.
-    # blog
+    # Example: blog
+
     item_list_object = context['item_list_object']
     # For future use when we perform search ordering.
-    # blog.pages
+    # Example: blog.pages
     action_button = context.get('action_button', None)
     # Any action button to be displayed.
     # (action button)
@@ -111,16 +112,19 @@ def listing(request, user, errormsg, context, tags_data,
     # (list actions)
 
     if action_button is not None:
-        action_button = utils.action_button(*action_button)
+        # ab = []
+        # for n in action_button:
+            # ab.append(utils.action_button(*n))
+        action_button = ''.join([utils.action_button(*n) for n in action_button])
     else:
-        action_button = ''
+        action_button = None
 
     try:
         items_searched, search = search_context_obj(request, search_object)
     except (KeyError, ValueError, TypeError):
         items_searched, search = None, None
 
-    item_list = item_list_object.select()
+    item_list = item_list_object
 
     if items_searched is not None:
         item_list = item_list.where(item_list_object.model_class.id << items_searched)

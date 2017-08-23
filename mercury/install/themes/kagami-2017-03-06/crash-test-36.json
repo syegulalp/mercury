@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1315": {
+   "archive_xref": "", 
+   "id": 1315, 
+   "is_default": true, 
+   "modified_date": "2016-04-04 14:39:04", 
+   "path_string": "'qq'", 
+   "template": 1515
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1515, 
+  "is_include": false, 
+  "modified_date": "2016-12-01 14:42:34", 
+  "publishing_mode": "Do not publish", 
+  "template_ref": "crash-test-36.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Crash test"
+ }
+}

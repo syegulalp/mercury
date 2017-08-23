@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "957": {
+   "archive_xref": "", 
+   "id": 957, 
+   "is_default": true, 
+   "modified_date": "2015-08-15 16:13:04", 
+   "path_string": "'archive/'+$i", 
+   "template": 1108
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": "Archive", 
+  "external_path": null, 
+  "id": 1108, 
+  "is_include": false, 
+  "modified_date": "2016-06-24 19:06:46", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "main-archive-17.tpl", 
+  "template_type": "Archive", 
+  "theme": 87, 
+  "title": "Main Archive"
+ }
+}

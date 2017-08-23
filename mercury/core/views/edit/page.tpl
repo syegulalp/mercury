@@ -30,17 +30,20 @@
 <script>var global={base:"{{settings.BASE_URL}}",page:"{{page.id}}",blog:"{{blog.id}}",
 static:"{{settings.STATIC_PATH}}",csrf:"{{!csrf}}",
 blog_media_path:"{{blog.media_path}}",
-max_filesize:{{settings.MAX_FILESIZE}}}
-global.html_editor_settings={{!html_editor_settings}};
+max_filesize:{{settings.MAX_FILESIZE}},
+run_queue:{{user.kv_val('run_queue')}}
+};
+global.html_editor_settings ={{!html_editor_settings}};
 </script>
 % include('include/footer.tpl')
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tinymce/tinymce.min.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/moment.min.js"></script>
 <script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/bootstrap-datetimepicker.min.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/upload.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/typeahead/typeahead.bundle.min.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tags.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/activity.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/modal.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/kv.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/upload.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/typeahead/typeahead.bundle.min.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/tags.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/activity.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/modal.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/kv.js"></script>
+<script type="text/javascript" src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/queue.js"></script>

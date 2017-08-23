@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "967": {
+   "archive_xref": "", 
+   "id": 967, 
+   "is_default": true, 
+   "modified_date": "2015-08-25 23:53:58", 
+   "path_string": "'feed.rss'", 
+   "template": 1119
+  }
+ }, 
+ "template": {
+  "blog": 2, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1119, 
+  "is_include": false, 
+  "modified_date": "2016-08-16 14:08:00", 
+  "publishing_mode": "Immediate", 
+  "template_ref": "rss-feed-28.tpl", 
+  "template_type": "Index", 
+  "theme": 87, 
+  "title": "RSS Feed"
+ }
+}

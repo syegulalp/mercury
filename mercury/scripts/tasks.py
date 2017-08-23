@@ -9,109 +9,153 @@ if __name__ == '__main__':
         sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
         import settings
 
-product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
+    from core.models.transaction import transaction
+    from core.cms.queue import process_queue
 
-print ('{}\nScheduled tasks script.'.format(product_id))
 
-import smtplib, datetime
-from email.mime.text import MIMEText
+    @transaction
+    def run(n):
+        return process_queue(n)
 
-from core.auth import get_users_with_permission, role
+    import datetime
 
-admin_users = get_users_with_permission(role.SYS_ADMIN)
+    product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
 
-print ('Admins: {}'.format(admin_users.count()))
+    print ('{}\nScheduled tasks script.'.format(product_id))
 
-print ('Looking for scheduled tasks...')
+    print ('Looking for scheduled tasks...')
 
-from core.models import Page, page_status
+    from core.models import Page, page_status, Queue
 
-# TODO: we may want to move this into some systemwide schema?
-
-scheduled_pages = Page.select().where(
-    Page.status == page_status.scheduled,
-    Page.publication_date <= datetime.datetime.utcnow()).order_by(
-        Page.publication_date.desc())
-
-total_pages = scheduled_pages.count()
-
-print ('{} pages scheduled'.format(total_pages))
-
-if total_pages > 0:
-
-    from core.cms import (queue_page_actions, queue_index_actions,
-        queue_ssi_actions, process_queue,
-        build_pages_fileinfos, build_archives_fileinfos, start_queue, Blog)
-    from core.models import db, Queue
-    from core.log import logger
-
+    blogs_to_check = {}
     scheduled_page_report = []
-    blogs = set()
 
-    # TODO rework this to use proper loop since many functions take list not single page
-    for n in scheduled_pages:
+    scheduled_pages = Page.select().where(
+        Page.status == page_status.scheduled,
+        Page.publication_date <= datetime.datetime.utcnow()).order_by(
+            Page.publication_date.desc())
 
-        try:
-            with db.atomic() as txn:
-                scheduled_page_report.append('{} -- on {}'.format(n.title, n.publication_date))
-                n.status = page_status.published
-                n.save(n.user, no_revision=True)
+    total_pages = scheduled_pages.count()
 
-                build_pages_fileinfos((n,))
-                build_archives_fileinfos((n,))
-                queue_page_actions((n,))
-                queue_index_actions(n.blog)
-                blogs.add(n.blog.id)
+    print ('{} pages scheduled'.format(total_pages))
 
-        except Exception as e:
-            problem = 'Problem with page {}: {}'.format(n.title, e)
-            print (problem)
-            scheduled_page_report.append(problem)
+    if total_pages > 0:
+        for p in scheduled_pages.select(Page.blog).distinct():
+            b = p.blog
+            blogs_to_check[b.id] = b
 
-    for n in blogs:
-        blog = Blog.load(n)
-        waiting = Queue.job_counts(blog=blog)
-        queue_ssi_actions(blog)
-        start_queue(blog)
+    queue_count = Queue.select(Queue.blog).distinct()
 
-        print ("Processing {} jobs for blog '{}'.".format(
-            waiting, blog.name))
-        while 1:
-            remaining = process_queue(blog)
-            print ("{} jobs remaining.".format(remaining))
-            if remaining == 0:
-                break
+    if queue_count.count() > 0:
+        for n in queue_count:
+            b = n.blog
+            print ('Blog {} has existing queue items'.format(b.id))
+            blogs_to_check[b.id] = b
 
-    # Clear control instances now that we're done
-    Queue.control_jobs(blog).get().delete_instance()
+    if blogs_to_check:
+        print ("Starting run.")
+        from core.cms.queue import (queue_page_actions, queue_index_actions,
+            queue_ssi_actions)
+        from core.models import db
+        from core.log import logger
+        from time import sleep
 
-    message_text = '''
+        for p in scheduled_pages:
+            scheduled_page_report.append('Scheduled pages:')
+            try:
+                with db.atomic() as txn:
+                    scheduled_page_report.append('{} -- on {}'.format(p.title, p.publication_date))
+                    p.status = page_status.published
+                    p.save(p.user, no_revision=True)
+                    queue_page_actions((p,))
+                    blogs_to_check[p.blog.id] = p.blog
+
+            except Exception as e:
+                problem = 'Problem with page {}: {}'.format(n.title, e)
+                print (problem)
+                scheduled_page_report.append(problem)
+
+        for b in blogs_to_check:
+            try:
+                n = blogs_to_check[b]
+                if Queue.control_jobs(n).count() > 0:
+                    skip = 'Job already running for blog {}. Skipping this run.'.format(n.id)
+                    print (skip)
+                    scheduled_page_report.append(skip)
+                    continue
+
+                queue_index_actions(n)
+                queue_ssi_actions(n)
+
+                waiting = Queue.job_counts(blog=n)
+                waiting_report = '{} jobs waiting for blog {}'.format(waiting, n.id)
+                print (waiting_report)
+                scheduled_page_report.append(waiting_report)
+
+                Queue.start(n)
+
+                print ("Processing {} jobs for blog '{}'.".format(
+                    waiting, n.name))
+
+                from time import clock
+                begin = clock()
+
+                passes = 1
+
+                while 1:
+                    sleep(.1)
+                    remaining = run(n)
+                    print ("Pass {}: {} jobs remaining.".format(passes, remaining))
+                    if remaining == 0:
+                        break
+                    passes += 1
+
+                end = clock()
+
+                total_time = end - begin
+
+                time_elapsed = "Total elapsed time: {} seconds".format(int(total_time))
+                print (time_elapsed)
+                scheduled_page_report.append(time_elapsed)
+
+            except Exception as e:
+                problem = 'Problem with blog {}: {}'.format(b, e)
+                print (problem)
+                scheduled_page_report.append(problem)
+
+    if scheduled_page_report:
+        message_text = '''
 This is a scheduled-tasks report from the installation of {}.
-
-Pages published:
 
 {}
 '''.format(product_id,
-    scheduled_page_report)
+        '\n'.join(scheduled_page_report))
 
-    admins = []
+        import smtplib
+        from email.mime.text import MIMEText
 
-    for n in admin_users:
-        msg = MIMEText(message_text)
-        msg['Subject'] = 'Scheduled activity report for {}'.format(product_id)
-        msg['From'] = n.email
-        msg['To'] = n.email
-        admins.append(n.email)
-        s = smtplib.SMTP('localhost')
-        s.send_message(msg)
-        s.quit()
+        from core.auth import get_users_with_permission, role
+        admin_users = get_users_with_permission(role.SYS_ADMIN)
 
-    print ('Reports emailed to {}.'.format(','.join(admins)))
+        admins = []
 
-    logger.info("Scheduled job run, processed {} pages.".format(total_pages))
+        for n in admin_users:
+            msg = MIMEText(message_text)
+            msg['Subject'] = 'Scheduled activity report for {}'.format(product_id)
+            msg['From'] = n.email
+            msg['To'] = n.email
+            admins.append(n.email)
+            s = smtplib.SMTP('localhost')
+            s.send_message(msg)
+            s.quit()
 
-else:
+        print ('Reports emailed to {}.'.format(','.join(admins)))
 
-    print ('No scheduled tasks found to run.')
+        logger.info("Scheduled job run, processed {} pages.".format(total_pages))
 
-print ('Scheduled tasks script completed.')
+    else:
+
+        print ('No scheduled tasks found to run.')
+
+    print ('Scheduled tasks script completed.')
+

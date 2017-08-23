@@ -7,18 +7,30 @@ __license__ = 'MIT'
 __compatibility__ = 0
 
 
+def ui(plugin):
+    d = plugin.data()
+    settings = []
+    for n in d:
+        settings.append('{},{},{}'.format(n.key, n.text_value, n.int_value))
+    return "Settings for plugin: {}. {} {}".format(plugin.description,
+                                                   plugin.data().count(),
+                                                '<p>'.join(settings))
+
+
 def install():
 
     settings = (
         {
             'key':'remove_newlines',
             'int_value':1,
-            'site':0
         },
         {
             'key':'remove_tabs',
             'int_value':1,
-            'site':0
+        },
+        {
+            'key':'whitelist',
+            'text_value':'',
         }
         )
 
@@ -41,9 +53,9 @@ def load():
     from .lib import minify
 
     return ({
-            'action': 'after',
-            'module': 'core.cms',
-            'function': 'generate_page_text',
+            'action': 'before',
+            'module': 'core.cms.queue',
+            'function': 'write_file',
             'wrap': minify
             },
             {

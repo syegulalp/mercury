@@ -12,7 +12,6 @@ from core.libs.bottle import (template, request, redirect)
 
 from . import search_context
 
-
 common_archive_mappings = (
     ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
     ('%Y/{{blog.index_file}}', 'Yearly archive'),
@@ -77,8 +76,8 @@ def new_template(blog_id, tpl_type):
                )
 
             new_template_mapping.save()
-            from core import cms
-            cms.build_mapping_xrefs((new_template_mapping,))
+            from core.cms import fileinfo
+            fileinfo.build_mapping_xrefs((new_template_mapping,))
 
     from settings import BASE_URL
     redirect(BASE_URL + '/template/{}/edit'.format(
@@ -110,7 +109,67 @@ def template_edit(template_id):
     return template_edit_output(tags)
 
 @transaction
+def template_set_default(template_id):
+    '''
+    UI for setting a given template as the default for an archive type
+    '''
+
+    user = auth.is_logged_in(request)
+    tpl = Template.load(template_id)
+    blog = Blog.load(tpl.blog.id)
+    permission = auth.is_blog_designer(user, blog)
+
+    auth.check_template_lock(blog)
+
+    tags = template_tags(template=tpl,
+                        user=user)
+
+    from core.utils import Status
+    import settings
+
+    if request.forms.getunicode('confirm') == user.logout_nonce:
+
+        # check for form submission
+        # setting should be done by way of class object
+        # theme? blog? template?
+        # blog.set_default_archive_template(template,{archive_type.index...})
+
+        status = Status(
+            type='success',
+            close=False,
+            message='Template <b>{}</b> was successfully refreshed from theme <b>{}</b>.'.format(
+                tpl.for_display,
+                tpl.theme.for_display),
+            action='Return to template',
+            url='{}/template/{}/edit'.format(
+                settings.BASE_URL, tpl.id)
+            )
+        tags.status = status
+    else:
+        pass
+
+    from core.models import archive_defaults
+
+    return template('edit/template-set-default',
+        icons=icons,
+        search_context=(search_context['blog'], tags.blog),
+        menu=generate_menu('blog_edit_template', tags.template),
+        sidebar=sidebar.render_sidebar(
+            panel_set='edit_template',
+            publishing_mode=publishing_mode,
+            types=template_type,
+            **tags.__dict__
+            ),
+        archive_defaults=archive_defaults,
+        **tags.__dict__)
+
+
+@transaction
 def template_refresh(template_id):
+    '''
+    UI for reloading a template from the original version stored in the
+    template's theme (assuming such an original template exists)
+    '''
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
     blog = Blog.load(tpl.blog)
@@ -180,7 +239,9 @@ from the theme.
 
 @transaction
 def template_delete(template_id):
-
+    '''
+    UI for deleting a template
+    '''
     user = auth.is_logged_in(request)
     tpl = Template.load(template_id)
     blog = Blog.load(tpl.blog)
@@ -232,7 +293,7 @@ def template_delete(template_id):
         **tags.__dict__)
 
 
-@transaction
+
 def template_edit_save(template_id):
     '''
     UI for saving a blog template
@@ -266,7 +327,7 @@ def template_edit_save(template_id):
                 message="Template <b>{}</b> was unchanged.".format(tpl.for_display)
                 )
 
-        except BaseException as e:
+        except Exception as e:
             raise e
             status = Status(
                 type='warning',
@@ -308,109 +369,136 @@ def test_preview_mapping(fi, t):
             t.for_log))
 
 def template_preview(template_id):
+    '''
+    Wrapper for previewing a template, as we need to elegantly handle any exceptions
+    raised in the underlying process
+    '''
+    try:
+        redirection = template_preview_core(template_id)
+    except Exception as e:
+        raise e
+    else:
+        redirect(redirection)
 
-    with db.atomic() as txn:
-        from settings import _sep
-        from core.models import Page, FileInfo
-        from core import cms
-        import os
+@transaction
+def template_preview_core(template_id):
+    '''
+    UI for generating a preview of a given template
+    '''
+    from core.models import Page, FileInfo, page_status
+    from core.cms import fileinfo
+    from core.cms import invalidate_cache
 
-        cms.invalidate_cache()
+    invalidate_cache()
 
-        template = Template.load(template_id)
+    template = Template.load(template_id)
 
-        identifier = ''
+    # identifier = ''
 
-        if template.template_type == template_type.index:
-            # TODO: only rebuild mappings if the dirty bit is set
-            fi = template.default_mapping.fileinfos
-            test_preview_mapping(fi.count(), template)
-            tags = template_tags(blog=template.blog,
-                fileinfo=fi[0]
-                )
+    if template.template_type == template_type.index:
+        # TODO: only rebuild mappings if the dirty bit is set
+        fi = template.default_mapping.fileinfos
+        test_preview_mapping(fi.count(), template)
+        fi = fi.get()
+        tags = template_tags(blog=template.blog,
+            template=template,
+            fileinfo=fi
+            )
 
-        elif template.template_type == template_type.page:
-            # TODO: only rebuild mappings if the dirty bit is set
-            # cms.invalidate_cache()
-            # from core.cms import page_status
+    elif template.template_type == template_type.page:
+        try:
+            fi = Page.load(int(request.query['use_page'])).fileinfos[0]
+        except (KeyError, TypeError):
             fi = template.fileinfos
             test_preview_mapping(fi.count(), template)
             fi = fi.select().join(Page).where(FileInfo.page == Page.id,
                 Page.blog == template.blog,
-                Page.status == cms.page_status.published,
+                Page.status == page_status.published,
                 ).order_by(Page.publication_date.desc()).get()
-            tags = template_tags(
-                page=fi.page,
-                )
+        tags = template_tags(
+            template=template,
+            page=fi.page,
+            )
 
-        elif template.template_type == template_type.include:
-            # TODO: only rebuild mappings if the dirty bit is set
-            # cms.invalidate_cache()
-            if template.publishing_mode != publishing_mode.ssi:
-                from core.error import PreviewException
-                raise PreviewException('You can only preview server-side includes.')
-            page = template.blog.pages.published.order_by(Page.publication_date.desc()).get()
-            fi = page.fileinfos[0]
-            tags = template_tags(
-                page=page,
-                )
-
-        elif template.template_type == template_type.archive:
-            # TODO: only rebuild mappings if the dirty bit is set
-            # cms.invalidate_cache()
-            fi = cms.build_archives_fileinfos_by_mappings(
-                template, pages=template.blog.pages.published.order_by(Page.publication_date.desc()),
-                early_exit=True)
-            test_preview_mapping(len(fi), template)
-            fi = fi[0]
-            archive_pages = cms.generate_archive_context_from_fileinfo(
-                fi.xref.archive_xref, template.blog.pages.published, fi)
-            tags = template_tags(
-                    blog=template.blog,
-                    archive=archive_pages,
-                    archive_context=fi,
-                    fileinfo=fi,
-                    )
-
-        elif template.template_type in (template_type.media, template_type.system):
+    elif template.template_type == template_type.include:
+        # TODO: only rebuild mappings if the dirty bit is set
+        if template.publishing_mode != publishing_mode.ssi:
             from core.error import PreviewException
-            raise PreviewException('Template {} is of a type that cannot yet be previewed.'.format(
-                template.for_log))
+            raise PreviewException('You can only preview server-side includes.')
+        page = template.blog.pages.published.order_by(Page.publication_date.desc()).get()
+        fi = page.fileinfos[0]
+        tags = template_tags(
+            template=template,
+            page=page,
+            )
 
-        import time
-        tc = time.clock
-        start = tc()
-        tpl_output = utils.tplt(template, tags)
-        end = tc()
+    elif template.template_type == template_type.archive:
+        # TODO: only rebuild mappings if the dirty bit is set?
+        try:
+            page_list = [Page.load(int(request.query['use_page']))]
+        except (KeyError, TypeError) as e:  # int from None, etc.
+            page_list = template.blog.pages.published.order_by(Page.publication_date.desc()).limit(1)
 
-        tpl_output = r'<!-- {} Produced by template {}. Total render time:{} secs -->{}'.format(
-            identifier,
-            template.for_log,
-            end - start,
-            tpl_output)
+        fi = fileinfo.build_archives_fileinfos_by_mappings(
+            template, pages=page_list,
+            # early_exit=True
+            )
+        test_preview_mapping(len(fi), template)
+        fi = fi[0]
 
-        preview = template.preview_path(fi)
+        archive_pages = fileinfo.generate_archive_context_from_fileinfo(
+            fi.xref.archive_xref, template.blog.pages.published, fi)
 
-        if os.path.isdir(preview['path']) is False:
-            os.makedirs(preview['path'])
+        tags = template_tags(
+                blog=template.blog,
+                archive=archive_pages,
+                archive_context=fi,
+                fileinfo=fi,
+                template=template
+                )
 
-        with open(preview['path'] + _sep + preview['file'], "wb") as output_file:
-            output_file.write(tpl_output.encode('utf8'))
+    elif template.template_type in (template_type.media, template_type.system):
+        from core.error import PreviewException
+        raise PreviewException('Template {} is of a type that cannot yet be previewed.'.format(
+            template.for_log))
 
-        import settings
-        if settings.DESKTOP_MODE:
-            url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
-                template.blog.id)
-        else:
-            url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
+    import time
+    tc = time.clock
+    start = tc()
+    tpl_output = utils.tplt(template, tags)
+    end = tc()
 
-    redirect ("{}?_={}".format(
+    tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(
+        template.for_log,
+        end - start,
+        tpl_output)
+
+    preview = template.preview_path(fi)
+
+    from core.cms.queue import write_file
+
+    write_file(tpl_output,
+               preview['path'],  # blog_path,
+               preview['file']  # file_path)
+               )
+
+    import settings
+    if settings.DESKTOP_MODE:
+        url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
+            template.blog.id)
+    else:
+        url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
+
+    return ("{}?_={}".format(
         url,
         template.modified_date.microsecond
         ))
 
 def template_preview_delete(tpl):
-
+    '''
+    Deletes a template preview.
+    Typically invoked after a page is edited, saved, or published.
+    '''
     try:
         preview = tpl.preview_path()
     except:
@@ -447,7 +535,11 @@ def template_edit_output(tags):
         **tags.__dict__)
 
 
+@transaction
 def template_save(request, user, cms_template, blog=None):
+    '''
+    Core logic for saving changes to a template.
+    '''
 
     # TODO: move the bulk of this into the actual model
     # the .getunicode stuff should be moved out,
@@ -456,7 +548,7 @@ def template_save(request, user, cms_template, blog=None):
     # make whatever mods to it are needed in the ui func,
     # and perform the validation we did elsewhere, perhaps
 
-    from core import cms
+    from core.cms import fileinfo, invalidate_cache
     from core.utils import is_blank
     from core.error import TemplateSaveException, PageNotChanged
     import datetime
@@ -485,10 +577,10 @@ def template_save(request, user, cms_template, blog=None):
         cms_template.save(user)
     except PageNotChanged as e:
         status.append("(Template unchanged.)")
-    except BaseException as e:
+    except Exception as e:
         raise e
 
-    mappings = []
+    new_mappings = []
 
     for n in _forms:
         if n.startswith('template_mapping_'):
@@ -508,20 +600,22 @@ def template_save(request, user, cms_template, blog=None):
                 else:
                     if _forms.getunicode(n) != template_mapping.path_string:
                         template_mapping.path_string = _forms.getunicode(n)
-                        # need to check for mapping validation
-                        # if invalid, return some kind of warning
-                        # not an exception per se?
-                        # template_mapping.save()
-                        mappings.append(template_mapping)
+                        new_mappings.append(template_mapping)
 
-    for n in mappings:
+    for n in new_mappings:
         n.save()
         status.append("Mapping #{} ({}) rebuilt.".format(
             n.id,
             n.path_string))
-    cms.build_mapping_xrefs(mappings)
 
-    cms.invalidate_cache()
+
+    if new_mappings:
+        fileinfo.build_mapping_xrefs(new_mappings)
+        build_action = "all"
+    else:
+        build_action = "fast"
+
+    invalidate_cache()
 
     # TODO: eventually everything after this will be removed b/c of AJAX save
     # tags = template_tags(template_id=cms_template.id, user=user)
@@ -530,26 +624,32 @@ def template_save(request, user, cms_template, blog=None):
 
     from core.libs.bottle import response
     from settings import BASE_URL
+    from core.models import Queue
 
     x_open = False
 
     if int(save_action) in (2, 3):
+
         if cms_template.template_type == template_type.page:
             x_open = True
             response.add_header('X-Open',
-                '{}/blog/{}/queue-page-template/{}'.format(
-                    BASE_URL, cms_template.blog.id, cms_template.id
-                    ))
+                '{}/template/{}/queue/{}'.format(
+                    BASE_URL, cms_template.id, build_action))
+
         if cms_template.template_type == template_type.archive:
             x_open = True
             response.add_header('X-Open',
-                '{}/blog/{}/queue-archive-template/{}'.format(
-                    BASE_URL, cms_template.blog.id, cms_template.id
-                    ))
+                '{}/template/{}/queue/{}'.format(
+                    BASE_URL, cms_template.id, build_action))
         if cms_template.template_type in (template_type.include, template_type.index):
-            cms.build_archives_fileinfos_by_mappings(cms_template)
+
+            # I don't think this is needed anymore, we can remove it
+            # TODO: test it
+            # if new_mappings:
+                # cms.build_archives_fileinfos_by_mappings(cms_template)
+
             for f in cms_template.fileinfos_published:
-                cms.push_to_queue(job_type=f.template_mapping.template.template_type,
+                Queue.push(job_type=f.template_mapping.template.template_type,
                     blog=cms_template.blog,
                     site=cms_template.blog.site,
                     data_integer=f.id)
@@ -573,34 +673,4 @@ def template_save(request, user, cms_template, blog=None):
     else:
         return response.body
 
-    '''
-    if int(save_action) in (2, 3):
-
-        if cms_template.template_type == template_type.page:
-            cms.build_pages_fileinfos(cms_template.blog.pages.published)
-        if cms_template.template_type == template_type.archive:
-            cms.build_archives_fileinfos(cms_template.blog.pages.published)
-        if cms_template.template_type == template_type.include:
-            cms.build_archives_fileinfos_by_mappings(cms_template)
-
-        for f in cms_template.fileinfos_published:
-            cms.push_to_queue(job_type=f.template_mapping.template.template_type,
-                blog=cms_template.blog,
-                site=cms_template.blog.site,
-                data_integer=f.id)
-
-        status.append("{} files regenerated from template and sent to publishing queue.".format(
-            cms_template.fileinfos_published.count()))
-
-    if blog is not None:
-        blog.theme_modified = True
-        blog.save()
-
-    from core.log import logger
-    logger.info("Template {} edited by user {}.".format(
-        cms_template.for_log,
-        user.for_log))
-
-    return ' '.join(status)
-    '''
 

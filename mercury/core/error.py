@@ -1,19 +1,17 @@
-'''
-from core.log import logger
 class LoggedException(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg, log=False):
         super().__init__(msg)
         self.msg = msg
-        logger.error(msg)
-'''
-class LoggedException(Exception):
-    pass
+        if log is True:
+            from core.log import logger
+            logger.error(msg)
 
 class PermissionsException(LoggedException):
     pass
 
 class NoArchiveForFileInfo(LoggedException):
     pass
+
 class PreviewException(LoggedException):
     pass
 

@@ -1,6 +1,7 @@
 % include('include/header.tpl')
 % include('include/header_messages.tpl')
 <div class="col-xs-12">
+% include('listing/list_nav_buttons.tpl')
 % include('listing/list_nav.tpl')
 
 <div style="width:100%; padding-bottom:8px;border-bottom: 1px solid rgb(221,221,221)">
@@ -41,10 +42,8 @@
 
 <div style="width:100%; padding-top:8px;border-top: 1px solid rgb(221,221,221)">
 </div>
-
 % include('listing/list_nav.tpl')
-<br>    
+% include('listing/list_nav_buttons.tpl')
 </div>
-
 % include('include/footer.tpl')
 <script async src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/editor.js"></script>

@@ -1,0 +1,25 @@
+{
+ "mappings": {
+  "1289": {
+   "archive_xref": "", 
+   "id": 1289, 
+   "is_default": true, 
+   "modified_date": "2016-07-03 22:53:14", 
+   "path_string": "'static/js/disqus-comment-count.js'", 
+   "template": 1485
+  }
+ }, 
+ "template": {
+  "blog": 7, 
+  "default_type": null, 
+  "external_path": null, 
+  "id": 1485, 
+  "is_include": false, 
+  "modified_date": "2016-07-03 22:53:36", 
+  "publishing_mode": "Manual", 
+  "template_ref": "disqus-comment-count-9.tpl", 
+  "template_type": "Index", 
+  "theme": 99, 
+  "title": "Disqus Comment Count"
+ }
+}
