@@ -1,5 +1,9 @@
 from core import (auth, utils)
+<<<<<<< HEAD
 from core.cms import fileinfo, generate_page_text, queue
+=======
+from core.cms import fileinfo, generate_page_text, queue, save_action_list
+>>>>>>> refs/heads/dev
 from core.cms.cms import register_media, save_page
 from core.ui import sidebar
 from core.log import logger
@@ -14,11 +18,11 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, response)
 
-from settings import (BASE_URL, _sep)
-# TODO: replace _sep with proper urllib function
+from settings import BASE_URL
+# TODO: replace _sep with proper join function
 
 import re, datetime
-from os.path import exists as _exists
+from os.path import exists as _exists, join as _join
 from os import makedirs
 
 media_buttons = '''
@@ -49,7 +53,7 @@ def page_edit(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    from core.cms import save_action_list
+    # from core.cms import save_action_list
 
     status = None
     referer = request.headers.get('Referer')
@@ -108,8 +112,12 @@ def page_edit_save(page_id):
 
     page.delete_preview()
 
+<<<<<<< HEAD
     from core.cms import save_action_list
     from core.cms.cms import save_page
+=======
+    # from core.cms import save_action_list
+>>>>>>> refs/heads/dev
 
     tags = save_page(page, user, page.blog)
 
@@ -310,7 +318,12 @@ def page_media_upload_confirm(page_id):
 
     for n in request.files:
         x = request.files.get(n)
+<<<<<<< HEAD
         file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
+=======
+        # file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
+        file_path = _join(page.blog.path, page.blog.media_path_generated, x.filename)
+>>>>>>> refs/heads/dev
         if _exists(file_path):
             pass
         else:
@@ -327,8 +340,15 @@ def page_media_upload(page_id):
 
     for n in request.files:
         x = request.files.get(n)
+<<<<<<< HEAD
         media_path = page.blog.path + _sep + page.blog.media_path_generated
         file_path = media_path + _sep + x.filename
+=======
+        # media_path = page.blog.path + _sep + page.blog.media_path_generated
+        media_path = _join(page.blog.path, page.blog.media_path_generated)
+        # file_path = media_path + _sep + x.filename
+        file_path = _join(media_path, x.filename)
+>>>>>>> refs/heads/dev
         if _exists(file_path):
             from core.error import FileExistsError
             raise FileExistsError("File '{}' already exists on the server.".format(
@@ -451,7 +471,7 @@ def page_revision_restore(page_id, revision_id):
 
     referer = BASE_URL + "/blog/" + str(page.blog.id)
 
-    from core.cms import save_action_list
+    # from core.cms import save_action_list
     # from core.ui_kv import kv_ui
     from core.ui import kv
     kv_ui_data = kv.ui(page.kv_list())

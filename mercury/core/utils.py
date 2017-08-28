@@ -12,6 +12,10 @@ from core.libs.bottle import _stderr
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+def reboot():
+    import os, signal
+    os.kill(os.getpid(), signal.SIGTERM)
+
 def default(obj):
     import datetime
     if isinstance(obj, datetime.datetime):
