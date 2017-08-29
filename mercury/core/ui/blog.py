@@ -1066,7 +1066,6 @@ def blog_publish(blog_id):
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
-@transaction
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -1078,18 +1077,12 @@ def blog_publish_progress(blog_id, original_queue_length):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-<<<<<<< HEAD
-        queue_count = queue.process_queue(blog)
-    else:
-        queue_count = 0
-=======
         # queue_count = queue.process_queue(blog)
         queue_count = transaction(queue.process_queue)(blog)
         time.sleep(RETRY_INTERVAL * 5)
     else:
         queue_count = 0
 
->>>>>>> refs/heads/dev
 
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
     import settings
@@ -1100,7 +1093,6 @@ def blog_publish_progress(blog_id, original_queue_length):
             settings=settings,
             percentage_complete=percentage_complete)
 
-@transaction
 def blog_publish_process(blog_id):
 
     user = auth.is_logged_in(request)
@@ -1110,32 +1102,21 @@ def blog_publish_process(blog_id):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-<<<<<<< HEAD
-        queue_count = queue.process_queue(blog)
-=======
         # queue_count = queue.process_queue(blog)
         queue_count = transaction(queue.process_queue)(blog)
         time.sleep(RETRY_INTERVAL * 5)
->>>>>>> refs/heads/dev
     else:
         jobs = Queue.jobs(blog)
         if jobs.count() > 0:
             queue_count = jobs.count()
             Queue.start(blog, queue_count)
-<<<<<<< HEAD
-            queue_count = queue.process_queue(blog)
-=======
             # queue_count = queue.process_queue(blog)
             queue_count = transaction(queue.process_queue)(blog)
             time.sleep(RETRY_INTERVAL * 5)
->>>>>>> refs/heads/dev
         else:
             queue_count = 0
             # Queue.clear(blog)
-<<<<<<< HEAD
-=======
 
->>>>>>> refs/heads/dev
     import settings
     return template('queue/queue_counter_include',
             blog=blog,

@@ -125,27 +125,16 @@ if DB_TYPE_NAME == 'sqlite':
     class SqliteDB(SqliteExtDatabase):
         def initialize_connection(self, conn):
             pass
-<<<<<<< HEAD
-            # self.execute_sql('PRAGMA read_uncommitted = True;PRAGMA busy_timeout = 30000;PRAGMA schema.journal_mode=WAL;')
-=======
->>>>>>> refs/heads/dev
 
     DB_TYPE = SqliteDB(
         FULL_SQLITE_DATABASE_PATH,
-        # pragmas=[('read_uncommited', 'true'), ('busy_timeout', '30000')],
         threadlocals=True,
         timeout=30000
-<<<<<<< HEAD
-        # DATABASE_TIMEOUT,
-=======
->>>>>>> refs/heads/dev
         )
 
 
     DB_TYPE.initialize_connection
 
-<<<<<<< HEAD
-=======
 #     # eventually it'll look like this....
 #     from core.models.db import sqlite
 #
@@ -158,7 +147,6 @@ if DB_TYPE_NAME == 'sqlite':
 #     DB.initialize_connection()
 #
 #     DB_TYPE = DB
->>>>>>> refs/heads/dev
 
     from core.models import sqlite as DB
 

@@ -1,9 +1,5 @@
 from core import (auth, utils)
-<<<<<<< HEAD
-from core.cms import fileinfo, generate_page_text, queue
-=======
 from core.cms import fileinfo, generate_page_text, queue, save_action_list
->>>>>>> refs/heads/dev
 from core.cms.cms import register_media, save_page
 from core.ui import sidebar
 from core.log import logger
@@ -112,12 +108,7 @@ def page_edit_save(page_id):
 
     page.delete_preview()
 
-<<<<<<< HEAD
-    from core.cms import save_action_list
-    from core.cms.cms import save_page
-=======
     # from core.cms import save_action_list
->>>>>>> refs/heads/dev
 
     tags = save_page(page, user, page.blog)
 
@@ -318,12 +309,8 @@ def page_media_upload_confirm(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-<<<<<<< HEAD
-        file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
-=======
         # file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
         file_path = _join(page.blog.path, page.blog.media_path_generated, x.filename)
->>>>>>> refs/heads/dev
         if _exists(file_path):
             pass
         else:
@@ -340,15 +327,10 @@ def page_media_upload(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-<<<<<<< HEAD
-        media_path = page.blog.path + _sep + page.blog.media_path_generated
-        file_path = media_path + _sep + x.filename
-=======
         # media_path = page.blog.path + _sep + page.blog.media_path_generated
         media_path = _join(page.blog.path, page.blog.media_path_generated)
         # file_path = media_path + _sep + x.filename
         file_path = _join(media_path, x.filename)
->>>>>>> refs/heads/dev
         if _exists(file_path):
             from core.error import FileExistsError
             raise FileExistsError("File '{}' already exists on the server.".format(

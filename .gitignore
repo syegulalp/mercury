@@ -4,3 +4,4 @@ blog/*
 /requirements.txt
 /setup.cfg
 /setup.py
+**/*.bak

@@ -650,17 +650,46 @@ def category_context(fileinfo, original_page, tag_context, date_counter):
 def year_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
-        year_context = [original_page.publication_date_tz.year]
+        year_context = original_page.publication_date_tz.year
+        blog = original_page.blog
     else:
-        year_context = [fileinfo.year]
+        year_context = fileinfo.year
+        blog = fileinfo.template_mapping.template.blog
+
+    year_start = datetime.datetime(
+        year=year_context,
+        month=1,
+        day=1,
+        )
+
+    year_start_tz = Page._date_to_utc(None, blog.timezone,
+        year_start)
+
+    year_end = datetime.datetime(
+        year=year_context,
+        month=12,
+        day=31,
+        hour=23,
+        minute=59,
+        second=59,
+        )
+
+    year_end_tz = Page._date_to_utc(None, blog.timezone,
+        year_end)
 
     tag_context_next = tag_context.select().where(
-        Page.publication_date.year << year_context)
+        Page.publication_date >= year_start_tz,
+        Page.publication_date <= year_end_tz
+        )
 
-    date_counter["year"] = True
+    date_counter["year"] = year_context
 
     return tag_context_next, date_counter
 
+# thank you: https://stackoverflow.com/a/13565185
+def last_day_of_month(date):
+    next_month = date.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
+    return next_month - datetime.timedelta(days=next_month.day)
 
 
 def month_context(fileinfo, original_page, tag_context, date_counter):
@@ -669,36 +698,54 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
         raise ArchiveMappingFormatException("An archive mapping was encountered that had a month value before a year value.", Exception)
 
     if fileinfo is None:
-        month_context = [original_page.publication_date_tz.month]
+        month_context = original_page.publication_date_tz.month
+        blog = original_page.blog
     else:
-        month_context = [fileinfo.month]
+        month_context = fileinfo.month
+        blog = fileinfo.template_mapping.template.blog
+
+    month_start = datetime.datetime(
+        year=date_counter["year"],
+        month=month_context,
+        day=1)
+
+    month_start_tz = Page._date_to_utc(None, blog.timezone,
+        month_start)
+
+    month_end = datetime.datetime(
+        year=date_counter["year"],
+        month=month_context,
+        day=last_day_of_month(month_start).day,
+        hour=23,
+        minute=59,
+        second=59)
+
+    month_end_tz = Page._date_to_utc(None, blog.timezone,
+        month_end)
+
 
     tag_context_next = tag_context.select().where(
-        Page.publication_date.month << month_context)
+        Page.publication_date >= month_start_tz,
+        Page.publication_date <= month_end_tz
+        )
 
-    next_month_context = [(month_context[0] + 1 % 12) or 12]
-    prev_month_context = [month_context[0] - 1 or 12]
-
-    tag_context_next.next = tag_context.select().where(
-        Page.publication_date.month << next_month_context)
-
-    tag_context_next.prev = tag_context.select().where(
-        Page.publication_date.month << prev_month_context)
-
-    # Would this be better if we returned an actual month_context object?
-    # I need to experiment and see if that works
-
-    date_counter["month"] = True
-
-    # also need to check if next/prev count is none, return that instead
-
-    # instead:
-
-    # here, do not use tag_context_next.next for param, assign that to a temp var
-    # tag_context_next.next = month_context(fileinfo,original_page, tag_context_next.next, date_counter)
-    # tag_context_next.previous = month_context(fileinfo,original_page, tag_context_next.prev, date_counter)
+    date_counter["month"] = month_context
 
     return tag_context_next, date_counter
+
+
+#     tag_context_next = tag_context.select().where(
+#         Page.publication_date.month << month_context)
+#
+#     next_month_context = [(month_context[0] + 1 % 12) or 12]
+#     prev_month_context = [month_context[0] - 1 or 12]
+#
+#     tag_context_next.next = tag_context.select().where(
+#         Page.publication_date.month << next_month_context)
+#
+#     tag_context_next.prev = tag_context.select().where(
+#         Page.publication_date.month << prev_month_context)
+
 
 def author_context(fileinfo, original_page, tag_context, date_counter):
 

@@ -3284,8 +3284,10 @@ class TemplateTags(object):
 
             if archive.pages.count() == 0:
                 setattr(archive, "context", self.blog.pages.get().publication_date)
+                setattr(archive, "context_tz", self.blog.pages.get().publication_date_tz)
             else:
                 setattr(archive, "context", ka['archive'].get().publication_date)
+                setattr(archive, "context_tz", ka['archive'].get().publication_date_tz)
 
             # do we even use this anywhere?
             # would this even be the right metaphor? archive.tag?

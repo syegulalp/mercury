@@ -13,11 +13,7 @@ from .fileinfo import (generate_page_tags, delete_fileinfo_files, build_pages_fi
     build_archives_fileinfos, build_indexes_fileinfos, eval_paths)
 from . import generate_page_text
 
-<<<<<<< HEAD
-from settings import MAX_BATCH_OPS
-=======
 from settings import MAX_BATCH_OPS, RETRY_INTERVAL
->>>>>>> refs/heads/dev
 import time
 
 from threading import Thread

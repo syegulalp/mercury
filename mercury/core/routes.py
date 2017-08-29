@@ -27,23 +27,12 @@ def dbnew():
             safe=False)
     db.close()
 
-<<<<<<< HEAD
-@_route(BASE_PATH + '/vacuum')
-def vacuum_db():
-    try:
-        db.close()
-    except AttributeError:
-        pass
-    db.execute_sql('VACUUM;')
-    return "Vacuumed."
-=======
 @_route(BASE_PATH + '/reboot')
 def reboot():
     yield('<p>Application is rebooting.</p><p><a href="/">Click to continue.</a>')
     from core.utils import reboot
     reboot()
 
->>>>>>> refs/heads/dev
 
 @_route(BASE_PATH + '/backupdb')
 def backup_db(filename='database-backup.cgi'):
