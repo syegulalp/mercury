@@ -10,7 +10,12 @@
             value="{{tag.tag}}"
             id="tag_name" name="tag_name">
             <span id="tag_name_help" class="help-block">You can rename this tag globally.
-            <a href="{{tag.id}}/pages">See all pages that use this tag.</a></span>
+            % t=tag.pages.count()
+            % if t>0:
+            <a href="{{tag.id}}/pages">See {{t}} page(s) that use this tag.</a></span>
+            % else:
+            [<i>No pages use this tag.</i>]
+            % end
         </div>
     </div>
     

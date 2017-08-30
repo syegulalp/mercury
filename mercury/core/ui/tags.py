@@ -38,20 +38,24 @@ def edit_tag(blog_id, tag_id):
                 Tag.get(Tag.tag == new_tag_name)
 
             except Tag.DoesNotExist:
+                tag_count = tag.pages.count()
+
                 msg = "Tag changed from {} to <b>{}</b>. {} pages (and their archives) have been queued for republishing.".format(
                     tag.for_log,
                     html_escape(new_tag_name),
-                    tag.pages.count())
+                    tag_count)
 
                 tag.tag = new_tag_name
                 tag.save()
 
-                from core.cms import queue
-                from core.models import page_status
+                if tag_count > 0:
 
-                queue.queue_page_actions(tag.pages.where(Page.status == page_status.published))
-                queue.queue_ssi_actions(blog)
-                queue.queue_index_actions(blog)
+                    from core.cms import queue
+                    from core.models import page_status
+
+                    queue.queue_page_actions(tag.pages.where(Page.status == page_status.published))
+                    queue.queue_ssi_actions(blog)
+                    queue.queue_index_actions(blog)
 
                 tags.status = Status(
                     type='info',
@@ -71,10 +75,11 @@ def edit_tag(blog_id, tag_id):
     else:
         import datetime
         recent_pages = tag.pages.where(Page.modified_date > datetime.datetime.utcnow() - datetime.timedelta(hours=1))
-        if recent_pages.count() > 0:
+        recent_count = recent_pages.count()
+        if recent_count > 0:
             tags.status = Status(
                     type='danger',
-                    message='There are {} pages using this tag that have been modified in the past hour. It is not recommended that you change this tag.'.format(recent_pages.count()),
+                    message='There are {} pages using this tag that have been modified in the past hour. It is not recommended that you change this tag.'.format(recent_count),
                     no_sure=True)
 
     tpl = template('edit/tag',
