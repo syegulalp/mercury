@@ -393,10 +393,10 @@ def template_preview_core(template_id):
 
     template = Template.load(template_id)
 
-    # identifier = ''
+    # TODO: only rebuild mappings if the dirty bit is set
 
     if template.template_type == template_type.index:
-        # TODO: only rebuild mappings if the dirty bit is set
+
         fi = template.default_mapping.fileinfos
         test_preview_mapping(fi.count(), template)
         fi = fi.get()
@@ -421,7 +421,6 @@ def template_preview_core(template_id):
             )
 
     elif template.template_type == template_type.include:
-        # TODO: only rebuild mappings if the dirty bit is set
         if template.publishing_mode != publishing_mode.ssi:
             from core.error import PreviewException
             raise PreviewException('You can only preview server-side includes.')
@@ -433,16 +432,24 @@ def template_preview_core(template_id):
             )
 
     elif template.template_type == template_type.archive:
-        # TODO: only rebuild mappings if the dirty bit is set?
-        try:
-            page_list = [Page.load(int(request.query['use_page']))]
-        except (KeyError, TypeError) as e:  # int from None, etc.
-            page_list = template.blog.pages.published.order_by(Page.publication_date.desc()).limit(1)
 
-        fi = fileinfo.build_archives_fileinfos_by_mappings(
-            template, pages=page_list,
-            # early_exit=True
-            )
+        if 'use_page' in request.query:
+            page_list = [Page.load(int(request.query['use_page']))]
+        elif 'use_category' in request.query:
+            from core.models import Category
+            page_list = Category.load(int(request.query['use_category'])).pages.published.limit(1)
+        elif 'use_tag' in request.query:
+            from core.models import Tag
+            page_list = Tag.load(int(request.query['use_tag'])).pages.published.limit(1)
+        else:
+            page_list = template.blog.pages.published.limit(1)
+
+#         try:
+#             page_list = [Page.load(int(request.query['use_page']))]
+#         except (KeyError, TypeError) as e:  # int from None, etc.
+#             page_list = template.blog.pages.published.order_by(Page.publication_date.desc()).limit(1)
+
+        fi = fileinfo.build_archives_fileinfos_by_mappings(template, pages=page_list)
         test_preview_mapping(len(fi), template)
         fi = fi[0]
 
