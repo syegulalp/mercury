@@ -27,8 +27,9 @@ def edit_tag(blog_id, tag_id):
     tags = template_tags(
         user=user)
 
+    from core.utils import html_escape, Status
+
     if request.method == "POST":
-        from core.utils import html_escape, Status
 
         new_tag_name = request.forms.getunicode('tag_name')
         if new_tag_name != tag.tag:
@@ -67,7 +68,14 @@ def edit_tag(blog_id, tag_id):
                     type='danger',
                     message=msg,
                     no_sure=True)
-
+    else:
+        import datetime
+        recent_pages = tag.pages.where(Page.modified_date > datetime.datetime.utcnow() - datetime.timedelta(hours=1))
+        if recent_pages.count() > 0:
+            tags.status = Status(
+                    type='danger',
+                    message='There are {} pages using this tag that have been modified in the past hour. It is not recommended that you change this tag.'.format(recent_pages.count()),
+                    no_sure=True)
 
     tpl = template('edit/tag',
         menu=generate_menu('blog_edit_tag', tag),
