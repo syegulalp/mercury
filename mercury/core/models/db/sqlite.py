@@ -9,7 +9,7 @@ import os
 
 from . import InitDBClass
 
-from core.libs.playhouse.sqlite_ext import FTSModel, SqliteExtDatabase
+from core.libs.playhouse.sqlite_ext import FTSModel, SqliteExtDatabase, TextField
 
 class SqliteDB(SqliteExtDatabase, InitDBClass):
 
@@ -89,11 +89,14 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
 
     def recreate_indexes(self):
         _stderr ("Recreating SQLite indexes.\n")
+        from core.models import Page
         Page_Search.create_table(content=Page)
         Page_Search.rebuild()
         Page_Search.optimize()
 
     def site_search(self, search_terms_enc, site):
+        from core.models import Page, Site
+
         ct = 0
 
         if site is not None:
@@ -116,6 +119,7 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
         return search_results
 
     def blog_search(self, search_terms_enc, blog):
+        from core.models import Page
 
         ct = 0
 
