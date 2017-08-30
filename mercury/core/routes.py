@@ -7,7 +7,7 @@ from core.models import (db, Page, Blog, Theme, Media, FileInfo)
 from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
-                      SECRET_KEY, _sep, BASE_URL_PROTOCOL)
+                      SECRET_KEY, BASE_URL_PROTOCOL)
 # from core.ui import kv
 
 app = Bottle()

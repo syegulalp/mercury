@@ -19,7 +19,8 @@ PRODUCT_NAME = "Mercury " + __version__
 # Relative path for static content used by Mercury itself.
 # Leave this as-is for most functionality.
 
-DATA_FILE_PATH = _join('', 'data')
+# DATA_FILE_PATH = _join('', 'data')
+DATA_FILE_PATH = os.sep + 'data'
 # EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
 EXPORT_FILE_PATH = _join(DATA_FILE_PATH, 'saved')
 # PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + 'plugins'
@@ -43,7 +44,7 @@ NO_SETUP = False
 
 from configparser import ConfigParser
 
-config_file = APPLICATION_PATH + os.sep + 'data' + os.sep + INI_FILE_NAME
+config_file = _join(APPLICATION_PATH, 'data', INI_FILE_NAME)
 
 parser = ConfigParser()
 parser.read(config_file)
@@ -123,7 +124,7 @@ if DB_TYPE_NAME == 'sqlite':
     from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 
     class SqliteDB(SqliteExtDatabase):
-        def initialize_connection(self, conn):
+        def initialize_connection(self, conn=None):
             pass
 
     DB_TYPE = SqliteDB(
@@ -133,7 +134,7 @@ if DB_TYPE_NAME == 'sqlite':
         )
 
 
-    DB_TYPE.initialize_connection
+    DB_TYPE.initialize_connection()
 
     from core.models import sqlite as DB
 
