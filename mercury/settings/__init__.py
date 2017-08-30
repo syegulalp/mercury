@@ -3,8 +3,8 @@
 # or you know what you're doing.
 #
 
-import os, importlib
-_sep = os.sep
+import os  # , importlib
+# _sep = os.sep
 from os.path import join as _join
 
 from .defaults import *
@@ -19,7 +19,7 @@ PRODUCT_NAME = "Mercury " + __version__
 # Relative path for static content used by Mercury itself.
 # Leave this as-is for most functionality.
 
-DATA_FILE_PATH = _sep + 'data'
+DATA_FILE_PATH = _join('', 'data')
 # EXPORT_FILE_PATH = DATA_FILE_PATH + _sep + 'saved'
 EXPORT_FILE_PATH = _join(DATA_FILE_PATH, 'saved')
 # PLUGIN_FILE_PATH = DATA_FILE_PATH + _sep + 'plugins'
@@ -29,14 +29,14 @@ PLUGIN_FILE_PATH = _join(DATA_FILE_PATH, 'plugins')
 # Automatically calculated; does not need to be changed.
 
 PLUGIN_PATH = APPLICATION_PATH + PLUGIN_FILE_PATH
-STATIC_FILE_PATH = APPLICATION_PATH + _sep + 'static'
-THEME_FILE_PATH = APPLICATION_PATH + DATA_FILE_PATH + _sep + 'themes'
+STATIC_FILE_PATH = _join(APPLICATION_PATH, 'static')
+THEME_FILE_PATH = _join(APPLICATION_PATH + DATA_FILE_PATH, 'themes')
 STATIC_PATH = '/static'
 
 # Database path for Sqlite. Leave this as it is
 # unless you want the database in another directory.
 SQLITE_FILE_NAME = 'database.cgi'
-SQLITE_DATABASE_PATH = DATA_FILE_PATH + _sep + SQLITE_FILE_NAME
+SQLITE_DATABASE_PATH = _join(DATA_FILE_PATH, SQLITE_FILE_NAME)
 FULL_SQLITE_DATABASE_PATH = APPLICATION_PATH + SQLITE_DATABASE_PATH
 DATABASE_PATH = FULL_SQLITE_DATABASE_PATH
 NO_SETUP = False
@@ -135,7 +135,10 @@ if DB_TYPE_NAME == 'sqlite':
 
     DB_TYPE.initialize_connection
 
+    from core.models import sqlite as DB
+
 #     # eventually it'll look like this....
+#
 #     from core.models.db import sqlite
 #
 #     DB = sqlite.SqliteDB(
@@ -148,7 +151,6 @@ if DB_TYPE_NAME == 'sqlite':
 #
 #     DB_TYPE = DB
 
-    from core.models import sqlite as DB
 
 # elif DB_TYPE_NAME == 'mysql':
 #     from core.libs.playhouse.sqlite_ext import MySQLDatabase
