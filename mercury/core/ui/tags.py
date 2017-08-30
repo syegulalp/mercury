@@ -39,7 +39,7 @@ def edit_tag(blog_id, tag_id):
             except Tag.DoesNotExist:
                 msg = "Tag changed from {} to <b>{}</b>. {} pages (and their archives) have been queued for republishing.".format(
                     tag.for_log,
-                    new_tag_name,
+                    html_escape(new_tag_name),
                     tag.pages.count())
 
                 tag.tag = new_tag_name
