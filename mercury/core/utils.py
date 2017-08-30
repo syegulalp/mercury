@@ -632,5 +632,5 @@ def import_data():
         n.append("Import process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL))
     return '<p>'.join(n)
 
-    # from core.routes import app
-    # app.reset()
+def fprint(x):
+    raise Exception(x)

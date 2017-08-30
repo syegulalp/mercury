@@ -360,10 +360,6 @@ def unpublish_page(page, save=True):
 
     delete_fileinfo_files(page.fileinfos)
 
-def fprint(x):
-    raise Exception(x)
-
-
 def publish_page(page_id):
     '''
     Stub for the future republish_page function
