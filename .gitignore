@@ -5,3 +5,4 @@ blog/*
 /setup.cfg
 /setup.py
 **/*.bak
+.settings
