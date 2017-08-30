@@ -1,5 +1,5 @@
 from functools import wraps
-from settings import PLUGIN_PATH, PLUGIN_FILE_PATH  # , BASE_PATH, _sep
+from settings import PLUGIN_PATH, PLUGIN_FILE_PATH
 from os.path import join as _join
 import os, importlib
 

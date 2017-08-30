@@ -15,7 +15,6 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request, response)
 
 from settings import BASE_URL
-# TODO: replace _sep with proper join function
 
 import re, datetime
 from os.path import exists as _exists, join as _join
@@ -309,7 +308,6 @@ def page_media_upload_confirm(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        # file_path = page.blog.path + _sep + page.blog.media_path_generated + _sep + x.filename
         file_path = _join(page.blog.path, page.blog.media_path_generated, x.filename)
         if _exists(file_path):
             pass
@@ -327,9 +325,7 @@ def page_media_upload(page_id):
 
     for n in request.files:
         x = request.files.get(n)
-        # media_path = page.blog.path + _sep + page.blog.media_path_generated
         media_path = _join(page.blog.path, page.blog.media_path_generated)
-        # file_path = media_path + _sep + x.filename
         file_path = _join(media_path, x.filename)
         if _exists(file_path):
             from core.error import FileExistsError

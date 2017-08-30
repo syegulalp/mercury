@@ -514,11 +514,10 @@ def template_preview_delete(tpl):
     if preview is None:
         return None
 
-    from settings import _sep
     import os
 
     try:
-        return os.remove(preview['path'] + _sep + preview['file'])
+        return os.remove(os.path.join(preview['path'],preview['file'])
     except OSError as e:
         from core.error import not_found
         if not_found(e) is False:

@@ -45,7 +45,7 @@ def backup_db(filename='database-backup.cgi'):
         pass
     import shutil
     from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
-    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
+    backup_path = os.path.join(APPLICATION_PATH + DATA_FILE_PATH , filename)
 
     with open(FULL_SQLITE_DATABASE_PATH, 'rb') as sourcefile, open(backup_path, 'wb') as destfile:
         shutil.copyfileobj(sourcefile, destfile, length=-1)
@@ -1019,8 +1019,8 @@ def refresh_theme(theme_id):
     '''
     imports JSON and refreshes the selected theme with it
     '''
-    with open(APPLICATION_PATH + _sep + 'install' + _sep +
-        'templates.json' , "r", encoding='utf-8') as input_file:
+    with open(os.path.join(APPLICATION_PATH, 'install',
+        'templates.json') , "r", encoding='utf-8') as input_file:
         theme_string = input_file.read()
 
     with db.atomic():

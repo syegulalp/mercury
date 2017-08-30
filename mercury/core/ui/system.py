@@ -233,9 +233,9 @@ def system_delete_theme(theme_id):
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
-        from settings import THEME_FILE_PATH, _sep
-        import shutil
-        shutil.rmtree(THEME_FILE_PATH + _sep + theme.json)
+        from settings import THEME_FILE_PATH  # , _sep
+        import shutil, os
+        shutil.rmtree(os.path.join(THEME_FILE_PATH, theme.json))
 
         theme.delete_instance()
 

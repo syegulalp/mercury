@@ -72,9 +72,9 @@ def export_theme_for_blog(blog_id, theme_name, theme_description):
             kv_list.append(f)
         del kv_list[0]
 
-    import settings
-    with open(settings.APPLICATION_PATH + settings._sep + "install" + settings._sep +
-        "templates.json", "w", encoding='utf-8') as output_file:
+    import settings, os
+    with open(os.path.join(settings.APPLICATION_PATH , "install" ,
+        "templates.json"), "w", encoding='utf-8') as output_file:
         output_file.write(json.dumps(theme,
             indent=1,
             sort_keys=True,

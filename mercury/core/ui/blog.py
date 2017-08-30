@@ -1145,7 +1145,7 @@ def blog_save_theme(blog_id):
 
         export = blog.export_theme(theme.title, theme.description, user)
 
-        from settings import THEME_FILE_PATH, _sep
+        from settings import THEME_FILE_PATH  # , _sep
         import os
 
         directory_name = create_basename_core(theme.title)
@@ -1161,7 +1161,7 @@ def blog_save_theme(blog_id):
             else:
                 break
 
-        dir_name_final = THEME_FILE_PATH + _sep + dir_name_full
+        dir_name_final = os.path.join(THEME_FILE_PATH, dir_name_full)
         os.makedirs(dir_name_final)
         theme.json = dir_name_full
         theme.save()
@@ -1174,8 +1174,8 @@ def blog_save_theme(blog_id):
         blog.save()
 
         for n in export:
-            with open(dir_name_final + _sep +
-                n , "w", encoding='utf-8') as output_file:
+            with open(os.path.join(dir_name_final,
+                n), "w", encoding='utf-8') as output_file:
                 output_file.write(export[n])
 
         save_tpl = 'listing/report'

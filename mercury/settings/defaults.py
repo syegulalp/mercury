@@ -4,7 +4,6 @@
 
 import os
 _environ = os.environ
-_sep = os.sep
 
 # Default port for when running in desktop mode.
 # You generally don't need to change this unless
@@ -79,9 +78,9 @@ DATABASE_TIMEOUT = 10.0
 RETRY_INTERVAL = 0.01
 # DATABASE_RETRIES = 10000
 
-APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(_sep)[0]
+APPLICATION_PATH = (os.path.dirname(os.path.realpath(__file__))).rpartition(os.sep)[0]
 
-VIEW_PATH = APPLICATION_PATH + _sep + 'core' + _sep + 'views'
+VIEW_PATH = os.path.join(APPLICATION_PATH, 'core' , 'views')
 
 MAX_REQUEST = 409600
 

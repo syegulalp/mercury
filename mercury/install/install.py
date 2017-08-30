@@ -1,8 +1,8 @@
 from core.libs.bottle import (request, template, redirect)
 from core.boot import settings as _s
 from settings import DESKTOP_MODE
-_sep = _s._sep
 import os, random, string
+_sep = os.sep
 
 from configparser import ConfigParser, DuplicateSectionError
 config_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
