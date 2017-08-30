@@ -17,21 +17,57 @@ def edit_tag(blog_id, tag_id):
     auth.check_tag_editing_lock(blog)
 
     try:
-        tag = Tag.get(Tag.id == tag_id)
+        tag = Tag.get(Tag.id == tag_id,
+                      Tag.blog == blog_id)
     except Tag.DoesNotExist:
         raise Tag.DoesNotExist("No such tag #{} in blog {}.".format(
             tag_id,
             blog.for_log))
 
-    if request.method == "POST":
-        pass
-        # change tag
-        # get list of all assets with changed tag
-        # provide link
-        # need to build search by tag ID
-
     tags = template_tags(
         user=user)
+
+    if request.method == "POST":
+        from core.utils import html_escape, Status
+
+        new_tag_name = request.forms.getunicode('tag_name')
+        if new_tag_name != tag.tag:
+
+            try:
+                Tag.get(Tag.tag == new_tag_name)
+
+            except Tag.DoesNotExist:
+                msg = "Tag changed from {} to <b>{}</b>. {} pages (and their archives) have been queued for republishing.".format(
+                    tag.for_log,
+                    new_tag_name,
+                    tag.pages.count())
+
+                tag.tag = new_tag_name
+                tag.save()
+
+                from core.cms import queue
+                from core.models import page_status
+
+                queue.queue_page_actions(tag.pages.where(Page.status == page_status.published))
+                queue.queue_ssi_actions(blog)
+                queue.queue_index_actions(blog)
+
+                tags.status = Status(
+                    type='info',
+                    message=msg
+                    )
+
+            else:
+
+                msg = "Tag not renamed. A tag with the name '{}' already exists.".format(
+                    html_escape(new_tag_name)
+                )
+
+                tags.status = Status(
+                    type='danger',
+                    message=msg,
+                    no_sure=True)
+
 
     tpl = template('edit/tag',
         menu=generate_menu('blog_edit_tag', tag),
@@ -109,19 +145,6 @@ def make_tag_for_media(media_id=None, tag=None):
 
     return tpl
 
-    '''
-    try:
-        tag = Tag.get(Tag.tag == tag_name,
-            Tag.blog == media.blog)
-    except Tag.DoesNotExist:
-        new_tag = Tag(tag=tag_name,
-            blog=media.blog)
-        tpl = template(new_tag.new_tag_for_display)
-
-    else:
-        tpl = template(tag.for_display)
-    '''
-
 
 @transaction
 def make_tag_for_page(blog_id=None, page_id=None):
@@ -158,21 +181,4 @@ def make_tag_for_page(blog_id=None, page_id=None):
         tpl = template(tag[1][0].for_display)
 
     return tpl
-
-    '''
-    # TODO: replace with add_or_create
-    try:
-        tag = Tag.get(Tag.tag == tag_name,
-            Tag.blog == blog)
-    except Tag.DoesNotExist:
-        new_tag = Tag(tag=tag_name,
-            blog=blog)
-        tpl = template(new_tag.new_tag_for_display)
-
-    else:
-        tpl = template(tag.for_display)
-
-    return tpl
-    '''
-
 
