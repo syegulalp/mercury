@@ -8,79 +8,10 @@ from core.utils import csrf_hash, raise_request_limit
 from settings import (BASE_PATH, DESKTOP_MODE, STATIC_PATH, PRODUCT_NAME,
                       APPLICATION_PATH, DEFAULT_LOCAL_ADDRESS, DEFAULT_LOCAL_PORT,
                       SECRET_KEY, BASE_URL_PROTOCOL)
-# from core.ui import kv
 
 app = Bottle()
 _route = app.route
 _hook = app.hook
-
-@_route(BASE_PATH + '/dbnew')
-def dbnew():
-    import importlib
-    table = importlib.import_module('PluginData', 'core.models')
-
-    db.connect()
-    with db.atomic():
-        db.drop_tables((table,),
-            safe=True)
-        db.create_tables((table,),
-            safe=False)
-    db.close()
-
-@_route(BASE_PATH + '/reboot')
-def reboot():
-    yield('<p>Application is rebooting.</p><p><a href="/">Click to continue.</a>')
-    from core.utils import reboot
-    reboot()
-
-
-@_route(BASE_PATH + '/backupdb')
-def backup_db(filename='database-backup.cgi'):
-    '''
-    Copy database file to backup (for SQLite only)
-    '''
-    try:
-        db.close()
-    except AttributeError:
-        pass
-    import shutil
-    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
-    backup_path = os.path.join(APPLICATION_PATH + DATA_FILE_PATH , filename)
-
-    with open(FULL_SQLITE_DATABASE_PATH, 'rb') as sourcefile, open(backup_path, 'wb') as destfile:
-        shutil.copyfileobj(sourcefile, destfile, length=-1)
-
-    return "Backed up"
-
-@_route(BASE_PATH + '/restoredb')
-def restore_db(filename='database-backup.cgi'):
-    '''
-    Restore database file from backup (for SQLite only)
-    '''
-    if db is not None:
-        db.close()
-    import shutil
-    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
-    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
-
-    with open(FULL_SQLITE_DATABASE_PATH, 'wb') as destfile, open(backup_path, 'rb') as sourcefile:
-        shutil.copyfileobj(sourcefile, destfile, length=-1)
-
-    return "Restored"
-
-# Setup routine
-
-def setup(step_id=None):
-    '''
-    Fires the setup routine
-    '''
-    if step_id is None:
-        step_id = 0
-    # TODO: also attempt to fetch step ID from ini file
-    from install import install
-    return install.step(step_id)
-
-# Pre-request actions
 
 @_hook('before_request')
 def strip_path():
@@ -89,7 +20,6 @@ def strip_path():
     '''
     if len(request.environ['PATH_INFO']) > 1:
         request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
-
 
 @_hook('before_request')
 def csrf_protection():
@@ -113,6 +43,17 @@ def csrf_protection():
         if request.forms.getunicode('csrf') != csrf_code:
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
+
+def setup(step_id=None):
+    '''
+    Fires the setup routine
+    '''
+    if step_id is None:
+        step_id = 0
+    # TODO: also attempt to fetch step ID from ini file
+    from install import install
+    return install.step(step_id)
+
 
 @_route(BASE_PATH + STATIC_PATH + '/<filepath:path>')
 def server_static(filepath):
@@ -522,6 +463,35 @@ def blog_themes(blog_id):
     from core.ui import blog
     return blog.blog_select_themes(blog_id)
 
+@_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
+def refresh_theme(theme_id):
+    '''
+    imports JSON and refreshes the selected theme with it
+    '''
+    with open(os.path.join(APPLICATION_PATH, 'install',
+        'templates.json') , "r", encoding='utf-8') as input_file:
+        theme_string = input_file.read()
+
+    with db.atomic():
+        theme = Theme.load(theme_id)
+        theme.json = theme_string
+        theme.save()
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/save", method=('GET', 'POST'))
+def save_theme_to_system(blog_id):
+    from core.ui import blog
+    return blog.blog_save_theme(blog_id)
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/apply", method=('GET', 'POST'))
+def apply_theme_to_blog(blog_id, theme_id):
+    from core.ui import blog
+    return blog.blog_apply_theme(blog_id, theme_id)
+
+@_route(BASE_PATH + "/system/theme/<theme_id:int>/delete", method=('GET', 'POST'))
+def delete_theme_from_system(theme_id):
+    from core.ui import system
+    return system.system_delete_theme(theme_id)
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
 def template_new(blog_id, template_type):
     '''
@@ -557,6 +527,17 @@ def blog_queue(blog_id):
     '''
     from core.ui import blog
     return blog.blog_queue(blog_id)
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
+def queue_clear(blog_id):
+    from core.ui.blog import blog_queue_clear, blog_queue
+    blog_queue_clear(blog_id)
+    from core.utils import Status
+    status = Status(
+            type='success',
+            no_sure=True,
+            message='Blog {}\'s queue has been successfully cleared.'.format(blog_id))
+    return blog_queue(blog_id, status)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/publish/break')
 def break_queue(blog_id):
@@ -973,16 +954,61 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 
 ### Everything after this is experimental/provisional #############################
 
-@_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
-def queue_clear(blog_id):
-    from core.ui.blog import blog_queue_clear, blog_queue
-    blog_queue_clear(blog_id)
-    from core.utils import Status
-    status = Status(
-            type='success',
-            no_sure=True,
-            message='Blog {}\'s queue has been successfully cleared.'.format(blog_id))
-    return blog_queue(blog_id, status)
+@_route(BASE_PATH + '/dbnew')
+def dbnew():
+    '''
+    Utility function for recreating a database table after changes
+    '''
+    import importlib
+    table = importlib.import_module('PluginData', 'core.models')
+
+    db.connect()
+    with db.atomic():
+        db.drop_tables((table,),
+            safe=True)
+        db.create_tables((table,),
+            safe=False)
+    db.close()
+
+@_route(BASE_PATH + '/reboot')
+def reboot():
+    yield('<p>Application is rebooting.</p><p><a href="/">Click to continue.</a>')
+    from core.utils import reboot
+    reboot()
+
+@_route(BASE_PATH + '/backupdb')
+def backup_db(filename='database-backup.cgi'):
+    '''
+    Copy database file to backup (for SQLite only)
+    '''
+    try:
+        db.close()
+    except AttributeError:
+        pass
+    import shutil
+    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
+    backup_path = os.path.join(APPLICATION_PATH + DATA_FILE_PATH , filename)
+
+    with open(FULL_SQLITE_DATABASE_PATH, 'rb') as sourcefile, open(backup_path, 'wb') as destfile:
+        shutil.copyfileobj(sourcefile, destfile, length=-1)
+
+    return "Backed up"
+
+@_route(BASE_PATH + '/restoredb')
+def restore_db(filename='database-backup.cgi'):
+    '''
+    Restore database file from backup (for SQLite only)
+    '''
+    if db is not None:
+        db.close()
+    import shutil
+    from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
+    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
+
+    with open(FULL_SQLITE_DATABASE_PATH, 'wb') as destfile, open(backup_path, 'rb') as sourcefile:
+        shutil.copyfileobj(sourcefile, destfile, length=-1)
+
+    return "Restored"
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
 def delete_blog(blog_id):
@@ -1012,74 +1038,10 @@ def reparent_page(page_id, blog_id):
         except PageNotChanged:
             pass
     return "OK"
-    # redirect(BASE_URL + '/page/{}/edit'.format(page.id))
 
-@_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
-def refresh_theme(theme_id):
-    '''
-    imports JSON and refreshes the selected theme with it
-    '''
-    with open(os.path.join(APPLICATION_PATH, 'install',
-        'templates.json') , "r", encoding='utf-8') as input_file:
-        theme_string = input_file.read()
-
-    with db.atomic():
-        theme = Theme.load(theme_id)
-        theme.json = theme_string
-        theme.save()
-
-'''
-@_route(BASE_PATH + "/blog/<blog_id:int>/overwrite-theme")
-def overwrite_blog_theme(blog_id):
-
-    #imports JSON and overwrites an existing blog's theme
-
-    user = auth.is_logged_in(request)
-
-    with open(APPLICATION_PATH + _sep + 'install' + _sep +
-        'templates.json' , "r", encoding='utf-8') as input_file:
-        theme_string = input_file.read()
-
-    # from core.models import get_default_theme, Struct
-    from core.models import Struct
-    # theme = get_default_theme()
-    theme = Struct()
-    theme.id = None
-    theme.json = theme_string
-    blog = Blog.load(blog_id)
-    from core import cms, mgmt
-    from core.auth import get_users_with_permission, role
-    with db.atomic():
-        cms.purge_fileinfos(blog.fileinfos)
-        mgmt.erase_theme(blog)
-        mgmt.theme_install_to_blog(theme, blog, user)
-'''
-
-@_route(BASE_PATH + "/blog/<blog_id:int>/theme/save", method=('GET', 'POST'))
-def save_theme_to_system(blog_id):
-    from core.ui import blog
-    return blog.blog_save_theme(blog_id)
-
-
-@_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/apply", method=('GET', 'POST'))
-def apply_theme_to_blog(blog_id, theme_id):
-    from core.ui import blog
-    return blog.blog_apply_theme(blog_id, theme_id)
-
-@_route(BASE_PATH + "/system/theme/<theme_id:int>/delete", method=('GET', 'POST'))
-def delete_theme_from_system(theme_id):
-    from core.ui import system
-    return system.system_delete_theme(theme_id)
-    # you can only do this from the system menu
+# TODO: These should be moved into template UI, I think
 
 from core.models.transaction import transaction
-
-# this is our entry point for the template rebuilds
-
-# PUSH: push only to queue
-# PUBLISH: push to queue, run queue after push
-# FAST: iterate known fileinfos only
-# ALL: iterate all pages, genrate all archives, push all indices
 
 action_re = BASE_PATH + "/template/<template_id:int>/<action:re:(publish|queue)>"
 
