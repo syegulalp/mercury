@@ -206,7 +206,7 @@ def step_4_pre():
 
     if get_ini('main', 'DO_DB_CHECK') is None:
         store_ini('main', 'DO_DB_CHECK', 'Y')
-        from core.boot import reboot
+        from core.utils import reboot
         reboot()
 
     report = []
