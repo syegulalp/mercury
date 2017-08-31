@@ -130,10 +130,10 @@
                 <input type="text" class="form-control" aria-describedby="blog_media_path_help"
                 value="{{blog.media_path}}"
                 id="blog_media_path" name="blog_media_path">
-                <span id="blog_media_path_help" class="help-block">Path within your blog to where media will be uploaded.
+                <span id="blog_media_path_help" class="help-block">Default path for media uploads to this blog.
                 <ul>
-                <li>This can be a simple string or any valid expression used for a template mapping (e.g., <code>'media/%Y'</code>).</li>
-                <li><b>Do not use a leading slash.</b> (e.g., <b>media</b>, not <b>/media</b>)</li>
+                <li>This can be a string expression (<code>'media'</code>), or any valid expression used for a template mapping (<code>'media/%Y'</code>).</li>
+                <li><b>Do not use a leading slash</b> (e.g., <code>'media'</code>, not <code>'/media'</code>).</li>
                 <li>Altering this does <i>not</i> change the location of previously uploaded media, only future uploads.</li>
                 </ul>
                 </span>
@@ -141,7 +141,7 @@
                 % if blog.media_path_generated is None:
                 [<i>Invalid format for media path</i>]
                 % else:
-                Current upload location: <code>{{blog.media_path_generated}}</code>
+                Media path currently resolves to: <code>{{blog.media_path_generated}}</code>
                 % end                
                 </p>
             </div>

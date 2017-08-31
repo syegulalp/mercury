@@ -968,6 +968,10 @@ def blog_settings_save(blog_id, nav_setting):
 
     _get = request.forms.getunicode
 
+    # this could also be normalized?:
+    # blog.form_gets([list here])
+    # & you could always add custom fields after the fact
+
     blog.name = _get('blog_name', blog.name)
     blog.description = _get('blog_description', blog.description)
     blog.set_timezone = _get('blog_timezone')
@@ -990,6 +994,10 @@ def blog_settings_save(blog_id, nav_setting):
     except Exception as e:
         errors.extend(e.args[0])
 
+    # We could condense this all to:
+    # blog.validate_and_save()
+    # and just have it return errors as a list?
+
     if len(errors) > 0:
 
         status = Status(
@@ -1007,9 +1015,9 @@ def blog_settings_save(blog_id, nav_setting):
             blog.for_log,
             user.for_log))
 
-    tags = template_tags(blog_id=blog.id,
-        user=user)
+    tags = template_tags(user=user)
 
+    tags.blog = blog
     tags.nav_default = nav_setting
 
     if status is not None:
