@@ -1390,6 +1390,8 @@ class Blog(SiteBase):
         else:
             errors.append('Blog path cannot be blank.')
 
+        # TODO: Ensure blog path does not collide with other blog paths
+
         if not is_blank(self.base_extension):
             self.base_extension = self.base_extension.lstrip('.')
         else:
@@ -1397,6 +1399,8 @@ class Blog(SiteBase):
 
         if is_blank(self.media_path):
             errors.append('Blog media path cannot be blank.')
+
+        # TODO: Ensure media path does not collide with any mappings?
 
         if not is_blank(self.set_timezone):
             from core.libs import pytz
