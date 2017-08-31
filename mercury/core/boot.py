@@ -69,6 +69,7 @@ def boot(aux_settings=None):
             return install.step(step_id)
 
         def reboot_app():
+            from core.utils import reboot
             reboot()
 
         app = bottle.Bottle()
