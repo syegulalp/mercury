@@ -1,20 +1,18 @@
-import os, datetime
+import datetime, time
 
 from core.utils import (create_basename, Status, DATE_FORMAT,)
 from core.error import (PageNotChanged, DeletionError,)
 from core.libs.bottle import request
 
 from core.models import (Page, TagAssociation, Tag,
-    Category, PageCategory, template_tags,
-    Media, page_status)
+    Category, PageCategory, template_tags, page_status)
 
-from . import save_action_list, Cache, media_filetypes, invalidate_cache
+from . import save_action_list, invalidate_cache
 from .queue import queue_page_actions, queue_ssi_actions, queue_index_actions, queue_page_archive_actions
 from .fileinfo import (delete_page_fileinfo, build_archives_fileinfos, build_pages_fileinfos, delete_fileinfo_files,
                        purge_fileinfos, build_indexes_fileinfos)
 
 from settings import BASE_URL
-import time
 
 def save_page(page, user, blog=None):
     '''
@@ -420,8 +418,6 @@ def purge_blog(blog):
 
     '''
 
-    # import time
-
     report = []
     report.append("<h3>Purging/Recreating <b>{}</b></h3>".format(blog.for_log))
 
@@ -474,28 +470,4 @@ def purge_blog(blog):
 
 
     return report
-
-# TODO: move this to Media class
-def register_media(filename, path, user, **ka):
-
-    media = Media(
-        filename=filename,
-        path=path,
-        type=media_filetypes.types[os.path.splitext(filename)[1][1:]],
-        user=user,
-        friendly_name=ka.get('friendly_name', filename)
-        )
-
-    media.save()
-
-    if 'page' in ka:
-        page = ka['page']
-        media.associate(page)
-        media.blog = page.blog
-        media.site = page.blog.site
-        media.url = page.blog.url + "/" + page.blog.media_path_generated + "/" + media.filename
-        media.save()
-
-    return media
-
 

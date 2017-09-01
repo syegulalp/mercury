@@ -2627,6 +2627,31 @@ class Media(BaseModel, DateMod):
                 raise MediaAssociation.DoesNotExist('Media #{} is not associated with blog {}'.format(media.id, blog.for_log))
         return media
 
+    @classmethod
+    def register_media(cls, filename, path, user, **ka):
+        from core.cms import media_filetypes
+        import os
+
+        media = cls(
+            filename=filename,
+            path=path,
+            type=media_filetypes.types[os.path.splitext(filename)[1][1:]],
+            user=user,
+            friendly_name=ka.get('friendly_name', filename)
+            )
+
+        media.save()
+
+        if 'page' in ka:
+            page = ka['page']
+            media.associate(page)
+            media.blog = page.blog
+            media.site = page.blog.site
+            media.url = '/'.join(page.blog.url, page.blog.media_path_generated, media.filename)
+            media.save()
+
+        return media
+
     @property
     def created_date_tz(self):
         return self._date_from_utc(self.blog.timezone, self.created_date)
@@ -2725,6 +2750,7 @@ class FileInfo(BaseModel):
     url = EnforcedCharField(null=False, index=True, unique=True)
     modified_date = DateTimeField(default=datetime.datetime.utcnow)
     mapping_sort = EnforcedCharField(null=True, default=None, index=True)
+    preview_path = TextField(null=True, index=True, default=None)
 
     @property
     def xref(self):
