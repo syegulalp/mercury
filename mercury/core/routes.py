@@ -954,21 +954,73 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
 
 ### Everything after this is experimental/provisional #############################
 
-@_route(BASE_PATH + '/dbnew')
-def dbnew():
+@_route(BASE_PATH + '/dbrec')
+@_route(BASE_PATH + '/dbrec/<table_name>')
+def db_recreate(table_name='FileInfo'):
     '''
     Utility function for recreating a database table after changes
     '''
-    import importlib
-    table = importlib.import_module('PluginData', 'core.models')
 
-    db.connect()
+    from core import models
+    table_model = getattr(models, table_name)
+    table_ref = table_model._meta.db_table
+
+    from settings import DB, EXPORT_FILE_PATH
+    from core.libs.playhouse.dataset import DataSet
+
+    n = []
+
+    n.append("Beginning export process... Writing files to {}.".format(APPLICATION_PATH + EXPORT_FILE_PATH))
+
+    xdb = DataSet(DB.dataset_connection())
+
+    if os.path.isdir(APPLICATION_PATH + EXPORT_FILE_PATH) is False:
+        os.makedirs(APPLICATION_PATH + EXPORT_FILE_PATH)
+    with xdb.transaction():
+        table = xdb[table_ref]
+        n.append("Exporting table: " + table_name)
+        filename = APPLICATION_PATH + EXPORT_FILE_PATH + '/dump-' + table_ref + '.json'
+        table.freeze(format='json', filename=filename)
+    xdb.close()
+
+    n.append("Export process ended.")
+
     with db.atomic():
-        db.drop_tables((table,),
+        db.drop_tables((table_model,),
             safe=True)
-        db.create_tables((table,),
+        db.create_tables((table_model,),
             safe=False)
-    db.close()
+
+    try:
+        with xdb.transaction():
+            n.append("Loading table " + table_name)
+            try:
+                table = xdb[table_ref]
+            except:
+                n.append("<p>Sorry, couldn't create table ", table_name)
+            else:
+                filename = (APPLICATION_PATH + EXPORT_FILE_PATH +
+                    '/dump-' + table_ref + '.json')
+                if os.path.exists(filename):
+                    try:
+                        table.thaw(format='json',
+                            filename=filename,
+                            strict=True)
+                    except Exception as e:
+                        n.append("<p>Sorry, error:{}".format(e))
+
+                else:
+                    n.append("No data for table " + table_name)
+    except Exception as e:
+        n.append('Ooops: {}'.e)
+    else:
+        xdb.query(DB.post_import())
+        xdb.close()
+        # DB.recreate_indexes()
+        n.append("Import process ended.")
+
+    return ('<p>'.join(n))
+
 
 @_route(BASE_PATH + '/reboot')
 def reboot():
@@ -1000,10 +1052,14 @@ def restore_db(filename='database-backup.cgi'):
     Restore database file from backup (for SQLite only)
     '''
     if db is not None:
-        db.close()
+        try:
+            db.close()
+        except AttributeError:
+            pass
+
     import shutil
     from settings import DATA_FILE_PATH, FULL_SQLITE_DATABASE_PATH
-    backup_path = APPLICATION_PATH + DATA_FILE_PATH + _sep + filename
+    backup_path = os.path.join(APPLICATION_PATH + DATA_FILE_PATH, filename)
 
     with open(FULL_SQLITE_DATABASE_PATH, 'wb') as destfile, open(backup_path, 'rb') as sourcefile:
         shutil.copyfileobj(sourcefile, destfile, length=-1)
