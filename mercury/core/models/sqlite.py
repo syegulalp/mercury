@@ -23,8 +23,6 @@ def db_is_locked():
 
 def recreate_database():
 
-    db.close()
-
     try:
         os.remove(settings.FULL_SQLITE_DATABASE_PATH)
     except OSError as e:
@@ -34,14 +32,18 @@ def recreate_database():
     except Exception as e:
         raise e
 
-    try:
-        os.mkdir(os.path.join(settings.APPLICATION_PATH, settings.DATA_FILE_PATH))
-    except OSError as e:
-        from core.error import file_exists
-        if file_exists(e) is False:
-            raise e
-    except Exception as e:
-        raise e
+#     dbpath = os.path.join(settings.APPLICATION_PATH, settings.DATA_FILE_PATH)
+#     print (dbpath)
+#
+#     if not os.path.exists(dbpath):
+#         try:
+#             os.mkdir(dbpath)
+#         except OSError as e:
+#             from core.error import file_exists
+#             if file_exists(e) is False:
+#                 raise e
+#         except Exception as e:
+#             raise e
 
     init_db.recreate_database()
 
