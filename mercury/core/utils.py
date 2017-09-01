@@ -1,14 +1,10 @@
-import urllib, re, html
+import urllib, re, html, hashlib, base64
 
 from settings import (MAX_BASENAME_LENGTH, ITEMS_PER_PAGE,
     PASSWORD_KEY, SECRET_KEY, BASE_URL, APPLICATION_PATH,
     EXPORT_FILE_PATH)
 
-from core.libs.bottle import redirect, response
-
-import hashlib, base64
-
-from core.libs.bottle import _stderr
+from core.libs.bottle import redirect, response, _stderr
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -456,18 +452,6 @@ def generate_date_mapping(date_value, tags, path_string, do_eval=True):
     path_string = date_value.strftime(time_string)
 
     return path_string
-
-def postpone(function):
-    '''
-    Thread launcher function
-    '''
-    def decorator(*args, **ka):
-        t = Thread(target=function, args=args, kwargs=ka)
-        t.daemon = True
-        t.start()
-
-    return decorator
-
 
 def encrypt_password(password, key=None):
 
