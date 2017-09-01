@@ -53,18 +53,18 @@ function delayed_resize() {
         editor_resize();
     } catch (err) {
         setTimeout(function() {
-            delayed_resize()
+            delayed_resize();
         }, 50);
     }
 }
 
 
 function save_animation(n) {
-    n.css('color', colors[rotate][0])
-    n.css('text-shadow', '0 0 4px ' + colors[rotate][1])
+    n.css('color', colors[rotate][0]);
+    n.css('text-shadow', '0 0 4px ' + colors[rotate][1]);
     rotate = 1 - rotate;
     animation_timeout = setTimeout(function() {
-        save_animation(n)
+        save_animation(n);
     }, 333);
 }
 
@@ -113,7 +113,7 @@ function bind_queue() {
 }
 
 function run_queue(blog_id) {
-    if (global.run_queue!=true)
+    if (global.run_queue!==true)
     {
         return false;
     }
@@ -152,7 +152,7 @@ function run_queue(blog_id) {
 }
 
 function page_save(n) {
-    if (global.saving == true) return;
+    if (global.saving === true) return;
     clear_background_save_timer();
     $('#save').attr('value', n);
     editor_update();
@@ -184,11 +184,11 @@ function form_save(form) {
             return 0;
         }
     }
-    tags = []
-    new_tags = []
+    tags = [];
+    new_tags = [];
     $('.tag-title').each(function() {
         tag_id = $(this).data('tag');
-        if (tag_id != 0) {
+        if (tag_id !== 0) {
             tags.push(tag_id);
         } else {
             new_tags.push($(this).data('new-tag'));
@@ -290,7 +290,7 @@ function sidebar_wireup() {
             open_modal(global.base + "/page/" + global.page +
                 "/media/add");
         });
-        if ($('#publication_date_picker').datetimepicker != undefined) {
+        if ($('#publication_date_picker').datetimepicker !== undefined) {
             $('#publication_date_picker').datetimepicker({
                 format: 'YYYY-MM-DD HH:mm:ss',
                 showTodayButton: true
@@ -317,7 +317,7 @@ function sidebar_wireup() {
     }
     $('[data-toggle="tooltip"]').tooltip({
         html: true
-    })
+    });
     $('.unsaved').on("input", function() {
         window.onbeforeunload = stay;
     });
@@ -360,7 +360,7 @@ function add_tag(e) {
             return false;
         }
     });
-    if (no_match == false) {
+    if (no_match === false) {
         return false;
     }
     $('.typeahead').typeahead('val', '');
@@ -368,7 +368,7 @@ function add_tag(e) {
     
     var fd = new FormData();
     fd.append('csrf', global.csrf);
-    fd.append('tag', tag)
+    fd.append('tag', tag);
     
     if (global.page == "None") {
         url_link = "blog/" + global.blog;
@@ -435,10 +435,10 @@ $(window).load(function() {
         editor = tinymce;
         editor_update = function() {
             tinymce.triggerSave();
-        }
+        };
         editor_resize = function() {
-            if ($('.mce-fullscreen').length != 0) {
-                return
+            if ($('.mce-fullscreen').length !== 0) {
+                return;
             }
             e = tinymce.activeEditor;
             var targetHeight = window.innerHeight - $("#editor_div")
@@ -451,15 +451,15 @@ $(window).load(function() {
             var myHeight = targetHeight - mce_bars_height - $(
                 '#page_text_label').height();
             e.theme.resizeTo(null, myHeight);
-        }
+        };
         editor_insert = function(text) {
             tinymce.activeEditor.execCommand('mceInsertContent',
                 false, text);
-        }
+        };
         editor_set_dirty = function() {
             set_background_save_timer();
             window.onbeforeunload = stay;            
-        }
+        };
         tinymce.init(global.html_editor_settings);
 
     }
@@ -469,16 +469,16 @@ $(window).load(function() {
             $('.CodeMirror').css('height', (window.innerHeight - $(
                 ".CodeMirror").offset().top - calc_size()));
             editor.refresh();
-        }
+        };
         editor_update = function() {
             editor.save();
             editor.refresh();
-        }
+        };
         setTimeout(function() {
-            delayed_resize()
-        }, 50)
+            delayed_resize();
+        }, 50);
     }
-    if (editor != null) {
+    if (editor !== null) {
         $(window).bind("resize", function() {
             editor_resize();
         });
