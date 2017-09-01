@@ -14,9 +14,10 @@ class InitDBClass():
 
         modules = []
 
-        import importlib
-        for n in module_list:
-            modules.append(importlib.import_module(n, 'core.models'))
+        # import importlib
+        # for n in module_list:
+            # modules.append(importlib.import_module(n, 'core.models'))
+
 
         self.connect()
 
