@@ -1565,27 +1565,29 @@ class Page(BaseModel, DateMod):
         return self.kv_del()
 
     def delete_preview(self):
+        for n in self.fileinfos:
+            n.clear_preview()
 
-        preview_file = self.preview_file
-        preview_fileinfo = self.default_fileinfo
-        split_path = preview_fileinfo.file_path.rsplit('/', 1)
-
-        preview_fileinfo.file_path = preview_fileinfo.file_path = (
-             split_path[0] + "/" +
-             preview_file
-             )
-
-        import os
-        from os.path import join as _join
-
-        try:
-            return os.remove(_join(self.blog.path, preview_fileinfo.file_path))
-        except OSError as e:
-            from core.error import not_found
-            if not_found(e) is False:
-                raise e
-        except Exception as e:
-            raise e
+#         preview_file = self.preview_file
+#         preview_fileinfo = self.default_fileinfo
+#         split_path = preview_fileinfo.file_path.rsplit('/', 1)
+#
+#         preview_fileinfo.file_path = preview_fileinfo.file_path = (
+#              split_path[0] + "/" +
+#              preview_file
+#              )
+#
+#         import os
+#         from os.path import join as _join
+#
+#         try:
+#             return os.remove(_join(self.blog.path, preview_fileinfo.file_path))
+#         except OSError as e:
+#             from core.error import not_found
+#             if not_found(e) is False:
+#                 raise e
+#         except Exception as e:
+#             raise e
 
     def proxy(self, object_map):
         page_proxy = Page.load(self.id)
@@ -2751,6 +2753,47 @@ class FileInfo(BaseModel):
     modified_date = DateTimeField(default=datetime.datetime.utcnow)
     mapping_sort = EnforcedCharField(null=True, default=None, index=True)
     preview_path = TextField(null=True, index=True, default=None)
+
+    def make_preview(self):
+        from core import utils
+        from os import path
+
+        full_file_path = self.file_path.rsplit(path.sep, 1)
+
+        blog = self.template_mapping.template.blog
+
+        preview_file = utils.preview_file(
+                full_file_path[1],
+                blog.base_extension
+            )
+
+        preview_file_path = path.join(full_file_path[0],
+            preview_file)
+
+        preview_url = '/'.join(
+            (blog.permalink,
+            full_file_path[0],
+            preview_file)
+            )
+
+        self.preview_path = preview_file_path
+
+        self.save()
+
+        return (preview_file_path, preview_url)
+
+    def clear_preview(self):
+        import os
+        if self.preview_path is not None:
+            os.remove(
+                os.path.join(
+                    self.template_mapping.template.blog.path,
+                    self.preview_path
+                    )
+                )
+            self.preview_path = None
+            self.save()
+
 
     @property
     def xref(self):

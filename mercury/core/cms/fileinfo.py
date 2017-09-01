@@ -514,6 +514,8 @@ This appears to be a collision with mapping {} in template {}'''.format(
 
     return fileinfo
 
+# TODO: we may want to move this and page_fileinfo to the models
+
 def delete_fileinfo_files(fileinfos):
     '''
     Iterates through the fileinfos (e.g.,for a given page)

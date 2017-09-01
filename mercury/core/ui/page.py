@@ -220,38 +220,30 @@ def page_delete(page_id, confirm):
     return tpl
 
 @transaction
-def page_preview(page_id):
+def page_preview_core(page_id):
 
     user = auth.is_logged_in(request)
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    preview_file = page.preview_file
     preview_fileinfo = page.default_fileinfo
-    split_path = preview_fileinfo.file_path.rsplit('/', 1)
-
-    preview_fileinfo.file_path = (
-         split_path[0] + "/" +
-         preview_file
-         )
+    preview_file_path, preview_url = preview_fileinfo.make_preview()
 
     page_tags = fileinfo.generate_page_tags(preview_fileinfo, page.blog)
     file_page_text = generate_page_text(preview_fileinfo, page_tags)
-    queue.write_file(file_page_text, page.blog.path, preview_fileinfo.file_path)
+    queue.write_file(file_page_text, page.blog.path, preview_file_path)
+
+    return preview_url, page
+
+def page_preview(page_id):
+
+    preview_url, page = page_preview_core(page_id)
 
     utils.disable_protection()
 
-    from settings import DESKTOP_MODE, BASE_URL_ROOT
-
-    if DESKTOP_MODE:
-        page_url = BASE_URL_ROOT + "/" + preview_fileinfo.file_path + "?_={}".format(
-            page.blog.id)
-    else:
-        page_url = preview_fileinfo.url.rsplit('/', 1)[0] + '/' + preview_file
-
     from core.libs.bottle import redirect
     redirect ("{}?_={}".format(
-        page_url,
+        preview_url,
         page.modified_date.microsecond
         ))
 
