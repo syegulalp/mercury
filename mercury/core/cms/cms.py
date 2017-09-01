@@ -139,60 +139,48 @@ def save_page(page, user, blog=None):
 
         msg.append("Page <b>{}</b> saved successfully.")
 
-        if blog_new_page:
+        # Assign categories for page
 
-            saved_page_category = PageCategory.create(
-                page=page,
-                category=blog.default_category,
-                primary=True)
+        categories = []
 
-        else:
-
-            categories = []
-            for n in request.forms.allitems():
-                if n[0][:8] == 'cat-sel-':
-                    try:
-                        category_id = int(n[0][8:])
-                    except ValueError:
-                        category_id = None
-                    else:
-                        categories.append(category_id)
-
-            page_categories = []
-
-            primary = None
-
-            for n in page.categories:
-                if n.category.id not in categories:
-                    delete_category = PageCategory.delete().where(
-                        PageCategory.id == n.id)
-                    delete_category.execute()
+        for n in request.forms.allitems():
+            if n[0][:8] == 'cat-sel-':
+                try:
+                    category_id = int(n[0][8:])
+                except ValueError:
+                    category_id = None
                 else:
-                    page_categories.append(n.category.id)
-                    if n.primary is True:
-                        primary = n
+                    categories.append(category_id)
 
-            for n in categories:
-                if n not in page_categories:
-                    new_page_category = PageCategory.create(
-                        page=page,
-                        category=Category.load(n, blog_id=page.blog.id),
-                        primary=False)
+        if not categories:
+            categories.append(blog.default_category.id)
+            msg.append(" Default category auto-assigned for page.")
 
-            if page.categories.count() == 0:
-                default_page_category = PageCategory.create(
+        page_categories = []
+
+        primary = None
+
+        for n in page.categories:
+            if n.category.id not in categories:
+                delete_category = PageCategory.delete().where(
+                    PageCategory.id == n.id)
+                delete_category.execute()
+            else:
+                page_categories.append(n.category.id)
+                if n.primary is True:
+                    primary = n
+
+        for n in categories:
+            if n not in page_categories:
+                new_page_category = PageCategory.create(
                     page=page,
-                    category=Category.get(
-                        blog=page.blog,
-                        default=True)
-                    )
-                primary = default_page_category
-                msg.append(" Default category auto-assigned for page.")
+                    category=Category.load(n, blog_id=page.blog.id),
+                    primary=False)
 
-            if primary is None:
-                n = page.categories[0]
-                n.primary = True
-                n.save()
+        if primary is None:
+            n = page.categories[0]
+            n.primary = True
+            n.save()
 
         build_archives_fileinfos((page,))
         build_pages_fileinfos((page,))
