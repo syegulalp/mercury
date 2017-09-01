@@ -5,7 +5,7 @@
 <form method="post" id="main_form">{{!csrf_token}}
     <div class="col-sm-9">
         <div class="form-group">
-            <input type="text" class="form-control input-lg" id="template_title" placeholder="Template title"
+            <input type="text" class="form-control input-lg entersubmit unsaved" id="template_title" placeholder="Template title"
             name="template_title" value="{{template.title}}">
         </div>
         <div class="form-group" id="editor_div">
