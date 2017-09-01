@@ -443,63 +443,6 @@ def queue_page_archive_actions(page):
                 page.for_log,
                 e))
 
-def queue_page_archive_actions_old(page):
-    '''
-    Pushes to the publishing queue all the page archives for a given page object.
-
-    :param page:
-        The page object whose archives will be pushed to the publishing queue.
-    '''
-
-    archive_templates = page.blog.archive_templates
-    tags = template_tags(page=page)
-
-    for n in archive_templates:
-        try:
-            if n.publishing_mode != publishing_mode.do_not_publish:
-                for m in n.mappings:
-                    path_list = eval_paths(m.path_string, tags.__dict__)
-                    paths = []
-
-                    if type(path_list) == list:
-                        for pp in path_list:
-                            paths.append(pp[1])
-                    else:
-                        paths.append(path_list)
-
-                    for p in paths:
-                        if p is None: continue
-                        file_path = (page.blog.path + '/' +
-                                     generate_date_mapping(
-                                         page.publication_date_tz.date(),
-                                         tags,
-                                         p,
-                                         do_eval=False))
-
-                        try:
-                            fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
-                        except FileInfo.DoesNotExist:
-                            if build_archives_fileinfos((page,)) == 0:
-                                from core.error import QueueAddError
-                                raise QueueAddError(
-                                    'No archive fileinfos could be built for page {} with template {}'.format(
-                                    page.for_log,
-                                    n.template.for_log))
-
-                        Queue.push(job_type=job_type.archive,
-                                  blog=page.blog,
-                                  site=page.blog.site,
-                                  priority=7,
-                                  data_integer=fileinfo_mapping.id)
-        except Exception as e:
-            from core.error import QueueAddError
-            raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
-                n,
-                page.for_log,
-                e))
-
-
-
 def queue_ssi_actions(blog):
     '''
     Pushes to the publishing queue all the SSIs for a given blog.
