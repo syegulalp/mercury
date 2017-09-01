@@ -1,6 +1,6 @@
 from core import (auth, utils)
 from core.cms import fileinfo, generate_page_text, queue, save_action_list
-from core.cms.cms import register_media, save_page
+from core.cms.cms import save_page
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu
@@ -332,7 +332,7 @@ def page_media_upload(page_id):
             raise FileExistsError("File '{}' already exists on the server.".format(
                 utils.html_escape(x.filename)))
         else:
-            register_media(x.filename, file_path, user, page=page)
+            Media.register_media(x.filename, file_path, user, page=page)
             if not _exists(media_path):
                 makedirs(media_path)
             x.save(file_path)
