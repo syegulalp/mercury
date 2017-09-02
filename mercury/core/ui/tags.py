@@ -136,7 +136,7 @@ def delete_tag(blog_id, tag_id):
             close=False,
             message='''
 Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
-'''.format(tag.for_listing, blog.for_display, recommendation)
+'''.format(tag.for_log, blog.for_display, recommendation)
             )
 
     else:
