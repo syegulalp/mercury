@@ -6,7 +6,7 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
 from . import search_context
 import json
-from core.utils import url_unescape
+from core.utils import url_unescape, Status
 
 @transaction
 def edit_tag(blog_id, tag_id):
@@ -27,7 +27,7 @@ def edit_tag(blog_id, tag_id):
     tags = template_tags(
         user=user)
 
-    from core.utils import html_escape, Status
+    from core.utils import html_escape
 
     if request.method == "POST":
 
@@ -86,6 +86,92 @@ def edit_tag(blog_id, tag_id):
         menu=generate_menu('blog_edit_tag', tag),
         search_context=(search_context['sites'], None),
         tag=tag,
+        **tags.__dict__)
+
+    return tpl
+
+@transaction
+def delete_tag(blog_id, tag_id):
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    auth.check_tag_editing_lock(blog)
+
+    try:
+        tag = Tag.get(Tag.id == tag_id,
+                      Tag.blog == blog_id)
+    except Tag.DoesNotExist:
+        raise Tag.DoesNotExist("No such tag #{} in blog {}.".format(
+            tag_id,
+            blog.for_log))
+
+    from settings import BASE_URL
+    tag_page_count = tag.pages.count()
+
+    if request.forms.getunicode('confirm') == user.logout_nonce:
+
+        if tag_page_count > 0:
+            p_count = tag.pages.published.count()
+
+            from core.cms import queue
+            queue.queue_page_actions(tag.pages.published)
+            queue.queue_index_actions(blog, True)
+            # TODO: queue any archives that are tag-related
+
+            recommendation = '''
+<p><b>{}</b> pages affected by this change have been pushed to the queue.</p>
+'''.format(p_count)
+        else:
+            recommendation = '''
+<p>No pages were associated with this tag.</p>
+'''
+
+        from core.models import db
+        with db.atomic() as txn:
+            tag.delete_instance(recursive=True)
+
+        status = Status(
+            type='success',
+            close=False,
+            message='''
+Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
+'''.format(tag.for_listing, blog.for_display, recommendation)
+            )
+
+    else:
+
+        if tag_page_count > 0:
+            recommendation = '''
+<p><b>There are still pages associated with this tag.</b></p>
+'''
+        else:
+            recommendation = ''
+
+        status = Status(
+                type='warning',
+                close=False,
+                message='''
+    You are about to delete tag <b>{}</b> in blog <b>{}</b>.</p>{}
+    '''.format(tag.for_listing, blog.for_display, recommendation),
+                url='{}/blog/{}/tag/{}/delete'.format(
+                    BASE_URL, blog.id, tag.id),
+                yes={'id':'delete',
+                    'name':'confirm',
+                    'label':'Yes, I want to delete this tag',
+                    'value':user.logout_nonce},
+                no={'label':'No, don\'t delete this tag',
+                    'url':'{}/blog/{}/tag/{}'.format(
+                    BASE_URL, blog.id, tag.id)}
+                )
+
+    tags = template_tags(
+        user=user)
+    tags.status = status
+
+    tpl = template('listing/report',
+        menu=generate_menu('blog_delete_tag', tag),
+        search_context=(search_context['sites'], None),
         **tags.__dict__)
 
     return tpl

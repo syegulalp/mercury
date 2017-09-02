@@ -58,11 +58,6 @@ def preview_file(identifier, extension):
         extension
         )
     return filename
-    # file_identifier = "preview-{}".format(identifier)
-    # import zlib
-    # return ('mtl-preview-' +
-        # str(zlib.crc32(file_identifier.encode('utf-8'), 0xFFFF)) +
-        # "." + extension)
 
 def verify_path(path):
     '''

@@ -387,6 +387,15 @@ def blog_edit_tag(blog_id, tag_id):
     from core.ui import tags
     return tags.edit_tag(blog_id, tag_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete')
+@_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete', method='POST')
+def blog_delete_tag(blog_id, tag_id):
+    '''
+    Routes for deleting a tag from a blog
+    '''
+    from core.ui import tags
+    return tags.delete_tag(blog_id, tag_id)
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages', method='POST')
 def blog_tag_list_pages(blog_id, tag_id):

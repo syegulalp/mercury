@@ -300,6 +300,13 @@ menus = {
         'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
         'text':lambda x:'Tag #{}'.format(x.id)
         },
+    'blog_delete_tag':{
+        'type':'label',
+        'parent':'blog_edit_tag_button',
+        'parent_context':lambda x:x,
+        # 'path': lambda x: BASE_URL + '/blog/{}/tag/{}'.format(x.blog.id, x.id),
+        'text':lambda x:'Delete tag #{}'.format(x.id)
+        },
     'blog_pages_for_tag':{
         'type':'label',
         'parent':'blog_edit_tag_button',
