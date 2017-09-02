@@ -117,7 +117,6 @@ def delete_tag(blog_id, tag_id):
             from core.cms import queue
             queue.queue_page_actions(tag.pages.published)
             queue.queue_index_actions(blog, True)
-            # TODO: queue any archives that are tag-related
 
             recommendation = '''
 <p><b>{}</b> pages affected by this change have been pushed to the queue.</p>
