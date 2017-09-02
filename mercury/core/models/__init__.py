@@ -2763,6 +2763,8 @@ class FileInfo(BaseModel):
         from os import path
 
         full_file_path = self.file_path.rsplit(path.sep, 1)
+        if len(full_file_path) == 1:
+            full_file_path.insert(0, '')
 
         blog = self.template_mapping.template.blog
 
