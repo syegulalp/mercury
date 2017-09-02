@@ -51,11 +51,10 @@ def edit_tag(blog_id, tag_id):
                 if tag_count > 0:
 
                     from core.cms import queue
-                    from core.models import page_status
 
-                    queue.queue_page_actions(tag.pages.where(Page.status == page_status.published))
+                    queue.queue_page_actions(tag.pages.published)
                     queue.queue_ssi_actions(blog)
-                    queue.queue_index_actions(blog)
+                    queue.queue_index_actions(blog, True)
 
                 tags.status = Status(
                     type='info',
@@ -115,7 +114,9 @@ def delete_tag(blog_id, tag_id):
             p_count = tag.pages.published.count()
 
             from core.cms import queue
+
             queue.queue_page_actions(tag.pages.published)
+            queue.queue_ssi_actions(blog)
             queue.queue_index_actions(blog, True)
 
             recommendation = '''
