@@ -336,7 +336,7 @@ def template_edit_save(template_id):
                 message_list=(e,))
 
         else:
-            template_preview_delete(tpl)
+            tpl.delete_preview()
             status = Status(
                 type='success',
                 message="Template <b>{}</b> saved successfully. {}".format(tpl.for_display,
@@ -480,51 +480,15 @@ def template_preview_core(template_id):
         end - start,
         tpl_output)
 
-    preview = template.preview_path(fi)
+    preview_file_path, preview_url = fi.make_preview()
 
-    from core.cms.queue import write_file
-
-    write_file(tpl_output,
-               preview['path'],  # blog_path,
-               preview['file']  # file_path)
-               )
-
-    import settings
-    if settings.DESKTOP_MODE:
-        url = settings.BASE_URL_ROOT + '/' + preview['subpath'] + '/' + preview['file'] + '?_={}'.format(
-            template.blog.id)
-    else:
-        url = template.blog.url + '/' + preview['subpath'] + '/' + preview['file']
+    from core.cms import queue
+    queue.write_file(tpl_output, template.blog.path, preview_file_path)
 
     return ("{}?_={}".format(
-        url,
+        preview_url,
         template.modified_date.microsecond
         ))
-
-def template_preview_delete(tpl):
-    '''
-    Deletes a template preview.
-    Typically invoked after a page is edited, saved, or published.
-    '''
-    try:
-        preview = tpl.preview_path()
-    except:
-        return None
-
-    if preview is None:
-        return None
-
-    import os
-
-    try:
-        return os.remove(os.path.join(preview['path'], preview['file']))
-    except OSError as e:
-        from core.error import not_found
-        if not_found(e) is False:
-            raise e
-
-    except Exception as e:
-        raise e
 
 def template_edit_output(tags):
 

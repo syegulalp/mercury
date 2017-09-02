@@ -2314,6 +2314,10 @@ class Template(BaseModel, DateMod):
     default_type = CharField(max_length=32, default=None, null=True)
     template_ref = TextField(null=True)
 
+    def delete_preview(self):
+        for n in self.fileinfos:
+            n.clear_preview()
+
     def delete_instance(self, *a, **ka):
         # eventually we shouldn't need these once we have all the proper
         # ID refs set up
