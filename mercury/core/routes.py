@@ -375,8 +375,8 @@ def blog_tags(blog_id):
     '''
     Route for listing all tags in a blog
     '''
-    from core.ui import blog
-    return blog.blog_tags(blog_id)
+    from core.ui import tags
+    return tags.tags_list(blog_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
@@ -385,7 +385,7 @@ def blog_edit_tag(blog_id, tag_id):
     Routes for editing a tag in a blog
     '''
     from core.ui import tags
-    return tags.edit_tag(blog_id, tag_id)
+    return tags.tag_edit(blog_id, tag_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete', method='POST')
@@ -394,7 +394,7 @@ def blog_delete_tag(blog_id, tag_id):
     Routes for deleting a tag from a blog
     '''
     from core.ui import tags
-    return tags.delete_tag(blog_id, tag_id)
+    return tags.tag_delete(blog_id, tag_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages', method='POST')
@@ -402,8 +402,9 @@ def blog_tag_list_pages(blog_id, tag_id):
     '''
     Routes for editing a tag in a blog
     '''
-    from core.ui import blog
-    return blog.blog_tag_list_pages(blog_id, tag_id)
+
+    from core.ui import tags
+    return tags.tag_list_pages(blog_id, tag_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages', method='POST')
@@ -947,19 +948,19 @@ def api_remove_kv():
 @_route(BASE_PATH + "/api/1/get-tag/blog/<blog_id:int>/tag/<tag_name>")
 def api_get_tag(blog_id, tag_name):
     from core.ui import tags
-    return tags.get_tag(blog_id, tag_name)
+    return tags.tag_get(blog_id, tag_name)
 
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>/<limit>")
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>")
 def api_get_tags(blog_id, limit=None, page_limit=250):
     from core.ui import tags
-    return tags.get_tags(blog_id, limit, page_limit)
+    return tags.tags_get(blog_id, limit, page_limit)
 
 @_route(BASE_PATH + "/api/1/make-tag-for-page/blog/<blog_id:int>", method='POST')
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
 def api_make_tag_for_page(blog_id=None, page_id=None):
     from core.ui import tags
-    return tags.make_tag_for_page(blog_id, page_id)
+    return tags.tag_make_for_page(blog_id, page_id)
 
 ### Everything after this is experimental/provisional #############################
 

@@ -3,9 +3,7 @@ from core.cms import cms, queue, fileinfo
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu, colsets, icons
-from core.search import (
-    blog_search_results, media_search_results,
-    tag_search_results, tag_in_blog_search_results,
+from core.search import (blog_search_results,
     blog_pages_in_category_search_results)
 
 from core.models import (Struct, Site,
@@ -58,30 +56,6 @@ def blog(blog_id, errormsg=None):
         },
         {'blog_id':blog.id}
         )
-
-@transaction
-def blog_tag_list_pages(blog_id, tag_id):
-
-    user = auth.is_logged_in(request)
-    blog = Blog.load(blog_id)
-    permission = auth.is_blog_member(user, blog)
-    tag = Tag.load(tag_id)
-
-    return listing(
-        request, user, None,
-        {
-            'colset':'blog',
-            'menu':'blog_pages_for_tag',
-            'search_ui':'blog_pages_with_tag',
-            'search_object':tag,
-            'search_context':tag_in_blog_search_results,
-            'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {'blog_id':blog.id}
-        )
-
 
 
 @transaction
@@ -388,28 +362,7 @@ def blog_pages_in_category(blog_id, category_id):
         )
 
 
-@transaction
-def blog_tags(blog_id):
 
-    user = auth.is_logged_in(request)
-    blog = Blog.load(blog_id)
-    permission = auth.is_blog_author(user, blog)
-
-    reason = auth.check_tag_editing_lock(blog, True)
-
-    return listing(
-        request, user, None,
-        {
-            'colset':'tags',
-            'menu':'blog_manage_tags',
-            'search_ui':'blog_tags',
-            'search_object':blog,
-            'search_context':tag_search_results,
-            'item_list_object':blog.tags
-        },
-        {'blog_id':blog.id,
-            'status':reason}
-        )
 
 
 @transaction

@@ -4,12 +4,36 @@ from core.models import (Blog, Media,
     template_tags, Page, Tag)
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
-from . import search_context
+from core.search import tag_search_results, tag_in_blog_search_results
+from . import search_context, listing
 import json
 from core.utils import url_unescape, Status
 
 @transaction
-def edit_tag(blog_id, tag_id):
+def tags_list(blog_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_author(user, blog)
+
+    reason = auth.check_tag_editing_lock(blog, True)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'tags',
+            'menu':'blog_manage_tags',
+            'search_ui':'blog_tags',
+            'search_object':blog,
+            'search_context':tag_search_results,
+            'item_list_object':blog.tags
+        },
+        {'blog_id':blog.id,
+            'status':reason}
+        )
+
+@transaction
+def tag_edit(blog_id, tag_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
@@ -90,7 +114,7 @@ def edit_tag(blog_id, tag_id):
     return tpl
 
 @transaction
-def delete_tag(blog_id, tag_id):
+def tag_delete(blog_id, tag_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_publisher(user, blog)
@@ -177,7 +201,7 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
     return tpl
 
 @transaction
-def get_tag(blog_id, tag_name):
+def tag_get(blog_id, tag_name):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
@@ -195,7 +219,7 @@ def get_tag(blog_id, tag_name):
     return tag_list_json
 
 @transaction
-def get_tags(blog_id, limit, page_limit):
+def tags_get(blog_id, limit, page_limit):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
@@ -218,7 +242,7 @@ def get_tags(blog_id, limit, page_limit):
     return tag_list_json
 
 @transaction
-def make_tag_for_media(media_id=None, tag=None):
+def tag_make_for_media(media_id=None, tag=None):
 
     user = auth.is_logged_in(request)
     media = Media.load(media_id)
@@ -246,7 +270,7 @@ def make_tag_for_media(media_id=None, tag=None):
 
 
 @transaction
-def make_tag_for_page(blog_id=None, page_id=None):
+def tag_make_for_page(blog_id=None, page_id=None):
 
     user = auth.is_logged_in(request)
 
@@ -281,3 +305,25 @@ def make_tag_for_page(blog_id=None, page_id=None):
 
     return tpl
 
+@transaction
+def tag_list_pages(blog_id, tag_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_member(user, blog)
+    tag = Tag.load(tag_id)
+
+    return listing(
+        request, user, None,
+        {
+            'colset':'blog',
+            'menu':'blog_pages_for_tag',
+            'search_ui':'blog_pages_with_tag',
+            'search_object':tag,
+            'search_context':tag_in_blog_search_results,
+            'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
+            # 'action_button':action,
+            # 'list_actions':list_actions
+        },
+        {'blog_id':blog.id}
+        )
