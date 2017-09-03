@@ -143,8 +143,8 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
 
         if tag_page_count > 0:
             recommendation = '''
-<p><b>There are still pages associated with this tag.</b></p>
-'''
+<p><b>There are still <a target="_blank" href="{}/blog/{}/tag/{}/pages">{} pages</a> associated with this tag.</b></p>
+'''.format(BASE_URL, blog.id, tag.id, tag_page_count)
         else:
             recommendation = ''
 

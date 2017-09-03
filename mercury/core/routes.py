@@ -419,32 +419,32 @@ def blog_media(blog_id):
     '''
     Routes for listing media in a blog
     '''
-    from core.ui import blog
-    return blog.blog_media(blog_id)
+    from core.ui import media
+    return media.media_list(blog_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit')
 def blog_media_edit(blog_id, media_id):
     '''
     Routes for editing media in a blog
     '''
-    from core.ui import blog
-    return blog.blog_media_edit(blog_id, media_id)
+    from core.ui import media
+    return media.media_edit(blog_id, media_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit', method='POST')
 def blog_media_edit_save(blog_id, media_id):
     '''
     Routes for saving blog media edits
     '''
-    from core.ui import blog
-    return blog.blog_media_edit_save(blog_id, media_id)
+    from core.ui import media
+    return media.media_edit_save(blog_id, media_id)
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/pages')
 def blog_media_pages(blog_id, media_id):
     '''
     Routes for listing media in a blog
     '''
-    from core.ui import blog
-    return blog.blog_media_pages(blog_id, media_id)
+    from core.ui import media
+    return media.media_pages(blog_id, media_id)
 
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/delete')
@@ -453,8 +453,8 @@ def blog_media_delete(blog_id, media_id):
     '''
     Routes for deleting media in a blog
     '''
-    from core.ui import blog
-    return blog.blog_media_delete(blog_id, media_id, request.forms.get('confirm'))
+    from core.ui import media
+    return media.media_delete(blog_id, media_id, request.forms.get('confirm'))
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
