@@ -4,10 +4,18 @@
     <div class="form-group">
         <label for="media_name" class="col-sm-2 control-label">Image</label>
         <div class="col-sm-10">
-            <img id="media_name"
+            <p><img id="media_name"
             class="img-responsive img-edit-preview"
+            style="max-height: 50vh"
             src="{{media.preview_url}}">
-            <p>
+            </p>
+            % c=media.pages.count()
+            % if c>0:
+            <p><a target="_blank" href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/pages"><span class="label label-info">See all {{c}} page(s) that use this media</span></a></p>
+            % else:
+            <p>[<i>This media is not associated with any page in this blog.</i>]</p>
+            % end
+            
         </div>
     </div>
     
@@ -30,17 +38,7 @@
             <span id="media_friendly_name_help" class="help-block">Used to describe the image ("Last Friday's lunch")</span>
         </div>
     </div>
-    <!--
-    <div class="form-group">
-        <label for="media_tags" class="col-sm-2 control-label">Tags</label>
-        <div class="col-sm-9">
-            <input type="text" class="form-control" aria-describedby="media_tags_help"
-            id="media_tags" name="media_tags">
-            <span id="media_tags_help" class="help-block">List of tags for this media object</span>
-        </div>
-    </div>
-    -->
-    
+   
     <div class="form-group">
         <label for="media_path" class="col-sm-2 control-label">File path</label>
         <div class="col-sm-10">
@@ -57,7 +55,9 @@
             id="media_url" name="media_url" value="{{media.url}}">
             <span id="media_url_help" class="help-block">URL for this media object. (This is automatically generated and cannot be changed.)</span>
         </div>
-    </div>    
+    </div>
+    
+    <hr/>    
     
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
@@ -67,13 +67,6 @@
             </span>            
         </div>
     </div>
-    
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-            <p><a target="_blank" href="{{settings.BASE_URL}}/blog/{{blog.id}}/media/{{media.id}}/pages">See all {{media.pages.count()}} page(s) that use this media</a></p>
-        </div>
-    </div>  
-    
     
 </form>
 

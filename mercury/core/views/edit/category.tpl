@@ -17,6 +17,13 @@
             value="{{category.title}}"
             id="category_title" name="category_title">
             <span id="category_title_help" class="help-block">You can rename this category globally.</span>
+            % c=category.pages.count()
+            % if c>0:
+            <p><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/category/{{category.id}}/pages"><span class="label label-info">See all {{c}} pages in this category.</span></a></p>
+            % else:
+            <p>[<i>No pages are in this category.</i>]</p>
+            % end
+
         </div>
     </div>
 
@@ -51,7 +58,6 @@
             value="{{category.basename}}"
             id="category_basename" name="category_basename">
             <span id="category_basename_help" class="help-block">Basename for this category. This is set automatically if left blank.</span>
-            <p><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/category/{{category.id}}/pages">See all pages in this category.</a></p>
         </div>
     </div>
     
