@@ -6,7 +6,6 @@ from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
 from core.search import tag_search_results, tag_in_blog_search_results
 from . import search_context, listing
-import json
 from core.utils import url_unescape, Status
 
 @transaction
@@ -75,10 +74,13 @@ def tag_edit(blog_id, tag_id):
                 if tag_count > 0:
 
                     from core.cms import queue
+                    from core.models import db
 
-                    queue.queue_page_actions(tag.pages.published)
-                    queue.queue_ssi_actions(blog)
-                    queue.queue_index_actions(blog, True)
+                    with db.atomic() as txn:
+
+                        queue.queue_page_actions(tag.pages.published)
+                        queue.queue_ssi_actions(blog)
+                        queue.queue_index_actions(blog, True)
 
                 tags.status = Status(
                     type='info',
@@ -134,14 +136,17 @@ def tag_delete(blog_id, tag_id):
 
     if request.forms.getunicode('confirm') == user.logout_nonce:
 
+        from core.models import db
+
         if tag_page_count > 0:
             p_count = tag.pages.published.count()
 
             from core.cms import queue
 
-            queue.queue_page_actions(tag.pages.published)
-            queue.queue_ssi_actions(blog)
-            queue.queue_index_actions(blog, True)
+            with db.atomic() as txn:
+                queue.queue_page_actions(tag.pages.published)
+                queue.queue_ssi_actions(blog)
+                queue.queue_index_actions(blog, True)
 
             recommendation = '''
 <p><b>{}</b> pages affected by this change have been pushed to the queue.</p>
@@ -150,8 +155,6 @@ def tag_delete(blog_id, tag_id):
             recommendation = '''
 <p>No pages were associated with this tag.</p>
 '''
-
-        from core.models import db
         with db.atomic() as txn:
             tag.delete_instance(recursive=True)
 
@@ -213,6 +216,7 @@ def tag_get(blog_id, tag_name):
         Tag.tag.contains(tag_name),
         Tag.blog == blog)
 
+    import json
     tag_list_json = json.dumps([{'tag':t.tag,
                                 'id':t.id} for t in tag_list])
 
