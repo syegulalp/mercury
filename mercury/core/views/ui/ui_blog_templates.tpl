@@ -6,7 +6,7 @@
     <h4>Templates for {{!blog.for_display}} / Theme: {{!blog.theme.for_display}}</h4>
     <ul class="nav nav-tabs">
     % for n,template_type in enumerate(list_items):
-        <li role="presentation" {{'class="active"' if n==0 else ''}}>
+        <li role="presentation"{{! 'class="active"' if n==0 else ''}}>
         <a href="#t-{{n}}" role="tab" data-toggle="tab">{{template_type['title']}}</a>
         </li>  
     % end 
