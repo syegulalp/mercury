@@ -2791,12 +2791,19 @@ class FileInfo(BaseModel):
     def clear_preview(self):
         import os
         if self.preview_path is not None:
-            os.remove(
-                os.path.join(
+            try:
+                os.remove(
+                    os.path.join(
                     self.template_mapping.template.blog.path,
                     self.preview_path
                     )
                 )
+            except OSError as e:
+                import errno
+                if e.errno == errno.ENOENT:
+                    pass
+                else:
+                    raise e
             self.preview_path = None
             self.save()
 
