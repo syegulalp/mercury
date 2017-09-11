@@ -73,9 +73,9 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
 
         try:
 
-            fileinfos, blog, site = page.fileinfos, page.blog, page.blog.site
+            blog, site = page.blog, page.blog.site
 
-            for f in fileinfos:
+            for f in page.fileinfos:
                 if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
                     Queue.push(job_type=job_type.page,
                         blog=blog,
@@ -93,9 +93,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
 
                 if next_page is not None:
 
-                    fileinfos_next = next_page.fileinfos
-
-                    for f in fileinfos_next:
+                    for f in next_page.fileinfos:
 
                         if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
@@ -109,9 +107,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
 
                 if previous_page is not None:
 
-                    fileinfos_previous = previous_page.fileinfos
-
-                    for f in fileinfos_previous:
+                    for f in previous_page.fileinfos:
 
                         if f.template_mapping.template.publishing_mode != publishing_mode.do_not_publish:
 
