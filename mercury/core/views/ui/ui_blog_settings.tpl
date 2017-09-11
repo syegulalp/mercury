@@ -148,6 +148,9 @@
         </div>       
         
         % end
+        
+        <hr/>   
+        
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-9">
                 <button type="submit" class="btn btn-primary">Save changes</button>
