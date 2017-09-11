@@ -8,6 +8,15 @@ from core.search import tag_search_results, tag_in_blog_search_results
 from . import search_context, listing
 from core.utils import url_unescape, Status
 
+def tag_recently_modified(tag):
+    import datetime
+    recent_pages = tag.pages.where(Page.modified_date > datetime.datetime.utcnow() - datetime.timedelta(hours=1))
+    recent_count = recent_pages.count()
+    if recent_count > 0:
+        return 'There are {} pages using this tag that have been modified in the past hour. It is not recommended that you change this tag.'.format(recent_count)
+    else:
+        return None
+
 @transaction
 def tags_list(blog_id):
 
@@ -98,13 +107,11 @@ def tag_edit(blog_id, tag_id):
                     message=msg,
                     no_sure=True)
     else:
-        import datetime
-        recent_pages = tag.pages.where(Page.modified_date > datetime.datetime.utcnow() - datetime.timedelta(hours=1))
-        recent_count = recent_pages.count()
-        if recent_count > 0:
+        tag_modified = tag_recently_modified(tag)
+        if tag_modified:
             tags.status = Status(
                     type='danger',
-                    message='There are {} pages using this tag that have been modified in the past hour. It is not recommended that you change this tag.'.format(recent_count),
+                    message=tag_modified,
                     no_sure=True)
 
     tpl = template('edit/tag',
@@ -172,6 +179,11 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
             recommendation = '''
 <p><b>There are still <a target="_blank" href="{}/blog/{}/tag/{}/pages">{} pages</a> associated with this tag.</b></p>
 '''.format(BASE_URL, blog.id, tag.id, tag_page_count)
+
+            tag_modified = tag_recently_modified(tag)
+            if tag_modified:
+                recommendation += "<p><b>" + tag_modified + "</b></p>"
+
         else:
             recommendation = ''
 
