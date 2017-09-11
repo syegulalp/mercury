@@ -133,10 +133,12 @@ def listing(request, user, errormsg, context, tags_data,
 
     if 'order_by' in request.query:
         item_list = item_list.order_by(
-            getattr(item_list_object.model_class, request.query['order_by']).desc()
+            getattr(item_list_object.model_class, request.query['order_by'], 'title').desc()
             )
 
     # TODO: pass on the pagination parameters
+    # we could do this by keeping a list of the pagination paramters that need to be worked with somewhere
+    # need to figure out how to extract, modify, and replace - see url tools
 
     paginator, rowset = utils.generate_paginator(item_list, request)
 
