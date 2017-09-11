@@ -2653,7 +2653,7 @@ class Media(BaseModel, DateMod):
             media.associate(page)
             media.blog = page.blog
             media.site = page.blog.site
-            media.url = '/'.join(page.blog.url, page.blog.media_path_generated, media.filename)
+            media.url = '/'.join((page.blog.url, page.blog.media_path_generated, media.filename))
             media.save()
 
         return media
