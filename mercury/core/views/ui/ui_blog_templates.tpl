@@ -28,7 +28,7 @@
             % for template in template_type['data']:
                 <tr>
                     <td><input type="checkbox" id="check-{{template.id}}" name="check-{{template.id}}">
-                    <td><a href="{{settings.BASE_URL}}/template/{{template.id}}/edit">{{template.title}}</a>
+                    <td><a target="_blank" href="{{settings.BASE_URL}}/template/{{template.id}}/edit">{{template.title}}</a>
                     % def_templ = template_type.get('defaults',None)
                     % if def_templ:
                     % def_templ_str = ', '.join(def_templ)
