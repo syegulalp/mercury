@@ -88,36 +88,45 @@ def listing(request, user, errormsg, context, tags_data,
     search_context_obj = context['search_context']
     # The search context object to use to produce search results.
     # Example: blog_search_results
+
     search_ui = context['search_ui']
     # The description of the search context to use for the search UI.
     # Example: 'blog'
-    colset = context['colset']
+
+    colset = colset_source[context['colset']]
     # The column set to use for the listing.
     # Example: 'blog'
+
     menu = context['menu']
     # The menu set to use for the listing page.
     # 'blog_menu'
+
     search_object = context['search_object']
-    # The object to be passed to the search context.
+    # The data object to be passed to the search context object.
     # Example: blog
 
     item_list_object = context['item_list_object']
     # For future use when we perform search ordering.
     # Example: blog.pages
-    action_button = context.get('action_button', None)
+
+    action_button = colset.get('buttons', None)
     # Any action button to be displayed.
     # (action button)
-    list_actions = context.get('list_actions', None)
+
+    list_actions = colset.get('list_actions', None)
     # Any list actions to the shown.
     # (list actions)
 
     if action_button is not None:
-        # ab = []
-        # for n in action_button:
-            # ab.append(utils.action_button(*n))
-        action_button = ''.join([utils.action_button(*n) for n in action_button])
+        action_button = ''.join([utils.action_button(n[0], n[1](search_object)) for n in action_button])
     else:
         action_button = None
+
+    if list_actions is not None:
+        s = []
+        for n in list_actions:
+            s.append([n[0], n[1](search_object)])
+        list_actions = s
 
     try:
         items_searched, search = search_context_obj(request, search_object)
@@ -162,7 +171,7 @@ def listing(request, user, errormsg, context, tags_data,
         search_context=(search_context_source[search_ui], search_object),
         menu=generate_menu(menu, search_object),
         rowset=rowset,
-        colset=colset_source[colset],
+        colset=colset,
         icons=icons,
         action=action_button,
         list_actions=list_actions,

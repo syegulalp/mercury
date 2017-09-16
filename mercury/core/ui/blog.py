@@ -30,14 +30,14 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-    action = (
-        ('Create new page',
-        '{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
-        )
-
-    list_actions = [
-        ['Republish', '{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)],
-    ]
+#     action = (
+#         ('Create new page',
+#         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
+#         )
+#
+#     list_actions = [
+#         ['Republish', '{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)],
+#     ]
 
     # list_actions should come from colset['list_actions'] by default
     # unless locally overridden
@@ -53,8 +53,8 @@ def blog(blog_id, errormsg=None):
             'search_object':blog,
             'search_context':blog_search_results,
             'item_list_object':blog.pages,
-            'action_button':action,
-            'list_actions':list_actions
+            # 'action_button':action,
+            # 'list_actions':list_actions
         },
         {'blog_id':blog.id}
         )
@@ -610,11 +610,6 @@ def blog_queue(blog_id, status=None):
             user=user,
             status=status)
 
-    action = (
-        ('Clear queue',
-        '{}/blog/{}/queue/clear'.format(BASE_URL, blog.id)),
-        )
-
     return listing(
         request, user, status,
         {
@@ -624,8 +619,6 @@ def blog_queue(blog_id, status=None):
             'search_object':blog,
             'search_context':(search_context['blog_queue'], blog),
             'item_list_object':tags.queue,
-            'action_button':action,
-            'list_actions':None
         },
         {'blog_id':blog.id}
         )

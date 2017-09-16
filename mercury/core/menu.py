@@ -572,6 +572,10 @@ colsets = {
     },
     'queue':{
         'none':'No items pending in queue',
+        'buttons':(
+            ('Clear queue', lambda n:'queue/clear'),
+            # we do this because the queue could be blog, site, or sitewide
+            ),
         'colset':[
             {'field':'priority',
              'label':'Priority',
@@ -719,28 +723,12 @@ colsets = {
     'blog': {
         'none': 'No pages found',
         'xrowclass': 'overflow',
-        'actions': (
-            {'unpublish': {
-                'label': 'Unpublish',
-                'action': lambda x: cms.unpublish_page(Page.load(x), remove_fileinfo=True)}
-             },
-            {'republish': {
-                'label': 'Republish',
-                'action': lambda x: cms.publish_page(Page.load(x))}
-             },
-            {'delete': {
-                'label': 'Delete',
-                'action': lambda x: cms.delete_page(Page.load(x))}
-             },
-#             {'add_tags': {
-#                 'label': 'Add tags',
-#                 'action': lambda x, tag_ids: cms.page_add_tags(Page.load(x), tag_ids)}
-#              },
-#             {'remove_tags': {
-#                 'label': 'Remove tags',
-#                 'action': lambda x, tag_ids: cms.page_remove_tags(Page.load(x), tag_ids)}
-#              }
-        ),
+        'buttons':(
+            ('Create new page', lambda blog:'{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
+            ),
+        'list_actions':(
+            ('Republish', lambda blog:'{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)),
+            ),
         'colset': (
             {'field': 'status',
              'xlabel_style': 'width:1%',
