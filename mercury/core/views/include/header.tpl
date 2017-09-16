@@ -48,26 +48,6 @@
         % include('queue/queue_counter_include2.tpl')
         
         
-        <li class="dropdown">
-          <a href="#" title="Create..." class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span style="color:#337ab7" class="glyphicon glyphicon-plus-sign"></span>
-          <span class="visible-xs-inline">&nbsp;Create ...</span>
-          </a>
-         
-          <ul class="dropdown-menu" role="menu">
-            <li role="presentation" class="dropdown-header" >Create ...</li>
-            % if blog:
-            <li><a href="{{settings.BASE_URL}}/blog/{{blog.id}}/newpage">Page</a></li>
-            % elif user.blogs():
-            % for b in user.blogs():
-            <li><a href="{{settings.BASE_URL}}/blog/{{b.id}}/newpage">Page ({{b.as_text}})</a></li>
-            % end
-            % end
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Site</a></li>
-          </ul>
-        </li>
-        
-        
         % if blog:
         <li>
           <a title="See the published version of this blog" target="_blank" href="{{blog.permalink}}"><span class="glyphicon glyphicon-new-window"></span>
@@ -82,7 +62,7 @@
         
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                <span style='display:inline-block' class='overflow max-width'><span class='caret'></span> {{user.name}}</span>&nbsp;</a>
+                <span style='display:inline-block' class='overflow max-width'><span class='caret'></span> {{user.short_name}}</span>&nbsp;</a>
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{settings.BASE_URL}}/me">Settings</a></li>
                     <li><a href="{{settings.BASE_URL}}/logout?_={{user.logout_nonce}}">Log out</a></li>

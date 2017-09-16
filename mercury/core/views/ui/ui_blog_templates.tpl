@@ -2,7 +2,7 @@
 % nonelist = ['None','',None]
 % include('include/header.tpl')
 % include('include/header_messages.tpl')
-<div class="col-sm-9">
+<div class="col-sm-12">
     <h4>Templates for {{!blog.for_display}} / Theme: {{!blog.theme.for_display}}</h4>
     <ul class="nav nav-tabs">
     % for n,template_type in enumerate(list_items):
@@ -57,11 +57,14 @@
     </div>
 </div>
 
+<!--
 <div id="sidebar" class="col-sm-3">
     <div id="sidebar_inner">
 
     </div>
 </div>
+-->
+
 % include('include/footer.tpl')
 <script>
 

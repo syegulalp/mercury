@@ -9,7 +9,7 @@
         <label for="category_title" class="col-sm-2 control-label">Category name
     % if category.default is True:
     </br>
-    <span class="label label-warning">Default blog category</span>
+    <span class="label label-warning">Default category</span>
     % end
     </label>
         <div class="col-sm-9">
@@ -65,18 +65,21 @@
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-9">
-            <button type="submit" name="default" value="Y" class="btn btn-primary">Set this category as default for this blog</button>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-9">
             <button type="submit" class="btn btn-success">Save changes</button>
             <span class='pull-right'>
                 <a href="{{settings.BASE_URL}}/blog/{{blog.id}}/category/{{category.id}}/delete"><button type="button" name="delete" class="btn btn-danger">Delete this category</button></a>
             </span>
         </div>
     </div>
+    
+    % if not category.default is True:
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-9">
+            <button type="submit" name="default" value="Y" class="btn btn-warning">Set this category as default for this blog</button>
+        </div>
+    </div>
+    % end
+    
 
 </form>
 <hr/>

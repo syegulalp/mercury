@@ -505,6 +505,10 @@ class User(BaseModel):
     blog = None
     logout_nonce = CharField(max_length=64, null=True, default=None)
 
+    @property
+    def short_name(self):
+        return '@' + (self.email.split('@', 1)[0])
+
     def add_permission(self, **permission):
         new_permission = Permission(
             user=self,

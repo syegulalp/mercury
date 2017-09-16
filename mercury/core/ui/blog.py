@@ -35,12 +35,14 @@ def blog(blog_id, errormsg=None):
         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
         )
 
-    # TODO: replace this with 'actions' in colset
-    # we already have that in there!
-
     list_actions = [
         ['Republish', '{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)],
     ]
+
+    # list_actions should come from colset['list_actions'] by default
+    # unless locally overridden
+    # move above to menu module
+    # also, the action buttons should be moved to colset['button_actions'] or sth
 
     return listing(
         request, user, errormsg,

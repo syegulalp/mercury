@@ -514,18 +514,18 @@ colsets = {
              },
             {'field': '',
              'label': '',
-             'format_raw':lambda x:('<a href="{}"><span class="label label-success">Current blog theme</span></a>{}'.format(
+             'format_raw':lambda x:('<a href="{}"><span class="label label-primary">Current blog theme</span></a>{}'.format(
                  '{}/system/theme/{}'.format(BASE_URL, x.id), ' <a href="{}"><span class="label label-danger">Modified by blog</span></a>'.format(
                      '{}/blog/{}/templates').format(BASE_URL, x.blog.id)
                      if x.blog.theme_modified is True else '') if x.blog.theme.id == x.id else '')
              },
              {'field': 'default',
              'label': '',
-             'format_raw': lambda x: '<span class="label label-primary">Default theme for new blogs</span>' if x.is_default else ''
+             'format_raw': lambda x: '<span class="label label-warning">Default theme for new blogs</span>' if x.is_default else ''
              },
             {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-warning pull-right">Apply theme</span></a>'.format(
+             'format_raw':lambda x:'<a href="{}"><span class="label label-success pull-right">Apply theme</span></a>'.format(
                  '{}/blog/{}/theme/{}/apply'.format(BASE_URL, x.blog.id, x.id),)
              }
         ]
@@ -543,11 +543,11 @@ colsets = {
              },
              {'field': 'default',
              'label': '',
-             'format_raw': lambda x: '<span class="label label-primary">Default theme for new blogs</span>' if x.is_default else ''
+             'format_raw': lambda x: '<span class="label label-warning">Default theme for new blogs</span>' if x.is_default else ''
              },
              {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-warning pull-right">Delete theme</span></a>'.format(
+             'format_raw':lambda x:'<a href="{}"><span class="label label-danger pull-right">Delete theme</span></a>'.format(
                  '{}/system/theme/{}/delete'.format(BASE_URL, x.id),)
              }
         ]
@@ -616,7 +616,7 @@ colsets = {
              },
              {'field':'default',
              'label':'Default',
-             'format_raw':lambda x:'<span class="label label-primary">Default blog category</span>' if x.default is True else ''
+             'format_raw':lambda x:'<span class="label label-warning">Default blog category</span>' if x.default is True else ''
              }
         ]
     },
