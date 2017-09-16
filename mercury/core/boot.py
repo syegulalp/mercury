@@ -1,4 +1,5 @@
 import settings
+routes_ready = False
 
 def setup_args():
     '''
@@ -52,36 +53,83 @@ def boot(aux_settings=None):
 
     if settings.NO_SETUP:
 
+        # We could probably move all this into its own module ala core.routes
+
         _stderr('\nNo configuration file [{}] found in \'{}\'.\n'.format(
-            settings.INI_FILE_NAME,
+            settings.INSTALL_INI_FILE_NAME,
             settings.config_file))
-        _stderr('Navigate to {}{}:{} to begin setup.\n\n'.format(
-                settings.BASE_URL_PROTOCOL,
-                settings.DEFAULT_LOCAL_ADDRESS,
-                settings.DEFAULT_LOCAL_PORT[1:]))
 
-        from core.routes import server_static  # ,setup
-
-        def setup(step_id=None):
-            if step_id is None:
-                step_id = 0
-            from install import install
-            return install.step(step_id)
-
-        def reboot_app():
-            from core.utils import reboot
-            reboot()
+        import os
+        os.makedirs(os.path.join(settings.APPLICATION_PATH, 'data'), exist_ok=True)
 
         app = bottle.Bottle()
-        app.route(path=settings.BASE_PATH + "/", callback=setup)
-        app.route(path=settings.BASE_PATH + "/reboot", callback=reboot_app)
-        app.route(path=settings.BASE_PATH + '/install', callback=setup)
-        app.route(path=settings.BASE_PATH + '/install/step-<step_id:int>', callback=setup, method=('GET', 'POST'))
-        app.route(path=settings.BASE_PATH + settings.STATIC_PATH + '/<filepath:path>', callback=server_static)
 
-        @app.error(404)
-        def fnf_error(error):  # @UnusedVariable
-            return setup()
+        def make_server(_app, settings):
+
+            # we could move these two into utils and import from there for both
+            # here and core.routes
+
+            @_app.hook('before_request')
+            def strip_path():
+                if len(bottle.request.environ['PATH_INFO']) > 1:
+                    bottle.request.environ['PATH_INFO'] = bottle.request.environ['PATH_INFO'].rstrip('/')
+
+            @_app.route(settings.BASE_PATH + settings.STATIC_PATH + '/<filepath:path>')
+            def server_static(filepath):
+                '''
+                Serves static files from the application's own internal static path,
+                e.g. for its CSS/JS
+                '''
+                bottle.response.add_header('Cache-Control', 'max-age=7200')
+                return bottle.static_file(filepath, root=settings.APPLICATION_PATH + settings.STATIC_PATH)
+
+            @_app.route(settings.BASE_PATH + '/install', ('GET', 'POST'))
+            @_app.route(settings.BASE_PATH + '/install/step-<step_id:int>', ('GET', 'POST'))
+            def setup_step(step_id=0):
+                try:
+                    from install.install import step
+                    s = step(step_id)
+                except Exception as e:
+                    raise e
+                return s
+
+
+        @app.route('/')
+        def setup():
+            global routes_ready
+
+            if routes_ready is False:
+
+                try:
+                    url = bottle.request.urlparts
+
+                    # let's assume there's always going to be redirection to hide the script name
+
+                    path = url.path.rstrip('/').rsplit('/', 1)
+
+                    settings.BASE_URL_PROTOCOL = url.scheme + "://"
+                    # The URL scheme
+
+                    settings.BASE_URL_NETLOC = url.netloc
+                    # The server name
+
+                    settings.BASE_URL_ROOT = settings.BASE_URL_PROTOCOL + settings.BASE_URL_NETLOC
+                    # Everything up to the first / after the server name
+
+                    settings.BASE_URL_PATH = path[0]
+                    # Any additional path to the script (subdirectory)
+
+                    settings.BASE_URL = settings.BASE_URL_ROOT + settings.BASE_URL_PATH
+                    # The URL we use to reach the script by default
+
+                    make_server(app, settings)
+
+                    routes_ready = True
+
+                except Exception as e:
+                    return "Oops: {}".format(e)
+
+            bottle.redirect(settings.BASE_PATH + '/install')
 
     else:
 

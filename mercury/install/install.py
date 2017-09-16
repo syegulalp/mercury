@@ -1,12 +1,12 @@
 from core.libs.bottle import (request, template, redirect)
-from core.boot import settings as _s
-from settings import DESKTOP_MODE
+import settings as _s
 import os, random, string
-_sep = os.sep
+
+_join = os.path.join
 
 from configparser import ConfigParser, DuplicateSectionError
-config_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
-    _sep + _s.INSTALL_INI_FILE_NAME)
+config_file_name = _join((_s.APPLICATION_PATH + _s.DATA_FILE_PATH,
+    _s.INSTALL_INI_FILE_NAME))
 parser = ConfigParser()
 
 class SetupError(BaseException):
@@ -59,7 +59,7 @@ def step_0_pre():
     if os.path.isdir(path_to_check) is False:
         os.makedirs(path_to_check)
 
-    with open(path_to_check + _sep + "__init__.py", "w", encoding='utf-8') as output_file:
+    with open(_join((path_to_check, "__init__.py")), "w", encoding='utf-8') as output_file:
         output_file.write('')
 
     store_ini('main', 'INSTALL_STEP', '0')
@@ -69,16 +69,6 @@ def step_0_pre():
     if get_ini('main', 'BASE_URL_ROOT') is None:
         store_ini('main', 'BASE_URL_ROOT', _s.BASE_URL_ROOT)
         store_ini('main', 'BASE_URL_PATH', _s.BASE_URL_PATH)
-
-    # Later on when we support multiple server types,
-    # this will be changed to something more general
-    if os.environ['SERVER_SOFTWARE'] == 'Apache':
-        with open(_s.APPLICATION_PATH + _sep + ".htaccess", 'w', encoding='utf-8') as output_file:
-            output_file.write('''
-RewriteCond %{REQUEST_URI} !static/*
-RewriteCond %{REQUEST_URI} !index.cgi
-RewriteRule ^(.*)$ index.cgi/$1 [QSA,L]
-''')
 
     return {}
 
@@ -130,11 +120,12 @@ def step_1_post():
     if existing_password != request.forms.getunicode('input_password_confirm'):
         step_error.append('Your password and password confirmation did not match.')
 
+    store_ini("user", "password", touni(existing_password))
+    store_ini("user", "email", user_email)
+
     if len(step_error) > 0:
         raise SetupError('\n'.join(step_error))
 
-    store_ini("user", "password", touni(existing_password))
-    store_ini("user", "email", user_email)
     store_ini('main', 'INSTALL_STEP', '2')
 
     return {}
@@ -142,16 +133,11 @@ def step_1_post():
 def step_2_pre():
 
     domain = get_ini("path", "base_url_root")
-    if domain is None:
-        domain = _s.BASE_URL_PROTOCOL + request.environ['HTTP_HOST']
 
-    if DESKTOP_MODE is True:
-        cms_path = '/~'
-    else:
-        cms_path = request.environ['SCRIPT_NAME'].replace('/' + _s.DEFAULT_SCRIPT, '')
+    cms_path = request.environ['SCRIPT_NAME'].replace('/' + _s.DEFAULT_SCRIPT, '')
 
     install_path = _s.APPLICATION_PATH
-    blog_path = install_path.rsplit(_sep, 1)[0]
+    blog_path = install_path.rsplit(os.path.sep, 1)[0]
 
     return {'domain':domain,
         'install_path':install_path,
@@ -235,8 +221,6 @@ def step_4_pre():
     p_key = get_ini('key', 'PASSWORD_KEY')
     password = encrypt_password(password, p_key)
 
-    from core import mgmt
-
     db.connect()
 
     with db.atomic():
@@ -260,8 +244,7 @@ def step_4_pre():
 
         from core.auth import role
 
-        new_user_permissions = mgmt.add_user_permission(
-            new_user,
+        new_user_permissions = new_user.add_permission(
             permission=role.SYS_ADMIN,
             site=new_site
             )
@@ -270,32 +253,29 @@ def step_4_pre():
 
         report.append("Initial admin user created successfully.")
 
-        plugindir = (_s.APPLICATION_PATH + _sep + 'data' +
-            _sep + 'plugins')
+        plugindir = _join((_s.APPLICATION_PATH, 'data', 'plugins'))
 
         import shutil
 
         # TODO: warn on doing this?
         # this should only happen with a totally fresh install, not an upgrade
 
-        install_directory = (_s.APPLICATION_PATH + _sep +
-            _s.INSTALL_SRC_PATH)
+        install_directory = _join((_s.APPLICATION_PATH, _s.INSTALL_SRC_PATH))
 
         if (os.path.isdir(plugindir)):
             shutil.rmtree(plugindir)
 
-        shutil.copytree(install_directory + _sep + 'plugins',
+        shutil.copytree(_join((install_directory, 'plugins')),
             plugindir)
 
         report.append("Default plugins copied successfully to data directory.")
 
-        themedir = (_s.APPLICATION_PATH + _sep + 'data' +
-            _sep + 'themes')
+        themedir = _join((_s.APPLICATION_PATH, 'data', 'themes'))
 
         if (os.path.isdir(themedir)):
             shutil.rmtree(themedir)
 
-        shutil.copytree(install_directory + _sep + 'themes',
+        shutil.copytree(_join((install_directory, 'themes')),
             themedir)
 
         report.append("Default themes copied successfully to data directory.")
@@ -303,7 +283,7 @@ def step_4_pre():
         from core import plugins
 
         for x in os.listdir(plugindir):
-            if (os.path.isdir(plugindir + _sep + x) is True and
+            if (os.path.isdir(_join((plugindir, x))) is True and
                 x != '__pycache__'):
                 new_plugin = plugins.register_plugin(x, enable=True)
                 report.append("New plugin '{}' installed successfully.".format(
@@ -312,7 +292,6 @@ def step_4_pre():
         from settings.defaults import DEFAULT_THEME
         from core.models import Theme
         new_theme = Theme.install_to_system(DEFAULT_THEME)
-        # new_theme = mgmt.theme_install_to_system(DEFAULT_THEME)
 
         report.append("Default theme created and installed successfully to system.")
 
@@ -328,14 +307,17 @@ def step_4_pre():
             theme=new_theme
             )
 
+        # TODO: add blog-level permission for new user as well
+
         new_blog.setup(new_user, new_theme)
+
+        # TODO: Add default post
 
         report.append("Initial blog created successfully with default theme.")
 
     db.close()
 
-    output_file_name = (_s.APPLICATION_PATH + _s.DATA_FILE_PATH +
-        _sep + _s.INI_FILE_NAME)
+    output_file_name = _join((_s.APPLICATION_PATH + _s.DATA_FILE_PATH, _s.INI_FILE_NAME))
 
     config_parser = ConfigParser()
 
@@ -349,9 +331,9 @@ def step_4_pre():
                 pass
             config_parser.set(s, name, value)
 
-    if request.environ['HTTP_HOST'] == _s.DEFAULT_LOCAL_ADDRESS + _s.DEFAULT_LOCAL_PORT:
-        config_parser.add_section('server')
-        config_parser.set('server', 'DESKTOP_MODE', 'True')
+#     if request.environ['HTTP_HOST'] == _s.DEFAULT_LOCAL_ADDRESS + _s.DEFAULT_LOCAL_PORT:
+#         config_parser.add_section('server')
+#         config_parser.set('server', 'DESKTOP_MODE', 'True')
 
     try:
         with open(output_file_name, "w", encoding='utf-8') as output_file:
@@ -383,8 +365,8 @@ def step_4_post():
 
 
 tpl = '''
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/jquery.min.js"></script>
-<script src="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/js/bootstrap.min.js"></script>
+<script src="{{settings.BASE_PATH}}{{settings.STATIC_PATH}}/js/jquery.min.js"></script>
+<script src="{{settings.BASE_PATH}}{{settings.STATIC_PATH}}/js/bootstrap.min.js"></script>
 % include('include/header_min.tpl')
 <div class="container">
 <h3>Welcome to {{settings.PRODUCT_NAME}}</h3>
@@ -413,7 +395,6 @@ crumb_template = '''
 '''
 
 def button(step, next_action, error=None):
-
 
     if step > 0:
         previous = '''
@@ -688,7 +669,7 @@ def step(step):
     else:
         template_button = button(step, None, error_msg)
 
-    yield template(tpl,
+    return template(tpl,
         settings=_s,
         step=step,
         title=step_text[step]['title'],
