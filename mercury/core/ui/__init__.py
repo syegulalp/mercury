@@ -111,11 +111,9 @@ def listing(request, user, errormsg, context, tags_data,
 
     action_button = colset.get('buttons', None)
     # Any action button to be displayed.
-    # (action button)
 
     list_actions = colset.get('list_actions', None)
     # Any list actions to the shown.
-    # (list actions)
 
     if action_button is not None:
         action_button = ''.join([utils.action_button(n[0], n[1](search_object)) for n in action_button])
