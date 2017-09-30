@@ -78,8 +78,13 @@ if __name__ == '__main__':
         for b in blogs_to_check:
             try:
                 n = blogs_to_check[b]
-                if Queue.control_jobs(n).count() > 0:
+                skip = None
+
+                if Queue.is_insert_active(n):
+                    skip = 'Insert in progress for blog {}. Skipping this run.'.format(n.id)
+                elif Queue.control_jobs(n).count() > 0:
                     skip = 'Job already running for blog {}. Skipping this run.'.format(n.id)
+                if skip:
                     print (skip)
                     scheduled_page_report.append(skip)
                     continue
@@ -103,6 +108,7 @@ if __name__ == '__main__':
                 passes = 1
 
                 while 1:
+                    # should we close the connection entirely between passes?
                     sleep(.1)
                     remaining = run(n)
                     print ("Pass {}: {} jobs remaining.".format(passes, remaining))

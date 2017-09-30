@@ -2900,6 +2900,15 @@ class Queue(BaseModel):
     # .clear_completed
 
     @classmethod
+    def is_insert_active(cls, b):
+        most_recent = cls.select(cls.date_touched).where(cls.blog == b,
+            cls.is_control == False).order_by(cls.date_touched.desc()).limit(1)[0].date_touched
+        most_recent_time = datetime.datetime.utcnow() - most_recent
+        if most_recent_time.seconds < 10:
+            return True
+        return False
+
+    @classmethod
     def push(cls, **ka):
         '''
         Inserts a single job item into the work queue.
