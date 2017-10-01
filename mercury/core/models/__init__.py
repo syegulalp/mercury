@@ -2948,17 +2948,19 @@ class Queue(BaseModel):
 
         queue_job.job_type = ka['job_type']
         queue_job.data_integer = int(ka.get('data_integer', None))
-        queue_job.blog = ka.get('blog', Blog()).id
-        queue_job.site = ka.get('site', Site()).id
+        queue_job.blog = ka.get('blog', None)
+        queue_job.site = ka.get('site', None)
         queue_job.priority = ka.get('priority', 9)
         queue_job.is_control = ka.get('is_control', False)
 
         if queue_job.is_control:
-            queue_job.data_string = ka.get('data_string', (queue_job.job_type + ": Blog {}".format(
+            queue_job.data_string = ka.get('data_string', ("{}: Blog {}".format(
+                queue_job.job_type,
                 queue_job.blog.for_log)))
         else:
-            queue_job.data_string = (queue_job.job_type + ": " +
-                FileInfo.get(FileInfo.id == queue_job.data_integer).file_path)
+            queue_job.data_string = ("{}: {}".format(
+                queue_job.job_type,
+                FileInfo.get(FileInfo.id == queue_job.data_integer).file_path))
 
         queue_job.date_touched = datetime.datetime.utcnow()
         queue_job.save()
