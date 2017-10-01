@@ -60,21 +60,6 @@ if __name__ == '__main__':
         from core.log import logger
         from time import sleep
 
-        for p in scheduled_pages:
-            scheduled_page_report.append('Scheduled pages:')
-            try:
-                with db.atomic() as txn:
-                    scheduled_page_report.append('{} -- on {}'.format(p.title, p.publication_date))
-                    p.status = page_status.published
-                    p.save(p.user, no_revision=True)
-                    queue_page_actions((p,))
-                    blogs_to_check[p.blog.id] = p.blog
-
-            except Exception as e:
-                problem = 'Problem with page {}: {}'.format(n.title, e)
-                print (problem)
-                scheduled_page_report.append(problem)
-
         for b in blogs_to_check:
             try:
                 n = blogs_to_check[b]
@@ -88,6 +73,22 @@ if __name__ == '__main__':
                     print (skip)
                     scheduled_page_report.append(skip)
                     continue
+
+                for p in scheduled_pages.where(Page.blog == b).distinct():
+                    scheduled_page_report.append('Scheduled pages:')
+                    try:
+                        with db.atomic() as txn:
+                            scheduled_page_report.append('{} -- on {}'.format(p.title, p.publication_date))
+                            p.status = page_status.published
+                            p.save(p.user, no_revision=True)
+                            queue_page_actions((p,))
+                            blogs_to_check[p.blog.id] = p.blog
+
+                    except Exception as e:
+                        problem = 'Problem with page {}: {}'.format(n.title, e)
+                        print (problem)
+                        scheduled_page_report.append(problem)
+
 
                 queue_index_actions(n)
                 queue_ssi_actions(n)
