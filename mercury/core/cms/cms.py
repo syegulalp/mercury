@@ -1,6 +1,6 @@
 import datetime, time
 
-from core.utils import (create_basename, Status, DATE_FORMAT,)
+from core.utils import (create_basename, Status, DATE_FORMAT)
 from core.error import (PageNotChanged, DeletionError,)
 from core.libs.bottle import request
 
@@ -36,14 +36,12 @@ def save_page(page, user, blog=None):
 
     save_action = int(request.forms.get('save'))
 
-    blog_new_page = False
     original_page_status = page_status.unpublished
+    new_basename = request.forms.getunicode('basename')
 
     if page is None:
 
         # CREATE NEW PAGE ENTRY
-
-        blog_new_page = True
 
         page = Page()
         page.user = user.id
@@ -53,55 +51,50 @@ def save_page(page, user, blog=None):
             page.blog)
         original_page_basename = page.basename
 
-        page.publication_date = datetime.datetime.utcnow()
-        page.created_date = datetime.datetime.utcnow()
+        time_now = datetime.datetime.utcnow()
+
+        page.publication_date = time_now
+        page.created_date = time_now
 
     else:
 
         # UPDATE EXISTING ENTRY
 
-        # Queue actions for page BEFORE modification
+        # Queue neighbor actions for page BEFORE modification
 
         if page.status == page_status.published:
             if not (save_action & save_action_list.UNPUBLISH_PAGE):
-                queue_page_actions((page,))
+                queue_page_actions((page.next_page, page.previous_page))
+                queue_page_archive_actions(page)
 
         original_page_status = page.status
         original_page_basename = page.basename
 
         page.modified_date = datetime.datetime.utcnow()
 
-        if request.forms.getunicode('basename') is not None:
-            if request.forms.getunicode('basename') != "":
-                if original_page_basename != request.forms.getunicode('basename'):
-                    page.basename = create_basename(request.forms.getunicode('basename'),
-                        page.blog)
+        change_basename = False
 
-            else:
-                page.basename = create_basename(request.forms.getunicode('page_title'),
+        if new_basename is not None:
+            if new_basename == "":
+                change_basename = True
+                new_basename = create_basename(request.forms.getunicode('page_title'),
                     page.blog)
+            if new_basename != original_page_basename:
+                change_basename = True
 
-    # REMOVE OLD FILEINFO IF WE CHANGED THE BASENAME
+        new_publication_date = datetime.datetime.strptime(
+            request.forms.get('publication_date'), DATE_FORMAT)
 
-    if original_page_basename != page.basename:
+        if change_basename:
+            page.basename = create_basename(new_basename, page.blog)
+
+        page.publication_date = page._date_to_utc(page.blog.timezone, new_publication_date).replace(tzinfo=None)
+
         delete_page_fileinfo(page)
-
-    if page.basename == "":
-        page.basename = create_basename(request.forms.getunicode('page_title'),
-            page.blog)
-        original_page_basename = page.basename
 
     page.title = request.forms.getunicode('page_title')
     page.text = request.forms.getunicode('page_text')
     page.status = page_status.modes[int(request.forms.get('publication_status'))]
-
-    page.publication_date = datetime.datetime.strptime(
-        request.forms.get('publication_date'), DATE_FORMAT)
-
-    new_time = page._date_to_utc(
-        page.blog.timezone, page.publication_date).replace(tzinfo=None)
-    page.publication_date = new_time
-
     page.tag_text = request.forms.getunicode('page_tag_text')
     page.excerpt = request.forms.getunicode('page_excerpt')
 
