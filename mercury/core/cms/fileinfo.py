@@ -542,7 +542,18 @@ def delete_page_fileinfo(page):
         The page object remove from the fileinfo index.
     '''
 
+    # We should probably move this to models.Page
+
     fileinfo_to_delete = FileInfo.delete().where(FileInfo.page == page)
+
+    # also delete any pending queue operations
+#         queue_job.job_type = ka['job_type']
+#         queue_job.data_integer = int(ka.get('data_integer', None))
+#         queue_job.blog = ka.get('blog', None)
+#         queue_job.site = ka.get('site', None)
+#         queue_job.priority = ka.get('priority', 9)
+#         queue_job.is_control = ka.get('is_control', False)
+
     return fileinfo_to_delete.execute()
 
 class ArchiveContext():
