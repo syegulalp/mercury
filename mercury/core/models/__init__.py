@@ -2902,8 +2902,10 @@ class Queue(BaseModel):
     @classmethod
     def is_insert_active(cls, b):
         most_recent = cls.select(cls.date_touched).where(cls.blog == b,
-            cls.is_control == False).order_by(cls.date_touched.desc()).limit(1)[0].date_touched
-        most_recent_time = datetime.datetime.utcnow() - most_recent
+            cls.is_control == False).order_by(cls.date_touched.desc()).limit(1)
+        if most_recent.count() == 0:
+            return False
+        most_recent_time = datetime.datetime.utcnow() - most_recent[0].date_touched
         if most_recent_time.seconds < 10:
             return True
         return False
