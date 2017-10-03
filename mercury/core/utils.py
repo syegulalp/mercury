@@ -75,6 +75,8 @@ def verify_path(path):
     pass
 
 def is_blank(string):
+    if string is None:
+        return True
     if len(string) == 0:
         return True
     if string and string.strip():
