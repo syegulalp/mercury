@@ -500,6 +500,9 @@ colsets = {
     },
     'themes': {
         'none': 'No themes found',
+        'buttons':(
+            ('Save blog templates to new theme', lambda blog:'{}/blog/{}/theme/save'.format(BASE_URL, blog.id)),
+            ),
         'colset': [
             {'field': 'title',
              'label': 'Title',
