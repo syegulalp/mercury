@@ -543,8 +543,18 @@ def delete_page_fileinfo(page):
     '''
 
     # We should probably move this to models.Page
+    from core.models import Queue
+    from core.cms.queue import job_type
 
-    fileinfo_to_delete = FileInfo.delete().where(FileInfo.page == page)
+    for n in page.fileinfos:
+
+        FileInfo.delete().where(FileInfo == n).execute()
+
+        Queue.delete().where(
+            Queue.job_type == job_type.page,
+            Queue.data_integer == n.id,
+            Queue.blog == page.blog,
+        ).execute()
 
     # also delete any pending queue operations
 #         queue_job.job_type = ka['job_type']
@@ -554,7 +564,7 @@ def delete_page_fileinfo(page):
 #         queue_job.priority = ka.get('priority', 9)
 #         queue_job.is_control = ka.get('is_control', False)
 
-    return fileinfo_to_delete.execute()
+    # return fileinfo_to_delete.execute(), queue_entries_to_delete.execute()
 
 class ArchiveContext():
     def __init__(self, context_list, original_pageset, **ka):
