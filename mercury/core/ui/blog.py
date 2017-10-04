@@ -30,20 +30,6 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-#     action = (
-#         ('Create new page',
-#         '{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
-#         )
-#
-#     list_actions = [
-#         ['Republish', '{}/blog/{}/republish-batch'.format(BASE_URL, blog.id)],
-#     ]
-
-    # list_actions should come from colset['list_actions'] by default
-    # unless locally overridden
-    # move above to menu module
-    # also, the action buttons should be moved to colset['button_actions'] or sth
-
     return listing(
         request, user, errormsg,
         {
@@ -53,8 +39,6 @@ def blog(blog_id, errormsg=None):
             'search_object':blog,
             'search_context':blog_search_results,
             'item_list_object':blog.pages,
-            # 'action_button':action,
-            # 'list_actions':list_actions
         },
         {'blog_id':blog.id}
         )
@@ -451,12 +435,6 @@ def blog_select_themes(blog_id):
     permission = auth.is_blog_designer(user, blog)
     reason = auth.check_template_lock(blog, True)
 
-    action = (
-        ('Save blog templates to new theme',
-        '{}/blog/{}/theme/save'.format(BASE_URL, blog.id)),
-        )
-
-
     def add_blog_reference(rowset):
         for n in rowset:
             n.blog = blog
@@ -472,7 +450,6 @@ def blog_select_themes(blog_id):
             'search_context':blog_search_results,
             'item_list_object':Theme.select().order_by(Theme.id),
             'rowset_callback':add_blog_reference,
-            'action_button':action
         },
         {'blog_id':blog.id,
             'status':reason,
