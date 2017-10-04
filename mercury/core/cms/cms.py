@@ -32,12 +32,14 @@ def save_page(page, user, blog=None):
 
     '''
 
+    getunicode = request.forms.getunicode
+
     invalidate_cache()
 
     save_action = int(request.forms.get('save'))
 
     original_page_status = page_status.unpublished
-    new_basename = request.forms.getunicode('basename')
+    new_basename = getunicode('basename')
 
     if page is None:
 
@@ -47,7 +49,7 @@ def save_page(page, user, blog=None):
         page.user = user.id
         page.blog = blog.id
 
-        page.basename = create_basename(request.forms.getunicode('page_title'),
+        page.basename = create_basename(getunicode('page_title'),
             page.blog)
         original_page_basename = page.basename
 
@@ -77,7 +79,7 @@ def save_page(page, user, blog=None):
         if new_basename is not None:
             if new_basename == "":
                 change_basename = True
-                new_basename = create_basename(request.forms.getunicode('page_title'),
+                new_basename = create_basename(getunicode('page_title'),
                     page.blog)
             if new_basename != original_page_basename:
                 change_basename = True
@@ -92,13 +94,13 @@ def save_page(page, user, blog=None):
 
         delete_page_fileinfo(page)
 
-    page.title = request.forms.getunicode('page_title')
-    page.text = request.forms.getunicode('page_text')
+    page.title = getunicode('page_title')
+    page.text = getunicode('page_text')
     page.status = page_status.modes[int(request.forms.get('publication_status'))]
-    page.tag_text = request.forms.getunicode('page_tag_text')
-    page.excerpt = request.forms.getunicode('page_excerpt')
+    page.tag_text = getunicode('page_tag_text')
+    page.excerpt = getunicode('page_excerpt')
 
-    change_note = request.forms.getunicode('change_note')
+    change_note = getunicode('change_note')
 
     msg = []
 
@@ -178,9 +180,9 @@ def save_page(page, user, blog=None):
 
     # UPDATE TAGS
 
-    if request.forms.getunicode('tag_text') is not None:
+    if getunicode('tag_text') is not None:
         import json
-        tag_text = json.loads(request.forms.getunicode('tag_text'))
+        tag_text = json.loads(getunicode('tag_text'))
         add_tags_to_page(tag_text, page)
         delete_orphaned_tags(page.blog)
 
