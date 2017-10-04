@@ -92,7 +92,7 @@ def save_page(page, user, blog=None):
 
         page.publication_date = page._date_to_utc(page.blog.timezone, new_publication_date).replace(tzinfo=None)
 
-        delete_page_fileinfo(page)
+
 
     page.title = getunicode('page_title')
     page.text = getunicode('page_text')
@@ -175,6 +175,7 @@ def save_page(page, user, blog=None):
             n.primary = True
             n.save()
 
+        delete_page_fileinfo(page)
         build_archives_fileinfos((page,))
         build_pages_fileinfos((page,))
 
