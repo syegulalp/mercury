@@ -338,6 +338,7 @@ def unpublish_page(page, save=True):
 
     queue_page_actions((page.next_page, page.previous_page,), no_neighbors=True)
     queue_page_archive_actions(page)
+    queue_ssi_actions(page.blog)
     queue_index_actions(page.blog)
 
     delete_fileinfo_files(page.fileinfos)
