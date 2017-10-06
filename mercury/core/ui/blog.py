@@ -9,7 +9,7 @@ from core.search import (blog_search_results,
 from core.models import (Struct, Site,
     template_tags, Page, Blog, Queue, Template, Theme,
     PageCategory, TemplateMapping, Media, Tag, template_type, publishing_mode,
-    TemplateRevision)
+    TemplateRevision, FileInfo)
 
 from core.models.transaction import transaction
 
@@ -20,8 +20,33 @@ from settings import BASE_URL, RETRY_INTERVAL
 from . import listing, status_badge, save_action, search_context
 
 import time
+# from core.cms.fileinfo import build_pages_fileinfos
+# from core.cms.fileinfo import build_archives_fileinfos
 
 new_page_submission_fields = ('title', 'text', 'tag_text', 'excerpt')
+
+@transaction
+def blog_previews_list(blog_id, errormsg=None):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_admin(user, blog)
+
+
+    previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
+
+    return listing(
+        request, user, errormsg,
+        {
+            'colset':'blog_previews',
+            'menu':'blog_previews',
+            'search_ui':'blog',
+            'search_object':blog,
+            'search_context':blog_search_results,
+            'item_list_object':previews,
+        },
+        {'blog_id':blog.id}
+        )
 
 @transaction
 def blog(blog_id, errormsg=None):
@@ -490,8 +515,8 @@ def blog_republish(blog_id, pass_id=1, item_id=0):
             item_id))
 
     elif pass_id == 3:
-        total = blog.pages.published.count()
-        pages = blog.pages.published.paginate(item_id, 20)
+        total = blog.pages.published.naive().count()
+        pages = blog.pages.published.paginate(item_id, 20).naive()
 
         data.append("<h3>Queuing <b>{}</b> for republishing, pass {}, item {} of {}</h3><hr>".format(
             blog.for_log,
