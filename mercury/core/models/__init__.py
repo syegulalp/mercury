@@ -1770,28 +1770,13 @@ class Page(BaseModel, DateMod):
                 fileinfos[0]
             except IndexError:
                 from core.cms import fileinfo
+                # TODO: inconsistent return values!
                 m = fileinfo.build_archives_fileinfos((self,))
                 n = len(fileinfo.build_pages_fileinfos((self,)))
                 if n + m == 0:
                     raise Exception('No fileinfos could be built for page {}'.self.for_log)
             else:
                 break
-
-        '''
-        while 1:
-            try:
-                fileinfos = FileInfo.select().where(
-                    FileInfo.page == self)
-                fileinfos.get()
-            except FileInfo.DoesNotExist:
-                from core import cms
-                n = cms.build_pages_fileinfos((self,))
-                m = cms.build_archives_fileinfos((self,))
-                if n + m == 0:
-                    raise Exception('No fileinfos could be built for page {}'.self.for_log)
-            else:
-                break
-        '''
 
         return fileinfos
 
