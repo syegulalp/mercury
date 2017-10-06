@@ -92,8 +92,6 @@ def save_page(page, user, blog=None):
 
         page.publication_date = page._date_to_utc(page.blog.timezone, new_publication_date).replace(tzinfo=None)
 
-
-
     page.title = getunicode('page_title')
     page.text = getunicode('page_text')
     page.status = page_status.modes[int(request.forms.get('publication_status'))]
