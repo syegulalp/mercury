@@ -238,6 +238,13 @@ menus = {
     'categorization_div':{
         'type':'divider',
         'text':lambda x:'Categorization'},
+    'blog_previews':{
+        'type':'button',
+        'parent':'blog_menu',
+        'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.id),
+        'text':lambda x:'Previews',
+        'parent_context':lambda x:x
+        },
     'blog_manage_categories':{
         'type':'button',
         'parent':'blog_menu',
@@ -721,6 +728,15 @@ colsets = {
             'field':'user_name',
             'label': 'User',
             'format_raw': lambda x:x.for_display
+            },)
+    },
+    'blog_previews':{
+        'none':'No previews found',
+        'colset':(
+            {
+                'field':'page',
+                'label':'Page',
+                'format_raw': lambda x: x.page.for_display if x.page is not None else '[Not a page]'
             },)
     },
     'blog': {

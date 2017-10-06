@@ -473,6 +473,14 @@ def blog_themes(blog_id):
     from core.ui import blog
     return blog.blog_select_themes(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/previews')
+def blog_previews(blog_id):
+    '''
+    Route for listing all previews in a blog
+    '''
+    from core.ui import blog
+    return blog.blog_previews_list(blog_id)
+
 @_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
 def refresh_theme(theme_id):
     '''
