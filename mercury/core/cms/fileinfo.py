@@ -10,18 +10,6 @@ from core.models import (Page, TemplateMapping, TagAssociation, template_type,
 from core.libs.peewee import IntegrityError
 
 def eval_paths(path_string, dict_data):
-
-    #===========================================================================
-    # Failed attempt at caching, not worth it
-    # try:
-    #     path_obj = Cache.path_cache[path_string]
-    # except KeyError:
-    #     path_string = replace_mapping_tags(path_string)
-    #     path_obj = compile(path_string, path_string, 'eval')
-    #     Cache.path_cache[path_string] = path_obj
-    #
-    #===========================================================================
-
     path_obj = replace_mapping_tags(path_string)
     try:
         paths = eval(path_obj, dict_data)
@@ -214,103 +202,100 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
 
 # FIXME: this should be the core of how we rework the whole thing
 # rewrite the above function and below function to match, too?
+# maybe replace $i, $C, etc. with {{blog.index}} etc.?
 
-'''
-maybe replace $i, $C, etc. with {{blog.index}} etc.?
+# from itertools import product
 
-'''
-from itertools import product
-
-def build_archives_fileinfos_2(pages):
-    '''
-    Takes a page (maybe a collection of same) and produces fileinfos
-    for the date-based archive entries for each
-    :param pages:
-        List of pages to produce fileinfos for date-based archive entries for.
-    '''
-
-    counter = 0
-    mapping_list = {}
-
-    for page in pages:
-        tags = template_tags(page=page)
-        if page.archive_mappings.count() == 0:
-            raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
-        paths = []
-        for m in page.archive_mappings:
-            path_string = m.path_string
-            itr_b = False
-            for n in m.archive_xref:
-                itr_list = []
-                itr = getattr(archive_functions[n], 'iterable', None)
-                if itr:
-                    itr_b = True
-                    itr_list.append(itr)
-            if itr_b:
-                path_string = replace_mapping_tags(path_string)
-                for n in product(itr_list):
-                    p = page.proxy(*n)
-                    for f in n:
-                        paths.append(p, path_string.format(f.basename))
-                    # note that all iterables should have a 'basename'
-                    # that yields either the computed as_basename where there is no
-                    # original basename, or the actual basename
-                    # ????
-
-
-            else:
-                paths.append((page, replace_mapping_tags(path_string)))
-
-
-        for page, path in paths:
-            path_string = generate_date_mapping(page.publication_date_tz,
-                tags, path, do_eval=False)
-
-            if path_string == '' or path_string is None:
-                continue
-            if path_string in mapping_list:
-                continue
-
-            mapping_list[path_string] = (
-                (None, m, path_string,
-                page.blog.url + "/" + path_string,
-                page.blog.path + '/' + path_string,)
-                ,
-                (page),
-                )
-
-    return paths, mapping_list
-
-    '''
-    for counter, n in enumerate(mapping_list):
-        # TODO: we should bail if there is already a fileinfo for this page?
-        new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
-        FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
-        archive_context = []
-        m = mapping_list[n][0][1]
-
-        for r in m.archive_xref:
-            archive_context.append(
-                archive_functions[r]["format"](
-                    archive_functions[r]["mapping"](mapping_list[n][1])
-                    )
-                )
-
-        for t, r in zip(archive_context, m.archive_xref):
-            new_fileinfo_context = FileInfoContext.get_or_create(
-                fileinfo=new_fileinfo,
-                object=r,
-                ref=t
-                )
-
-        new_fileinfo.mapping_sort = '/'.join(archive_context)
-        new_fileinfo.save()
-
-    try:
-        return counter + 1
-    except Exception:
-        return 0
-    '''
+# def build_archives_fileinfos_2(pages):
+#     '''
+#     Takes a page (maybe a collection of same) and produces fileinfos
+#     for the date-based archive entries for each
+#     :param pages:
+#         List of pages to produce fileinfos for date-based archive entries for.
+#     '''
+#
+#     counter = 0
+#     mapping_list = {}
+#
+#     for page in pages:
+#         tags = template_tags(page=page)
+#         if page.archive_mappings.count() == 0:
+#             raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
+#         paths = []
+#         for m in page.archive_mappings:
+#             path_string = m.path_string
+#             itr_b = False
+#             for n in m.archive_xref:
+#                 itr_list = []
+#                 itr = getattr(archive_functions[n], 'iterable', None)
+#                 if itr:
+#                     itr_b = True
+#                     itr_list.append(itr)
+#             if itr_b:
+#                 path_string = replace_mapping_tags(path_string)
+#                 for n in product(itr_list):
+#                     p = page.proxy(*n)
+#                     for f in n:
+#                         paths.append(p, path_string.format(f.basename))
+#                     # note that all iterables should have a 'basename'
+#                     # that yields either the computed as_basename where there is no
+#                     # original basename, or the actual basename
+#                     # ????
+#
+#
+#             else:
+#                 paths.append((page, replace_mapping_tags(path_string)))
+#
+#
+#         for page, path in paths:
+#             path_string = generate_date_mapping(page.publication_date_tz,
+#                 tags, path, do_eval=False)
+#
+#             if path_string == '' or path_string is None:
+#                 continue
+#             if path_string in mapping_list:
+#                 continue
+#
+#             mapping_list[path_string] = (
+#                 (None, m, path_string,
+#                 page.blog.url + "/" + path_string,
+#                 page.blog.path + '/' + path_string,)
+#                 ,
+#                 (page),
+#                 )
+#
+#     return paths, mapping_list
+#
+#     '''
+#     for counter, n in enumerate(mapping_list):
+#         # TODO: we should bail if there is already a fileinfo for this page?
+#         new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
+#         FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
+#         archive_context = []
+#         m = mapping_list[n][0][1]
+#
+#         for r in m.archive_xref:
+#             archive_context.append(
+#                 archive_functions[r]["format"](
+#                     archive_functions[r]["mapping"](mapping_list[n][1])
+#                     )
+#                 )
+#
+#         for t, r in zip(archive_context, m.archive_xref):
+#             new_fileinfo_context = FileInfoContext.get_or_create(
+#                 fileinfo=new_fileinfo,
+#                 object=r,
+#                 ref=t
+#                 )
+#
+#         new_fileinfo.mapping_sort = '/'.join(archive_context)
+#         new_fileinfo.save()
+#
+#     try:
+#         return counter + 1
+#     except Exception:
+#         return 0
+#     '''
 
 def build_archives_fileinfos(pages):
     '''
@@ -537,18 +522,22 @@ def delete_fileinfo_files(fileinfos):
 def delete_page_fileinfo(page):
     '''
     Deletes the fileinfo entry associated with a specific page.
-    This does not delete fileinfos that are general archives.
+    This does not delete fileinfos that are general archives
+    for that page, only fileinfos associated with page templates.
     :param page:
-        The page object remove from the fileinfo index.
+        The page object to remove from the fileinfo index.
     '''
 
     # We should probably move this to models.Page
     from core.models import Queue
     from core.cms.queue import job_type
 
-    for n in page.fileinfos:
+    fileinfos_to_delete = FileInfo.select().where(FileInfo.page == page)
+    # We don't use page.fileinfos because that automatically
+    # regenerates any missing fileinfos.
+    # TODO: have an option, false by default, to suppress that
 
-        FileInfo.delete().where(FileInfo == n).execute()
+    for n in fileinfos_to_delete:
 
         Queue.delete().where(
             Queue.job_type == job_type.page,
@@ -556,15 +545,8 @@ def delete_page_fileinfo(page):
             Queue.blog == page.blog,
         ).execute()
 
-    # also delete any pending queue operations
-#         queue_job.job_type = ka['job_type']
-#         queue_job.data_integer = int(ka.get('data_integer', None))
-#         queue_job.blog = ka.get('blog', None)
-#         queue_job.site = ka.get('site', None)
-#         queue_job.priority = ka.get('priority', 9)
-#         queue_job.is_control = ka.get('is_control', False)
+        n.delete_instance()
 
-    # return fileinfo_to_delete.execute(), queue_entries_to_delete.execute()
 
 class ArchiveContext():
     def __init__(self, context_list, original_pageset, **ka):
