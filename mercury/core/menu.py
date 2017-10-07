@@ -202,7 +202,7 @@ menus = {
         'path': lambda x: BASE_URL + '/blog/{}'.format(x.id),
         'parent': 'site_menu',
         'parent_context': lambda x: x.site,
-        'menu': ('pages_div', 'manage_pages', 'create_page', 'categorization_div',
+        'menu': ('pages_div', 'manage_pages', 'create_page', 'blog_previews', 'categorization_div',
             'blog_manage_categories',
                 'blog_manage_tags', 'media_div',
                 'blog_manage_media', 'design_div', 'blog_manage_templates',
@@ -239,7 +239,7 @@ menus = {
         'type':'divider',
         'text':lambda x:'Categorization'},
     'blog_previews':{
-        'type':'button',
+        'type':'label',
         'parent':'blog_menu',
         'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.id),
         'text':lambda x:'Previews',
