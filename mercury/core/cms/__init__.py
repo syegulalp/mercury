@@ -1,5 +1,5 @@
 from core.models import Struct, template_tags
-from core.utils import MetalTemplate
+from core.template import MetalTemplate
 from core.error import PageTemplateError
 
 class Cache():

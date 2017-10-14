@@ -409,7 +409,8 @@ def page_add_media_with_template(page_id, media_id, template_id):
     media_template = Template.get(
         Template.id == template_id)
 
-    generated_template = utils.tpl(media_template.body,
+    from core.template import tpl
+    generated_template = tpl(media_template.body,
         blog=page.blog,
         media=media)
 

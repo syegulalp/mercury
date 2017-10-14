@@ -470,9 +470,10 @@ def template_preview_core(template_id):
             template.for_log))
 
     import time
+    from core.template import tplt
     tc = time.clock
     start = tc()
-    tpl_output = utils.tplt(template, tags)
+    tpl_output = tplt(template, tags)
     end = tc()
 
     tpl_output = r'<!-- Produced by template {}. Total render time:{} secs -->{}'.format(

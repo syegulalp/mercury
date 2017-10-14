@@ -1,6 +1,7 @@
 import datetime, sys
 
-from core.utils import tpl, date_format, html_escape, csrf_tag, csrf_hash, trunc, create_basename_core
+from core.utils import date_format, html_escape, csrf_tag, csrf_hash, trunc, create_basename_core
+from core.template import tpl
 
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
         SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
@@ -507,7 +508,7 @@ class User(BaseModel):
 
     @property
     def short_name(self):
-        return '@' + (self.email.split('@', 1)[0])
+        return self.name.split(' ', 1)[0]
 
     def add_permission(self, **permission):
         new_permission = Permission(
@@ -3424,5 +3425,7 @@ class TemplateTags(object):
             self.fileinfo = ka['fileinfo']
 
 
-def template_tags(**ka):
-    return TemplateTags(**ka)
+template_tags = TemplateTags
+
+# def template_tags(**ka):
+#     return TemplateTags(**ka)
