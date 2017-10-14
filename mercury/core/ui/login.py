@@ -101,6 +101,7 @@ def logout():
     return "No logout nonce. <a href='{}/logout?_={}'>Click here to log out.</a>".format(
         BASE_URL, user.logout_nonce)
 
+
 @transaction
 def main_ui():
     '''
@@ -128,6 +129,7 @@ def main_ui():
         menu=generate_menu('system_menu', None),
         recent_pages=recent_pages,
         your_blogs=your_blogs,
-        **template_tags(user=user).__dict__)
+        **template_tags(user=user).__dict__
+        )
 
     return tpl

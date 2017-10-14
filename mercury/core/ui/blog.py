@@ -297,7 +297,6 @@ def blog_previews_list(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-
     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
 
     return listing(

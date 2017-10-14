@@ -514,9 +514,6 @@ colsets = {
             {'field': 'title',
              'label': 'Title',
              'format_raw': lambda x:x.for_listing
-                # lambda x: '{}<br/><small>{}</small>'.format(
-                # x.for_listing,
-                # x.description)
              },
             {'field': 'description',
              'label': 'Description',
@@ -660,7 +657,6 @@ colsets = {
             {'field': 'name',
              'label_style': 'width:25%',
              'label': 'Name',
-             # 'raw':True,
              'format_raw': lambda x: x.for_listing
              },
             {'field': 'description',
@@ -677,7 +673,6 @@ colsets = {
             {'field': 'name',
              'label_style': 'width:25%',
              'label': 'Name',
-             # 'raw':True,
              'format_raw': lambda x: x.for_listing
              },
             {'field': 'description',
@@ -741,7 +736,6 @@ colsets = {
     },
     'blog': {
         'none': 'No pages found',
-        'xrowclass': 'overflow',
         'buttons':(
             ('Create new page', lambda blog:'{}/blog/{}/newpage'.format(BASE_URL, blog.id)),
             ),
@@ -750,40 +744,32 @@ colsets = {
             ),
         'colset': (
             {'field': 'status',
-             'xlabel_style': 'width:1%',
              'label': 'Status',
              'colwidths': ('1%', '1%'),
              'label_colspan': '2',
-             # 'raw':True,
              'format_raw': lambda x: _page_status_icons(x)
              },
             {'field': 'title',
              'label': 'Title',
              'colwidth': '',
-             'xlabel_style': 'width:*',
              'colclass': 'overflow max-width',
-             # 'raw':True,
              'format_raw': lambda x: x.for_listing
              },
             {'field': 'user',
              'label': 'Author',
              'colwidth': '1%',
              'colclass': 'overflow',
-             'xlabel_style': 'width:1%',
-             # 'raw':True,
              'format_raw': lambda x: x.user.from_blog(x.blog).for_display
              },
             {'field': 'primary_category',
              'label': 'Category',
              'colwidth': '1%',
-             'xlabel_style': 'width:1%',
              'colclass': 'overflow max-width',
              'format_raw': lambda x: x.primary_category.for_listing
              },
             {'field': 'publication_date_tz',
              'label': 'Publish date',
              'colwidth': '1%',
-             'xlabel_style': 'width:1%',
              'colclass': 'overflow',
              'format': lambda x: date_format(x.publication_date_tz)
              },
