@@ -76,6 +76,9 @@ try:
 except:
     DB_TYPE_NAME = 'sqlite'
 
+# Because of issues with the import order,
+# we should move this logic into core.models itself?
+
 if DB_TYPE_NAME == 'sqlite':
     from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 
