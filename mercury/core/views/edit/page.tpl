@@ -1,5 +1,5 @@
 % include('include/header.tpl')
-% msg_float = True
+<div id="messages_float"></div>
 % include('include/header_messages.tpl')
 % include('include/modal.tpl')
 <link rel="stylesheet" href="{{settings.BASE_URL}}{{settings.STATIC_PATH}}/css/bootstrap-datetimepicker.min.css" />

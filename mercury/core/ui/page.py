@@ -88,6 +88,7 @@ def page_edit(page_id):
             kv_object='Page',
             kv_objectid=page.id,
             **tags.__dict__),
+        msg_float=False,
         **tags.__dict__)
 
     logger.info("Page {} opened for editing by {}.".format(
@@ -125,6 +126,7 @@ def page_edit_save(page_id):
             kv_objectid=page.id,
             **tags.__dict__
             ),
+        msg_float=False,
         **tags.__dict__)
 
     return tpl

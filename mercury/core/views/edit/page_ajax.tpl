@@ -1,7 +1,5 @@
 % include('include/page_title.tpl')
-<div id="messages">
 % include('include/header_messages.tpl')
-</div>
 <div id="sidebar_inner">
 % if queue.count() and _save_action & _save_action_list.UPDATE_LIVE_PAGE:
 <script type="text/javascript">
