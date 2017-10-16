@@ -207,6 +207,7 @@ function form_save(form) {
             window.location = xhr.getResponseHeader('X-Redirect');
             return 0;
         }
+        $('#messages').empty();
         $('#messages_float').empty();
         $('#messages_float').append($(data).filter('#messages'));
         $('#sidebar_inner').empty();
