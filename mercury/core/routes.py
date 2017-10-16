@@ -481,6 +481,14 @@ def blog_previews(blog_id):
     from core.ui import blog
     return blog.blog_previews_list(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/previews/delete/<preview_id:int>')
+def blog_delete_preview(blog_id, preview_id):
+    '''
+    Route for deleting a specific preview from a blog
+    '''
+    from core.ui import blog
+    return blog.blog_delete_preview(blog_id, preview_id)
+
 @_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
 def refresh_theme(theme_id):
     '''
