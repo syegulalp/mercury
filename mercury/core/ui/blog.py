@@ -152,6 +152,7 @@ Blog <b>{}</b> was successfully created. You can <a href="{}/blog/{}/newpage">st
         return template('listing/report',
             search_context=(search_context['sites'], None),
             menu=generate_menu('site_create_blog', site),
+            msg_float=False,
             ** tags.__dict__
             )
 
@@ -290,17 +291,37 @@ def blog_new_page_save(blog_id):
 
     return response
 
+# def blog_previews_core(blog, user, errormsg=None):
+#     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
+#
+#     return listing(
+#         request, user, errormsg,
+#         {
+#             'colset':'blog_previews',
+#             'menu':'blog_previews',
+#             'search_ui':'blog',
+#             'search_object':blog,
+#             'search_context':blog_search_results,
+#             'item_list_object':previews,
+#         },
+#         {'blog_id':blog.id},
+#         msg_float=False
+#         )
+
 @transaction
-def blog_previews_list(blog_id, errormsg=None):
+def blog_previews_list(blog_id):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
+    # previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
+    # return blog_previews_core(blog, user, None)
+
     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
 
     return listing(
-        request, user, errormsg,
+        request, user, None,
         {
             'colset':'blog_previews',
             'menu':'blog_previews',
@@ -309,8 +330,41 @@ def blog_previews_list(blog_id, errormsg=None):
             'search_context':blog_search_results,
             'item_list_object':previews,
         },
-        {'blog_id':blog.id}
+        {'blog_id':blog.id},
+        msg_float=False
         )
+
+@transaction
+def blog_delete_preview(blog_id, preview_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_admin(user, blog)
+
+    preview_to_delete = blog.fileinfos.where(FileInfo.id == preview_id).get()
+    preview_to_delete.page.delete_preview()
+
+    # return blog_previews_core(blog, user, errormsg)
+
+    tags = template_tags(blog_id=blog.id, user=user)
+
+    from core.utils import Status
+
+    tags.status = Status(
+        type='success',
+        message='Preview for fileinfo {} deleted.'.format(preview_to_delete.id),
+        close=False,
+        # vals=(page.for_log,)
+        )
+
+    return template('listing/report',
+        menu=generate_menu('blog_previews', blog),
+        icons=icons,
+        msg_float=False,
+        search_context=(search_context['blog'], blog),
+        **tags.__dict__)
+
+
 
 @transaction
 def blog_categories(blog_id):
@@ -585,6 +639,7 @@ def blog_purge(blog_id):
         report=report,
         search_context=(search_context['blog'], blog),
         menu=generate_menu('blog_purge', blog),
+        msg_float=False,
         **template_tags(blog_id=blog.id,
             user=user).__dict__)
 
@@ -894,6 +949,7 @@ def blog_save_theme(blog_id):
         status = Status(
             type='success',
             close=False,
+
             message='''
 Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 '''.format('', blog.for_display, ''),
@@ -915,6 +971,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
         search_context=(search_context['blog'], blog),
         theme_title=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
         theme_description=blog.theme.description,
+        msg_float=False,
         ** tags.__dict__)
 
 
@@ -973,6 +1030,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
     return template('listing/report',
         menu=generate_menu('blog_apply_theme', [blog, theme]),
         search_context=(search_context['blog'], blog),
+        msg_float=False,
         **tags.__dict__)
 
 # @transaction
