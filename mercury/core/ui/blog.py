@@ -358,7 +358,7 @@ def blog_delete_preview(blog_id, preview_id):
         )
 
     return template('listing/report',
-        menu=generate_menu('blog_previews', blog),
+        menu=generate_menu('blog_delete_preview', preview_to_delete),
         icons=icons,
         msg_float=False,
         search_context=(search_context['blog'], blog),

@@ -239,11 +239,18 @@ menus = {
         'type':'divider',
         'text':lambda x:'Categorization'},
     'blog_previews':{
-        'type':'label',
+        'type':'button',
         'parent':'blog_menu',
         'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.id),
         'text':lambda x:'Previews',
         'parent_context':lambda x:x
+        },
+    'blog_delete_preview':{
+        'type':'label',
+        'parent':'blog_previews',
+        'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.page.blog.id),
+        'text':lambda x:'Delete preview {}'.format(x.id),
+        'parent_context':lambda x:x.page.blog
         },
     'blog_manage_categories':{
         'type':'button',
