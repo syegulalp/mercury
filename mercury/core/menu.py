@@ -731,7 +731,14 @@ colsets = {
             {
                 'field':'page',
                 'label':'Page',
-                'format_raw': lambda x: x.page.for_display if x.page is not None else '[Not a page]'
+                'format_raw': lambda x: '{} {}'.format(
+                    '<a href="{}/blog/{}/previews/delete/{}"><span class="label label-danger pull-right">Delete preview</span></a>'.format(
+                        BASE_URL,
+                        x.page.blog.id,
+                        x.id
+                        ),
+                    x.page.for_display
+                    ) if x.page is not None else '[Not a page]'
             },)
     },
     'blog': {
