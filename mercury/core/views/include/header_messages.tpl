@@ -1,14 +1,14 @@
-% try:
-% msg_float
-% except NameError:
-% _id="messages"
-% _class="col-xs-12"
-% else:
-% _id="messages_float"
-% _class=""
-% end
-<div id="{{_id}}" class="{{_class}}">
 % if status:
+% if msg_float:
+<div id="messages_float">
+% #_id="messages_float"
+% #_class=""
+% else:
+<div id="messages" class="col-xs-12">
+% #_id="messages"
+% #_class="col-xs-12"
+% end
+% #<div id="{{_id}}" class="{{_class}}">
 <div id="alert_message" class="alert alert-{{status.type}}" role="alert">
 <span class="glyphicon glyphicon-{{status.icon}}"></span>
 % if status.close is True: 

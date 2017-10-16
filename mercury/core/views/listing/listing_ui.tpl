@@ -1,4 +1,3 @@
-% msg_float = True
 % include('include/header.tpl')
 % include('include/header_messages.tpl')
 % cols = colset['colset']
