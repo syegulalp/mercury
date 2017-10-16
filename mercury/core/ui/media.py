@@ -260,5 +260,6 @@ def media_delete(blog_id, media_id, confirm='N'):
         icons=icons,
         report=report,
         search_context=(search_context['blog_media'], blog),
+        msg_float=False,
         **tags.__dict__)
 

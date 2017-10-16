@@ -232,9 +232,11 @@ from the theme.
 
 
     tags.status = status
+
     return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
         search_context=(search_context['blog'], blog),
+        msg_float=False,
         **tags.__dict__)
 
 @transaction
@@ -287,9 +289,11 @@ def template_delete(template_id):
 
 
     tags.status = status
+
     return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
         search_context=(search_context['blog'], blog),
+        msg_float=False,
         **tags.__dict__)
 
 

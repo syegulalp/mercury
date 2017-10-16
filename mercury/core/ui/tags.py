@@ -211,6 +211,7 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
     tpl = template('listing/report',
         menu=generate_menu('blog_delete_tag', tag),
         search_context=(search_context['sites'], None),
+        msg_float=False,
         **tags.__dict__)
 
     return tpl

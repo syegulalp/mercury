@@ -76,7 +76,8 @@ search_context = (
     )
 
 def listing(request, user, errormsg, context, tags_data,
-    colset_source=colsets, search_context_source=search_context):
+    colset_source=colsets, search_context_source=search_context,
+    msg_float=True):
     '''
     Listing framework.
     Used to present a searchable and sortable list of objects.
@@ -173,6 +174,7 @@ def listing(request, user, errormsg, context, tags_data,
         icons=icons,
         action=action_button,
         list_actions=list_actions,
+        msg_float=msg_float,
         **tags.__dict__)
 
     return tpl

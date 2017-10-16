@@ -283,9 +283,11 @@ Deleting this theme may <i>break these blogs entirely!</i></p>
             )
 
     tags.status = status
+
     tpl = template('listing/report',
         menu=generate_menu('system_delete_theme', theme),
         search_context=(search_context['sites'], None),
+        msg_float=False,
         **tags.__dict__)
 
     return tpl

@@ -128,6 +128,7 @@ def delete_category(blog_id, category_id, confirm='N'):
         category=category,
         menu=generate_menu('blog_delete_category', category),
         search_context=(search_context['sites'], None),
+        msg_float=False,
         **tags.__dict__)
 
     return tpl
