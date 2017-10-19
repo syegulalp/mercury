@@ -448,11 +448,6 @@ def template_preview_core(template_id):
         else:
             page_list = template.blog.pages.published.limit(1)
 
-#         try:
-#             page_list = [Page.load(int(request.query['use_page']))]
-#         except (KeyError, TypeError) as e:  # int from None, etc.
-#             page_list = template.blog.pages.published.order_by(Page.publication_date.desc()).limit(1)
-
         fi = fileinfo.build_archives_fileinfos_by_mappings(template, pages=page_list)
         test_preview_mapping(len(fi), template)
         fi = fi[0]
