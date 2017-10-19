@@ -7,7 +7,7 @@ from core.libs.bottle import request
 from core.models import (Page, TagAssociation, Tag,
     Category, PageCategory, template_tags, page_status)
 
-from . import save_action_list, invalidate_cache
+from . import save_action_list  # , invalidate_cache
 from .queue import queue_page_actions, queue_ssi_actions, queue_index_actions, queue_page_archive_actions
 from .fileinfo import (delete_page_fileinfo, build_archives_fileinfos, build_pages_fileinfos, delete_fileinfo_files,
                        purge_fileinfos, build_indexes_fileinfos)
@@ -34,7 +34,7 @@ def save_page(page, user, blog=None):
 
     getunicode = request.forms.getunicode
 
-    invalidate_cache()
+    # invalidate_cache()
 
     save_action = int(request.forms.get('save'))
 
