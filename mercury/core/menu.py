@@ -248,9 +248,9 @@ menus = {
     'blog_delete_preview':{
         'type':'label',
         'parent':'blog_previews',
-        'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.page.blog.id),
-        'text':lambda x:'Delete preview {}'.format(x.id),
-        'parent_context':lambda x:x.page.blog
+        'path': lambda x: BASE_URL + '/blog/{}/previews'.format(x.blog.id),
+        'text':lambda x:x.msg,
+        'parent_context':lambda x:x.blog
         },
     'blog_manage_categories':{
         'type':'button',
@@ -734,19 +734,31 @@ colsets = {
     },
     'blog_previews':{
         'none':'No previews found',
+        'buttons':(
+            ('Delete all previews', lambda x:'{}/blog/{}/previews/delete/all'.format(BASE_URL, x.id)),
+            ),
         'colset':(
             {
                 'field':'page',
                 'label':'Page',
-                'format_raw': lambda x: '{} {}'.format(
-                    '<a href="{}/blog/{}/previews/delete/{}"><span class="label label-danger pull-right">Delete preview</span></a>'.format(
-                        BASE_URL,
-                        x.page.blog.id,
-                        x.id
-                        ),
-                    x.page.for_display
-                    ) if x.page is not None else '[Not a page]'
-            },)
+                'colwidth':'99%',
+                'format_raw': lambda x: '<a target="_blank" title="See preview" href="{}/{}"><span class="glyphicon glyphicon-share"></span></a> Page: {}'.format(
+                    x.page.blog.url if x.page is not None else x.template_mapping.template.blog.url,
+                    x.preview_path,
+                    x.page.for_display if x.page is not None else x.template_mapping.template.for_display
+                    )
+            },
+            {
+                'field':'delete',
+                'label':'',
+                'colwidth':'1%',
+                'format_raw': lambda x: '<a href="{}/blog/{}/previews/delete/{}"><span class="label label-danger">Delete preview</span></a>'.format(
+                            BASE_URL,
+                            x.page.blog.id if x.page is not None else x.template_mapping.template.blog.id,
+                            x.id)
+            },
+
+                  )
     },
     'blog': {
         'none': 'No pages found',
