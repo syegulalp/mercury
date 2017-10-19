@@ -19,34 +19,25 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-
-
         <ul class="nav navbar-brand visible-xs">Mercury</ul>
-
-      
     </div>
     
     <div class="collapse navbar-collapse" id="navbar-collapse">
-
         <ul class="nav navbar-text" style="margin-left:0">
             <span class="breadcrumb" style="padding:0;background-color:inherit;">
             {{!menu}}
             </span>
         </ul>
     
-      
-      
-      
       <ul class="nav navbar-nav navbar-right navbar-compact">
              
-        
+        % if defined('search_context'):
         <li>
         <a title="Search" href="#" onclick="toggle_search();"><span class="glyphicon glyphicon-search"></span><span class="visible-xs-inline">&nbsp;&nbsp;Search</span></a>        
         </li>
-        
+        % end
         
         % include('queue/queue_counter_include2.tpl')
-        
         
         % if blog:
         <li>
@@ -60,20 +51,20 @@
         </li>
         % end
         
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                <span style='display:inline-block' class='overflow max-width'><span class='caret'></span> {{user.short_name}}</span>&nbsp;</a>
-                  <ul class="dropdown-menu" role="menu">
-                    <li><a href="{{settings.BASE_URL}}/me">Settings</a></li>
-                    <li><a href="{{settings.BASE_URL}}/logout?_={{user.logout_nonce}}">Log out</a></li>
-                  </ul>
-            </li>      
-       
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+            <span style='display:inline-block' class='overflow max-width'><span class='caret'></span> {{user.short_name}}</span>&nbsp;</a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="{{settings.BASE_URL}}/me">Settings</a></li>
+                <li><a href="{{settings.BASE_URL}}/logout?_={{user.logout_nonce}}">Log out</a></li>
+              </ul>
+        </li>      
       </ul>
-      
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
+
+% if defined('search_context'):
 <div id="search" class="col-xs-12" 
 % if search_terms == '':
 style="display: none"
@@ -95,3 +86,4 @@ style="display: none"
 		</form>
 	</div>
 </div>
+% end
