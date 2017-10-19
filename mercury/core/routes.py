@@ -481,8 +481,9 @@ def blog_previews(blog_id):
     from core.ui import blog
     return blog.blog_previews_list(blog_id)
 
+@_route(BASE_PATH + '/blog/<blog_id:int>/previews/delete/all')
 @_route(BASE_PATH + '/blog/<blog_id:int>/previews/delete/<preview_id:int>')
-def blog_delete_preview(blog_id, preview_id):
+def blog_delete_preview(blog_id, preview_id='all'):
     '''
     Route for deleting a specific preview from a blog
     '''
