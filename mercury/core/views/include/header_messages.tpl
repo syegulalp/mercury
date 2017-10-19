@@ -1,9 +1,5 @@
 % if status:
-% if msg_float:
-<div id="messages_float">
-% else:
 <div id="messages" class="col-xs-12">
-% end
 <div id="alert_message" class="alert alert-{{status.type}}" role="alert">
 <span class="glyphicon glyphicon-{{status.icon}}"></span>
 % if status.close is True: 
