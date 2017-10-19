@@ -82,32 +82,33 @@ def listing(request, user, errormsg, context, tags_data,
     Listing framework.
     Used to present a searchable and sortable list of objects.
     '''
-    # tags_data = {'blog_id':blog.id}
-    # This is any data to pass to the template_tags function.
 
-    # context:
-    search_context_obj = context['search_context']
-    # The search context object to use to produce search results.
-    # Example: blog_search_results
+    if 'search_ui' in context:
 
-    search_ui = context['search_ui']
-    # The description of the search context to use for the search UI.
-    # Example: 'blog'
+        search_ui = context['search_ui']
+        # The description of the search context to use for the search UI.
+        # Example: 'blog'
+
+        search_context_obj = context['search_context']
+        # The search context object to use to produce search results.
+        # Example: blog_search_results
+
+    context_object = context['context_object']
+    # An object that provides context for the listing,
+    # so that it can be used to generate action buttons, etc.
+    # For instance, for a list of pages in a blog, it's the blog object.
+    # Example: blog
 
     colset = colset_source[context['colset']]
-    # The column set to use for the listing.
+    # The UI column set to use for the listing.
     # Example: 'blog'
 
     menu = context['menu']
-    # The menu set to use for the listing page.
-    # 'blog_menu'
-
-    search_object = context['search_object']
-    # The data object to be passed to the search context object.
-    # Example: blog
+    # The menu set to use for the listing.
+    # Example: 'blog_menu'
 
     item_list_object = context['item_list_object']
-    # For future use when we perform search ordering.
+    # The data object from which we derive the actual listing.
     # Example: blog.pages
 
     action_button = colset.get('buttons', None)
@@ -117,19 +118,19 @@ def listing(request, user, errormsg, context, tags_data,
     # Any list actions to the shown.
 
     if action_button is not None:
-        action_button = ''.join([utils.action_button(n[0], n[1](search_object)) for n in action_button])
+        action_button = ''.join([utils.action_button(n[0], n[1](context_object)) for n in action_button])
     else:
         action_button = None
 
     if list_actions is not None:
         s = []
         for n in list_actions:
-            s.append([n[0], n[1](search_object)])
+            s.append([n[0], n[1](context_object)])
         list_actions = s
 
     try:
-        items_searched, search = search_context_obj(request, search_object)
-    except (KeyError, ValueError, TypeError):
+        items_searched, search = search_context_obj(request, context_object)
+    except (UnboundLocalError, KeyError, ValueError, TypeError):
         items_searched, search = None, None
 
     item_list = item_list_object
@@ -165,10 +166,22 @@ def listing(request, user, errormsg, context, tags_data,
     if callback is not None:
         rowset = callback(rowset)
 
+    if 'search_ui' in context:
+        tags.search_context = (search_context_source[search_ui], context_object)
+
+    # should this object be named search_ui instead? seems more accurate
+
+    # also, if we have template_tags handle search objs,
+    # perhaps we should centralize that there instead of
+    # adding the search_context here manually!
+
+    # TODO: fix inconsistencies where we parse for nonexistent object vs.
+    # object set to None in templates. We should pick a standard behavior
+
+
     tpl = _tpl('listing/listing_ui',
         paginator=paginator,
-        search_context=(search_context_source[search_ui], search_object),
-        menu=generate_menu(menu, search_object),
+        menu=generate_menu(menu, context_object),
         rowset=rowset,
         colset=colset,
         icons=icons,
