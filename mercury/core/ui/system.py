@@ -64,7 +64,7 @@ def system_sites(errormsg=None):
             'colset':'all_sites',
             'menu':'manage_sites',
             'search_ui':'sites',
-            'search_object':None,
+            'context_object':None,
             'search_context':None,
             'item_list_object':Site.select(),
             # 'action_button':action,

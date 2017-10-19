@@ -31,7 +31,7 @@ def media_list(blog_id):
             'colset':'media',
             'menu':'blog_manage_media',
             'search_ui':'blog_media',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':media_search_results,
             'item_list_object':blog.media.order_by(Media.id.desc())
         },
@@ -146,7 +146,7 @@ def media_pages(blog_id, media_id):
             'colset':'blog',
             'menu':'blog_media_pages',
             'search_ui':'blog_media_pages',
-            'search_object':media,
+            'context_object':media,
             'search_context': media_search_results,
             'item_list_object':media.pages.order_by(Page.publication_date.desc()),
 
@@ -160,7 +160,7 @@ def media_pages(blog_id, media_id):
         # 'colset':'blog',
         # 'menu':'blog_pages_for_tag',
         # 'search_ui':'blog_pages_with_tag',
-        # 'search_object':tag,
+        # 'context_object':tag,
         # 'search_context':tag_in_blog_search_results,
         # 'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
 

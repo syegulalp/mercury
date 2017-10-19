@@ -26,7 +26,7 @@ def site(site_id, errormsg=None):
             'colset':'site',
             'menu':'site_menu',
             'search_ui':'site',
-            'search_object':site,
+            'context_object':site,
             'search_context':site_search_results,
             'item_list_object':site.blogs.select(),
             'action_button':action,

@@ -48,8 +48,6 @@ def page_edit(page_id):
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
 
-    # from core.cms import save_action_list
-
     status = None
     referer = request.headers.get('Referer')
 
@@ -70,14 +68,13 @@ def page_edit(page_id):
         user=user,
         status=status)
 
-    # from core.ui_kv import kv_ui
     from core.ui import kv
     kv_ui_data = kv.ui(page.kv_list())
 
     tpl = template('edit/page',
         menu=generate_menu('edit_page', page),
         parent_path=referer,
-        search_context=(search_context['blog'], page.blog),
+        # search_context=(search_context['blog'], page.blog),
         html_editor_settings=html_editor_settings(page.blog),
         sidebar=sidebar.render_sidebar(
             panel_set='edit_page',

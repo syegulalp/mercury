@@ -32,7 +32,7 @@ def tags_list(blog_id):
             'colset':'tags',
             'menu':'blog_manage_tags',
             'search_ui':'blog_tags',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':tag_search_results,
             'item_list_object':blog.tags
         },
@@ -336,7 +336,7 @@ def tag_list_pages(blog_id, tag_id):
             'colset':'blog',
             'menu':'blog_pages_for_tag',
             'search_ui':'blog_pages_with_tag',
-            'search_object':tag,
+            'context_object':tag,
             'search_context':tag_in_blog_search_results,
             'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
             # 'action_button':action,
