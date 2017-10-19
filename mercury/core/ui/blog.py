@@ -12,16 +12,11 @@ from core.models import (Struct, Site,
     TemplateRevision, FileInfo)
 
 from core.models.transaction import transaction
-
 from core.libs.bottle import (template, request, response)
-
 from settings import BASE_URL, RETRY_INTERVAL
-
 from . import listing, status_badge, save_action, search_context
 
 import time
-# from core.cms.fileinfo import build_pages_fileinfos
-# from core.cms.fileinfo import build_archives_fileinfos
 
 new_page_submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
@@ -38,7 +33,7 @@ def blog(blog_id, errormsg=None):
             'colset':'blog',
             'menu':'blog_menu',
             'search_ui':'blog',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':blog_search_results,
             'item_list_object':blog.pages,
         },
@@ -291,32 +286,12 @@ def blog_new_page_save(blog_id):
 
     return response
 
-# def blog_previews_core(blog, user, errormsg=None):
-#     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
-#
-#     return listing(
-#         request, user, errormsg,
-#         {
-#             'colset':'blog_previews',
-#             'menu':'blog_previews',
-#             'search_ui':'blog',
-#             'search_object':blog,
-#             'search_context':blog_search_results,
-#             'item_list_object':previews,
-#         },
-#         {'blog_id':blog.id},
-#         msg_float=False
-#         )
-
 @transaction
 def blog_previews_list(blog_id):
 
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
-
-    # previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
-    # return blog_previews_core(blog, user, None)
 
     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
 
@@ -325,9 +300,7 @@ def blog_previews_list(blog_id):
         {
             'colset':'blog_previews',
             'menu':'blog_previews',
-            'search_ui':'blog',
-            'search_object':blog,
-            'search_context':blog_search_results,
+            'context_object':blog,
             'item_list_object':previews,
         },
         {'blog_id':blog.id},
@@ -341,10 +314,23 @@ def blog_delete_preview(blog_id, preview_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
 
-    preview_to_delete = blog.fileinfos.where(FileInfo.id == preview_id).get()
-    preview_to_delete.page.delete_preview()
+    f = lambda:None
+    f.blog = blog
 
-    # return blog_previews_core(blog, user, errormsg)
+    if preview_id == 'all':
+        previews_to_delete = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
+        message = 'All previews for blog {} deleted.'.format(blog.for_display)
+        f.msg = 'Delete all'
+    else:
+        previews_to_delete = blog.fileinfos.where(FileInfo.id == preview_id)
+        message = 'Preview for fileinfo {} deleted.'.format(preview_id)
+        f.msg = 'Delete preview {}'.format(preview_id)
+
+    for n in previews_to_delete:
+        if n.page is not None:
+            n.page.delete_preview()
+        else:
+            n.template_mapping.template.delete_preview()
 
     tags = template_tags(blog_id=blog.id, user=user)
 
@@ -352,13 +338,15 @@ def blog_delete_preview(blog_id, preview_id):
 
     tags.status = Status(
         type='success',
-        message='Preview for fileinfo {} deleted.'.format(preview_to_delete.id),
+        message=message,
         close=False,
-        # vals=(page.for_log,)
         )
 
+
+
+
     return template('listing/report',
-        menu=generate_menu('blog_delete_preview', preview_to_delete),
+        menu=generate_menu('blog_delete_preview', f),
         icons=icons,
         msg_float=False,
         search_context=(search_context['blog'], blog),
@@ -385,7 +373,7 @@ def blog_categories(blog_id):
             'colset':'categories',
             'menu':'blog_manage_categories',
             'search_ui':'blog',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':blog_search_results,
             'item_list_object':blog.categories.select(),
             'action_button':action,
@@ -413,7 +401,7 @@ def blog_pages_in_category(blog_id, category_id):
             'colset':'blog',
             'menu':'blog_pages_in_category',
             'search_ui':'blog_pages_in_category',
-            'search_object':category,
+            'context_object':category,
             'search_context':blog_pages_in_category_search_results,
             'item_list_object':category.pages,
             # 'action_button':action,
@@ -523,7 +511,7 @@ def blog_select_themes(blog_id):
             'colset':'themes',
             'menu':'blog_manage_themes',
             'search_ui':'blog',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':blog_search_results,
             'item_list_object':Theme.select().order_by(Theme.id),
             'rowset_callback':add_blog_reference,
@@ -671,7 +659,7 @@ def blog_queue(blog_id, status=None):
             'colset':'queue',
             'menu':'blog_menu',
             'search_ui':'blog',
-            'search_object':blog,
+            'context_object':blog,
             'search_context':(search_context['blog_queue'], blog),
             'item_list_object':tags.queue,
         },
