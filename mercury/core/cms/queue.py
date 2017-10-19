@@ -217,8 +217,8 @@ def process_queue_publish(queue_control, blog):
     :param blog:
         The blog object that is in context for this job.
     '''
-    from . import invalidate_cache
-    invalidate_cache()
+    # from . import invalidate_cache
+    # invalidate_cache()
 
     queue_control.lock()
 
