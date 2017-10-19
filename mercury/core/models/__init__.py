@@ -3287,7 +3287,17 @@ class TemplateTags(object):
 
         self.tags = template_tags
 
+        # TODO:
+        # self.search is nonexistent at first.
+        # if it exists:
+        # self.search.terms
+        # self.search.query
+        # self.search.context_source
+        # self.search.context_object
+        # all of which are obtained from the input
+
         self.search_query, self.search_terms = '', ''
+
         if 'search' in ka:
             if ka['search'] is not None:
                 self.search_terms = ka['search']
