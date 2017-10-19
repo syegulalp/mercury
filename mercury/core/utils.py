@@ -275,18 +275,16 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     '''
     Generates a paginator block for browsing lists, for instance in the blog or site view.
     '''
-    # obj = obj.naive()
 
     page_num = page_list_id(request)
 
     paginator = {}
 
-    paginator['page_count'] = obj.tuples().count()
+    paginator['page_count'] = obj.count()
 
     paginator['max_pages'] = int((paginator['page_count'] / items_per_page) + (paginator['page_count'] % items_per_page > 0))
 
-    if page_num > paginator['max_pages']:
-        page_num = paginator['max_pages']
+    page_num = min(page_num, paginator['max_pages'])
 
     paginator['next_page'] = (page_num + 1) if page_num < paginator['max_pages'] else paginator['max_pages']
     paginator['prev_page'] = (page_num - 1) if page_num > 1 else 1
@@ -297,7 +295,7 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     paginator['page_num'] = page_num
     paginator['items_per_page'] = items_per_page
 
-    obj_list = obj.naive().paginate(page_num, ITEMS_PER_PAGE)
+    obj_list = obj.naive().paginate(page_num, items_per_page)
 
     return paginator, obj_list
 
