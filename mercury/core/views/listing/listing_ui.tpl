@@ -1,4 +1,5 @@
 % include('include/header.tpl')
+<div id="messages_float"></div>
 % include('include/header_messages.tpl')
 % cols = colset['colset']
 % include('listing/listing_ui_core.tpl')
