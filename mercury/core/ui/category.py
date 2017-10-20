@@ -56,7 +56,7 @@ def new_category(blog_id):
         category=category,
         category_list=category_list,
         menu=generate_menu('blog_new_category', category),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         **tags.__dict__)
 
     return tpl

@@ -10,7 +10,7 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
-from . import search_context
+from . import search_contexts
 
 common_archive_mappings = (
     ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
@@ -152,7 +152,7 @@ def template_set_default(template_id):
 
     return template('edit/template-set-default',
         icons=icons,
-        search_context=(search_context['blog'], tags.blog),
+        search_context=(search_contexts['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),
         sidebar=sidebar.render_sidebar(
             panel_set='edit_template',
@@ -235,7 +235,7 @@ from the theme.
 
     return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
-        search_context=(search_context['blog'], blog),
+        search_context=(search_contexts['blog'], blog),
         msg_float=False,
         **tags.__dict__)
 
@@ -292,7 +292,7 @@ def template_delete(template_id):
 
     return template('listing/report',
         menu=generate_menu('blog_delete_template', tpl),
-        search_context=(search_context['blog'], blog),
+        search_context=(search_contexts['blog'], blog),
         msg_float=False,
         **tags.__dict__)
 
@@ -494,7 +494,7 @@ def template_edit_output(tags):
 
     return template('edit/template',
         icons=icons,
-        search_context=(search_context['blog'], tags.blog),
+        search_context=(search_contexts['blog'], tags.blog),
         menu=generate_menu('blog_edit_template', tags.template),
         sidebar=sidebar.render_sidebar(
             panel_set='edit_template',

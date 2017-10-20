@@ -2,7 +2,7 @@ from core import (auth, utils)
 from core.cms import cms, queue, fileinfo
 from core.ui import sidebar
 from core.log import logger
-from core.menu import generate_menu, colsets, icons
+from core.menu import generate_menu, icons
 from core.search import (blog_search_results,
     blog_pages_in_category_search_results)
 

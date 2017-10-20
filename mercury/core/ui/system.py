@@ -1,7 +1,5 @@
-from core import (auth, utils)
-from core.cms.queue import job_type
-from core.menu import generate_menu, colsets
-# from core.search import site_search_results
+from core import auth
+from core.menu import generate_menu
 
 from core.models import (
     template_tags, Queue, Log, Blog, Site,

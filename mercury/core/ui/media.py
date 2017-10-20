@@ -240,7 +240,7 @@ def media_delete(blog_id, media_id, confirm='N'):
         menu=generate_menu('blog_delete_media', media),
         icons=icons,
         report=report,
-        search_context=(search_context['blog_media'], blog),
+        search_context=(search_contexts['blog_media'], blog),
         msg_float=False,
         **tags.__dict__)
 

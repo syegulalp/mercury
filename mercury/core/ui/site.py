@@ -4,7 +4,6 @@ from core.models import Site
 from core.models.transaction import transaction
 from core.libs.bottle import request
 from . import listing
-from settings import (BASE_URL)
 
 @transaction
 def site(site_id, errormsg=None):
@@ -15,31 +14,11 @@ def site(site_id, errormsg=None):
     site = Site.load(site_id)
     permission = auth.is_site_member(user, site)
 
-#     action = (
-#         ('Create new blog',
-#         '{}/site/{}/blog/new'.format(BASE_URL, site.id)),
-#         )
-
     return listing(request, site, site.blogs.select(),
                    'site', 'site_menu',
                    user=user,
                    search_ui='site',
                    search_context=site_search_results,
+                   errormsg=errormsg,
                    tags_data={'site':site}
                    )
-
-#     return listing(
-#         request, user, errormsg,
-#         {
-#             'colset':'site',
-#             'menu':'site_menu',
-#             'search_ui':'site',
-#             'context_object':site,
-#             'search_context':site_search_results,
-#             'item_list_object':site.blogs.select(),
-#             'action_button':action,
-#              'list_actions':list_actions
-#         },
-#         {'site_id':site.id}
-#         )
-
