@@ -2,8 +2,8 @@ from core.models.transaction import transaction
 from core.libs.bottle import (request, template, redirect)
 from core import auth, utils
 from core.models import (template_tags, User, Site, Blog)
-from core.menu import generate_menu, colsets
-from . import search_context
+from core.menu import generate_menu
+from . import search_contexts, listing
 
 def site_context():
     pass
@@ -23,7 +23,7 @@ def system_context(user_to_edit=None, path='basic'):
 def master_context(users, path, root_path):
     return {
         'users':users,
-        'search_context':(search_context['sites'], None),
+        'search_context':(search_contexts['sites'], None),
         'menu':generate_menu('system_manage_users', None),
         'title':'List all users',
         'path':root_path,
@@ -133,7 +133,7 @@ def system_new_user():
     tpl = template('edit/user_settings',
         edit_user=new_user,
         menu=generate_menu('system_create_user', new_user),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         nav_tabs=nav_tabs,
         nav_default='basic',
         **tags.__dict__
@@ -255,29 +255,10 @@ def user_edit(user_id, path, context, permission):
 def system_users():
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
-    context = system_context()
-    tags = template_tags(user=user)
 
-    import settings
-
-    action = utils.action_button(
-        'Create new user',
-        '{}/system/user/new'.format(settings.BASE_URL)
-        )
-
-    paginator, rowset = utils.generate_paginator(context['users'], request)
-    path = context['path']
-    tpl = template('listing/listing_ui',
-        section_title=context['title'],
-        search_context=context['search_context'],
-        menu=context['menu'],
-        colset=colsets['system_users'],
-        action=action,
-        paginator=paginator,
-        rowset=rowset,
-        **tags.__dict__)
-
-    return tpl
+    return listing(request, None, User.select(),
+                   'system_users', 'system_manage_users',
+                   user=user)
 
 
 @transaction
@@ -332,7 +313,7 @@ def edit_user(edit_user, **ka):
 
         edit_user=edit_user,
         menu=generate_menu('system_edit_user', edit_user),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         context=None,
         **tags.__dict__
         )

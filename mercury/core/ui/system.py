@@ -10,13 +10,12 @@ from core.models import (
 from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request)
-from .ui import search_context
-from . import listing
+from . import search_contexts, listing
 
 @transaction
 def system_info():
 
-    # alt. implementation, less boilerplate
+    # alt. implementation, less boilerplate?
     # user, permission = auth.is_sys_admin()
 
     user = auth.is_logged_in(request)
@@ -46,7 +45,7 @@ def system_info():
 
     tpl = template('ui/ui_system_info',
         menu=generate_menu('system_info', None),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         environ_list=sorted(environ_list),
         settings_list=sorted(settings_list),
         **tags.__dict__)
@@ -58,21 +57,9 @@ def system_sites(errormsg=None):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
-    return listing(
-        request, user, errormsg,
-        {
-            'colset':'all_sites',
-            'menu':'manage_sites',
-            'search_ui':'sites',
-            'context_object':None,
-            'search_context':None,
-            'item_list_object':Site.select(),
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {
-            'status':errormsg}
-        )
+    return listing(request, None, Site.select(),
+                   'all_sites', 'manage_sites',
+                   user=user)
 
 @transaction
 def system_queue():
@@ -81,21 +68,9 @@ def system_queue():
     queue = Queue.select().order_by(Queue.site.asc(), Queue.blog.asc(), Queue.job_type.asc(),
         Queue.date_touched.desc())
 
-    tags = template_tags(user=user)
-
-    paginator, queue_list = utils.generate_paginator(queue, request)
-
-    # TODO: replace with listing framework
-
-    tpl = template('queue/queue_ui',
-        queue_list=queue_list,
-        paginator=paginator,
-        job_type=job_type.description,
-        menu=generate_menu('system_queue', None),
-        search_context=(search_context['site_queue'], None),
-        **tags.__dict__)
-
-    return tpl
+    return listing(request, None, queue,
+               'queue', 'system_queue',
+               user=user)
 
 @transaction
 def system_log():
@@ -103,19 +78,9 @@ def system_log():
     permission = auth.is_sys_admin(user)
     log = Log.select().order_by(Log.date.desc(), Log.id.desc())
 
-    tags = template_tags(user=user)
-    paginator, rowset = utils.generate_paginator(log, request)
-
-    tpl = template('listing/listing_ui',
-        rowset=rowset,
-        colset=colsets['system_log'],
-        paginator=paginator,
-        menu=generate_menu('system_log', None),
-        search_context=(search_context['system_log'], None),
-        action=None,
-        **tags.__dict__)
-
-    return tpl
+    return listing(request, None, log,
+               'system_log', 'system_log',
+               user=user)
 
 @transaction
 def register_plugin(plugin_path):
@@ -140,7 +105,7 @@ def plugin_settings(plugin_id, errormsg=None):
 
     tpl = template('system/plugin',
         plugin_ui=plugin.ui(),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         menu=generate_menu('system_plugin_data', plugin),
         **tags.__dict__)
 
@@ -151,25 +116,11 @@ def system_plugins(errormsg=None):
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
 
-    tags = template_tags(
-        user=user)
-
     plugins = Plugin.select()
 
-    paginator, rowset = utils.generate_paginator(plugins, request)
-
-    tags.status = errormsg if errormsg is not None else None
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['sites'], None),
-        menu=generate_menu('system_plugins', None),
-        rowset=rowset,
-        colset=colsets['plugins'],
-        action=None,
-        **tags.__dict__)
-
-    return tpl
+    return listing(request, None, plugins,
+                   'plugins', 'system_plugins',
+                   user=user)
 
 @transaction
 def system_theme_data(theme_id):
@@ -187,7 +138,7 @@ def system_theme_data(theme_id):
         ]
 
     tpl = template('listing/report',
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         menu=generate_menu('system_theme_data', theme),
         report=report,
         **tags.__dict__)
@@ -199,22 +150,12 @@ def system_list_themes():
     user = auth.is_logged_in(request)
     permission = auth.is_sys_admin(user)
     from core.models import Theme
-    themes = Theme.select().order_by(Theme.id)
 
-    tags = template_tags(user=user)
+    return listing(request, None, Theme.select().order_by(Theme.id),
+                   'themes_site', 'system_manage_themes',
+                   user=user,
+                   )
 
-    paginator, rowset = utils.generate_paginator(themes, request)
-
-    tpl = template('listing/listing_ui',
-        paginator=paginator,
-        search_context=(search_context['sites'], None),
-        menu=generate_menu('system_manage_themes', None),
-        rowset=rowset,
-        colset=colsets['themes_site'],
-        action=None,
-        **tags.__dict__)
-
-    return tpl
 
 @transaction
 def system_delete_theme(theme_id):
@@ -286,7 +227,7 @@ Deleting this theme may <i>break these blogs entirely!</i></p>
 
     tpl = template('listing/report',
         menu=generate_menu('system_delete_theme', theme),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         msg_float=False,
         **tags.__dict__)
 

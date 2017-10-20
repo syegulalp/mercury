@@ -13,7 +13,7 @@ from core.libs.bottle import (template, request)
 
 from settings import BASE_URL
 
-from . import listing, status_badge, search_context
+from . import listing, status_badge, search_contexts
 
 @transaction
 def media_list(blog_id):
@@ -25,18 +25,13 @@ def media_list(blog_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'media',
-            'menu':'blog_manage_media',
-            'search_ui':'blog_media',
-            'context_object':blog,
-            'search_context':media_search_results,
-            'item_list_object':blog.media.order_by(Media.id.desc())
-        },
-        {'blog_id':blog.id}
-        )
+    return listing(request, blog, blog.media.order_by(Media.id.desc()),
+                   'media', 'blog_manage_media',
+                   user=user,
+                   search_ui='blog_media',
+                   search_context=media_search_results,
+                   tags_data={'blog':blog}
+                   )
 
 @transaction
 def media_edit(blog_id, media_id, status=None):
@@ -52,7 +47,7 @@ def media_edit(blog_id, media_id, status=None):
     from core.ui import kv
     kv_ui_data = kv.ui(media.kv_list())
 
-    tags = template_tags(blog_id=blog.id,
+    tags = template_tags(blog=blog,
          media=media,
          status=status,
          user=user,
@@ -112,7 +107,7 @@ def media_edit_save(blog_id, media_id):
     from core.ui import kv
     kv_ui_data = kv.ui(media.kv_list())
 
-    tags = template_tags(blog_id=blog.id,
+    tags = template_tags(blog=blog,
          media=media,
          status=status,
          user=user)
@@ -131,7 +126,7 @@ def media_edit_output(tags):
     return template('edit/media',
         icons=icons,
         menu=generate_menu('blog_edit_media', tags.media),
-        search_context=(search_context['blog_media'], tags.blog),
+        search_context=(search_contexts['blog_media'], tags.blog),
         **tags.__dict__)
 
 def media_pages(blog_id, media_id):
@@ -140,29 +135,15 @@ def media_pages(blog_id, media_id):
     is_member = auth.is_blog_member(user, blog)
     media = Media.load(media_id, blog)
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'blog',
-            'menu':'blog_media_pages',
-            'search_ui':'blog_media_pages',
-            'context_object':media,
-            'search_context': media_search_results,
-            'item_list_object':media.pages.order_by(Page.publication_date.desc()),
+    return listing(request, media,
+                   media.pages.order_by(Page.publication_date.desc()),
+                   'blog', 'blog_media_pages',
+                   user=user,
+                   search_ui='blog_media_pages',
+                   search_context=media_search_results,
+                   tags_data={'blog':blog}
+                   )
 
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {'blog_id':blog.id}
-        )
-
-
-        # 'colset':'blog',
-        # 'menu':'blog_pages_for_tag',
-        # 'search_ui':'blog_pages_with_tag',
-        # 'context_object':tag,
-        # 'search_context':tag_in_blog_search_results,
-        # 'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
 
 # TODO: be able to process multiple media at once via a list
 # using the list framework
@@ -177,7 +158,7 @@ def media_delete(blog_id, media_id, confirm='N'):
     media = Media.load(media_id, blog)
     permission = auth.is_media_owner(user, media)
 
-    tags = template_tags(blog_id=blog.id,
+    tags = template_tags(blog=blog,
         media=media,
         user=user)
 

@@ -165,31 +165,4 @@ def ui(keys):
                 html_escape(n.key), html_escape(n.value))
             ))
 
-        '''
-        if n.is_schema is True:
-            m = n
-            # chooser only
-            kv_ui.append(blank_item.format(
-                "text",
-                "{}: {}".format(n.key, n.value)))
-        else:
-            # chooser and existing kv
-            m = n.key_parent if n.key_parent is not None else n
-
-            if m.value_type == "Media":
-                from core.models import Media
-                p = Media.get(Media.id == n.value)
-                kv_ui.append(media_item.format(
-                    p.preview_url,
-                    m.value,
-                    p.link_format,
-                    p.friendly_name))
-            elif m.value_type == "User":
-                from core.models import get_user
-                user_obj = get_user(user_id=int(n.value))
-                kv_ui.append(blank_item.format(
-                    "user",
-                    "{}: {}".format(m.value, user_obj.name)))
-        '''
-
     return ''.join(kv_ui)

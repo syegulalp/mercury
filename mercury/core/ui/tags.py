@@ -5,7 +5,7 @@ from core.models import (Blog, Media,
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
 from core.search import tag_search_results, tag_in_blog_search_results
-from . import search_context, listing
+from . import search_contexts, listing
 from core.utils import url_unescape, Status
 
 def tag_recently_modified(tag):
@@ -24,21 +24,16 @@ def tags_list(blog_id):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_author(user, blog)
 
-    reason = auth.check_tag_editing_lock(blog, True)
+    errormsg = auth.check_tag_editing_lock(blog, True)
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'tags',
-            'menu':'blog_manage_tags',
-            'search_ui':'blog_tags',
-            'context_object':blog,
-            'search_context':tag_search_results,
-            'item_list_object':blog.tags
-        },
-        {'blog_id':blog.id,
-            'status':reason}
-        )
+    return listing(request, blog, blog.tags,
+                   'tags', 'blog_manage_tags',
+                   user=user,
+                   search_ui='blog_tags',
+                   search_context=tag_search_results,
+                   errormsg=errormsg,
+                   tags_data={'blog':blog}
+                   )
 
 @transaction
 def tag_edit(blog_id, tag_id):
@@ -116,7 +111,7 @@ def tag_edit(blog_id, tag_id):
 
     tpl = template('edit/tag',
         menu=generate_menu('blog_edit_tag', tag),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         tag=tag,
         **tags.__dict__)
 
@@ -210,7 +205,7 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
 
     tpl = template('listing/report',
         menu=generate_menu('blog_delete_tag', tag),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         msg_float=False,
         **tags.__dict__)
 
@@ -330,17 +325,11 @@ def tag_list_pages(blog_id, tag_id):
     permission = auth.is_blog_member(user, blog)
     tag = Tag.load(tag_id)
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'blog',
-            'menu':'blog_pages_for_tag',
-            'search_ui':'blog_pages_with_tag',
-            'context_object':tag,
-            'search_context':tag_in_blog_search_results,
-            'item_list_object':tag.pages.order_by(Page.publication_date.desc()),
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {'blog_id':blog.id}
-        )
+    return listing(request, tag, tag.pages.order_by(Page.publication_date.desc()),
+                   'blog', 'blog_pages_for_tag',
+                   user=user,
+                   search_ui='blog_pages_with_tag',
+                   search_context=tag_in_blog_search_results,
+                   tags_data={'blog':blog}
+                   )
+

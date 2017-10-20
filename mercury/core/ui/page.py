@@ -4,7 +4,7 @@ from core.cms.cms import save_page
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu
-from . import search_context, status_badge, save_action
+from . import search_contexts, status_badge, save_action
 
 from core.models import (Media,
     template_tags, Page, PageRevision, Template,
@@ -213,7 +213,7 @@ def page_delete(page_id, confirm):
 
     tpl = template('listing/report',
         menu=generate_menu('blog_delete_page', page),
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         msg_float=False,
         **tags.__dict__)
 
@@ -264,7 +264,7 @@ def page_revisions(page_id):
     user = auth.is_logged_in(request)
     page = Page.load(page_id)
     permission = auth.is_page_editor(user, page)
-    tags = template_tags(page_id=page_id)
+    tags = template_tags(page=page)
 
     try:
         tpl = template('modal/modal_revisions',
@@ -329,7 +329,7 @@ def page_media_upload(page_id):
                 makedirs(media_path)
             x.save(file_path)
 
-    tags = template_tags(page_id=page_id)
+    tags = template_tags(page=page)
 
     return template('edit/page_media_list.tpl',
         **tags.__dict__)
@@ -433,7 +433,7 @@ def page_revision_restore(page_id, revision_id):
             page_revision.modified_date)
         )
 
-    tags = template_tags(page_id=page_id,
+    tags = template_tags(page=page,
         user=user,
         status=status)
 
@@ -452,7 +452,7 @@ def page_revision_restore(page_id, revision_id):
         status_badge=status_badge,
         save_action=save_action,
         menu=generate_menu('edit_page', page),
-        search_context=(search_context['blog'], page.blog),
+        search_context=(search_contexts['blog'], page.blog),
         html_editor_settings=html_editor_settings(page.blog),
         sidebar=sidebar.render_sidebar(
             panel_set='edit_page',

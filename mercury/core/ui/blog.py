@@ -14,7 +14,7 @@ from core.models import (Struct, Site,
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request, response)
 from settings import BASE_URL, RETRY_INTERVAL
-from . import listing, status_badge, save_action, search_context
+from . import listing, status_badge, save_action, search_contexts
 
 import time
 
@@ -27,18 +27,14 @@ def blog(blog_id, errormsg=None):
     blog = Blog.load(blog_id)
     permission = auth.is_blog_member(user, blog)
 
-    return listing(
-        request, user, errormsg,
-        {
-            'colset':'blog',
-            'menu':'blog_menu',
-            'search_ui':'blog',
-            'context_object':blog,
-            'search_context':blog_search_results,
-            'item_list_object':blog.pages,
-        },
-        {'blog_id':blog.id}
-        )
+    return listing(request, blog, blog.pages,
+                   'blog', 'blog_menu',
+                   user=user,
+                   errormsg=errormsg,
+                   search_ui='blog',
+                   search_context=blog_search_results,
+                   tags_data={'blog':blog}
+                   )
 
 
 @transaction
@@ -64,7 +60,7 @@ def blog_create(site_id):
 
     return template('ui/ui_blog_settings',
         section_title="Create new blog",
-        search_context=(search_context['sites'], None),
+        # search_context=(search_context['sites'], None),
         menu=generate_menu('site_create_blog', site),
         nav_default='all',
         timezones=pytz.all_timezones,
@@ -123,7 +119,7 @@ def blog_create_save(site_id):
 
         return template('ui/ui_blog_settings',
             section_title="Create new blog",
-            search_context=(search_context['sites'], None),
+            # search_context=(search_context['sites'], None),
             menu=generate_menu('site_create_blog', site),
             nav_default='all',
             themes=themes,
@@ -145,7 +141,7 @@ Blog <b>{}</b> was successfully created. You can <a href="{}/blog/{}/newpage">st
             )
         tags.status = status
         return template('listing/report',
-            search_context=(search_context['sites'], None),
+            # search_context=(search_context['sites'], None),
             menu=generate_menu('site_create_blog', site),
             msg_float=False,
             ** tags.__dict__
@@ -172,7 +168,7 @@ def blog_create_user(blog_id):
 
     return template('edit/user_settings',
         section_title="Create new blog user",
-        search_context=(search_context['sites'], None),
+        # search_context=(search_context['sites'], None),
         edit_user=edit_user,
         **tags.__dict__
         )
@@ -184,22 +180,12 @@ def blog_list_users(blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_admin(user, blog)
-    user_list = blog.users
 
-    tags = template_tags(blog_id=blog.id,
-        user=user)
-
-    paginator, rowset = utils.generate_paginator(user_list, request)
-
-    return template('listing/listing_ui',
-        section_title="List blog users",
-        search_context=(search_context['sites'], None),
-        menu=generate_menu('blog_list_users', blog),
-        colset=colsets['blog_users'],
-        paginator=paginator,
-        rowset=rowset,
-        user_list=user_list,
-        **tags.__dict__)
+    return listing(request, blog, blog.users,
+                   'blog_users', 'blog_list_users',
+                   user=user,
+                   tags_data={'blog':blog}
+                   )
 
 
 @transaction
@@ -212,7 +198,7 @@ def blog_new_page(blog_id):
     permission = auth.is_blog_member(user, blog)
 
     tags = template_tags(
-        blog_id=blog.id,
+        blog=blog,
         user=user)
 
     tags.page = Page()
@@ -230,7 +216,7 @@ def blog_new_page(blog_id):
 
     import datetime
 
-    blog_new_page.blog = blog_id
+    blog_new_page.blog = blog
     blog_new_page.user = user
     blog_new_page.publication_date = datetime.datetime.utcnow()
     blog_new_page.basename = ''
@@ -252,7 +238,7 @@ def blog_new_page(blog_id):
     return template('edit/page',
         menu=generate_menu('create_page', blog),
         parent_path=referer,
-        search_context=(search_context['blog'], blog),
+        # search_context=(search_context['blog'], blog),
         html_editor_settings=html_editor_settings,
         sidebar=sidebar.render_sidebar(
             panel_set='edit_page',
@@ -295,17 +281,12 @@ def blog_previews_list(blog_id):
 
     previews = blog.fileinfos.where(FileInfo.preview_path.is_null(False))
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'blog_previews',
-            'menu':'blog_previews',
-            'context_object':blog,
-            'item_list_object':previews,
-        },
-        {'blog_id':blog.id},
-        msg_float=False
-        )
+    return listing(request, blog, previews,
+               'blog_previews', 'blog_previews',
+               user=user,
+               msg_float=False,
+               tags_data={'blog':blog}
+               )
 
 @transaction
 def blog_delete_preview(blog_id, preview_id):
@@ -342,16 +323,12 @@ def blog_delete_preview(blog_id, preview_id):
         close=False,
         )
 
-
-
-
     return template('listing/report',
         menu=generate_menu('blog_delete_preview', f),
         icons=icons,
         msg_float=False,
-        search_context=(search_context['blog'], blog),
+        # search_context=(search_context['blog'], blog),
         **tags.__dict__)
-
 
 
 @transaction
@@ -360,29 +337,20 @@ def blog_categories(blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
-    reason = auth.check_category_editing_lock(blog, True)
+    errormsg = auth.check_category_editing_lock(blog, True)
 
     action = (
         ('Create new category',
         '{}/blog/{}/newcategory'.format(BASE_URL, blog.id)),
         )
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'categories',
-            'menu':'blog_manage_categories',
-            'search_ui':'blog',
-            'context_object':blog,
-            'search_context':blog_search_results,
-            'item_list_object':blog.categories.select(),
-            'action_button':action,
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {'blog_id':blog.id,
-            'status':reason}
-        )
+    return listing(request, blog, blog.categories.select(),
+                   'categories', 'blog_manage_categories',
+                   user=user,
+                   errormsg=errormsg,
+                   tags_data={'blog':blog}
+                   )
+
 
 @transaction
 def blog_pages_in_category(blog_id, category_id):
@@ -390,31 +358,19 @@ def blog_pages_in_category(blog_id, category_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_editor(user, blog)
-    reason = auth.check_category_editing_lock(blog, True)
+    errormsg = auth.check_category_editing_lock(blog, True)
 
     from core.models import Category
     category = Category.load(category_id, blog_id=blog.id)
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'blog',
-            'menu':'blog_pages_in_category',
-            'search_ui':'blog_pages_in_category',
-            'context_object':category,
-            'search_context':blog_pages_in_category_search_results,
-            'item_list_object':category.pages,
-            # 'action_button':action,
-            # 'action_button':action,
-            # 'list_actions':list_actions
-        },
-        {'blog_id':blog.id,
-            'status':reason}
-        )
-
-
-
-
+    return listing(request, category, category.pages,
+                   'blog', 'blog_pages_in_category',
+                   user=user,
+                   errormsg=errormsg,
+                   search_ui='blog_pages_in_category',
+                   search_context=blog_pages_in_category_search_results,
+                   tags_data={'blog':blog}
+                   )
 
 @transaction
 def blog_templates(blog_id):
@@ -488,7 +444,7 @@ def blog_templates(blog_id):
         icons=icons,
         section_title="Templates",
         publishing_mode=publishing_mode,
-        search_context=(search_context['blog_templates'], blog),
+        search_context=(search_contexts['blog_templates'], blog),
         menu=generate_menu('blog_manage_templates', blog),
         templates_with_defaults=('Index', 'Page', 'Archive'),
         ** tags.__dict__)
@@ -498,28 +454,22 @@ def blog_select_themes(blog_id):
     user = auth.is_logged_in(request)
     blog = Blog.load(blog_id)
     permission = auth.is_blog_designer(user, blog)
-    reason = auth.check_template_lock(blog, True)
+    errormsg = auth.check_template_lock(blog, True)
 
-    def add_blog_reference(rowset):
-        for n in rowset:
-            n.blog = blog
-        return rowset
+    class ThemeListing(Theme):
+        @property
+        def blog(self):
+            return blog
+        class Meta:
+            db_table = 'theme'
 
-    return listing(
-        request, user, None,
-        {
-            'colset':'themes',
-            'menu':'blog_manage_themes',
-            'search_ui':'blog',
-            'context_object':blog,
-            'search_context':blog_search_results,
-            'item_list_object':Theme.select().order_by(Theme.id),
-            'rowset_callback':add_blog_reference,
-        },
-        {'blog_id':blog.id,
-            'status':reason,
-            }
-        )
+    return listing(request, blog, ThemeListing.select().order_by(ThemeListing.title),
+                   'themes', 'blog_manage_themes',
+                   user=user,
+                   errormsg=errormsg,
+                   tags_data={'blog':blog}
+                   )
+
 
 @transaction
 def blog_republish(blog_id, pass_id=1, item_id=0):
@@ -625,7 +575,7 @@ def blog_purge(blog_id):
 
     return template('listing/report',
         report=report,
-        search_context=(search_context['blog'], blog),
+        # search_context=(search_context['blog'], blog),
         menu=generate_menu('blog_purge', blog),
         msg_float=False,
         **template_tags(blog_id=blog.id,
@@ -653,18 +603,11 @@ def blog_queue(blog_id, status=None):
             user=user,
             status=status)
 
-    return listing(
-        request, user, status,
-        {
-            'colset':'queue',
-            'menu':'blog_menu',
-            'search_ui':'blog',
-            'context_object':blog,
-            'search_context':(search_context['blog_queue'], blog),
-            'item_list_object':tags.queue,
-        },
-        {'blog_id':blog.id}
-        )
+    return listing(request, blog, tags.queue,
+                   'queue', 'blog_menu',
+                   user=user,
+                   tags_data={'blog':blog}
+                   )
 
 @transaction
 def blog_break_queue(blog_id):
@@ -686,7 +629,7 @@ and may still be processed on the next queue run.</p>
 <p><a href="{}/blog/{}/queue/clear"><button class="btn">Clear the queue</button></a> to remove them entirely.</p>
 '''.format(BASE_URL, blog_id),
         title='Publishing queue progress',
-        search_context=(search_context['blog_queue'], blog),
+        # search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
@@ -778,7 +721,7 @@ def blog_settings_output(tags):
     path = '/blog/{}/settings/'.format(tags.blog.id)
 
     return template('ui/ui_blog_settings',
-        search_context=(search_context['blog'], tags.blog),
+        # search_context=(search_context['blog'], tags.blog),
         timezones=timezones,
         menu=generate_menu('blog_settings', tags.blog),
         nav_tabs=(
@@ -817,7 +760,7 @@ def blog_publish(blog_id):
         action_url="../../blog/{}/publish/progress/{}".format(blog.id,
                                                               queue_length),
         title='Publishing queue progress',
-        search_context=(search_context['blog_queue'], blog),
+        # search_context=(search_context['blog_queue'], blog),
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
@@ -956,7 +899,7 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 
     return template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
-        search_context=(search_context['blog'], blog),
+        # search_context=(search_context['blog'], blog),
         theme_title=blog.theme.title + " (Revised {})".format(datetime.datetime.now()),
         theme_description=blog.theme.description,
         msg_float=False,
@@ -1017,7 +960,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 
     return template('listing/report',
         menu=generate_menu('blog_apply_theme', [blog, theme]),
-        search_context=(search_context['blog'], blog),
+        # search_context=(search_context['blog'], blog),
         msg_float=False,
         **tags.__dict__)
 
@@ -1284,7 +1227,7 @@ def blog_import (blog_id):
     else:
         tpl = template('ui/ui_blog_import',
             menu=generate_menu('blog_import', blog),
-            search_context=(search_context['blog'], blog),
+            # search_context=(search_context['blog'], blog),
             import_path=import_path,
             **tags.__dict__)
 

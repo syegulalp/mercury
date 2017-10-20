@@ -4,7 +4,7 @@ from core.libs.bottle import template, request, response, redirect
 from core.models import template_tags, User, Page
 from core.log import logger
 from core import utils, auth
-from . import search_context
+from . import search_contexts
 from core.menu import generate_menu
 
 @transaction
@@ -125,7 +125,7 @@ def main_ui():
     your_blogs = user.blogs()
 
     tpl = template('ui/ui_dashboard',
-        search_context=(search_context['sites'], None),
+        search_context=(search_contexts['sites'], None),
         menu=generate_menu('system_menu', None),
         recent_pages=recent_pages,
         your_blogs=your_blogs,

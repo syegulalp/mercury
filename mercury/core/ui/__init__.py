@@ -19,7 +19,7 @@ save_action = (
     )
 
 
-search_context = (
+search_contexts = (
     {'blog':
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id),
             'form_description':'Search entries:',
@@ -75,41 +75,38 @@ search_context = (
     }
     )
 
-def listing(request, user, errormsg, context, tags_data,
-    colset_source=colsets, search_context_source=search_context,
-    msg_float=True):
+def listing(request, context_object, item_list_object, colset, menu,
+            user=None, rowset_callback=None, errormsg=None, search_ui=None,
+            search_context=None, tags_data={}, msg_float=True):
+
     '''
     Listing framework.
     Used to present a searchable and sortable list of objects.
+
+    request
+    The current request object.
+
+    context_object
+    An object that provides context for the listing,
+    so that it can be used to generate action buttons, etc.
+    For instance, for a list of pages in a blog, it's the blog object.
+    Example: blog
+
+    item_list_object
+    The data object from which we derive the actual listing.
+    Example: blog.pages
+
+    search_ui
+    The description of the search context to use for the search UI.
+    Example: 'blog'
+
+    search_context
+    The search context object to use to produce search results
+    Example: blog_search_results
+
     '''
 
-    if 'search_ui' in context:
-
-        search_ui = context['search_ui']
-        # The description of the search context to use for the search UI.
-        # Example: 'blog'
-
-        search_context_obj = context['search_context']
-        # The search context object to use to produce search results.
-        # Example: blog_search_results
-
-    context_object = context['context_object']
-    # An object that provides context for the listing,
-    # so that it can be used to generate action buttons, etc.
-    # For instance, for a list of pages in a blog, it's the blog object.
-    # Example: blog
-
-    colset = colset_source[context['colset']]
-    # The UI column set to use for the listing.
-    # Example: 'blog'
-
-    menu = context['menu']
-    # The menu set to use for the listing.
-    # Example: 'blog_menu'
-
-    item_list_object = context['item_list_object']
-    # The data object from which we derive the actual listing.
-    # Example: blog.pages
+    colset = colsets[colset]
 
     action_button = colset.get('buttons', None)
     # Any action button to be displayed.
@@ -129,7 +126,7 @@ def listing(request, user, errormsg, context, tags_data,
         list_actions = s
 
     try:
-        items_searched, search = search_context_obj(request, context_object)
+        items_searched, search = search_context(request, context_object)
     except (UnboundLocalError, KeyError, ValueError, TypeError):
         items_searched, search = None, None
 
@@ -151,25 +148,19 @@ def listing(request, user, errormsg, context, tags_data,
 
     paginator, rowset = utils.generate_paginator(item_list, request)
 
-    tags = template_tags(
-        search=search,
-        user=user,
-        **tags_data
-        )
+    tags = template_tags(search=search, user=user, **tags_data)
 
     tags.status = errormsg if errormsg is not None else None
 
     # Use 'rowset_callback' to supply a function that can be used
     # to transform the rowset before display
 
-    callback = context.get('rowset_callback', None)
-    if callback is not None:
-        rowset = callback(rowset)
+    if rowset_callback is not None:
+        rowset = rowset_callback(rowset)
 
-    if 'search_ui' in context:
-        tags.search_context = (search_context_source[search_ui], context_object)
+    if search_ui is not None:
+        tags.search_context = (search_contexts[search_ui], context_object)
 
-    # should this object be named search_ui instead? seems more accurate
 
     # also, if we have template_tags handle search objs,
     # perhaps we should centralize that there instead of
@@ -177,7 +168,6 @@ def listing(request, user, errormsg, context, tags_data,
 
     # TODO: fix inconsistencies where we parse for nonexistent object vs.
     # object set to None in templates. We should pick a standard behavior
-
 
     tpl = _tpl('listing/listing_ui',
         paginator=paginator,

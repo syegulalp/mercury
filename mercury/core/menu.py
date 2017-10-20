@@ -674,8 +674,8 @@ colsets = {
         )
     },
     'site': {
-        'none': 'No pages found',
-        'actions': (),
+        'none': 'No blogs found',
+        'buttons': (('Create new blog', lambda x:'{}/site/{}/blog/new'.format(BASE_URL, x.id)),),
         'colset': (
             {'field': 'name',
              'label_style': 'width:25%',
