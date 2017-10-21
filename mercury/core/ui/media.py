@@ -13,7 +13,7 @@ from core.libs.bottle import (template, request)
 
 from settings import BASE_URL
 
-from . import listing, status_badge, search_contexts
+from . import listing, status_badge, search_contexts, report
 
 @transaction
 def media_list(blog_id):
@@ -162,7 +162,7 @@ def media_delete(blog_id, media_id, confirm='N'):
         media=media,
         user=user)
 
-    report = []
+    # report_txt = []
 
     from core.utils import Status
 
@@ -236,11 +236,15 @@ def media_delete(blog_id, media_id, confirm='N'):
             no=no
             )
 
-    return template('listing/report',
-        menu=generate_menu('blog_delete_media', media),
-        icons=icons,
-        report=report,
-        search_context=(search_contexts['blog_media'], blog),
-        msg_float=False,
-        **tags.__dict__)
+    tags.icons = icons
+
+    return report(tags, 'blog_delete_media', media)
+
+#     return template('listing/report',
+#         menu=generate_menu('blog_delete_media', media),
+#         icons=icons,
+#         #report=report,
+#         search_context=(search_contexts['blog_media'], blog),
+#         msg_float=False,
+#         **tags.__dict__)
 
