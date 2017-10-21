@@ -571,7 +571,7 @@ def blog_purge(blog_id):
 
     tags = template_tags(blog=blog, user=user)
 
-    tags.result = cms.purge_blog(blog)
+    tags.report = cms.purge_blog(blog)
 
     return report(tags, 'blog_purge', blog)
 
