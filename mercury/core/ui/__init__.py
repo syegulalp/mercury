@@ -169,7 +169,7 @@ def listing(request, context_object, item_list_object, colset, menu,
     # TODO: fix inconsistencies where we parse for nonexistent object vs.
     # object set to None in templates. We should pick a standard behavior
 
-    tpl = _tpl('listing/listing_ui',
+    return _tpl('listing/listing_ui',
         paginator=paginator,
         menu=generate_menu(menu, context_object),
         rowset=rowset,
@@ -179,8 +179,6 @@ def listing(request, context_object, item_list_object, colset, menu,
         list_actions=list_actions,
         msg_float=msg_float,
         **tags.__dict__)
-
-    return tpl
 
 def report(tags, menu, obj, msg_float=False):
     return _tpl('listing/report',
