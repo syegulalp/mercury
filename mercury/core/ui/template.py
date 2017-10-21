@@ -10,7 +10,7 @@ from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request, redirect)
 
-from . import search_contexts
+from . import search_contexts, report
 
 common_archive_mappings = (
     ('%Y/%m/{{blog.index_file}}', 'Yearly/monthly archive'),
@@ -233,11 +233,13 @@ from the theme.
 
     tags.status = status
 
-    return template('listing/report',
-        menu=generate_menu('blog_delete_template', tpl),
-        search_context=(search_contexts['blog'], blog),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'blog_delete_template', tpl)
+
+#     return template('listing/report',
+#         menu=generate_menu('blog_delete_template', tpl),
+#         search_context=(search_contexts['blog'], blog),
+#         msg_float=False,
+#         **tags.__dict__)
 
 @transaction
 def template_delete(template_id):
@@ -290,11 +292,13 @@ def template_delete(template_id):
 
     tags.status = status
 
-    return template('listing/report',
-        menu=generate_menu('blog_delete_template', tpl),
-        search_context=(search_contexts['blog'], blog),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'blog_delete_template', tpl)
+
+#     return template('listing/report',
+#         menu=generate_menu('blog_delete_template', tpl),
+#         search_context=(search_contexts['blog'], blog),
+#         msg_float=False,
+#         **tags.__dict__)
 
 
 
