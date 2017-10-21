@@ -181,3 +181,10 @@ def listing(request, context_object, item_list_object, colset, menu,
         **tags.__dict__)
 
     return tpl
+
+def report(tags, menu, obj, msg_float=False):
+    return _tpl('listing/report',
+            menu=generate_menu(menu, obj),
+            msg_float=msg_float,
+            ** tags.__dict__
+            )
