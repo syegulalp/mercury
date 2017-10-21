@@ -1,7 +1,7 @@
 import datetime, time
 
-from core.utils import (create_basename, Status, DATE_FORMAT)
-from core.error import (PageNotChanged, DeletionError,)
+from core.utils import create_basename, Status, DATE_FORMAT
+from core.error import PageNotChanged, DeletionError
 from core.libs.bottle import request
 
 from core.models import (Page, TagAssociation, Tag,

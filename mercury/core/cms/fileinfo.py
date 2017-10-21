@@ -1,7 +1,7 @@
 import os, datetime
 
-from core.utils import (generate_date_mapping)
-from core.error import (ArchiveMappingFormatException, NoArchiveForFileInfo)
+from core.utils import generate_date_mapping
+from core.error import ArchiveMappingFormatException, NoArchiveForFileInfo
 
 from core.models import (Page, TemplateMapping, TagAssociation, template_type,
     Category, PageCategory, FileInfo, template_tags, User,

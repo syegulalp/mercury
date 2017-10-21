@@ -1,13 +1,12 @@
 import os
 
-from core.utils import (generate_date_mapping, date_format)
-from core.error import (NoArchiveForFileInfo)
+from core.utils import generate_date_mapping, date_format
+from core.error import NoArchiveForFileInfo
 from core.log import logger
 from core.libs.peewee import OperationalError
 
 from core.models import (Page, Template, TemplateMapping, template_type,
-    FileInfo, template_tags,
-    Struct, publishing_mode, Queue)
+    FileInfo, template_tags, Struct, publishing_mode, Queue)
 
 from .fileinfo import (generate_page_tags, delete_fileinfo_files, build_pages_fileinfos,
     build_archives_fileinfos, build_indexes_fileinfos, eval_paths)
