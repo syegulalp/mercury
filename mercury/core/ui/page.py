@@ -4,7 +4,7 @@ from core.cms.cms import save_page
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu
-from . import search_contexts, status_badge, save_action
+from . import search_contexts, status_badge, save_action, report
 
 from core.models import (Media,
     template_tags, Page, PageRevision, Template,
@@ -211,13 +211,15 @@ def page_delete(page_id, confirm):
                 no=no
             )
 
-    tpl = template('listing/report',
-        menu=generate_menu('blog_delete_page', page),
-        search_context=(search_contexts['sites'], None),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'blog_delete_page', page)
 
-    return tpl
+#     tpl = template('listing/report',
+#         menu=generate_menu('blog_delete_page', page),
+#         search_context=(search_contexts['sites'], None),
+#         msg_float=False,
+#         **tags.__dict__)
+#
+#     return tpl
 
 @transaction
 def page_preview_core(page_id):
