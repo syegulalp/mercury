@@ -1,4 +1,4 @@
-from core import (auth, utils)
+from core import auth, utils
 from core.cms import cms, queue, fileinfo
 from core.ui import sidebar
 from core.log import logger
@@ -12,7 +12,7 @@ from core.models import (Struct, Site,
     TemplateRevision, FileInfo)
 
 from core.models.transaction import transaction
-from core.libs.bottle import (template, request, response)
+from core.libs.bottle import template, request, response
 from settings import BASE_URL, RETRY_INTERVAL
 from . import listing, status_badge, save_action, search_contexts, report
 
@@ -131,6 +131,7 @@ def blog_create_save(site_id):
     else:
         tags = template_tags(user=user, site=site,
             blog=new_blog)
+
         status = utils.Status(
             type='success',
             message='''
