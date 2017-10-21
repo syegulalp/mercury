@@ -4,7 +4,7 @@ from core.models import (Blog, template_tags, Category, PageCategory)
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request, redirect)
 from settings import (BASE_URL)
-from . import search_contexts
+from . import search_contexts, report
 
 def new_category(blog_id):
 
@@ -124,14 +124,18 @@ def delete_category(blog_id, category_id, confirm='N'):
             no=no
             )
 
-    tpl = template('listing/report',
-        category=category,
-        menu=generate_menu('blog_delete_category', category),
-        search_context=(search_contexts['sites'], None),
-        msg_float=False,
-        **tags.__dict__)
+    tags.category = category
 
-    return tpl
+    return report(tags, 'blog_delete_category', category)
+
+#     tpl = template('listing/report',
+#         category=category,
+#         menu=generate_menu('blog_delete_category', category),
+#         search_context=(search_contexts['sites'], None),
+#         msg_float=False,
+#         **tags.__dict__)
+#
+#     return tpl
 
 @transaction
 def edit_category(blog_id, category_id):
