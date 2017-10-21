@@ -5,7 +5,7 @@ from core.models import (Blog, Media,
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request)
 from core.search import tag_search_results, tag_in_blog_search_results
-from . import search_contexts, listing
+from . import search_contexts, listing, report
 from core.utils import url_unescape, Status
 
 def tag_recently_modified(tag):
@@ -203,13 +203,15 @@ Tag <b>{}</b> was successfully deleted from blog <b>{}</b>.</p>{}
         user=user)
     tags.status = status
 
-    tpl = template('listing/report',
-        menu=generate_menu('blog_delete_tag', tag),
-        search_context=(search_contexts['sites'], None),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'blog_delete_tag', tag)
 
-    return tpl
+#     tpl = template('listing/report',
+#         menu=generate_menu('blog_delete_tag', tag),
+#         search_context=(search_contexts['sites'], None),
+#         msg_float=False,
+#         **tags.__dict__)
+#
+#     return tpl
 
 @transaction
 def tag_get(blog_id, tag_name):
