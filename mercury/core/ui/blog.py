@@ -14,7 +14,7 @@ from core.models import (Struct, Site,
 from core.models.transaction import transaction
 from core.libs.bottle import (template, request, response)
 from settings import BASE_URL, RETRY_INTERVAL
-from . import listing, status_badge, save_action, search_contexts
+from . import listing, status_badge, save_action, search_contexts, report
 
 import time
 
@@ -140,12 +140,8 @@ Blog <b>{}</b> was successfully created. You can <a href="{}/blog/{}/newpage">st
                 BASE_URL, new_blog.id)
             )
         tags.status = status
-        return template('listing/report',
-            # search_context=(search_context['sites'], None),
-            menu=generate_menu('site_create_blog', site),
-            msg_float=False,
-            ** tags.__dict__
-            )
+
+        return report(tags, 'site_create_blog', site)
 
 
 # TODO: make this universal to create a user for both a blog and a site
@@ -323,12 +319,14 @@ def blog_delete_preview(blog_id, preview_id):
         close=False,
         )
 
-    return template('listing/report',
-        menu=generate_menu('blog_delete_preview', f),
-        icons=icons,
-        msg_float=False,
-        # search_context=(search_context['blog'], blog),
-        **tags.__dict__)
+    return report(tags, blog_delete_preview, f)
+
+#     return template('listing/report',
+#         menu=generate_menu('blog_delete_preview', f),
+#         icons=icons,
+#         msg_float=False,
+#          search_context=(search_context['blog'], blog),
+#         **tags.__dict__)
 
 
 @transaction
@@ -571,15 +569,18 @@ def blog_purge(blog_id):
 
     permission = auth.is_blog_publisher(user, blog)
 
-    report = cms.purge_blog(blog)
+    tags = template_tags(blog=blog, user=user)
 
-    return template('listing/report',
-        report=report,
-        # search_context=(search_context['blog'], blog),
-        menu=generate_menu('blog_purge', blog),
-        msg_float=False,
-        **template_tags(blog_id=blog.id,
-            user=user).__dict__)
+    tags.result = cms.purge_blog(blog)
+
+    return report(tags, 'blog_purge', blog)
+
+#     return template('listing/report',
+#         report=report,
+#          search_context=(search_context['blog'], blog),
+#         menu=generate_menu('blog_purge', blog),
+#         msg_float=False,
+#         **
 
 @transaction
 def blog_queue_clear(blog_id):
@@ -897,6 +898,9 @@ Theme <b>{}</b> was successfully saved from blog <b>{}</b>.
 
     import datetime
 
+    # TODO: eventually this will be migrated to the report function
+    # but it's a little complex for that now due to the funtion logic
+
     return template(save_tpl,
         menu=generate_menu('blog_save_theme', blog),
         # search_context=(search_context['blog'], blog),
@@ -958,11 +962,13 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 
     tags.status = status if reason is None else reason
 
-    return template('listing/report',
-        menu=generate_menu('blog_apply_theme', [blog, theme]),
-        # search_context=(search_context['blog'], blog),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'blog_apply_theme', [blog, theme])
+
+#     return template('listing/report',
+#         menu=generate_menu('', ),
+#         # search_context=(search_context['blog'], blog),
+#         msg_float=False,
+#         **tags.__dict__)
 
 # @transaction
 def blog_import (blog_id):
