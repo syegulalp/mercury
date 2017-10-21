@@ -8,7 +8,7 @@ from core.models import (
 from core.models.transaction import transaction
 
 from core.libs.bottle import (template, request)
-from . import search_contexts, listing
+from . import search_contexts, listing, report
 
 @transaction
 def system_info():
@@ -129,19 +129,21 @@ def system_theme_data(theme_id):
 
     tags = template_tags(user=user)
 
-    report = ['Theme title: {}'.format(theme.title),
+    tags.report = ['Theme title: {}'.format(theme.title),
         'Theme description: {}'.format(theme.description),
         'Theme directory: {}'.format(theme.json),
         '<hr>'
         ]
 
-    tpl = template('listing/report',
-        search_context=(search_contexts['sites'], None),
-        menu=generate_menu('system_theme_data', theme),
-        report=report,
-        **tags.__dict__)
+    return report(tags, 'system_theme_data', theme)
 
-    return tpl
+#     tpl = template('listing/report',
+#         search_context=(search_contexts['sites'], None),
+#         menu=generate_menu('system_theme_data', theme),
+#         report=report,
+#         **tags.__dict__)
+#
+#     return tpl
 
 @transaction
 def system_list_themes():
@@ -223,10 +225,12 @@ Deleting this theme may <i>break these blogs entirely!</i></p>
 
     tags.status = status
 
-    tpl = template('listing/report',
-        menu=generate_menu('system_delete_theme', theme),
-        search_context=(search_contexts['sites'], None),
-        msg_float=False,
-        **tags.__dict__)
+    return report(tags, 'system_delete_theme', theme)
 
-    return tpl
+#     tpl = template('listing/report',
+#         menu=generate_menu('system_delete_theme', theme),
+#         search_context=(search_contexts['sites'], None),
+#         msg_float=False,
+#         **tags.__dict__)
+#
+#     return tpl
