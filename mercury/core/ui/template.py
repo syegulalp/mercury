@@ -1,4 +1,4 @@
-from core import (auth, utils)
+from core import auth, utils
 from core.ui import sidebar
 from core.menu import generate_menu, icons
 
@@ -8,7 +8,7 @@ from core.models import (Blog,
 
 from core.models.transaction import transaction
 
-from core.libs.bottle import (template, request, redirect)
+from core.libs.bottle import template, request, redirect
 
 from . import search_contexts, report
 

@@ -1,4 +1,4 @@
-from core import (auth, utils)
+from core import auth, utils
 from core.cms import fileinfo, generate_page_text, queue, save_action_list
 from core.cms.cms import save_page
 from core.ui import sidebar
@@ -12,7 +12,7 @@ from core.models import (Media,
 
 from core.models.transaction import transaction
 
-from core.libs.bottle import (template, request, response)
+from core.libs.bottle import template, request, response
 
 from settings import BASE_URL
 

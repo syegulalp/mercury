@@ -1,5 +1,5 @@
 from core.models.transaction import transaction
-from core.libs.bottle import (template)
+from core.libs.bottle import template
 
 def kv_response(object_name, object_type, object_identifier, object_id):
     # from core.ui_kv import kv_ui

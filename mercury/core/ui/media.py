@@ -1,4 +1,4 @@
-from core import (auth, utils)
+from core import auth, utils
 from core.ui import sidebar
 from core.log import logger
 from core.menu import generate_menu, icons
@@ -9,7 +9,7 @@ from core.models import (Struct,
 
 from core.models.transaction import transaction
 
-from core.libs.bottle import (template, request)
+from core.libs.bottle import template, request
 
 from settings import BASE_URL
 

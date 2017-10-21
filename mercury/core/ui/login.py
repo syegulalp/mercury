@@ -1,5 +1,5 @@
 from core.models.transaction import transaction
-from settings import (BASE_URL, SECRET_KEY)
+from settings import BASE_URL, SECRET_KEY
 from core.libs.bottle import template, request, response, redirect
 from core.models import template_tags, User, Page
 from core.log import logger

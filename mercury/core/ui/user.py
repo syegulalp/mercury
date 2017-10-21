@@ -1,7 +1,7 @@
 from core.models.transaction import transaction
-from core.libs.bottle import (request, template, redirect)
+from core.libs.bottle import request, template, redirect
 from core import auth, utils
-from core.models import (template_tags, User, Site, Blog)
+from core.models import template_tags, User, Site, Blog
 from core.menu import generate_menu
 from . import search_contexts, listing
 

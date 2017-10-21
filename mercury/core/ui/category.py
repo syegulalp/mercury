@@ -1,9 +1,9 @@
-from core import (auth)
+from core import auth
 from core.menu import generate_menu
-from core.models import (Blog, template_tags, Category, PageCategory)
+from core.models import Blog, template_tags, Category, PageCategory
 from core.models.transaction import transaction
-from core.libs.bottle import (template, request, redirect)
-from settings import (BASE_URL)
+from core.libs.bottle import template, request, redirect
+from settings import BASE_URL
 from . import search_contexts, report
 
 def new_category(blog_id):

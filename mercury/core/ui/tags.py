@@ -1,9 +1,9 @@
-from core import (auth)
+from core import auth
 from core.menu import generate_menu
 from core.models import (Blog, Media,
     template_tags, Page, Tag)
 from core.models.transaction import transaction
-from core.libs.bottle import (template, request)
+from core.libs.bottle import template, request
 from core.search import tag_search_results, tag_in_blog_search_results
 from . import search_contexts, listing, report
 from core.utils import url_unescape, Status

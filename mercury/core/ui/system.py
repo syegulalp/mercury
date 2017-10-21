@@ -7,7 +7,7 @@ from core.models import (
 
 from core.models.transaction import transaction
 
-from core.libs.bottle import (template, request)
+from core.libs.bottle import template, request
 from . import search_contexts, listing, report
 
 @transaction
