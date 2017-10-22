@@ -539,7 +539,7 @@ colsets = {
              },
             {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-success pull-right">Apply theme</span></a>'.format(
+             'format_raw':lambda x:'<a href="{}"><span class="label label-success">Apply theme</span></a>'.format(
                  '{}/blog/{}/theme/{}/apply'.format(BASE_URL, x.blog.id, x.id),)
              }
         ]
@@ -561,7 +561,8 @@ colsets = {
              },
              {'field': '',
              'label': '',
-             'format_raw':lambda x:'<a href="{}"><span class="label label-danger pull-right">Delete theme</span></a>'.format(
+             'colwidth': '1%',
+             'format_raw':lambda x:'<a href="{}"><span class="label label-danger">Delete theme</span></a>'.format(
                  '{}/system/theme/{}/delete'.format(BASE_URL, x.id),)
              }
         ]
@@ -571,10 +572,12 @@ colsets = {
         'colset': [
             {'field': 'tag',
              'label': 'Tag',
+             'colwidth': '99%',
              'format_raw': lambda x: x.for_listing
              },
             {'field': 'in_pages',
              'label': 'Pages',
+             'colwidth': '1%',
              'format_raw': lambda x: "<a href='{}/blog/{}/tag/{}/pages'>{}</a>".format(
                  BASE_URL,
                  x.blog.id,
@@ -634,6 +637,7 @@ colsets = {
              },
              {'field':'default',
              'label':'Default',
+             'colwidth': '1%',
              'format_raw':lambda x:'<span class="label label-warning">Default blog category</span>' if x.default is True else ''
              }
         ]
