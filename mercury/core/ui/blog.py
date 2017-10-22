@@ -320,7 +320,7 @@ def blog_delete_preview(blog_id, preview_id):
         close=False,
         )
 
-    return report(tags, blog_delete_preview, f)
+    return report(tags, 'blog_delete_preview', f)
 
 #     return template('listing/report',
 #         menu=generate_menu('blog_delete_preview', f),
