@@ -8,14 +8,17 @@ from core.libs.bottle import redirect, response, _stderr
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+
 def reboot():
     import os, signal
     os.kill(os.getpid(), signal.SIGTERM)
+
 
 def default(obj):
     import datetime
     if isinstance(obj, datetime.datetime):
         return datetime.datetime.strftime(obj, DATE_FORMAT)
+
 
 def json_dump(obj):
     import json
@@ -29,6 +32,7 @@ def json_dump(obj):
 # TODO: move this out of here and into a more appropriate place
 # also, use a proper exception catching mechanism!
 
+
 def field_error(e):
     _ = re.compile('UNIQUE constraint failed: (.*)$')
     m = _.match(str(e))
@@ -41,14 +45,17 @@ URLs for blogs must be unique.
 '''}[m.group(1)]
     return error
 
+
 def xml_escape(string):
     string = string.replace("&", "&amp;")
     return string
+
 
 def quote_escape(string):
     string = string.replace("'", "&#39")
     string = string.replace('"', "&#34")
     return string
+
 
 def preview_file(identifier, extension):
     import zlib
@@ -58,6 +65,7 @@ def preview_file(identifier, extension):
         extension
         )
     return filename
+
 
 def verify_path(path):
     '''
@@ -74,6 +82,7 @@ def verify_path(path):
 
     pass
 
+
 def is_blank(string):
     if string is None:
         return True
@@ -83,11 +92,14 @@ def is_blank(string):
         return False
     return True
 
+
 def url_escape(url):
     return urllib.parse.quote_plus(url)
 
+
 def url_unescape(url):
     return urllib.parse.unquote_plus(url)
+
 
 def safe_redirect(url):
     url_unquoted = urllib.parse.unquote_plus(url)
@@ -96,10 +108,12 @@ def safe_redirect(url):
     else:
         redirect(BASE_URL)
 
+
 def _stddebug_():
     from core.boot import settings
     _stddebug = lambda x: _stderr(x) if (settings.DEBUG_MODE is True) else lambda x: None  # @UnusedVariable
     return _stddebug
+
 
 class Status:
     '''
@@ -122,7 +136,6 @@ class Status:
         if self.type not in ('success', 'info') and 'no_sure' not in ka:
             self.message += "<p><b>Are you sure you want to do this?</b></p>"
 
-
         if self.type in self.status_types:
             self.icon = self.status_types[self.type]
 
@@ -139,6 +152,7 @@ class Status:
 def logout_nonce(user):
     return csrf_hash(str(user.id) + str(user.last_login) + 'LOGOUT')
 
+
 def csrf_hash(csrf):
     '''
     Generates a CSRF token value, by taking an input and generating a SHA-256 hash from it,
@@ -154,15 +168,18 @@ def csrf_hash(csrf):
 
     return (encrypted_csrf)
 
+
 def csrf_tag(csrf):
     '''
     Generates a hidden input field used to carry the CSRF token for form submissions.
     '''
     return "<input type='hidden' name='csrf' id='csrf' value='{}'>".format(csrf_hash(csrf))
 
+
 def string_to_date(date_string):
     import datetime
     return datetime.datetime.strptime(date_string, DATE_FORMAT)
+
 
 def date_format(date_time):
     '''
@@ -182,19 +199,22 @@ def utf8_escape(input_string):
     '''
     return bytes(input_string, 'iso-8859-1').decode('utf-8')
 
-def html_escape(input_string):
+
+def html_escape(input_string, quote=True):
     '''
     Used for returning text from the server that might have HTML that needs escaping,
     such as a status message that might have spurious HTML in it (e.g., a page title).
     '''
-    return html.escape(str(input_string))
+    return html.escape(str(input_string), quote)
 
 # http://stackoverflow.com/a/517974
+
 
 def remove_accents(input_str):
     import unicodedata
     nfkd_form = unicodedata.normalize('NFKD', input_str)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
 
 def create_basename_core(basename):
 
@@ -213,6 +233,7 @@ def create_basename_core(basename):
     basename = urllib.parse.quote_plus(basename)
 
     return basename
+
 
 def create_basename(input_string, blog):
     '''
@@ -246,6 +267,7 @@ def create_basename(input_string, blog):
         n += 1
         basename_test = basename + "-" + str(n)
 
+
 def trunc(string, length=128):
     '''
     Truncates a string with ellipses.
@@ -256,7 +278,9 @@ def trunc(string, length=128):
     string = (string[:length] + ' ...') if len(string) > length else string
     return string
 
+
 breaks_list = ['/', '.', '-', '_']
+
 
 def breaks(string):
     '''
@@ -269,6 +293,7 @@ def breaks(string):
         string = string.replace(n, n + '<wbr>')
 
     return string
+
 
 def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
 
@@ -295,10 +320,10 @@ def generate_paginator(obj, request, items_per_page=ITEMS_PER_PAGE):
     paginator['page_num'] = page_num
     paginator['items_per_page'] = items_per_page
 
-    obj_list = obj.naive().paginate(page_num, items_per_page)
+    # obj_list = obj.naive().paginate(page_num, items_per_page)
+    obj_list = obj.paginate(page_num, items_per_page)
 
     return paginator, obj_list
-
 
 
 def generate_date_mapping(date_value, tags, path_string, do_eval=True):
@@ -321,6 +346,7 @@ def generate_date_mapping(date_value, tags, path_string, do_eval=True):
 
     return path_string
 
+
 def encrypt_password(password, key=None):
 
     if key is None:
@@ -339,12 +365,15 @@ def encrypt_password(password, key=None):
 
     return encrypted_password
 
+
 def memoize(f):
     '''
     Memoization decorator for a function taking one or more arguments.
     '''
+
     # pinched from http://code.activestate.com/recipes/578231-probably-the-fastest-memoization-decorator-in-the-/
     class memodict(dict):
+
         def __getitem__(self, *key):
             return dict.__getitem__(self, key)
 
@@ -354,8 +383,10 @@ def memoize(f):
 
     return memodict().__getitem__
 
+
 def memoize_delete(obj, item):
     obj.__self__.__delitem__(item)
+
 
 def _iter(item):
     try:
@@ -382,9 +413,11 @@ def raise_request_limit():
     import settings
     bottle.BaseRequest.MEMFILE_MAX = settings.MAX_REQUEST
 
+
 def disable_protection():
     response.set_header('Frame-Options', '')
     # response.set_header('Content-Security-Policy', '')
+
 
 def action_button(label, url):
     action = "<a href='{}'><button type='button' class='btn btn-xs'>{}</button></a>".format(
@@ -394,9 +427,11 @@ def action_button(label, url):
 
     return action
 
+
 # from settings import (APPLICATION_PATH, EXPORT_FILE_PATH, DB)
 from core.libs.playhouse.dataset import DataSet
 import os
+
 
 def _write(string):
     with open('static/output.html', 'a') as f:
@@ -404,6 +439,7 @@ def _write(string):
 
 # write to
 # to fetch: http://www.ioncannon.net/programming/1506/range-requests-with-ajax/
+
 
 def export_data():
     from settings import DB
@@ -432,6 +468,7 @@ def export_data():
     # by way of a query:
     # peewee_users = db['user'].find(favorite_orm='peewee')
     # db.freeze(peewee_users, format='json', filename='peewee_users.json')
+
 
 def import_data():
     from settings import DB
@@ -485,6 +522,7 @@ def import_data():
         DB.recreate_indexes()
         n.append("Import process ended. <a href='{}'>Click here to continue.</a>".format(BASE_URL))
     return '<p>'.join(n)
+
 
 def fprint(x):
     raise Exception(x)

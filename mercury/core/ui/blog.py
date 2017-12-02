@@ -20,6 +20,7 @@ import time
 
 new_page_submission_fields = ('title', 'text', 'tag_text', 'excerpt')
 
+
 @transaction
 def blog(blog_id, errormsg=None):
 
@@ -126,7 +127,6 @@ def blog_create_save(site_id):
             timezones=pytz.all_timezones,
             ** tags.__dict__
             )
-
 
     else:
         tags = template_tags(user=user, site=site,
@@ -269,6 +269,7 @@ def blog_new_page_save(blog_id):
 
     return response
 
+
 @transaction
 def blog_previews_list(blog_id):
 
@@ -284,6 +285,7 @@ def blog_previews_list(blog_id):
                msg_float=False,
                tags_data={'blog':blog}
                )
+
 
 @transaction
 def blog_delete_preview(blog_id, preview_id):
@@ -371,6 +373,7 @@ def blog_pages_in_category(blog_id, category_id):
                    tags_data={'blog':blog}
                    )
 
+
 @transaction
 def blog_templates(blog_id):
     '''
@@ -394,7 +397,6 @@ def blog_templates(blog_id):
         (Template.blog == blog)
         ).order_by(Template.title)
 
-
     index_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.index)
 
@@ -409,6 +411,9 @@ def blog_templates(blog_id):
 
     media_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.media)
+
+    code_templates = template_list.select(Template, TemplateMapping).where(
+        Template.template_type == template_type.code)
 
     system_templates = template_list.select(Template, TemplateMapping).where(
         Template.template_type == template_type.system)
@@ -434,6 +439,9 @@ def blog_templates(blog_id):
         {'title':'Media Templates',
         'type': template_type.media,
         'data':media_templates},
+        {'title':'Code',
+        'type': template_type.code,
+        'data':code_templates},
         {'title':'System Templates',
         'type': template_type.system,
         'data':system_templates},
@@ -448,6 +456,7 @@ def blog_templates(blog_id):
         templates_with_defaults=('Index', 'Page', 'Archive'),
         ** tags.__dict__)
 
+
 @transaction
 def blog_select_themes(blog_id):
     user = auth.is_logged_in(request)
@@ -456,9 +465,11 @@ def blog_select_themes(blog_id):
     errormsg = auth.check_template_lock(blog, True)
 
     class ThemeListing(Theme):
+
         @property
         def blog(self):
             return blog
+
         class Meta:
             db_table = 'theme'
 
@@ -538,6 +549,7 @@ def blog_republish(blog_id, pass_id=1, item_id=0):
 
     return r
 
+
 @transaction
 def blog_republish_batch(blog_id):
     user = auth.is_logged_in(request)
@@ -556,6 +568,7 @@ def blog_republish_batch(blog_id):
         msg = '<b>NOTE:</b> No pages queued for publication.'
 
     return msg
+
 
 @transaction
 def blog_purge(blog_id):
@@ -583,6 +596,7 @@ def blog_purge(blog_id):
 #         msg_float=False,
 #         **
 
+
 @transaction
 def blog_queue_clear(blog_id):
     '''
@@ -593,6 +607,7 @@ def blog_queue_clear(blog_id):
     permission = auth.is_blog_publisher(user, blog)
 
     Queue.clear(blog)
+
 
 @transaction
 def blog_queue(blog_id, status=None):
@@ -610,6 +625,7 @@ def blog_queue(blog_id, status=None):
                    user=user,
                    tags_data={'blog':blog}
                    )
+
 
 @transaction
 def blog_break_queue(blog_id):
@@ -635,6 +651,7 @@ and may still be processed on the next queue run.</p>
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
+
 @transaction
 def blog_settings(blog_id, nav_setting):
 
@@ -650,6 +667,7 @@ def blog_settings(blog_id, nav_setting):
     tags.nav_default = nav_setting
 
     return blog_settings_output(tags)
+
 
 @transaction
 def blog_settings_save(blog_id, nav_setting):
@@ -717,6 +735,7 @@ def blog_settings_save(blog_id, nav_setting):
 
     return blog_settings_output(tags)
 
+
 def blog_settings_output(tags):
     from core.libs import pytz
     timezones = pytz.all_timezones
@@ -731,6 +750,7 @@ def blog_settings_output(tags):
             ('dirs', path + 'dirs', 'Directories')
             ),
         **tags.__dict__)
+
 
 @transaction
 def blog_publish(blog_id):
@@ -766,6 +786,7 @@ def blog_publish(blog_id):
         menu=generate_menu('blog_queue', blog),
         **tags.__dict__)
 
+
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -783,7 +804,6 @@ def blog_publish_progress(blog_id, original_queue_length):
     else:
         queue_count = 0
 
-
     percentage_complete = int((1 - (int(queue_count) / int(original_queue_length))) * 100)
     import settings
     return template('queue/queue_run_include',
@@ -792,6 +812,7 @@ def blog_publish_progress(blog_id, original_queue_length):
             break_path='{}/blog/{}/publish/break'.format(BASE_URL, blog.id),
             settings=settings,
             percentage_complete=percentage_complete)
+
 
 def blog_publish_process(blog_id):
 
@@ -970,6 +991,7 @@ You are about to apply theme <b>{}</b> to blog <b>{}</b>.</p>
 #         # search_context=(search_context['blog'], blog),
 #         msg_float=False,
 #         **tags.__dict__)
+
 
 # @transaction
 def blog_import (blog_id):

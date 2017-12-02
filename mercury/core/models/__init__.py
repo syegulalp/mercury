@@ -16,8 +16,10 @@ from functools import wraps
 
 import settings as _settings
 
+
 class Struct(object):
     pass
+
 
 db = DB_TYPE
 
@@ -45,6 +47,7 @@ template_type.archive = "Archive"
 template_type.media = "Media"
 template_type.include = "Include"
 template_type.system = "System"
+template_type.code = "Code"
 
 publishing_mode = Struct()
 publishing_mode.immediate = "Immediate"
@@ -61,7 +64,6 @@ archive_defaults = {
                            archive_type.archive,
                            archive_type.author)
 }
-
 
 publishing_mode.description = {
         publishing_mode.immediate:{
@@ -115,7 +117,9 @@ for n in page_status_list:
     page_status.modes[n[2]] = n[1]
     page_status.id[n[1]] = n[2]
 
+
 class EnforcedCharField(CharField):
+
     def __init__(self, max_length=255, *args, **kwargs):
         self.max_length = max_length
         super(CharField, self).__init__(*args, **kwargs)
@@ -139,9 +143,11 @@ class EnforcedCharField(CharField):
 
 
 class Pages(SelectQuery):
+
     @property
     def published(self):
         return self.where(Page.status == page_status.published)
+
     def scheduled(self, due=False):
         scheduled_pages = self.where(Page.status == page_status.scheduled)
         if due is True:
@@ -155,6 +161,7 @@ class Pages(SelectQuery):
 #             return n.where(Page.id << page_list)
 #         def has(n, prop, value):
 #             return n.where(getattr(Page, prop).contains(value))
+
 
 class BaseModel(Model):
 
@@ -222,7 +229,6 @@ class BaseModel(Model):
             tags_to_clear_3 = Tag.delete().where(
                 ~(Tag.id << TagAssociation.select(TagAssociation.tag))
             ).execute()
-
 
         kvs_to_clear = KeyValue.delete().where(
             KeyValue.object == cls.__name__,
@@ -338,7 +344,6 @@ class BaseModel(Model):
         return "{} (#{})".format(
             self.for_listing,
             self.id)
-
 
     def kv_list(self):
         object_name = self.__class__.__name__
@@ -491,6 +496,7 @@ class Log(BaseModel):
     date = DateTimeField(default=datetime.datetime.utcnow, index=True)
     level = IntegerField()
     message = TextField()
+
 
 class User(BaseModel):
 
@@ -670,12 +676,14 @@ class SiteBase(BaseModel):
     def max_revisions(self):
         return _settings.MAX_PAGE_REVISIONS
 
+
 class ConnectionBase(BaseModel):
 
     remote_connection = CharField(null=True, default='ftp')
     remote_address = CharField(null=True)
     remote_login = CharField(null=True)
     remote_password = CharField(null=True)
+
 
 class Theme(BaseModel):
     title = TextField()
@@ -743,12 +751,12 @@ class Theme(BaseModel):
     def actions(self, blog=None):
         pass
 
-
     '''
     returns the theme's module for things like action hooks
     .menus()
 
     '''
+
 
 class Site(SiteBase, ConnectionBase):
 
@@ -803,7 +811,6 @@ class Site(SiteBase, ConnectionBase):
 
     def module(self, module_name):
         pass
-
 
     @property
     def users(self):
@@ -906,7 +913,6 @@ class Blog(SiteBase):
                         mapping_obj.template = table_obj.id
                         mapping_obj.save()
 
-
         set_theme = Template.update(theme=theme).where(Template.theme == self.theme)
         set_theme.execute()
 
@@ -915,7 +921,6 @@ class Blog(SiteBase):
         self.save()
 
         cms.purge_blog(self)
-
 
     def archive(self, name):
         '''
@@ -1071,7 +1076,6 @@ class Blog(SiteBase):
                 sort_keys=True,
                 allow_nan=True)
 
-
         return theme
 
     @property
@@ -1178,7 +1182,6 @@ class Blog(SiteBase):
         '''
         pass
 
-
     def page(self, page_id=None, title=None):
         '''
         Select a single page in this blog by either its ID or title.
@@ -1201,14 +1204,7 @@ class Blog(SiteBase):
     def _pages(self):
         return Page.select().where(
             Page.blog == self.id).order_by(
-            Page.publication_date.desc(), Page.id.desc())
-
-#         return Page.select(Page, PageCategory).where(
-#             Page.blog == self.id).join(
-#             PageCategory).where(
-#             PageCategory.primary == True).order_by(
-#             Page.publication_date.desc(), Page.id.desc())
-
+            Page.publication_date.desc())
 
     # TODO: I don't think we need this anymore
     @property
@@ -1357,8 +1353,6 @@ class Blog(SiteBase):
     def theme_actions(self):
         return self.theme.actions(self)
 
-
-
     @property
     def users(self):
 
@@ -1422,6 +1416,7 @@ class Blog(SiteBase):
         else:
             return self
 
+
 class Category(BaseModel):
     blog = ForeignKeyField(Blog, null=False, index=True)
 
@@ -1453,7 +1448,6 @@ class Category(BaseModel):
                 else:
                     s = None
             return '/'.join(path)
-
 
     @property
     def site(self):
@@ -1512,6 +1506,7 @@ class Category(BaseModel):
             return Category(blog=self.blog, title='[Top-level]')
         return Category.get(Category.id == self.parent_category)
 
+
 class DateMod():
 
     def _date_from_utc(self, timezone, field):
@@ -1533,6 +1528,7 @@ class DateMod():
         new_tz = pytz.timezone(tz)
         localized = new_tz.localize(field)
         return localized.astimezone(utc)
+
 
 class Page(BaseModel, DateMod):
 
@@ -1740,7 +1736,6 @@ class Page(BaseModel, DateMod):
 
         return template_mappings
 
-
     @property
     def default_template_mapping(self):
         '''
@@ -1843,16 +1838,12 @@ class Page(BaseModel, DateMod):
     @property
     def categories(self):
 
-        categories = PageCategory.select().where(PageCategory.page == self)
-
-        return categories
+        return PageCategory.select().where(PageCategory.page == self)
 
     @property
     def primary_category(self):
 
-        primary = self.categories.select().where(PageCategory.primary == True).get()
-
-        return primary.category
+        return self.categories.where(PageCategory.primary == True).limit(1).get().category
 
     @property
     def media(self):
@@ -1984,12 +1975,13 @@ Page.blog == self.blog, Page.id != self.id,
                 self.for_log,
                 user.for_log))
 
-
         return (page_save_result, revision_save_result)
 
     revision_fields = {'id':'page'}
 
+
 class RevisionMixin(object):
+
     @classmethod
     def copy(_class, source, **ka):
 
@@ -2003,6 +1995,7 @@ class RevisionMixin(object):
             setattr(instance, target_name, value)
 
         return instance
+
 
 class PageRevision(Page, RevisionMixin):
     # page_id = IntegerField(null=False)
@@ -2020,7 +2013,6 @@ class PageRevision(Page, RevisionMixin):
             return dead_user
         else:
             return saved_by_user
-
 
     def save(self, user, current_revision, is_backup=False, change_note=None):
 
@@ -2049,7 +2041,6 @@ class PageRevision(Page, RevisionMixin):
                 raise PageNotChanged('Page {} was saved but without changes.'.format(
                     current_revision.for_log))
 
-
         if previous_revisions.count() >= max_revisions:
 
             older_revisions = DeleteQuery(PageRevision).where(
@@ -2075,7 +2066,7 @@ class PageCategory(BaseModel):
 
     page = ForeignKeyField(Page, null=False, index=True)
     category = ForeignKeyField(Category, null=False, index=True)
-    primary = BooleanField(default=True)
+    primary = BooleanField(default=True, index=True)
 
     @property
     def next_in_category(self):
@@ -2089,6 +2080,7 @@ class PageCategory(BaseModel):
 
 
 class System(BaseModel):
+
     # we can consolidate this
     def scheduled_pages(self, due=False):
         scheduled_pages = (
@@ -2101,6 +2093,7 @@ class System(BaseModel):
                     Page.publication_date <= datetime.datetime.utcnow())
                 )
         return scheduled_pages
+
 
 class KeyValue(BaseModel):
 
@@ -2151,6 +2144,7 @@ class KeyValue(BaseModel):
 
         return siblings
 
+
 class Tag(BaseModel):
     tag = TextField()
     blog = ForeignKeyField(Blog, null=False, index=True)
@@ -2174,7 +2168,6 @@ class Tag(BaseModel):
         except Tag.DoesNotExist as e:
             raise Tag.DoesNotExist('Tag #{} does not exist'.format(tag_id), e)
         return tag
-
 
     def save(self, *a, **ka):
         if str(self.tag)[:1] == '@':
@@ -2224,7 +2217,6 @@ class Tag(BaseModel):
 
         return (tags_added, tags_existing, all_tags)
 
-
     # @property
     # TODO: allow filtering?
 
@@ -2238,13 +2230,11 @@ class Tag(BaseModel):
 
         return in_pages
 
-
     """
     @property
     def published_pages(self):
         return self.pages.where(Page.status == page_status.published)
     """
-
 
     @property
     def for_listing(self):
@@ -2410,7 +2400,6 @@ class Template(BaseModel, DateMod):
 
         page_save_result = Model.save(self) if backup_only is False else None
 
-
         if revision_save_result is not None:
             logger.info("Template {} edited by user {}.".format(
                 self.for_log,
@@ -2420,7 +2409,6 @@ class Template(BaseModel, DateMod):
             logger.info("Template {} edited by user {} but without changes.".format(
                 self.for_log,
                 user.for_log))
-
 
         return (page_save_result, revision_save_result)
 
@@ -2458,7 +2446,6 @@ class Template(BaseModel, DateMod):
             if self.publishing_mode != publishing_mode.do_not_publish:
                 return self.fileinfos
 
-
     @property
     def default_mapping(self):
         '''
@@ -2486,7 +2473,6 @@ class TemplateRevision(Template, RevisionMixin):
             return dead_user
         else:
             return saved_by_user
-
 
     def save(self, user, current_revision, is_backup=False, change_note=None):
 
@@ -2517,7 +2503,6 @@ class TemplateRevision(Template, RevisionMixin):
                 raise PageNotChanged('Template {} was saved but without changes.'.format(
                     current_revision.for_log))
 
-
         if previous_revisions.count() >= max_revisions:
 
             older_revisions = DeleteQuery(TemplateRevision).where(
@@ -2525,7 +2510,6 @@ class TemplateRevision(Template, RevisionMixin):
                 TemplateRevision.modified_date < previous_revisions[max_revisions - 1].modified_date)
 
             older_revisions.execute()
-
 
         self.is_backup = is_backup
         self.change_note = change_note
@@ -2538,6 +2522,7 @@ class TemplateRevision(Template, RevisionMixin):
             self.for_log))
 
         return results
+
 
 class TemplateMapping(BaseModel):
 
@@ -2591,6 +2576,7 @@ class TemplateMapping(BaseModel):
         pass
 
 ##########################
+
 
 class Media(BaseModel, DateMod):
     filename = CharField(null=False)
@@ -2725,12 +2711,14 @@ class Media(BaseModel, DateMod):
 
         association.save()
 
+
 class MediaAssociation(BaseModel):
 
     media = ForeignKeyField(Media)
     page = ForeignKeyField(Page, null=True)
     blog = ForeignKeyField(Blog, null=True)
     site = ForeignKeyField(Site, null=True)
+
 
 class TagAssociation(BaseModel):
     tag = ForeignKeyField(Tag, null=False, index=True)
@@ -2797,7 +2785,6 @@ class FileInfo(BaseModel):
             self.preview_path = None
             self.save()
 
-
     @property
     def xref(self):
         xref = TemplateMapping.select().where(
@@ -2863,10 +2850,12 @@ class FileInfo(BaseModel):
             category = None
         return category
 
+
 class FileInfoContext(BaseModel):
     fileinfo = ForeignKeyField(FileInfo, null=False, index=True)
     object = CharField(max_length=1)
     ref = IntegerField(null=True)
+
 
 class Queue(BaseModel):
     job_type = CharField(null=False, max_length=16, index=True)
@@ -3089,6 +3078,7 @@ class Queue(BaseModel):
         return int(0 if publish_jobs is None else publish_jobs) + int(
             0 if insert_jobs.total is None else insert_jobs.total)
 
+
 '''
 def all_queue_jobs(blog=None, site=None):
 
@@ -3111,6 +3101,7 @@ class Permission(BaseModel):
     blog = ForeignKeyField(Blog, index=True, null=True)
     site = ForeignKeyField(Site, index=True, null=True)
     # for sitewide, use site = 0, blog = None
+
 
 class Plugin(BaseModel):
 
@@ -3178,7 +3169,6 @@ class Plugin(BaseModel):
                     # )
                 settings_data.save()
 
-
     @property
     def plugin(self):
         return self._plugin_list[self.id]
@@ -3200,9 +3190,11 @@ class Plugin(BaseModel):
     @property
     def version(self):
         return self._get_plugin_property('__version__', '')
+
     @property
     def _friendly_name(self):
         return self._get_plugin_property('__plugin_name__', '')
+
 
 class AuxData(BaseModel):
 
@@ -3220,6 +3212,7 @@ class AuxData(BaseModel):
 #     def parent(self):
 #         return self.select().where(
 #             self.id == self.parent)
+
 
 class PluginData(AuxData):
 
@@ -3240,6 +3233,7 @@ class PluginData(AuxData):
 #             PluginData.plugin == Plugin.get().where(
 #                 Plugin.name == plugin_name))
 
+
 class ThemeData(AuxData):
 
     blog = ForeignKeyField(Blog, null=True)
@@ -3254,18 +3248,18 @@ class ThemeData(AuxData):
             self.blog == blog)
         return settings_to_remove.execute()
 
-
     @property
     def theme(self, theme_title):
         return self.select().where(
             ThemeData.theme == Theme.get().where(
                 Theme.title == theme_title))
 
-
 # We should eventually convert this to a class where the attributes
 # are generated as needed on demand, not all at once. If possible
 
+
 from core import utils as _utils
+
 
 class TemplateTags(object):
     # Class for the template tags that are used in page templates.
@@ -3429,7 +3423,6 @@ class TemplateTags(object):
                 setattr(archive, 'author', User.get(User.id == archive.author))
 
             self.archive = archive
-
 
         if 'fileinfo' in ka:
             self.fileinfo = ka['fileinfo']

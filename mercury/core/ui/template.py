@@ -41,8 +41,10 @@ template_mapping_index = {
     'Archive':common_archive_mappings,
     'Include':(),
     'Media':(),
+    'Code':(),
     'System':()
     }
+
 
 def new_template(blog_id, tpl_type):
     with db.atomic() as txn:
@@ -83,6 +85,7 @@ def new_template(blog_id, tpl_type):
     redirect(BASE_URL + '/template/{}/edit'.format(
         template.id))
 
+
 @transaction
 def template_edit(template_id):
     '''
@@ -107,6 +110,7 @@ def template_edit(template_id):
     tags.mappings = template_mapping_index[edit_template.template_type]
 
     return template_edit_output(tags)
+
 
 @transaction
 def template_set_default(template_id):
@@ -230,7 +234,6 @@ from the theme.
                 'value':user.logout_nonce}
             )
 
-
     tags.status = status
 
     return report(tags, 'blog_delete_template', tpl)
@@ -240,6 +243,7 @@ from the theme.
 #         search_context=(search_contexts['blog'], blog),
 #         msg_float=False,
 #         **tags.__dict__)
+
 
 @transaction
 def template_delete(template_id):
@@ -289,7 +293,6 @@ def template_delete(template_id):
                 'value':user.logout_nonce}
             )
 
-
     tags.status = status
 
     return report(tags, 'blog_delete_template', tpl)
@@ -299,7 +302,6 @@ def template_delete(template_id):
 #         search_context=(search_contexts['blog'], blog),
 #         msg_float=False,
 #         **tags.__dict__)
-
 
 
 def template_edit_save(template_id):
@@ -369,12 +371,14 @@ def template_edit_save(template_id):
             ),
         **tags.__dict__)
 
+
 def test_preview_mapping(fi, t):
     if fi == 0:
         from core.error import PreviewException
         raise PreviewException(
             'Template {} has no mapping associated with it and cannot be previewed.'.format(
             t.for_log))
+
 
 def template_preview(template_id):
     '''
@@ -387,6 +391,7 @@ def template_preview(template_id):
         raise e
     else:
         redirect(redirection)
+
 
 @transaction
 def template_preview_core(template_id):
@@ -494,6 +499,7 @@ def template_preview_core(template_id):
         template.modified_date.microsecond
         ))
 
+
 def template_edit_output(tags):
 
     return template('edit/template',
@@ -582,7 +588,6 @@ def template_save(request, user, cms_template, blog=None):
             n.id,
             n.path_string))
 
-
     if new_mappings:
         fileinfo.build_mapping_xrefs(new_mappings)
         build_action = "all"
@@ -646,5 +651,4 @@ def template_save(request, user, cms_template, blog=None):
         return response
     else:
         return response.body
-
 
