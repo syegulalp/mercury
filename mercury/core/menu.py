@@ -746,9 +746,10 @@ colsets = {
                 'field':'page',
                 'label':'Page',
                 'colwidth':'99%',
-                'format_raw': lambda x: '<a target="_blank" title="See preview" href="{}/{}"><span class="glyphicon glyphicon-share"></span></a> Page: {}'.format(
+                'format_raw': lambda x: '<a target="_blank" title="See preview" href="{}/{}"><span class="glyphicon glyphicon-share"></span></a> {}: {}'.format(
                     x.page.blog.url if x.page is not None else x.template_mapping.template.blog.url,
                     x.preview_path,
+                    'Page' if x.page is not None else 'Template',
                     x.page.for_display if x.page is not None else x.template_mapping.template.for_display
                     )
             },
