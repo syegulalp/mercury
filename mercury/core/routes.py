@@ -13,6 +13,7 @@ app = Bottle()
 _route = app.route
 _hook = app.hook
 
+
 @_hook('before_request')
 def strip_path():
     '''
@@ -20,6 +21,7 @@ def strip_path():
     '''
     if len(request.environ['PATH_INFO']) > 1:
         request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+
 
 @_hook('before_request')
 def csrf_protection():
@@ -44,6 +46,7 @@ def csrf_protection():
             raise CSRFTokenNotFound("Form submitted from {} did not have a valid CSRF protection token.".format(
                 request.url))
 
+
 def setup(step_id=None):
     '''
     Fires the setup routine
@@ -64,6 +67,7 @@ def server_static(filepath):
     response.add_header('Cache-Control', 'max-age=7200')
     return static_file(filepath, root=APPLICATION_PATH + STATIC_PATH)
 
+
 @_route(BASE_PATH + "/me", method=('GET', 'POST'))
 @_route(BASE_PATH + "/me/<path>", method=('GET', 'POST'))
 def me(path='basic'):
@@ -73,6 +77,7 @@ def me(path='basic'):
     from core.ui import user
     return user.self_edit(path)
 
+
 @_route(BASE_PATH + "/me/setting", method='POST')
 def me_setting():
     '''
@@ -81,6 +86,7 @@ def me_setting():
     from core.ui import user
     return user.self_setting()
 
+
 @_route(BASE_PATH + "/system/sites")
 def site_list():
     '''
@@ -88,6 +94,7 @@ def site_list():
     '''
     from core.ui import system
     return system.system_sites()
+
 
 @_route(BASE_PATH + "/system/info")
 def site_info():
@@ -98,6 +105,7 @@ def site_info():
     admin = auth.is_sys_admin(user)
     from core.ui import system
     return system.system_info()
+
 
 @_route(BASE_PATH + "/system/plugins")
 def system_plugins():
@@ -125,6 +133,7 @@ def register_plugin(plugin_path):
     from core.ui import system
     return system.register_plugin(plugin_path)
 
+
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/reset")
 def reset_plugin(plugin_id):
     '''
@@ -133,6 +142,7 @@ def reset_plugin(plugin_id):
     # TODO: require a form action
     from core.plugins import reset_plugin
     reset_plugin(plugin_id)
+
 
 @_route(BASE_PATH + "/system/plugin/<plugin_id:int>/enable")
 def enable_plugin(plugin_id):
@@ -155,6 +165,7 @@ def disable_plugin(plugin_id):
     yield (disable_plugin(plugin_id))
     os._exit(0)
 
+
 @_route(BASE_PATH + "/system/queue")
 def system_queue():
     '''
@@ -163,15 +174,24 @@ def system_queue():
     from core.ui import system
     return system.system_queue()
 
+
 @_route(BASE_PATH + "/system/themes")
 def system_themes():
     from core.ui import system
     return system.system_list_themes()
 
+
 @_route(BASE_PATH + "/system/theme/<theme_id:int>")
 def system_theme_data(theme_id):
     from core.ui import system
     return system.system_theme_data(theme_id)
+
+
+@_route(BASE_PATH + "/system/theme/<theme_id:int>/download")
+def system_theme_download(theme_id):
+    from core.ui import system
+    return system.system_theme_download(theme_id)
+
 
 @_route(BASE_PATH + "/system/log")
 def system_log():
@@ -181,6 +201,7 @@ def system_log():
     from core.ui import system
     return system.system_log()
 
+
 @_route(BASE_PATH + "/system/users")
 def system_users():
     '''
@@ -188,6 +209,7 @@ def system_users():
     '''
     from core.ui import user
     return user.system_users()
+
 
 @_route(BASE_PATH + "/system/user/<user_id:int>", method=('GET', 'POST'))
 @_route(BASE_PATH + "/system/user/<user_id:int>/<path>", method=('GET', 'POST'))
@@ -198,6 +220,7 @@ def system_user_save(user_id, path='basic'):
     from core.ui import user
     return user.system_user(user_id, path)
 
+
 @_route(BASE_PATH + "/system/user/new", method=('GET', 'POST'))
 def system_user_new():
     '''
@@ -205,6 +228,7 @@ def system_user_new():
     '''
     from core.ui import user
     return user.system_new_user()
+
 
 @_route(BASE_PATH + '/export')
 def system_export_data():
@@ -214,6 +238,7 @@ def system_export_data():
     from core import utils
     return utils.export_data()
 
+
 @_route(BASE_PATH + '/import')
 def system_import_data():
     '''
@@ -221,6 +246,7 @@ def system_import_data():
     '''
     from core import utils
     return utils.import_data()
+
 
 @_route(BASE_PATH + '/login')
 def login():
@@ -230,6 +256,7 @@ def login():
     from core.ui import login
     return login.login()
 
+
 @_route(BASE_PATH + '/login', method='POST')
 def login_verify():
     '''
@@ -238,6 +265,7 @@ def login_verify():
     from core.ui import login
     return login.login_verify()
 
+
 @_route(BASE_PATH + '/logout')
 def logout():
     '''
@@ -245,6 +273,7 @@ def logout():
     '''
     from core.ui import login
     return login.logout()
+
 
 @_route('/')
 @_route(BASE_PATH)
@@ -255,6 +284,7 @@ def main_ui():
     from core.ui import login
     return login.main_ui()
 
+
 @_route(BASE_PATH + '/site/<site_id:int>')
 def site(site_id):
     '''
@@ -262,6 +292,7 @@ def site(site_id):
     '''
     from core.ui import site
     return site.site(site_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/blogs')
 def site_blogs(site_id):
@@ -271,6 +302,7 @@ def site_blogs(site_id):
     from core.ui import site
     return site.site(site_id)
 
+
 @_route(BASE_PATH + '/site/<site_id:int>/blog/new')
 def site_blog_create(site_id):
     '''
@@ -278,6 +310,7 @@ def site_blog_create(site_id):
     '''
     from core.ui import blog
     return blog.blog_create(site_id)
+
 
 @_route(BASE_PATH + '/site/<site_id:int>/blog/new', method='POST')
 def site_blog_create_save(site_id):
@@ -290,10 +323,12 @@ def site_blog_create_save(site_id):
 # TODO: the default should be whatever editor theme is installed by the
 # current blog theme
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>')
 def blog(blog_id, errormsg=None):
     from core.ui import blog
     return blog.blog(blog_id, errormsg)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage')
 def blog_new_page(blog_id):
@@ -303,6 +338,7 @@ def blog_new_page(blog_id):
     from core.ui import blog
     return blog.blog_new_page(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/newpage', method='POST')
 def blog_new_page_save(blog_id):
     '''
@@ -310,6 +346,7 @@ def blog_new_page_save(blog_id):
     '''
     from core.ui import blog
     return blog.blog_new_page_save(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/editor-css")
 def blog_editor_css(blog_id):
@@ -335,6 +372,7 @@ def blog_editor_css(blog_id):
     response.add_header('Cache-Control', 'max-age=7200')
     return template
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/categories')
 def blog_categories(blog_id):
     '''
@@ -342,6 +380,7 @@ def blog_categories(blog_id):
     '''
     from core.ui import blog
     return blog.blog_categories(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newcategory')
 @_route(BASE_PATH + '/blog/<blog_id:int>/newcategory', method='POST')
@@ -352,6 +391,7 @@ def blog_new_category(blog_id):
     from core.ui import category
     return category.new_category(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>', method='POST')
 def blog_edit_category(blog_id, category_id):
@@ -360,6 +400,7 @@ def blog_edit_category(blog_id, category_id):
     '''
     from core.ui import category
     return category.edit_category(blog_id, category_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/delete', method='POST')
@@ -370,6 +411,7 @@ def blog_delete_category(blog_id, category_id):
     from core.ui import category
     return category.delete_category(blog_id, category_id, request.forms.get('confirm'))
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/tags')
 def blog_tags(blog_id):
     '''
@@ -377,6 +419,7 @@ def blog_tags(blog_id):
     '''
     from core.ui import tags
     return tags.tags_list(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>', method='POST')
@@ -387,6 +430,7 @@ def blog_edit_tag(blog_id, tag_id):
     from core.ui import tags
     return tags.tag_edit(blog_id, tag_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/delete', method='POST')
 def blog_delete_tag(blog_id, tag_id):
@@ -395,6 +439,7 @@ def blog_delete_tag(blog_id, tag_id):
     '''
     from core.ui import tags
     return tags.tag_delete(blog_id, tag_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages')
 @_route(BASE_PATH + '/blog/<blog_id:int>/tag/<tag_id:int>/pages', method='POST')
@@ -406,6 +451,7 @@ def blog_tag_list_pages(blog_id, tag_id):
     from core.ui import tags
     return tags.tag_list_pages(blog_id, tag_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages')
 @_route(BASE_PATH + '/blog/<blog_id:int>/category/<category_id:int>/pages', method='POST')
 def blog_pages_in_category(blog_id, category_id):
@@ -415,6 +461,7 @@ def blog_pages_in_category(blog_id, category_id):
     from core.ui import blog
     return blog.blog_pages_in_category(blog_id, category_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media')
 def blog_media(blog_id):
     '''
@@ -422,6 +469,7 @@ def blog_media(blog_id):
     '''
     from core.ui import media
     return media.media_list(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit')
 def blog_media_edit(blog_id, media_id):
@@ -431,6 +479,7 @@ def blog_media_edit(blog_id, media_id):
     from core.ui import media
     return media.media_edit(blog_id, media_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/edit', method='POST')
 def blog_media_edit_save(blog_id, media_id):
     '''
@@ -438,6 +487,7 @@ def blog_media_edit_save(blog_id, media_id):
     '''
     from core.ui import media
     return media.media_edit_save(blog_id, media_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/media/<media_id:int>/pages')
 def blog_media_pages(blog_id, media_id):
@@ -457,6 +507,7 @@ def blog_media_delete(blog_id, media_id):
     from core.ui import media
     return media.media_delete(blog_id, media_id, request.forms.get('confirm'))
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/templates')
 def blog_templates(blog_id):
     '''
@@ -464,6 +515,7 @@ def blog_templates(blog_id):
     '''
     from core.ui import blog
     return blog.blog_templates(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/themes')
 def blog_themes(blog_id):
@@ -473,6 +525,7 @@ def blog_themes(blog_id):
     from core.ui import blog
     return blog.blog_select_themes(blog_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/previews')
 def blog_previews(blog_id):
     '''
@@ -480,6 +533,7 @@ def blog_previews(blog_id):
     '''
     from core.ui import blog
     return blog.blog_previews_list(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/previews/delete/all')
 @_route(BASE_PATH + '/blog/<blog_id:int>/previews/delete/<preview_id:int>')
@@ -489,6 +543,7 @@ def blog_delete_preview(blog_id, preview_id='all'):
     '''
     from core.ui import blog
     return blog.blog_delete_preview(blog_id, preview_id)
+
 
 @_route(BASE_PATH + "/theme/<theme_id:int>/refresh-theme")
 def refresh_theme(theme_id):
@@ -504,20 +559,24 @@ def refresh_theme(theme_id):
         theme.json = theme_string
         theme.save()
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/theme/save", method=('GET', 'POST'))
 def save_theme_to_system(blog_id):
     from core.ui import blog
     return blog.blog_save_theme(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/theme/<theme_id:int>/apply", method=('GET', 'POST'))
 def apply_theme_to_blog(blog_id, theme_id):
     from core.ui import blog
     return blog.blog_apply_theme(blog_id, theme_id)
 
+
 @_route(BASE_PATH + "/system/theme/<theme_id:int>/delete", method=('GET', 'POST'))
 def delete_theme_from_system(theme_id):
     from core.ui import system
     return system.system_delete_theme(theme_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/newtemplate/<template_type>')
 def template_new(blog_id, template_type):
@@ -527,16 +586,19 @@ def template_new(blog_id, template_type):
     from core.ui import template
     return template.new_template(blog_id, template_type)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish')
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish/<pass_id:int>/<item_id:int>')
 def republish_blog(blog_id, pass_id=1, item_id=0):
     from core.ui import blog
     return blog.blog_republish(blog_id, pass_id, item_id)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/republish-batch', method='POST')
 def republish_blog_batch(blog_id):
     from core.ui import blog
     return blog.blog_republish_batch(blog_id)
+
 
 @_route(BASE_PATH + '/blog/<blog_id:int>/purge')
 def blog_purge(blog_id):
@@ -547,6 +609,7 @@ def blog_purge(blog_id):
     from core.ui import blog
     return blog.blog_purge(blog_id)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue")
 def blog_queue(blog_id):
     '''
@@ -554,6 +617,18 @@ def blog_queue(blog_id):
     '''
     from core.ui import blog
     return blog.blog_queue(blog_id)
+
+
+@_route(BASE_PATH + "/blog/<blog_id:int>/queue/run")
+def blog_queue_run(blog_id):
+    '''
+    Route for running a blog's publishing queue script as a background process
+    '''
+    import subprocess, sys
+    taskpath = "{}/scripts/tasks.py".format(APPLICATION_PATH)
+    pid = subprocess.Popen([sys.executable, taskpath]).pid
+    return "Queue runner {} started with pid {}.".format(taskpath, pid)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")
 def queue_clear(blog_id):
@@ -566,6 +641,7 @@ def queue_clear(blog_id):
             message='Blog {}\'s queue has been successfully cleared.'.format(blog_id))
     return blog_queue(blog_id, status)
 
+
 @_route(BASE_PATH + '/blog/<blog_id:int>/publish/break')
 def break_queue(blog_id):
     '''
@@ -573,6 +649,7 @@ def break_queue(blog_id):
     '''
     from core.ui.blog import blog_break_queue
     return blog_break_queue(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings")
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings/<nav_setting>")
@@ -583,6 +660,7 @@ def blog_settings(blog_id, nav_setting='basic'):
     from core.ui import blog
     return blog.blog_settings(blog_id, nav_setting)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings", method='POST')
 @_route(BASE_PATH + "/blog/<blog_id:int>/settings/<nav_setting>", method='POST')
 def blog_settings_save(blog_id, nav_setting='basic'):
@@ -592,6 +670,7 @@ def blog_settings_save(blog_id, nav_setting='basic'):
     from core.ui import blog
     return blog.blog_settings_save(blog_id, nav_setting)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish")
 def blog_publish(blog_id):
     '''
@@ -599,6 +678,7 @@ def blog_publish(blog_id):
     '''
     from core.ui import blog
     return blog.blog_publish(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/progress/<original_queue_length:int>")
 def blog_publish_progress(blog_id, original_queue_length):
@@ -608,6 +688,7 @@ def blog_publish_progress(blog_id, original_queue_length):
     from core.ui import blog
     return blog.blog_publish_progress(blog_id, original_queue_length)
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/publish/process")
 def blog_publish_process(blog_id):
     '''
@@ -615,6 +696,7 @@ def blog_publish_process(blog_id):
     '''
     from core.ui import blog
     return blog.blog_publish_process(blog_id)
+
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/import", method=("GET", "POST"))
 def blog_import(blog_id):
@@ -624,6 +706,7 @@ def blog_import(blog_id):
     from core.ui import blog
     return blog.blog_import(blog_id)
 
+
 @_route(BASE_PATH + '/template/<template_id:int>/edit')
 def template_edit(template_id):
     '''
@@ -631,6 +714,7 @@ def template_edit(template_id):
     '''
     from core.ui import template
     return template.template_edit(template_id)
+
 
 @_route(BASE_PATH + '/template/<template_id:int>/set-default')
 def template_set_default(template_id):
@@ -640,6 +724,7 @@ def template_set_default(template_id):
     from core.ui import template
     return template.template_set_default(template_id)
 
+
 @_route(BASE_PATH + '/template/<template_id:int>/edit', method="POST")
 def template_edit_save(template_id):
     '''
@@ -647,6 +732,7 @@ def template_edit_save(template_id):
     '''
     from core.ui import template
     return template.template_edit_save(template_id)
+
 
 @_route(BASE_PATH + '/template/<template_id:int>/preview')
 def template_preview(template_id):
@@ -656,6 +742,7 @@ def template_preview(template_id):
     from core.ui import template
     return template.template_preview(template_id)
 
+
 @_route(BASE_PATH + '/template/<template_id:int>/delete', method=('GET', 'POST'))
 def template_delete(template_id):
     '''
@@ -663,6 +750,7 @@ def template_delete(template_id):
     '''
     from core.ui import template
     return template.template_delete(template_id)
+
 
 @_route(BASE_PATH + '/template/<template_id:int>/refresh', method=('GET', 'POST'))
 def template_refresh(template_id):
@@ -672,6 +760,7 @@ def template_refresh(template_id):
     from core.ui import template
     return template.template_refresh(template_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit')
 def page_edit(page_id):
     '''
@@ -679,6 +768,7 @@ def page_edit(page_id):
     '''
     from core.ui import page
     return page.page_edit(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit', method='POST')
 def page_edit_save(page_id):
@@ -688,6 +778,7 @@ def page_edit_save(page_id):
     from core.ui import page
     return page.page_edit_save(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/media/add')
 def page_media_add(page_id):
     '''
@@ -695,6 +786,7 @@ def page_media_add(page_id):
     '''
     from core.ui import page
     return page.page_media_add(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/revisions')
 def page_revisions(page_id):
@@ -704,6 +796,7 @@ def page_revisions(page_id):
     from core.ui import page
     return page.page_revisions(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>')
 def page_revision_restore(page_id, revision_id):
     '''
@@ -711,6 +804,7 @@ def page_revision_restore(page_id, revision_id):
     '''
     from core.ui import page
     return page.page_revision_restore(page_id, revision_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/edit/restore/<revision_id>', method='POST')
 def page_revision_restore_save(page_id, revision_id):  # @UnusedVariable
@@ -720,6 +814,7 @@ def page_revision_restore_save(page_id, revision_id):  # @UnusedVariable
     from core.ui import page
     return page.page_revision_restore_save(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/upload', method='POST')
 def page_media_upload(page_id):
     '''
@@ -727,6 +822,7 @@ def page_media_upload(page_id):
     '''
     from core.ui import page
     return page.page_media_upload(page_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/media/<media_id:int>/delete', method='POST')
 def page_media_delete(page_id, media_id):
@@ -736,6 +832,7 @@ def page_media_delete(page_id, media_id):
     from core.ui import page
     return page.page_media_delete(page_id, media_id)
 
+
 @_route(BASE_PATH + "/page/<page_id:int>/preview")
 def page_preview(page_id):
     '''
@@ -743,6 +840,7 @@ def page_preview(page_id):
     '''
     from core.ui import page
     return page.page_preview(page_id)
+
 
 @_route(BASE_PATH + "/page/<page_id:int>/delete-preview")
 def delete_page_preview(page_id):
@@ -753,6 +851,7 @@ def delete_page_preview(page_id):
     from core.ui import page
     return page.delete_page_preview(page_id)
 
+
 @_route(BASE_PATH + "/page/<page_id:int>/public-preview")
 def page_public_preview(page_id):
     '''
@@ -762,6 +861,7 @@ def page_public_preview(page_id):
     from core.ui import page
     return page.page_public_preview(page_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/get-media-templates/<media_id:int>')
 def page_get_media_templates(page_id, media_id):
     '''
@@ -769,6 +869,7 @@ def page_get_media_templates(page_id, media_id):
     '''
     from core.ui import page
     return page.page_get_media_templates(page_id, media_id)
+
 
 @_route(BASE_PATH + '/page/<page_id:int>/add-media/<media_id:int>/<template_id:int>')
 def page_add_media_with_template(page_id, media_id, template_id):
@@ -778,6 +879,7 @@ def page_add_media_with_template(page_id, media_id, template_id):
     from core.ui import page
     return page.page_add_media_with_template(page_id, media_id, template_id)
 
+
 @_route(BASE_PATH + '/page/<page_id:int>/delete', method=('GET', 'POST'))
 def page_delete(page_id):
     '''
@@ -786,14 +888,17 @@ def page_delete(page_id):
     from core.ui import page
     return page.page_delete(page_id, request.forms.get('confirm'))
 
+
 @_route(BASE_PATH + '/kv/<kv_id:int>/edit', method=('GET', 'POST'))
 def kv_edit_ui(kv_id):
     from core.ui import kv as kv_
     return kv_.kv_edit(kv_id)
 
+
 '''
 STATIC ROUTING FUNCTIONS
 '''
+
 
 @_route(BASE_PATH + '/media/<media_id:int>')
 def media_preview(media_id):
@@ -806,12 +911,14 @@ def media_preview(media_id):
 
     return preview
 
+
 @_route('/preview/<path:path>')
 def preview(path):
     from core.ui import page
     preview_page = FileInfo.get(
         FileInfo.url == path)
     return page.page_preview(preview_page.page.id)
+
 
 '''
 DESKTOP MODE ROUTINES
@@ -915,6 +1022,7 @@ if DESKTOP_MODE:
 ERROR HANDLERS
 '''
 
+
 @app.error(500)
 def error_handler(error):
     from core.libs.bottle import template
@@ -931,6 +1039,7 @@ def error_handler(error):
 '''
 APIs
 '''
+
 
 @_route(BASE_PATH + "/api/1/hi")
 def api_hi():
@@ -949,10 +1058,12 @@ def api_hi():
 # just use regular application routes
 # If we need versioning
 
+
 @_route(BASE_PATH + "/api/1/kv", method='POST')
 def api_kv_add():
     from core.ui import kv
     return kv.kv_add()
+
 
 @_route(BASE_PATH + "/api/1/kv", method='DELETE')
 def api_remove_kv():
@@ -967,11 +1078,13 @@ def api_get_tag(blog_id, tag_name):
     from core.ui import tags
     return tags.tag_get(blog_id, tag_name)
 
+
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>/<limit>")
 @_route(BASE_PATH + "/api/1/get-tags/blog/<blog_id>")
 def api_get_tags(blog_id, limit=None, page_limit=250):
     from core.ui import tags
     return tags.tags_get(blog_id, limit, page_limit)
+
 
 @_route(BASE_PATH + "/api/1/make-tag-for-page/blog/<blog_id:int>", method='POST')
 @_route(BASE_PATH + "/api/1/make-tag-for-page/page/<page_id:int>", method='POST')
@@ -980,6 +1093,7 @@ def api_make_tag_for_page(blog_id=None, page_id=None):
     return tags.tag_make_for_page(blog_id, page_id)
 
 ### Everything after this is experimental/provisional #############################
+
 
 @_route(BASE_PATH + '/dbrec')
 @_route(BASE_PATH + '/dbrec/<table_name>')
@@ -1055,6 +1169,7 @@ def reboot():
     from core.utils import reboot
     reboot()
 
+
 @_route(BASE_PATH + '/backupdb')
 def backup_db(filename='database-backup.cgi'):
     '''
@@ -1072,6 +1187,7 @@ def backup_db(filename='database-backup.cgi'):
         shutil.copyfileobj(sourcefile, destfile, length=-1)
 
     return "Backed up"
+
 
 @_route(BASE_PATH + '/restoredb')
 def restore_db(filename='database-backup.cgi'):
@@ -1093,12 +1209,14 @@ def restore_db(filename='database-backup.cgi'):
 
     return "Restored"
 
+
 @_route(BASE_PATH + "/blog/<blog_id:int>/delete")
 def delete_blog(blog_id):
     with db.atomic():
         blog = Blog.load(blog_id)
         blog.delete_instance(recursive=True)
     return "Blog {} deleted".format(blog_id)
+
 
 @_route(BASE_PATH + "/page/<page_id:int>/reparent/<blog_id:int>")
 def reparent_page(page_id, blog_id):
@@ -1124,9 +1242,11 @@ def reparent_page(page_id, blog_id):
 
 # TODO: These should be moved into template UI, I think
 
+
 from core.models.transaction import transaction
 
 action_re = BASE_PATH + "/template/<template_id:int>/<action:re:(publish|queue)>"
+
 
 @_route('{}'.format(action_re))
 @_route('{}/fast'.format(action_re))
@@ -1163,7 +1283,6 @@ def queue_archive_template_fast(template_id, action, pass_id=0):
             action,
             pass_id))
 
-
     else:
         r.body = "Queue insertion finished."
         if action == 'publish':
@@ -1176,6 +1295,7 @@ def queue_archive_template_fast(template_id, action, pass_id=0):
             redir))
 
     return r
+
 
 @_route('{}/all'.format(action_re))
 @_route('{}/all/<pass_id:int>'.format(action_re))
@@ -1209,7 +1329,6 @@ def queue_archive_template_all(template_id, action, pass_id=0):
             action,
             pass_id))
 
-
     else:
         r.body = "Queue insertion finished."
         if action == 'publish':
@@ -1222,5 +1341,4 @@ def queue_archive_template_all(template_id, action, pass_id=0):
             redir))
 
     return r
-
 
