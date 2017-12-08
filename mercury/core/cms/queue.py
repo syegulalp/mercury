@@ -12,7 +12,7 @@ from .fileinfo import (generate_page_tags, delete_fileinfo_files, build_pages_fi
     build_archives_fileinfos, build_indexes_fileinfos, eval_paths)
 from . import generate_page_text
 
-from settings import MAX_BATCH_OPS, RETRY_INTERVAL
+from settings import MAX_BATCH_OPS, LOOP_TIMEOUT
 import time
 
 from threading import Thread
@@ -126,6 +126,7 @@ def queue_page_actions(pages, no_neighbors=False, no_archive=False):
                 page.for_log,
                 e))
 
+
 def build_page(queue_entry, async_write=False):
     try:
         fileinfo = FileInfo.get(FileInfo.id == queue_entry.data_integer)
@@ -164,11 +165,13 @@ It may refer to a fileinfo that was deleted by another action. ({})'''.format(qu
             fileinfo.file_path,
             e))
 
+
 def write_file_queue(q):
     while 1:
         a, b, c = q.get()
         write_file(a, b, c)
         q.task_done()
+
 
 def write_file(file_text, blog_path, file_path):
     '''
@@ -203,6 +206,7 @@ def write_file(file_text, blog_path, file_path):
 
     with open(file_pathname, "wb") as output_file:
         output_file.write(encoded_page)
+
 
 def process_queue_publish(queue_control, blog):
     '''
@@ -247,7 +251,7 @@ def process_queue_publish(queue_control, blog):
         job_type.action[q.job_type](q)
         removed_jobs.append(q.id)
 
-        if (time.clock() - start) > 2.0:
+        if (time.clock() - start) > LOOP_TIMEOUT:
             break
 
     Queue.remove(removed_jobs)
@@ -288,6 +292,7 @@ def process_queue_publish(queue_control, blog):
             ))
 
     return new_queue_control.data_integer
+
 
 def process_queue_insert(queue_control, blog):
 
@@ -344,6 +349,7 @@ def process_queue_insert(queue_control, blog):
 
     return result
 
+
 def process_queue(blog):
     '''
     Processes the jobs currently in the queue for the selected blog.
@@ -360,6 +366,7 @@ def process_queue(blog):
         process_queue_insert(queue_control, blog)
 
     return Queue.job_counts(blog=blog)
+
 
 def queue_page_archive_actions(page):
     '''
@@ -438,6 +445,7 @@ def queue_page_archive_actions(page):
                 page.for_log,
                 e))
 
+
 def queue_ssi_actions(blog):
     '''
     Pushes to the publishing queue all the SSIs for a given blog.
@@ -459,6 +467,7 @@ def queue_ssi_actions(blog):
                 blog=blog,
                 site=blog.site,
                 data_integer=f.id)
+
 
 def queue_index_actions(blog, include_manual=False):
     '''

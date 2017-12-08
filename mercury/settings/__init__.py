@@ -42,6 +42,8 @@ BASE_URL_NETLOC = ""
 BASE_URL_PATH = ""
 BASE_PATH = ""
 
+LOOP_TIMEOUT = 5.0
+
 config_file = _join(APPLICATION_PATH, 'data', INI_FILE_NAME)
 
 if not os.path.exists(config_file):
@@ -65,11 +67,9 @@ if not NO_SETUP:
             else:
                 locals()[option] = value
 
-
     SERVER_MODE = 'cgi'
     BASE_URL_ROOT = BASE_URL_PROTOCOL + BASE_URL_NETLOC
     BASE_URL = BASE_URL_ROOT + BASE_URL_PATH
-
 
 try:
     DB_TYPE_NAME
@@ -83,6 +83,7 @@ if DB_TYPE_NAME == 'sqlite':
     from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 
     class SqliteDB(SqliteExtDatabase):
+
         def initialize_connection(self, conn=None):
             pass
 
@@ -91,7 +92,6 @@ if DB_TYPE_NAME == 'sqlite':
         threadlocals=True,
         timeout=30000
         )
-
 
     DB_TYPE.initialize_connection()
 
@@ -110,7 +110,6 @@ if DB_TYPE_NAME == 'sqlite':
 #     DB.initialize_connection()
 #
 #     DB_TYPE = DB
-
 
 # elif DB_TYPE_NAME == 'mysql':
 #     from core.libs.playhouse.sqlite_ext import MySQLDatabase
