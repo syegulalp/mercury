@@ -10,6 +10,7 @@ from core.models.transaction import transaction
 from core.libs.bottle import template, request
 from . import search_contexts, listing, report
 
+
 @transaction
 def system_info():
 
@@ -50,6 +51,7 @@ def system_info():
 
     return tpl
 
+
 @transaction
 def system_sites(errormsg=None):
     user = auth.is_logged_in(request)
@@ -58,6 +60,7 @@ def system_sites(errormsg=None):
     return listing(request, None, Site.select(),
                    'all_sites', 'manage_sites',
                    user=user)
+
 
 @transaction
 def system_queue():
@@ -70,6 +73,7 @@ def system_queue():
                'queue', 'system_queue',
                user=user)
 
+
 @transaction
 def system_log():
     user = auth.is_logged_in(request)
@@ -79,6 +83,7 @@ def system_log():
     return listing(request, None, log,
                'system_log', 'system_log',
                user=user)
+
 
 @transaction
 def register_plugin(plugin_path):
@@ -91,6 +96,7 @@ def register_plugin(plugin_path):
     except PluginImportError as e:
         return (str(e))
     return ("Plugin " + new_plugin.friendly_name + " registered.")
+
 
 @transaction
 def plugin_settings(plugin_id, errormsg=None):
@@ -109,6 +115,7 @@ def plugin_settings(plugin_id, errormsg=None):
 
     return tpl
 
+
 @transaction
 def system_plugins(errormsg=None):
     user = auth.is_logged_in(request)
@@ -119,6 +126,7 @@ def system_plugins(errormsg=None):
     return listing(request, None, plugins,
                    'plugins', 'system_plugins',
                    user=user)
+
 
 @transaction
 def system_theme_data(theme_id):
@@ -132,18 +140,27 @@ def system_theme_data(theme_id):
     tags.report = ['Theme title: {}'.format(theme.title),
         'Theme description: {}'.format(theme.description),
         'Theme directory: {}'.format(theme.json),
-        '<hr>'
+        '<hr>',
+        '<a href="{}/download">Download an archive of this theme</a>'.format(theme.id)
         ]
 
     return report(tags, 'system_theme_data', theme)
 
-#     tpl = template('listing/report',
-#         search_context=(search_contexts['sites'], None),
-#         menu=generate_menu('system_theme_data', theme),
-#         report=report,
-#         **tags.__dict__)
-#
-#     return tpl
+
+@transaction
+def system_theme_download(theme_id):
+    user = auth.is_logged_in(request)
+    permission = auth.is_sys_admin(user)
+    from core.models import Theme
+    theme = Theme.load(theme_id)
+
+    import shutil, tempfile, os
+    from core.libs.bottle import static_file
+    with tempfile.TemporaryDirectory() as temp_zipdir:
+        zip_filename = 'theme_{}'.format(theme.id)
+        shutil.make_archive(os.path.join(temp_zipdir, zip_filename), 'zip', theme.path)
+        return static_file('{}.zip'.format(zip_filename), root=temp_zipdir, download=True)
+
 
 @transaction
 def system_list_themes():

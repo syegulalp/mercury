@@ -823,7 +823,6 @@ def blog_publish_process(blog_id):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-        # queue_count = queue.process_queue(blog)
         queue_count = transaction(queue.process_queue)(blog)
         time.sleep(RETRY_INTERVAL * 5)
     else:
@@ -831,12 +830,10 @@ def blog_publish_process(blog_id):
         if jobs.count() > 0:
             queue_count = jobs.count()
             Queue.start(blog, queue_count)
-            # queue_count = queue.process_queue(blog)
             queue_count = transaction(queue.process_queue)(blog)
             time.sleep(RETRY_INTERVAL * 5)
         else:
             queue_count = 0
-            # Queue.clear(blog)
 
     import settings
     return template('queue/queue_counter_include',
