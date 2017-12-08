@@ -11,10 +11,12 @@ from . import InitDBClass
 
 from core.libs.playhouse.sqlite_ext import FTSModel, SqliteExtDatabase, TextField
 
+
 class SqliteDB(SqliteExtDatabase, InitDBClass):
 
-    def initialize_connection(self, *a, **ka):
-        self.execute_sql('PRAGMA read_uncommitted = True;PRAGMA busy_timeout = 30000;PRAGMA schema.journal_mode=WAL;')
+    def initialize_connection(self, *a, conn=None, **ka):
+        pass
+        # self.execute_sql('PRAGMA read_uncommitted = True;PRAGMA busy_timeout = 30000;PRAGMA schema.journal_mode=WAL;')
 
     def db_is_locked(self):
         return "database is locked"
@@ -42,7 +44,6 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
             raise e
 
         self._recreate_database()
-
 
     def clean_database(self):
         self._recreate_database()
@@ -173,6 +174,7 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
 class Page_Search(FTSModel):
     title = TextField()
     text = TextField()
+
     class Meta:
         database = SqliteDB
 
