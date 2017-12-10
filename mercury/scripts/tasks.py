@@ -12,7 +12,6 @@ if __name__ == '__main__':
     from core.models.transaction import transaction
     from core.cms.queue import process_queue
 
-
     @transaction
     def run(n):
         return process_queue(n)
@@ -89,7 +88,6 @@ if __name__ == '__main__':
                         print (problem)
                         scheduled_page_report.append(problem)
 
-
                 queue_index_actions(n)
                 queue_ssi_actions(n)
 
@@ -109,7 +107,6 @@ if __name__ == '__main__':
                 passes = 1
 
                 while 1:
-                    # should we close the connection entirely between passes?
                     sleep(.1)
                     remaining = run(n)
                     print ("Pass {}: {} jobs remaining.".format(passes, remaining))

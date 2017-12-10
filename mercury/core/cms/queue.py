@@ -270,6 +270,7 @@ def process_queue_publish(queue_control, blog):
     end_queue = time.clock()
 
     total_time = end_queue - start_queue
+
     if new_queue_control.data_integer <= 0:
         new_queue_control.delete_instance()
         logger.info("Queue job #{} @ {} (blog #{}) finished ({:.4f} secs).".format(
