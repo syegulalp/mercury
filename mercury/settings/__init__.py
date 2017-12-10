@@ -42,7 +42,7 @@ BASE_URL_NETLOC = ""
 BASE_URL_PATH = ""
 BASE_PATH = ""
 
-LOOP_TIMEOUT = 5.0
+LOOP_TIMEOUT = 3.0
 
 config_file = _join(APPLICATION_PATH, 'data', INI_FILE_NAME)
 
