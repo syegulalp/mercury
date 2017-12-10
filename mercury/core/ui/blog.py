@@ -787,6 +787,11 @@ def blog_publish(blog_id):
         **tags.__dict__)
 
 
+@transaction
+def q_p(blog):
+    return queue.process_queue(blog)
+
+
 def blog_publish_progress(blog_id, original_queue_length):
 
     user = auth.is_logged_in(request)
@@ -799,7 +804,8 @@ def blog_publish_progress(blog_id, original_queue_length):
 
     if control_jobs.count() > 0:
         # queue_count = queue.process_queue(blog)
-        queue_count = transaction(queue.process_queue)(blog)
+        # queue_count = transaction(queue.process_queue)(blog)
+        queue_count = q_p(blog)
         time.sleep(RETRY_INTERVAL * 5)
     else:
         queue_count = 0
@@ -823,14 +829,16 @@ def blog_publish_process(blog_id):
     control_jobs = Queue.control_jobs(blog)
 
     if control_jobs.count() > 0:
-        queue_count = transaction(queue.process_queue)(blog)
+        queue_count = q_p(blog)
+        # queue_count = transaction(queue.process_queue)(blog)
         time.sleep(RETRY_INTERVAL * 5)
     else:
         jobs = Queue.jobs(blog)
         if jobs.count() > 0:
             queue_count = jobs.count()
             Queue.start(blog, queue_count)
-            queue_count = transaction(queue.process_queue)(blog)
+            queue_count = q_p(blog)
+            # queue_count = transaction(queue.process_queue)(blog)
             time.sleep(RETRY_INTERVAL * 5)
         else:
             queue_count = 0
