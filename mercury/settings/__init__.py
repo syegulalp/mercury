@@ -78,6 +78,8 @@ except:
 
 if DB_TYPE_NAME == 'sqlite':
     from core.models.db import sqlite
+    # circular import!
+    # need to move db subdir out of models, I think
 
     DB = sqlite.SqliteDB(
         FULL_SQLITE_DATABASE_PATH,
@@ -104,9 +106,6 @@ if DB_TYPE_NAME == 'sqlite':
 #
 #     DB_TYPE.initialize_connection()
 #
-#     from core.models import sqlite as DB
-
-#     # eventually it'll look like this....
 
 # elif DB_TYPE_NAME == 'mysql':
 #     from core.libs.playhouse.sqlite_ext import MySQLDatabase
