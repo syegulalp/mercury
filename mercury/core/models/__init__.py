@@ -4,7 +4,7 @@ from core.utils import date_format, html_escape, csrf_tag, csrf_hash, trunc, cre
 from core.template import tpl
 
 from settings import (DB_TYPE, DESKTOP_MODE, BASE_URL_ROOT, BASE_URL, DB_TYPE_NAME,
-        SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME)
+        SECRET_KEY, ENFORCED_CHARFIELD_CONSTRAINT, DEFAULT_THEME, LOOP_TIMEOUT)
 
 from core.libs.bottle import request, url, _stderr
 from core.libs.peewee import DeleteQuery, fn, SelectQuery  # , BaseModel as _BaseModel
@@ -2861,12 +2861,14 @@ class Queue(BaseModel):
     job_type = CharField(null=False, max_length=16, index=True)
     is_control = BooleanField(null=False, default=False, index=True)
     is_running = BooleanField(null=False, default=False, index=True)
+    control_pid = IntegerField(null=True)
     priority = IntegerField(default=9, index=True)
     data_string = TextField(null=True)
     data_integer = IntegerField(null=True, index=True)
     date_touched = DateTimeField(default=datetime.datetime.utcnow)
     blog = ForeignKeyField(Blog, index=True, null=False)
     site = ForeignKeyField(Site, index=True, null=False)
+
     # status = CharField(max_length=1, null=True, default=None)
     # processing = P
     # failed = F
@@ -2881,7 +2883,7 @@ class Queue(BaseModel):
         if most_recent.count() == 0:
             return False
         most_recent_time = datetime.datetime.utcnow() - most_recent[0].date_touched
-        if most_recent_time.seconds < 10:
+        if most_recent_time.seconds < LOOP_TIMEOUT:
             return True
         return False
 

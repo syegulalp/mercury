@@ -76,40 +76,37 @@ try:
 except:
     DB_TYPE_NAME = 'sqlite'
 
-# Because of issues with the import order,
-# we should move this logic into core.models itself?
-
 if DB_TYPE_NAME == 'sqlite':
-    from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
+    from core.models.db import sqlite
 
-    class SqliteDB(SqliteExtDatabase):
-
-        def initialize_connection(self, conn=None):
-            pass
-
-    DB_TYPE = SqliteDB(
+    DB = sqlite.SqliteDB(
         FULL_SQLITE_DATABASE_PATH,
         threadlocals=True,
         timeout=30000
         )
 
-    DB_TYPE.initialize_connection()
+    DB.initialize_connection()
 
-    from core.models import sqlite as DB
+    DB_TYPE = DB
 
-#     # eventually it'll look like this....
+#    from core.libs.playhouse.sqlite_ext import SqliteExtDatabase
 #
-#     from core.models.db import sqlite
+#     class SqliteDB(SqliteExtDatabase):
 #
-#     DB = sqlite.SqliteDB(
+#         def initialize_connection(self, conn=None):
+#             pass
+#
+#     DB_TYPE = SqliteDB(
 #         FULL_SQLITE_DATABASE_PATH,
 #         threadlocals=True,
 #         timeout=30000
 #         )
 #
-#     DB.initialize_connection()
+#     DB_TYPE.initialize_connection()
 #
-#     DB_TYPE = DB
+#     from core.models import sqlite as DB
+
+#     # eventually it'll look like this....
 
 # elif DB_TYPE_NAME == 'mysql':
 #     from core.libs.playhouse.sqlite_ext import MySQLDatabase
