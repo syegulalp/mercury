@@ -12,6 +12,15 @@ if __name__ == '__main__':
     from core.models.transaction import transaction
     from core.cms.queue import process_queue
 
+    opts = set()
+
+    if len(sys.argv) > 1:
+        for n in range(1, len(sys.argv)):
+            opts.add(sys.argv[n])
+
+    nowait = True if '--nowait' in opts else False
+    clear_job = True if '--clearjob' in opts else False
+
     @transaction
     def run(n):
         return process_queue(n)
@@ -21,6 +30,9 @@ if __name__ == '__main__':
     product_id = '{}, running in {}'.format(settings.PRODUCT_NAME, settings.APPLICATION_PATH)
 
     print ('{}\nScheduled tasks script.'.format(product_id))
+
+    if nowait:
+        print('Ignoring insert wait.')
 
     print ('Looking for scheduled tasks...')
 
@@ -64,7 +76,10 @@ if __name__ == '__main__':
                 n = blogs_to_check[b]
                 skip = None
 
-                if Queue.is_insert_active(n):
+                if clear_job:
+                    Queue.stop(n)
+
+                if nowait is False and Queue.is_insert_active(n):
                     skip = 'Insert in progress for blog {}. Skipping this run.'.format(n.id)
                 elif Queue.control_jobs(n).count() > 0:
                     skip = 'Job already running for blog {}. Skipping this run.'.format(n.id)

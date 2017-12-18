@@ -9,6 +9,7 @@ from core.models import (Page, TemplateMapping, TagAssociation, template_type,
 
 from core.libs.peewee import IntegrityError
 
+
 def eval_paths(path_string, dict_data):
     path_obj = replace_mapping_tags(path_string)
     try:
@@ -20,6 +21,7 @@ def eval_paths(path_string, dict_data):
             # dict_data,
             # e))
     return paths
+
 
 def generate_page_tags(f, blog):
     '''
@@ -62,6 +64,7 @@ def generate_page_tags(f, blog):
             f.page, f))
 
     return tags
+
 
 def build_pages_fileinfos(pages, template_mappings=None):
     '''
@@ -109,8 +112,8 @@ def build_pages_fileinfos(pages, template_mappings=None):
                     str(page.publication_date_tz))
                 )
 
-
     return fileinfos
+
 
 def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False):
 
@@ -123,7 +126,6 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
     # underlying archive type for the template first,
     # THEN create the mappings, so we don't have to do the awkward
     # stuff that we do with tag archives
-
 
     # counter = 0
     mapping_list = {}
@@ -297,6 +299,7 @@ def build_archives_fileinfos_by_mappings(template, pages=None, early_exit=False)
 #         return 0
 #     '''
 
+
 def build_archives_fileinfos(pages):
     '''
     Takes a page (maybe a collection of same) and produces fileinfos
@@ -380,6 +383,7 @@ def build_archives_fileinfos(pages):
     except Exception:
         return 0
 
+
 def build_indexes_fileinfos(templates):
 
     '''
@@ -402,7 +406,6 @@ def build_indexes_fileinfos(templates):
             TemplateMapping.template == template)
 
         blog = index_mappings[0].template.blog
-
 
         tags = template_tags(blog_id=blog.id)
 
@@ -427,6 +430,7 @@ def build_indexes_fileinfos(templates):
         return n + 1
     except Exception:
         return 0
+
 
 def add_page_fileinfo(page, template_mapping, file_path,
         url, sitewide_file_path, mapping_sort=None):
@@ -485,7 +489,6 @@ This appears to be a collision with mapping {} in template {}'''.format(
                 collision.template_mapping.path_string,
                 collision.template_mapping.template.for_log))
 
-
     else:
 
         existing_fileinfo.file_path = file_path
@@ -500,6 +503,7 @@ This appears to be a collision with mapping {} in template {}'''.format(
     return fileinfo
 
 # TODO: we may want to move this and page_fileinfo to the models
+
 
 def delete_fileinfo_files(fileinfos):
     '''
@@ -518,6 +522,7 @@ def delete_fileinfo_files(fileinfos):
             raise e
 
     return deleted_files
+
 
 def delete_page_fileinfo(page):
     '''
@@ -549,6 +554,7 @@ def delete_page_fileinfo(page):
 
 
 class ArchiveContext():
+
     def __init__(self, context_list, original_pageset, **ka):
         self.pages = None  # actual recordset
         self.next = None  # eventually set this as a property that returns the new object
@@ -579,17 +585,16 @@ class ArchiveContext():
             tag_context, date_counter = archive_functions[m]["context"](
                 fileinfo, original_page, tag_context, date_counter)
 
-        # for last one get next/previous, or get them for all?
-
         self.pages = tag_context
-
 
 
 def generate_archive_context_from_page(context_list, original_pageset, original_page):
     return generate_archive_context(context_list, original_pageset, page=original_page)
 
+
 def generate_archive_context_from_fileinfo(context_list, original_pageset, fileinfo):
     return generate_archive_context(context_list, original_pageset, fileinfo=fileinfo)
+
 
 def generate_archive_context(context_list, original_pageset, **ka):
     """
@@ -634,7 +639,6 @@ def generate_archive_context(context_list, original_pageset, **ka):
     # TODO: Generate next/previous from last element in context list.
     # So we need next/previous year, month, day, category, etc.
 
-
     return tag_context
 
 
@@ -651,6 +655,7 @@ def category_context(fileinfo, original_page, tag_context, date_counter):
     tag_context_next = tag_context.select().where(Page.id << page_constraint)
 
     return tag_context_next, date_counter
+
 
 def year_context(fileinfo, original_page, tag_context, date_counter):
 
@@ -691,6 +696,7 @@ def year_context(fileinfo, original_page, tag_context, date_counter):
 
     return tag_context_next, date_counter
 
+
 # thank you: https://stackoverflow.com/a/13565185
 def last_day_of_month(date):
     next_month = date.replace(day=28) + datetime.timedelta(days=4)  # this will never fail
@@ -728,7 +734,6 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
     month_end_tz = Page._date_to_utc(None, blog.timezone,
         month_end)
 
-
     tag_context_next = tag_context.select().where(
         Page.publication_date >= month_start_tz,
         Page.publication_date <= month_end_tz
@@ -737,7 +742,6 @@ def month_context(fileinfo, original_page, tag_context, date_counter):
     date_counter["month"] = month_context
 
     return tag_context_next, date_counter
-
 
 #     tag_context_next = tag_context.select().where(
 #         Page.publication_date.month << month_context)
@@ -765,6 +769,7 @@ def author_context(fileinfo, original_page, tag_context, date_counter):
 
     return tag_context_next, date_counter
 
+
 def page_tag_context(fileinfo, original_page, tag_context, date_counter):
 
     if fileinfo is None:
@@ -782,6 +787,7 @@ def page_tag_context(fileinfo, original_page, tag_context, date_counter):
     # TypeError: unsupported operand type(s) for <<: 'BaseModel' and 'SelectQuery'
 
     return tag_context_next, date_counter
+
 
 archive_functions = {
     "C":{
@@ -819,7 +825,6 @@ archive_functions = {
         }
     }
 
-
 import re
 
 mapping_tags = (
@@ -840,15 +845,13 @@ mapping_tags = (
 
 )
 
+
 def replace_mapping_tags(string):
 
     for n in mapping_tags:
         string = re.sub(n[0], n[1], string)
 
     return string
-
-
-
 
 
 def build_mapping_xrefs(mapping_list):
@@ -905,6 +908,7 @@ def build_mapping_xrefs(mapping_list):
     if 'Include' in map_types:
         # TODO: eventually build only the mappings for the affected template, not all of them
         build_indexes_fileinfos(mapping.template.blog.ssi_templates)
+
 
 def purge_fileinfos(fileinfos):
     '''

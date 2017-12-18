@@ -18,7 +18,6 @@ save_action = (
     (1, 'Save draft')
     )
 
-
 search_contexts = (
     {'blog':
             {'form_target':lambda x: BASE_URL + "/blog/" + str(x.id),
@@ -75,6 +74,7 @@ search_contexts = (
     }
     )
 
+
 def listing(request, context_object, item_list_object, colset, menu,
             user=None, rowset_callback=None, errormsg=None, search_ui=None,
             search_context=None, tags_data={}, msg_float=True):
@@ -125,10 +125,13 @@ def listing(request, context_object, item_list_object, colset, menu,
             s.append([n[0], n[1](context_object)])
         list_actions = s
 
-    try:
-        items_searched, search = search_context(request, context_object)
-    except (UnboundLocalError, KeyError, ValueError, TypeError):
+    if search_context is None:
         items_searched, search = None, None
+    else:
+        try:
+            items_searched, search = search_context(request, context_object)
+        except (KeyError, ValueError):
+            items_searched, search = None, None
 
     item_list = item_list_object
 
@@ -161,7 +164,6 @@ def listing(request, context_object, item_list_object, colset, menu,
     if search_ui is not None:
         tags.search_context = (search_contexts[search_ui], context_object)
 
-
     # also, if we have template_tags handle search objs,
     # perhaps we should centralize that there instead of
     # adding the search_context here manually!
@@ -179,6 +181,7 @@ def listing(request, context_object, item_list_object, colset, menu,
         list_actions=list_actions,
         msg_float=msg_float,
         **tags.__dict__)
+
 
 def report(tags, menu, obj, msg_float=False):
     return _tpl('listing/report',

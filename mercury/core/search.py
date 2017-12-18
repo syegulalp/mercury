@@ -1,14 +1,18 @@
 from core.utils import utf8_escape
 from settings import DB
 
+
 def blog_pages_in_category_search_results(request, category):
     return blog_search_results(request, category.blog)
+
 
 def tag_in_blog_search_results(request, tag):
     return blog_search_results(request, tag.blog)
 
+
 def media_in_blog_search_results(request, media):
     return blog_search_results(request, media.blog)
+
 
 def blog_search_results(request, blog=None):
 
@@ -24,6 +28,7 @@ def blog_search_results(request, blog=None):
     pages_searched = DB.blog_search(search_terms_enc, blog)
 
     return pages_searched, search_terms
+
 
 def site_search_results(request, site=None):
 
@@ -41,6 +46,7 @@ def site_search_results(request, site=None):
     return pages_searched, search_terms
 
 # placeholder function, not implemented yet
+
 
 def media_search_results(request, blog_id=None, site_id=None):
 
@@ -95,6 +101,5 @@ def tag_search_results(request, blog_id=None, site_id=None):
         # tags_searched.select().where(Tag.blog.site == site_id)
     if blog_id is not None:
         tags_searched.select().where(Tag.blog == blog_id)
-
 
     return tags_searched, search_terms

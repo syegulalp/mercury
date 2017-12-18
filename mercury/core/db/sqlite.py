@@ -98,7 +98,7 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
     def site_search(self, search_terms_enc, site):
         from core.models import Page, Site
 
-        ct = 0
+        # ct = 0
 
         if site is not None:
             site_to_search = Site.load(site).pages.select(Page.id).tuples()
@@ -108,10 +108,10 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
                 .where(Page_Search.id << site_to_search,
                     Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
                 .order_by(Page_Search.id.desc()).tuples())
-            ct = search_results.count()  # This statement is used to trap FTS4 errors
-        except OperationalError:
-            pass
-        if ct == 0:
+            search_results.count()  # This statement is used to trap FTS4 errors
+        except Exception:
+            # pass
+            # if ct == 0:
             search_results = (Page.select(Page.id)
                 .where(Page.blog.site == site,
                     Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
@@ -122,24 +122,28 @@ class SqliteDB(SqliteExtDatabase, InitDBClass):
     def blog_search(self, search_terms_enc, blog):
         from core.models import Page
 
-        ct = 0
+        # ct = 0
 
         if blog is not None:
-            blog_to_search = blog.pages.select(Page.id).tuples()
+            blog_to_search = blog.pages.select(Page.id)
 
         try:
             search_results = (Page_Search.select(Page_Search.id)
                 .where(Page_Search.id << blog_to_search,
                     Page_Search.title.contains(search_terms_enc) | Page_Search.text.contains(search_terms_enc))
-                .order_by(Page_Search.id.desc()).tuples())
-            ct = search_results.count()  # This statement is used to trap FTS4 errors
-        except OperationalError:
-            pass
-        if ct == 0:
+                .order_by(Page_Search.id.desc()))
+                # .tuples())
+            search_results.count()  # This statement is used to trap FTS4 errors
+        except Exception:
+            # pass
+        # except OperationalError as e:
+            # raise e
+            # if ct == 0:
             search_results = (Page.select(Page.id)
                 .where(Page.blog == blog,
                     Page.title.contains(search_terms_enc) | Page.text.contains(search_terms_enc))
-                .order_by(Page.id.desc()).tuples())
+                .order_by(Page.id.desc()))
+                # .tuples())
 
         return search_results
 

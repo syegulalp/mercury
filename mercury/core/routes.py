@@ -624,10 +624,8 @@ def blog_queue_run(blog_id):
     '''
     Route for running a blog's publishing queue script as a background process
     '''
-    import subprocess, sys
-    taskpath = "{}/scripts/tasks.py".format(APPLICATION_PATH)
-    pid = subprocess.Popen([sys.executable, taskpath]).pid
-    return "Queue runner {} started with pid {}.".format(taskpath, pid)
+    from core.ui.blog import blog_queue_run
+    return blog_queue_run(blog_id)
 
 
 @_route(BASE_PATH + "/blog/<blog_id:int>/queue/clear")

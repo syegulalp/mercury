@@ -77,7 +77,7 @@ except:
     DB_TYPE_NAME = 'sqlite'
 
 if DB_TYPE_NAME == 'sqlite':
-    from core.models.db import sqlite
+    from core.db import sqlite
     # circular import!
     # need to move db subdir out of models, I think
 

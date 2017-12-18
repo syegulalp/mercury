@@ -13,7 +13,7 @@ from core.models import (Struct, Site,
 
 from core.models.transaction import transaction
 from core.libs.bottle import template, request, response
-from settings import BASE_URL, RETRY_INTERVAL
+from settings import BASE_URL, RETRY_INTERVAL, APPLICATION_PATH
 from . import listing, status_badge, save_action, search_contexts, report
 
 import time
@@ -623,8 +623,35 @@ def blog_queue(blog_id, status=None):
     return listing(request, blog, tags.queue,
                    'queue', 'blog_menu',
                    user=user,
-                   tags_data={'blog':blog}
+                   tags_data={'blog':blog},
+                   errormsg=tags.status
                    )
+
+
+@transaction
+def blog_queue_run(blog_id):
+
+    user = auth.is_logged_in(request)
+    blog = Blog.load(blog_id)
+    permission = auth.is_blog_publisher(user, blog)
+
+    import subprocess, sys
+    taskpath = "{}/scripts/tasks.py".format(APPLICATION_PATH)
+    pid = subprocess.Popen([sys.executable, taskpath, '--nowait']).pid
+    msg = "<a href='../queue'>Queue</a> runner {} started with pid {}. ".format(taskpath, pid)
+
+    from core.utils import Status
+    status = Status(
+            type='success',
+            no_sure=True,
+            message=msg)
+
+    tags = template_tags(blog_id=blog.id,
+            user=user,
+            status=status
+            )
+
+    return report(tags, 'blog_menu', blog)
 
 
 @transaction
