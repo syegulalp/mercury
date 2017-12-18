@@ -154,12 +154,11 @@ menus = {
     'site_menu': {
         'type':'menu',
         'text': lambda x: '{}'.format(x.name),
-        'path': lambda x: BASE_URL + '/system/sites/',
+        'path': lambda x: BASE_URL + '/site/{}'.format(x.id),
         'parent': 'system_menu',
         'parent_path': lambda x: x.site,
         'parent_context': lambda x:None,
         'menu': (
-            # 'site_users_div', 'site_manage_users', 'site_create_user',
              'blogs_div', 'site_manage_blogs', 'site_create_blog')
         },
     'site_users_div': {
