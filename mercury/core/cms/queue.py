@@ -427,12 +427,11 @@ def queue_page_archive_actions(page):
                             try:
                                 fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
                             except FileInfo.DoesNotExist:
-                                if build_archives_fileinfos((page,)) == 0:
-                                    from core.error import QueueAddError
-                                    raise QueueAddError(
-                                        'No archive fileinfos could be built for page {} with template {}'.format(
-                                        page.for_log,
-                                        n.template.for_log))
+                                # if build_archives_fileinfos((page,)) == 0:
+                                logger.info('No archive fileinfos could be built for page {} with template {}'.format(
+                                    page.for_log,
+                                    n.for_log))
+                                continue
 
                             Queue.push(job_type=job_type.archive,
                                       blog=page.blog,

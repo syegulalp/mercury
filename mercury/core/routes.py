@@ -1172,6 +1172,7 @@ def reboot():
 def backup_db(filename='database-backup.cgi'):
     '''
     Copy database file to backup (for SQLite only)
+    TODO: make this a db-level method
     '''
     try:
         db.close()
@@ -1191,6 +1192,7 @@ def backup_db(filename='database-backup.cgi'):
 def restore_db(filename='database-backup.cgi'):
     '''
     Restore database file from backup (for SQLite only)
+    TODO: make this a db-level method
     '''
     if db is not None:
         try:

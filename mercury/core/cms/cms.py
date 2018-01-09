@@ -14,6 +14,7 @@ from .fileinfo import (delete_page_fileinfo, build_archives_fileinfos, build_pag
 
 from settings import BASE_URL
 
+
 def save_page(page, user, blog=None):
     '''
     Saves edits to a page in the CMS.
@@ -111,7 +112,6 @@ def save_page(page, user, blog=None):
 
         unpublish_page(page)
         msg.append("Page <b>{}</b> unpublished successfully.")
-
 
     # SET UNPUBLISHED TO PUBLISHED
 
@@ -223,6 +223,7 @@ def save_page(page, user, blog=None):
 # TODO: Move this to the Blog or Tags methods.
 # Maybe both by way of a proxy
 
+
 def delete_orphaned_tags(blog):
     '''
     Cleans up tags that no longer have any page associations.
@@ -237,6 +238,7 @@ def delete_orphaned_tags(blog):
     orphaned_tags.execute()
 
     return orphaned_tags
+
 
 def add_tags_to_page (tag_text, page, no_delete=False):
     '''
@@ -294,7 +296,6 @@ def add_tags_to_page (tag_text, page, no_delete=False):
     return tags_to_add, tags_to_delete, new_tags
 
 
-
 def delete_page(page):
     '''
     Removes all database entries for a given page from the system.
@@ -341,6 +342,7 @@ def unpublish_page(page, save=True):
 
     delete_fileinfo_files(page.fileinfos)
 
+
 def publish_page(page_id):
     '''
     Stub for the future republish_page function
@@ -357,6 +359,7 @@ def publish_page(page_id):
     '''
     pass
 
+
 # OBSOLETE - delete?
 def publish_site(site_id):
     '''
@@ -364,6 +367,7 @@ def publish_site(site_id):
     loop through all blogs, run republish_blog on each
     '''
     pass
+
 
 # OBSOLETE - delete?
 def publish_blog(blog_id):
@@ -373,6 +377,7 @@ def publish_blog(blog_id):
     eventually a rewrite of republish_blog below, or just a rebadging
     '''
     pass
+
 
 def republish_blog(blog):
     '''
@@ -436,7 +441,6 @@ def purge_blog(blog):
     report.append("<hr/>{0} server-side include objects created in {1:.2f} seconds.".format(
         includes_inserted, ssi_time - erase))
 
-
     # pages_inserted = build_pages_fileinfos(blog.pages)
     pages_inserted = 0
     rebuild = time.clock()
@@ -462,7 +466,6 @@ def purge_blog(blog):
     report.append("Total processing time: <b>{0:.2f}</b> seconds.".format(end - begin))
     report.append("<hr/>It is recommended that you <a href='{}'>republish this blog</a>.".format(
         '{}/blog/{}/republish'.format(BASE_URL, blog.id)))
-
 
     return report
 

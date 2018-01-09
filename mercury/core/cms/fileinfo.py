@@ -311,75 +311,77 @@ def build_archives_fileinfos(pages):
     counter = 0
     mapping_list = {}
 
-    for page in pages:
-        tags = template_tags(page=page)
-        if page.archive_mappings.count() == 0:
-            raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
-        s = []
-        for m in page.archive_mappings:
-            q = replace_mapping_tags(m.path_string)
-            s.append(q)
-            paths_list = eval_paths(m.path_string, tags.__dict__)
-
-            if type(paths_list) in (list,):
-                paths = []
-                for n in paths_list:
-                    if n is None:
-                        continue
-                    p = page.proxy(n[0])
-                    # FIXME: eliminate the need for page proxies passed manually
-                    # at this stage of the process we should generate those
-                    # page context in one column, whatever it is, and path strings in another
-                    paths.append((p, n[1]))
-
-            else:
-                paths = (
-                    (page, paths_list)
-                    ,)
-
-            for page, path in paths:
-                path_string = generate_date_mapping(page.publication_date_tz,
-                    tags, path, do_eval=False)
-
-                if path_string == '' or path_string is None:
-                    continue
-                if path_string in mapping_list:
-                    continue
-
-                mapping_list[path_string] = (
-                    (None, m, path_string,
-                    page.blog.url + "/" + path_string,
-                    page.blog.path + '/' + path_string,)
-                    ,
-                    (page),
-                    )
-    # raise Exception(s)
-    for counter, n in enumerate(mapping_list):
-        # TODO: we should bail if there is already a fileinfo for this page?
-        new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
-        FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
-        archive_context = []
-        m = mapping_list[n][0][1]
-
-        for r in m.archive_xref:
-            archive_context.append(
-                archive_functions[r]["format"](
-                    archive_functions[r]["mapping"](mapping_list[n][1])
-                    )
-                )
-
-        for t, r in zip(archive_context, m.archive_xref):
-            new_fileinfo_context = FileInfoContext.get_or_create(
-                fileinfo=new_fileinfo,
-                object=r,
-                ref=t
-                )
-
-        new_fileinfo.mapping_sort = '/'.join(archive_context)
-        new_fileinfo.save()
-
     try:
+
+        for page in pages:
+            tags = template_tags(page=page)
+            if page.archive_mappings.count() == 0:
+                raise TemplateMapping.DoesNotExist('No template mappings found for the archives for this page.')
+            s = []
+            for m in page.archive_mappings:
+                q = replace_mapping_tags(m.path_string)
+                s.append(q)
+                paths_list = eval_paths(m.path_string, tags.__dict__)
+
+                if type(paths_list) in (list,):
+                    paths = []
+                    for n in paths_list:
+                        if n is None:
+                            continue
+                        p = page.proxy(n[0])
+                        # FIXME: eliminate the need for page proxies passed manually
+                        # at this stage of the process we should generate those
+                        # page context in one column, whatever it is, and path strings in another
+                        paths.append((p, n[1]))
+
+                else:
+                    paths = (
+                        (page, paths_list)
+                        ,)
+
+                for page, path in paths:
+                    path_string = generate_date_mapping(page.publication_date_tz,
+                        tags, path, do_eval=False)
+
+                    if path_string == '' or path_string is None:
+                        continue
+                    if path_string in mapping_list:
+                        continue
+
+                    mapping_list[path_string] = (
+                        (None, m, path_string,
+                        page.blog.url + "/" + path_string,
+                        page.blog.path + '/' + path_string,)
+                        ,
+                        (page),
+                        )
+        # raise Exception(s)
+        for counter, n in enumerate(mapping_list):
+            # TODO: we should bail if there is already a fileinfo for this page?
+            new_fileinfo = add_page_fileinfo(*mapping_list[n][0])
+            FileInfoContext.delete().where(FileInfoContext.fileinfo == new_fileinfo).execute()
+            archive_context = []
+            m = mapping_list[n][0][1]
+
+            for r in m.archive_xref:
+                archive_context.append(
+                    archive_functions[r]["format"](
+                        archive_functions[r]["mapping"](mapping_list[n][1])
+                        )
+                    )
+
+            for t, r in zip(archive_context, m.archive_xref):
+                new_fileinfo_context = FileInfoContext.get_or_create(
+                    fileinfo=new_fileinfo,
+                    object=r,
+                    ref=t
+                    ).save()
+
+            new_fileinfo.mapping_sort = '/'.join(archive_context)
+            new_fileinfo.save()
+
         return counter + 1
+
     except Exception:
         return 0
 
