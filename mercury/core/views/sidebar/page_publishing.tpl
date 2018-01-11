@@ -81,6 +81,16 @@
     </div>
 </div>
 
+<div class='pull-right'>
+    <p>
+    <small><a href="#" onclick="if (! $('#basename').prop('disabled')){$('#basename').val('');}">Clear basename
+    <span class="glyphicon glyphicon-remove-sign"></span>
+    </a></small>
+    </p>
+</div>
+
+<br clear="all"/>
+
 <div id="permalink_group" class="form-group">
     <label for="permalink">Permalink:</label>
     <p id="permalink">
