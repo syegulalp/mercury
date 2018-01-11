@@ -83,7 +83,7 @@
 
 <div class='pull-right'>
     <p>
-    <small><a href="#" onclick="if (! $('#basename').prop('disabled')){$('#basename').val('');}">Clear basename
+    <small><a href="#" onclick="if (! $('#basename').prop('disabled')){$('#basename').val('');}else{this.innerHTML='Clear basename (unlock first!)';}">Clear basename
     <span class="glyphicon glyphicon-remove-sign"></span>
     </a></small>
     </p>
@@ -121,7 +121,7 @@
 
 <div class='pull-right'><small>
 % if page.status_id==1:
-<a href='/page/{{page.id}}/delete'>Delete
+<a href='/page/{{page.id}}/delete'>Delete page
 <span class="glyphicon glyphicon-trash"></span>
 </a>
 % else:
