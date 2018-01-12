@@ -67,7 +67,7 @@ def save_page(page, user, blog=None):
 
         if page.status == page_status.published:
             if not (save_action & save_action_list.UNPUBLISH_PAGE):
-                queue_page_actions((page.next_page, page.previous_page))
+                queue_page_actions((page.next_page, page.previous_page),no_neighbors=True, no_archive=True)
                 queue_page_archive_actions(page)
 
         original_page_status = page.status

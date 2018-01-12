@@ -9,7 +9,7 @@ from core.models import (Page, Template, TemplateMapping, template_type,
     FileInfo, template_tags, Struct, publishing_mode, Queue)
 
 from .fileinfo import (generate_page_tags, delete_fileinfo_files, build_pages_fileinfos,
-    build_archives_fileinfos, build_indexes_fileinfos, eval_paths)
+    build_archives_fileinfos, build_indexes_fileinfos, eval_paths, build_archives_fileinfos_by_mappings)
 from . import generate_page_text
 
 from settings import MAX_BATCH_OPS, LOOP_TIMEOUT
@@ -393,51 +393,20 @@ def queue_page_archive_actions(page):
         try:
             if n.publishing_mode != publishing_mode.do_not_publish:
                 fileinfo_mappings = FileInfo.select().where(FileInfo.page == page,
-                                                 FileInfo.template_mapping << n.mappings)
-                # page.archive_mappings)
-                if fileinfo_mappings.count() > 0:
+                                                FileInfo.template_mapping << n.mappings)
+                if fileinfo_mappings.count() == 0:
+                    fileinfo_mappings=build_archives_fileinfos_by_mappings(n,(page,))
+                if len(fileinfo_mappings)==0:
+                    logger.info('No archive fileinfos could be built for page {} with template {}'.format(
+                        page.for_log,
+                        n.for_log))
+                else:
                     for fileinfo_mapping in fileinfo_mappings:
                         Queue.push(job_type=job_type.archive,
-                                      blog=page.blog,
-                                      site=page.blog.site,
-                                      priority=7,
-                                      data_integer=fileinfo_mapping.id)
-
-                else:
-
-                    for m in n.mappings:
-                        path_list = eval_paths(m.path_string, tags.__dict__)
-                        paths = []
-
-                        if type(path_list) == list:
-                            for pp in path_list:
-                                paths.append(pp[1])
-                        else:
-                            paths.append(path_list)
-
-                        for p in paths:
-                            if p is None: continue
-                            file_path = (page.blog.path + '/' +
-                                         generate_date_mapping(
-                                             page.publication_date_tz.date(),
-                                             tags,
-                                             p,
-                                             do_eval=False))
-
-                            try:
-                                fileinfo_mapping = FileInfo.get(FileInfo.sitewide_file_path == file_path)
-                            except FileInfo.DoesNotExist:
-                                # if build_archives_fileinfos((page,)) == 0:
-                                logger.info('No archive fileinfos could be built for page {} with template {}'.format(
-                                    page.for_log,
-                                    n.for_log))
-                                continue
-
-                            Queue.push(job_type=job_type.archive,
-                                      blog=page.blog,
-                                      site=page.blog.site,
-                                      priority=7,
-                                      data_integer=fileinfo_mapping.id)
+                                blog=page.blog,
+                                site=page.blog.site,
+                                priority=7,
+                                data_integer=fileinfo_mapping.id)
         except Exception as e:
             from core.error import QueueAddError
             raise QueueAddError('Archive template {} for page {} could not be queued: '.format(
