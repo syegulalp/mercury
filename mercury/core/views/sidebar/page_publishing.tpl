@@ -70,6 +70,13 @@
    </div>
 </div>
 
+% if page.status_id == 3:
+    % import datetime
+    % if page.publication_date<datetime.datetime.utcnow():
+<div class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-exclamation-sign"></span> This page has been scheduled to publish in the past.</div>
+    % end
+% end    
+
 <div id="basename_group" class="form-group">
     <label for="basename">Basename:</label>
     <div class="input-group">
@@ -83,7 +90,7 @@
 
 <div class='pull-right'>
     <p>
-    <small><a href="#" onclick="if (! $('#basename').prop('disabled')){$('#basename').val('');}else{this.innerHTML='Clear basename (unlock first!)';}">Clear basename
+    <small><a href="#" onclick="if (! $('#basename').prop('disabled')){$('#basename').val('');}else{this.innerHTML='Reset basename (unlock first!)';}">Reset basename
     <span class="glyphicon glyphicon-remove-sign"></span>
     </a></small>
     </p>
