@@ -2736,6 +2736,9 @@ class FileInfo(BaseModel):
     mapping_sort = EnforcedCharField(null=True, default=None, index=True)
     preview_path = TextField(null=True, index=True, default=None)
 
+    # eventually we'll add "pages" as a property
+    # which will perform the lookup we need
+
     def make_preview(self):
         from core import utils
         from os import path
@@ -2850,6 +2853,21 @@ class FileInfo(BaseModel):
             category = None
         return category
 
+class PageArchiveFileInfo(BaseModel):
+    '''
+    Stores which pages have what fileinfo entries.
+    This handles the page itself as well as the page's archives.
+    
+    modify:
+    add_page_fileinfo
+    build_archives_fileinfos_by_mappings
+    build_archives_fileinfos
+
+    and most anywhere else where we refer to a fileinfo by page
+    so this is a fairly major reworking.
+    '''
+    page = ForeignKeyField(Page, null=False, index=True)
+    fileinfo = ForeignKeyField(FileInfo, null=False, index=True)
 
 class FileInfoContext(BaseModel):
     fileinfo = ForeignKeyField(FileInfo, null=False, index=True)
