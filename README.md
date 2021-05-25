@@ -1,3 +1,5 @@
+# This repo is now read-only. See https://github.com/syegulalp/mercury-ng for the successor to this project.
+
 # Mercury ![Metal Logo](http://metal.genjipress.com/media/metal-logo.png)
 ## (or, "Mercury Blogging Engine" for SEO's sake) (formerly "MeTal")
 
